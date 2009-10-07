@@ -66,9 +66,8 @@ endif
 # Lua stuff
 ifeq ($(USING_LUA),Y)
 FLAGS_SHARED += -DUSING_LUA
-LUA_DIR=/home/mcmaster/document/software/lua/lua-5.1.4
 LUA_INCLUDE=$(LUA_DIR)/src
-LUA_LIB_STATIC=/home/mcmaster/document/software/lua/lua-5.1.4/src/liblua.a
+LUA_LIB_STATIC=$(LUA_DIR)/src/liblua.a
 INCLUDES += -I$(LUA_INCLUDE)
 LIBS += $(LUA_LIB_STATIC)
 endif
@@ -97,7 +96,6 @@ FLAGS_SHARED += -DUSING_JAVASCRIPT
 endif
 
 # SpiderApe stuff (a javascript engine)
-SPIDERAPE_DIR=/home/mcmaster/document/software/spider_ape/SpiderApe-2007.09.26
 SPIDERAPE_STATIC=$(SPIDERAPE_DIR)/src/ape/libSpiderApe.a
 JS_STATIC=$(SPIDERAPE_DIR)/src/js/Linux_All_DBG.OBJ/libjs.a
 ifeq ($(USING_SPIDERAPE),Y)

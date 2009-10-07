@@ -48,7 +48,7 @@ uv_err_t disassemble(std::string file, UVDConfig *config)
 	if( UV_FAILED(UVDDataFile::getUVDDataFile(&data, file)) )
 	{
 		printf_error("Failed to initialize data stream!\n");
-		printf_error("Could not read: %s\n", file.c_str());
+		printf_error("Could not read file: %s\n", file.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	uv_assert_all(data);
@@ -448,15 +448,22 @@ int main(int argc, char **argv)
 			goto error;
 		}
 	}
+	
+	if( targetFile.empty() )
+	{
+		printf_error("Target file not specified\n");
+		usage(argv[0]);
+		goto error;
+	}
 
 	if( UV_FAILED(parseFileOption(outputFile, &g_pOutputFile)) )
 	{
-		printf("ERROR: could not open file: %s\n", outputFile.c_str());
+		printf_error("Could not open file: %s\n", outputFile.c_str());
 		goto error;
 	}
 	if( UV_FAILED(parseFileOption(debugFile, &g_pDebugFile)) )
 	{
-		printf("ERROR: could not open file: %s\n", debugFile.c_str());
+		printf_error("Could not open file: %s\n", debugFile.c_str());
 		goto error;
 	}
 

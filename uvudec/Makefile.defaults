@@ -27,6 +27,7 @@ USING_PYTHON=Y
 endif
 USING_LUA=N
 USING_SPIDERAPE=N
+SPIDERAPE_DIR=
 
 # UPX packer
 # Allows for making exes smaller
