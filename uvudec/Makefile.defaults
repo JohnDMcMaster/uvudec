@@ -1,0 +1,41 @@
+# Makefile for setting project stuff
+# Basically so I can set defaults in my main file and still be sane not having
+# to ./configure for every small change I make
+
+MAKEDEPEND=makedepend
+CC = gcc
+CXX = g++
+CP = cp
+RM = rm -f
+INSTALL = install
+GZIP = gzip
+TAR = tar
+MKDIR = mkdir
+PERL = perl
+UPX = upx
+
+# Fully static build?
+USING_STATIC=N
+
+USING_ROPE=N
+
+#Scripting support
+ifeq ($(shell which python |fgrep '/'),)
+USING_PYTHON=N
+else
+USING_PYTHON=Y
+endif
+USING_LUA=N
+USING_SPIDERAPE=N
+
+# UPX packer
+# Allows for making exes smaller
+ifeq ($(shell which upx |fgrep '/'),)
+USING_UPX=N
+else
+USING_UPX=Y
+endif
+
+# File to work on if no arguments are given
+# Default is no default
+DEFAULT_DECOMPILE_FILE='""'

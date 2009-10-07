@@ -1,0 +1,104 @@
+# DO NOT DELETE
+
+uvd_data.o: uv_debug.h uv_error.h uvd_types.h uv_util.h uvd_data.h
+main.o: uv_error.h uvd_types.h uv_debug.h uv_util.h uv_log.h uvd.h
+main.o: uvd_analyzer.h uvd_address.h uvd_data.h uvd_analysis_db.h
+main.o: uvd_function.h uvd_compiler.h uvd_version.h uvd_format.h
+main.o: uvd_instruction.h uvd_config.h interpreter/uvd_interpreter.h
+main.o: uvd_opcode.h uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+main.o: uvd_operator.h uvd_language.h
+uv_debug.o: uvd_types.h uv_error.h uv_debug.h
+uv_error.o: uv_error.h uvd_types.h uv_debug.h uv_log.h
+uv_log.o: uv_log.h uv_error.h uvd_types.h uv_debug.h
+uv_md5.o: uvd_types.h uv_error.h uv_debug.h uv_md5.h uv_md5_GNU.h
+uv_md5_GNU.o: uv_md5_GNU.h
+uv_util.o: uv_util.h uvd_types.h uv_error.h uv_debug.h uvd.h uvd_analyzer.h
+uv_util.o: uvd_address.h uvd_data.h uvd_analysis_db.h uvd_function.h
+uv_util.o: uvd_compiler.h uvd_version.h uvd_format.h uvd_instruction.h
+uv_util.o: uvd_config.h interpreter/uvd_interpreter.h uvd_opcode.h
+uv_util.o: uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uv_util.o: uvd_operator.h
+uvd.o: uv_debug.h uv_error.h uvd_types.h uv_log.h uv_util.h uvd.h
+uvd.o: uvd_analyzer.h uvd_address.h uvd_data.h uvd_analysis_db.h
+uvd.o: uvd_function.h uvd_compiler.h uvd_version.h uvd_format.h
+uvd.o: uvd_instruction.h uvd_config.h interpreter/uvd_interpreter.h
+uvd.o: uvd_opcode.h uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uvd.o: uvd_operator.h uvd_analysis.h uvd_benchmark.h uvd_language.h
+uvd_address.o: uvd_address.h uvd_types.h uv_error.h uv_debug.h
+uvd_analysis.o: uvd_analysis.h
+uvd_analysis_db.o: uvd_analysis_db.h uvd.h uv_error.h uvd_types.h uv_debug.h
+uvd_analysis_db.o: uvd_analyzer.h uvd_address.h uvd_data.h uvd_format.h
+uvd_analysis_db.o: uvd_compiler.h uvd_instruction.h uvd_config.h
+uvd_analysis_db.o: interpreter/uvd_interpreter.h uvd_opcode.h
+uvd_analysis_db.o: uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uvd_analysis_db.o: uvd_operator.h uvd_function.h uvd_version.h uv_util.h
+uvd_analyzer.o: uvd.h uv_error.h uvd_types.h uv_debug.h uvd_analyzer.h
+uvd_analyzer.o: uvd_address.h uvd_data.h uvd_analysis_db.h uvd_function.h
+uvd_analyzer.o: uvd_compiler.h uvd_version.h uvd_format.h uvd_instruction.h
+uvd_analyzer.o: uvd_config.h interpreter/uvd_interpreter.h uvd_opcode.h
+uvd_analyzer.o: uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uvd_analyzer.o: uvd_operator.h
+uvd_benchmark.o: uvd_benchmark.h uv_util.h uvd_types.h uv_error.h uv_debug.h
+uvd_compiler.o: uvd_compiler.h uvd_types.h uv_error.h uv_debug.h
+uvd_config.o: interpreter/uvd_python.h interpreter/uvd_interpreter.h
+uvd_config.o: uvd_types.h uv_error.h uv_debug.h uvd_config.h
+uvd_config.o: uvd_instruction.h uvd_data.h interpreter/uvd_interpreter.h
+uvd_config.o: uvd_language.h uvd_opcode.h uvd_config_interpreter.h uv_util.h
+uvd_config_interpreter.o: uv_util.h uvd_types.h uv_error.h uv_debug.h
+uvd_config_interpreter.o: uvd_config.h uvd_instruction.h uvd_data.h
+uvd_config_interpreter.o: interpreter/uvd_interpreter.h
+uvd_config_interpreter.o: uvd_config_interpreter.h uvd_language.h
+uvd_config_interpreter.o: interpreter/uvd_python.h
+uvd_config_interpreter.o: interpreter/uvd_interpreter.h
+uvd_elf.o: uvd_elf.h uvd_data.h uvd_types.h uv_error.h uv_debug.h
+uvd_elf.o: uvd_relocation.h uv_util.h
+uvd_format.o: uvd_format.h uvd_compiler.h uvd_types.h uv_error.h uv_debug.h
+uvd_function.o: uv_md5.h uvd_types.h uv_error.h uv_debug.h uvd_function.h
+uvd_function.o: uvd_compiler.h uvd_data.h uvd_version.h uvd_language.h
+uvd_language.o: uvd_language.h
+uvd_init.o: uv_debug.h uv_error.h uvd_types.h uv_log.h uv_util.h uvd.h
+uvd_init.o: uvd_analyzer.h uvd_address.h uvd_data.h uvd_analysis_db.h
+uvd_init.o: uvd_function.h uvd_compiler.h uvd_version.h uvd_format.h
+uvd_init.o: uvd_instruction.h uvd_config.h interpreter/uvd_interpreter.h
+uvd_init.o: uvd_opcode.h uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uvd_init.o: uvd_operator.h uvd_analysis.h uvd_benchmark.h
+uvd_instruction.o: uvd.h uv_error.h uvd_types.h uv_debug.h uvd_analyzer.h
+uvd_instruction.o: uvd_address.h uvd_data.h uvd_analysis_db.h uvd_function.h
+uvd_instruction.o: uvd_compiler.h uvd_version.h uvd_format.h
+uvd_instruction.o: uvd_instruction.h uvd_config.h
+uvd_instruction.o: interpreter/uvd_interpreter.h uvd_opcode.h
+uvd_instruction.o: uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uvd_instruction.o: uvd_operator.h main.h
+uvd_iterator.o: uv_debug.h uv_error.h uvd_types.h uv_log.h uv_util.h uvd.h
+uvd_iterator.o: uvd_analyzer.h uvd_address.h uvd_data.h uvd_analysis_db.h
+uvd_iterator.o: uvd_function.h uvd_compiler.h uvd_version.h uvd_format.h
+uvd_iterator.o: uvd_instruction.h uvd_config.h interpreter/uvd_interpreter.h
+uvd_iterator.o: uvd_opcode.h uvd_config_interpreter.h uvd_register.h
+uvd_iterator.o: uvd_symbol.h uvd_operator.h uvd_analysis.h uvd_benchmark.h
+uvd_opcode.o: uv_util.h uvd_types.h uv_error.h uv_debug.h uvd_address.h
+uvd_opcode.o: uvd_config.h uvd_instruction.h uvd_data.h
+uvd_opcode.o: interpreter/uvd_interpreter.h uvd_format.h uvd_compiler.h
+uvd_opcode.o: uvd_opcode.h uvd_config_interpreter.h uvd_symbol.h
+uvd_opcode.o: uvd_operator.h
+uvd_operand.o: uvd.h uv_error.h uvd_types.h uv_debug.h uvd_analyzer.h
+uvd_operand.o: uvd_address.h uvd_data.h uvd_analysis_db.h uvd_function.h
+uvd_operand.o: uvd_compiler.h uvd_version.h uvd_format.h uvd_instruction.h
+uvd_operand.o: uvd_config.h interpreter/uvd_interpreter.h uvd_opcode.h
+uvd_operand.o: uvd_config_interpreter.h uvd_register.h uvd_symbol.h
+uvd_operand.o: uvd_operator.h main.h
+uvd_operator.o: uvd_types.h uv_error.h uv_debug.h uvd_operator.h
+uvd_register.o: uvd_register.h uvd_address.h uvd_types.h uv_error.h
+uvd_register.o: uv_debug.h
+uvd_relocation.o: uvd_relocation.h uvd_data.h uvd_types.h uv_error.h
+uvd_relocation.o: uv_debug.h
+uvd_symbol.o: uvd_symbol.h uvd_address.h uvd_types.h uv_error.h uv_debug.h
+uvd_symbol.o: uvd_operator.h
+uvd_types.o: uvd_types.h uv_error.h uv_debug.h
+uvd_version.o: uvd_version.h uv_util.h uvd_types.h uv_error.h uv_debug.h
+interpreter/uvd_interpreter.o: interpreter/uvd_interpreter.h uvd_types.h
+interpreter/uvd_interpreter.o: uv_error.h uv_debug.h
+interpreter/uvd_python.o: uv_util.h uvd_types.h uv_error.h uv_debug.h
+interpreter/uvd_python.o: interpreter/uvd_python.h
+interpreter/uvd_python.o: interpreter/uvd_interpreter.h uvd_config.h
+interpreter/uvd_python.o: uvd_instruction.h uvd_data.h
+interpreter/uvd_python.o: interpreter/uvd_interpreter.h
