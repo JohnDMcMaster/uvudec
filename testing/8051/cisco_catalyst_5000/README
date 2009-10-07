@@ -1,0 +1,4 @@
+Chips off of a supervisor 1 engine
+Two different boards were ripped, both had exactly the same software despite different hardware rev (with obvious differences)
+The bootloader is actually MC68K, not 80C32
+
