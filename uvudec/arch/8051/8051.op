@@ -1,0 +1,2013 @@
+# WARNING: comments may switch to C/C++ sytle so C preprocessor (cpp) can be used
+
+# 8051 MCU configuration file
+
+.MISC
+MCU_NAME=8051
+MCU_DESC=8051 MCU
+MCU_ENDIAN=BIG
+ASM_IMM_PREFIX=#
+ASM_IMM_PREFIX_HEX=
+ASM_IMM_POSTFIX_HEX=
+
+
+# These should represent addressing modes rather than the actual physical locations
+# That way, multiple addressing modes can map correctly to the same data
+.MEM
+
+# Physical RAM abstraction
+# 0x00:0x7F:  direct + indirect
+# 0x80:0xFF: indirect
+# Internal RAM
+NAME=IRAM
+TYPE=RAM
+# Largest address possible
+MAX=0xFF
+ASM_PREFIX=
+
+# Memory mapped reigsters abstraction
+NAME=MMREG
+# Similar enough to RAM...for now
+TYPE=RAM
+MAX=0x7F
+ASM_PREFIX=
+
+
+# "Direct addressing": immediate specifies address
+# 0x00:0x7F: IRAM
+# 0x80:0xFF: registers
+# Internal RAM
+NAME=RAM_DIR
+TYPE=RAM
+# Largest address possible
+MAX=0xFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_SRC_MIN=0x00
+MAPPING_SRC_MAX=0x7F
+MAPPING_DST_MIN=0x00
+
+MAPPING_DST=MMREG
+MAPPING_SRC_MIN=0x80
+MAPPING_SRC_MAX=0xFF
+
+
+# Bitmapped RAM, this maps to Internal RAM somehow if I recall
+NAME=RAM_BIT
+TYPE=RAM
+# 8 bytes
+MAX=0x7F
+# Since bit word memory
+WORD_SIZE=1
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0x20
+
+
+# "Indirect addressing"
+# Directly addressed RAM, registers are never referenced
+NAME=RAM_INDIR
+TYPE=RAM
+# Largest address possible
+MAX=0xFF
+ASM_PREFIX=@
+
+# "External direct"
+NAME=RAM_EXT_DIR
+TYPE=RAM
+# Largest address possible
+MAX=0xFFFF
+ASM_PREFIX=@
+
+# "External indirect"
+NAME=RAM_EXT_IND
+TYPE=RAM
+# Largest address possible
+MAX=0xFFFF
+ASM_PREFIX=@
+
+# SFRs
+NAME=SFR
+TYPE=SFR
+MIN=0x80
+MAX=0xFF
+
+
+
+.REG
+
+# Data registers
+# Bank 0
+
+NAME=R0
+DESC=Register 0
+ADDR=RAM_DIR(0x00)
+SIZE=0x08
+
+NAME=R1
+DESC=Register 1
+ADDR=RAM_DIR(0x01)
+SIZE=0x08
+
+NAME=R2
+DESC=Register 2
+ADDR=RAM_DIR(0x02)
+SIZE=0x08
+
+NAME=R3
+DESC=Register 3
+ADDR=RAM_DIR(0x03)
+SIZE=0x08
+
+NAME=R4
+DESC=Register 4
+ADDR=RAM_DIR(0x04)
+SIZE=0x08
+
+NAME=R5
+DESC=Register 5
+ADDR=RAM_DIR(0x05)
+SIZE=0x08
+
+NAME=R6
+DESC=Register 6
+ADDR=RAM_DIR(0x06)
+SIZE=0x08
+
+NAME=R7
+DESC=Register 7
+ADDR=RAM_DIR(0x07)
+SIZE=0x08
+
+# Should banks 1, 2, 3 be replaced by something here?  I don't think there is a standard symbol for them
+
+# Core registers
+
+NAME=A
+DESC=Accumulator
+# ACC is actually at this, I don't think A is memory mapped
+#ADDR=RAM_DIR(0xE0)
+ADDR=
+SIZE=0x08
+
+NAME=PC
+DESC=Program Counter
+SIZE=0x08
+
+NAME=SP
+DESC=Stack Pointer
+ADDR=RAM_DIR(0x81)
+SIZE=0x08
+
+
+# Single bit registers
+
+NAME=CF
+DESC=Carry Flag
+SIZE=0x01
+
+NAME=ACF
+DESC=Auxillary Carry Flag
+SIZE=0x01
+
+# Special function registers
+
+NAME=P0
+DESC=Port 0
+ADDR=RAM_DIR(0x80)
+SIZE=0x08
+
+NAME=P1
+DESC=Port 1
+ADDR=RAM_DIR(0x90)
+SIZE=0x08
+
+NAME=P2
+DESC=Port 2
+ADDR=RAM_DIR(0xA0)
+SIZE=0x08
+
+NAME=P3
+DESC=Port 3
+ADDR=RAM_DIR(0xB0)
+SIZE=0x08
+
+# Note: DPTR is DPL + DPH
+NAME=DPTR
+DESC=Data Pointer
+ADDR=RAM_DIR(0x82)
+SIZE=0x10
+
+NAME=DPL
+DESC=Data Pointer Low
+ADDR=RAM_DIR(0x82)
+SIZE=0x08
+
+NAME=DPH
+DESC=Data Pointer High
+ADDR=RAM_DIR(0x83)
+SIZE=0x08
+
+NAME=PCON
+DESC=Power Control
+ADDR=RAM_DIR(0x87)
+SIZE=0x08
+
+NAME=TCON
+DESC=Timer Control
+ADDR=RAM_DIR(0x88)
+SIZE=0x08
+
+NAME=TMOD
+DESC=Timer Mode
+ADDR=RAM_DIR(0x89)
+SIZE=0x08
+
+NAME=TL0
+DESC=Timer 0 Low
+ADDR=RAM_DIR(0x8A)
+SIZE=0x08
+
+NAME=TH0
+DESC=Timer 0 High
+ADDR=RAM_DIR(0x8C)
+SIZE=0x08
+
+NAME=TL1
+DESC=Timer 1 Low
+ADDR=RAM_DIR(0x8B)
+SIZE=0x08
+
+NAME=TH1
+DESC=Timer 1 High
+ADDR=RAM_DIR(0x8D)
+SIZE=0x08
+
+NAME=SCON
+DESC=Serial Control
+ADDR=RAM_DIR(0x98)
+SIZE=0x08
+
+NAME=SBUF
+DESC=Serial Buffer
+ADDR=RAM_DIR(0x99)
+SIZE=0x08
+
+NAME=IE
+DESC=Interrupt Enable
+ADDR=RAM_DIR(0xA8)
+SIZE=0x08
+
+NAME=IP
+DESC=Interrupt Priority
+ADDR=RAM_DIR(0xB8)
+SIZE=0x08
+
+# The PSW SFR contains:
+#     carry flag
+#     auxiliary carry flag
+#     overflow flag
+#     parity flag
+
+NAME=PSW
+DESC=Power Status Word
+ADDR=RAM_DIR(0xD0)
+SIZE=0x08
+
+NAME=ACC
+DESC=Accumulator
+ADDR=RAM_DIR(0xE0)
+SIZE=0x08
+
+NAME=B
+DESC=Multiply Thingy
+ADDR=RAM_DIR(0xF0)
+SIZE=0x08
+
+
+
+# Instruction prefixes
+.PRE
+# 8051 does not support this
+
+
+
+# Opcodes
+# The syntax for these will need to be extended as x86 support is added
+.OP
+
+# ACALL
+
+NAME=ACALL
+DESC=Absolute Call (page 0)
+USAGE=0x11,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0x0000)
+
+NAME=ACALL
+DESC=Absolute Call (page 1)
+USAGE=0x31,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0x2000)
+
+NAME=ACALL
+DESC=Absolute Call (page 2)
+USAGE=0x51,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0x4000)
+
+NAME=ACALL
+DESC=Absolute Call (page 3)
+USAGE=0x71,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0x6000)
+
+NAME=ACALL
+DESC=Absolute Call (page 4)
+USAGE=0x91,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0x8000)
+
+NAME=ACALL
+DESC=Absolute Call (page 5)
+USAGE=0xB1,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0xA000)
+
+NAME=ACALL
+DESC=Absolute Call (page 6)
+USAGE=0xD1,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0xC000)
+
+NAME=ACALL
+DESC=Absolute Call (page 7)
+USAGE=0xF1,u8_0
+SYNTAX=u8_0
+ACTION=CALL(%PC&0x1F00+u8_0+0xE000)
+
+
+# ADD
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x24,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x25,u8_debug
+SYNTAX=%A,RAM_DIR(u8_debug)
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x26
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x27
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x28
+SYNTAX=%A,%R0
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x29
+SYNTAX=%A,%R1
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x2A
+SYNTAX=%A,%R2
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x2B
+SYNTAX=%A,%R3
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x2C
+SYNTAX=%A,%R4
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x2D
+SYNTAX=%A,%R5
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x2E
+SYNTAX=%A,%R6
+ACTION=nop
+
+NAME=ADD
+DESC=Add Accumulator
+USAGE=0x2F
+SYNTAX=%A,%R7
+ACTION=nop
+
+
+# ADDC
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x34,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x35,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x36
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x37
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x38
+SYNTAX=%A,%R0
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x39
+SYNTAX=%A,%R1
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x3A
+SYNTAX=%A,%R2
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x3B
+SYNTAX=%A,%R3
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x3C
+SYNTAX=%A,%R4
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x3D
+SYNTAX=%A,%R5
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x3E
+SYNTAX=%A,%R6
+ACTION=nop
+
+NAME=ADDC
+DESC=Add Accumulator (with carry)
+USAGE=0x3F
+SYNTAX=%A,%R7
+ACTION=nop
+
+
+# Absolute Jump	
+
+NAME=AJUMP
+DESC=Absolute Jump (page 0)
+USAGE=0x01,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 1)
+USAGE=0x21,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 2)
+USAGE=0x41,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 3)
+USAGE=0x61,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 4)
+USAGE=0x81,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 5)
+USAGE=0xA1,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 6)
+USAGE=0xC1,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+NAME=AJUMP
+DESC=Absolute Jump (page 7)
+USAGE=0xE1,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC&0x1F00+u8_0+0x2000)
+
+
+# ANL
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x52,u8_0
+SYNTAX=RAM_DIR(u8_0),%A
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x53,u8_0,u8_1
+SYNTAX=RAM_DIR(u8_0),u8_1
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x54,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x55,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x56
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x57
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x58
+SYNTAX=%A,%R0
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x59
+SYNTAX=%A,%R1
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x5A
+SYNTAX=%A,%R2
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x5B
+SYNTAX=%A,%R3
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x5C
+SYNTAX=%A,%R4
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x5D
+SYNTAX=%A,%R5
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x5E
+SYNTAX=%A,%R6
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND
+USAGE=0x5F
+SYNTAX=%A,%R7
+ACTION=nop
+
+# FIXME: whats the difference between these two?  Second had a / in front of the second arg
+NAME=ANL
+DESC=Bitwise AND (FIXME)
+USAGE=0x82,u8_0
+SYNTAX=%C,u8_0
+ACTION=nop
+
+NAME=ANL
+DESC=Bitwise AND (FIXME)
+USAGE=0xB0,u8_0
+SYNTAX=%C,u8_0
+ACTION=nop
+
+
+# CJNE
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xB4,u8_0,u8_1
+SYNTAX=%A,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xB5,u8_0,u8_1
+SYNTAX=%A,RAM_DIR(u8_0),u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xB6,u8_0,u8_1
+SYNTAX=RAM_INDIR(%R0),u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xB7,u8_0,u8_1
+SYNTAX=RAM_INDIR(%R1),u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xB8,u8_0,u8_1
+SYNTAX=%R0,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xB9,u8_0,u8_1
+SYNTAX=%R1,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xBA,u8_0,u8_1
+SYNTAX=%R2,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xBB,u8_0,u8_1
+SYNTAX=%R3,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xBC,u8_0,u8_1
+SYNTAX=%R4,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xBD,u8_0,u8_1
+SYNTAX=%R5,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xBE,u8_0,u8_1
+SYNTAX=%R6,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+NAME=CJNE
+DESC=Compare and Jump if Not Equal
+USAGE=0xBF,u8_0,u8_1
+SYNTAX=%R7,u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+
+# CLR
+
+NAME=CLR
+DESC=Clear Register
+USAGE=0xC2,u8_0
+SYNTAX=u8_0
+ACTION=nop
+
+NAME=CLR
+DESC=Clear Register
+USAGE=0xC3
+SYNTAX=%C
+ACTION=nop
+
+NAME=CLR
+DESC=Clear Register
+USAGE=0xE4
+SYNTAX=%A
+ACTION=nop
+
+
+# CPL
+
+NAME=CPL
+DESC=Complement Register
+USAGE=0xF4
+SYNTAX=%A
+ACTION=nop
+
+NAME=CPL
+DESC=Complement Register
+USAGE=0xB3
+SYNTAX=%C
+ACTION=nop
+
+NAME=CPL
+DESC=Complement Register
+USAGE=0xB2,u8_0
+SYNTAX=u8_0
+ACTION=nop
+
+
+NAME=DA
+DESC=Decimal Adjust
+USAGE=0xD4
+SYNTAX=
+ACTION=nop
+
+
+# DEC
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x14
+SYNTAX=%A
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x15,u8_0
+SYNTAX=RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x16
+SYNTAX=RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x17
+SYNTAX=RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x18
+SYNTAX=%R0
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x19
+SYNTAX=%R1
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x1A
+SYNTAX=%R2
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x1B
+SYNTAX=%R3
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x1C
+SYNTAX=%R4
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x1D
+SYNTAX=%R5
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x1E
+SYNTAX=%R6
+ACTION=nop
+
+NAME=DEC
+DESC=Decrement Register
+USAGE=0x1F
+SYNTAX=%R7
+ACTION=nop
+
+
+NAME=DIV
+DESC=Divide Accumulator by B
+USAGE=0x84
+SYNTAX=%A,%B
+ACTION=nop
+
+
+# DJNZ
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xD5,u8_0,s8_1
+SYNTAX=RAM_DIR(u8_0),s8_1
+ACTION=GOTO(%PC+s8_1)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xD8,s8_0
+SYNTAX=%R0,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xD9,s8_0
+SYNTAX=%R1,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xDA,s8_0
+SYNTAX=%R2,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xDB,s8_0
+SYNTAX=%R3,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xDC,s8_0
+SYNTAX=%R4,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xDD,s8_0
+SYNTAX=%R5,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xDE,s8_0
+SYNTAX=%R6,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=DJNZ
+DESC=Decrement Register and Jump if Not Zero
+USAGE=0xDF,s8_0
+SYNTAX=%R7,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+
+# INC
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x04
+SYNTAX=%A
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x05,u8_0
+SYNTAX=RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x06
+SYNTAX=RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x07
+SYNTAX=RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x08
+SYNTAX=%R0
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x09
+SYNTAX=%R1
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x0A
+SYNTAX=%R2
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x0B
+SYNTAX=%R3
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x0C
+SYNTAX=%R4
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x0D
+SYNTAX=%R5
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x0E
+SYNTAX=%R6
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0x0F
+SYNTAX=%R7
+ACTION=nop
+
+NAME=INC
+DESC=Increment Register
+USAGE=0xA3
+SYNTAX=%DPTR
+ACTION=nop
+
+
+NAME=JB
+DESC=Jump if Bit Set
+USAGE=0x20,u8_0,u8_1
+SYNTAX=u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+
+NAME=JBC
+DESC=Jump if Bit Set and Clear Bit
+USAGE=0x10,u8_0,u8_1
+SYNTAX=u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+
+NAME=JC
+DESC=Jump if Carry Set
+USAGE=0x40,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC+u8_0)
+
+# Function pointer support
+# d52 dissasembled as: jmp @a+dptr
+NAME=JMP
+DESC=Jump to Address
+USAGE=0x73 
+SYNTAX=ADD(RAM_DIR(%A),%DPTR)
+# FIXME
+# Maybe emit warning for unknown jump destination?
+#ACTION=GOTO(RAM_INDIR(%A) + %DPTR)
+ACTION=nop
+
+
+NAME=JNB
+DESC=Jump if Bit Not Set
+USAGE=0x30,u8_0,u8_1
+SYNTAX=u8_0,u8_1
+ACTION=GOTO(%PC+u8_1)
+
+
+NAME=JNC
+DESC=Jump if Carry Not Set
+USAGE=0x50,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC+u8_0)
+
+
+NAME=JNZ
+DESC=Jump if Accumulator Not Zero
+USAGE=0x70,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC+u8_0)
+
+
+NAME=JZ
+DESC=Jump if Accumulator Zero
+USAGE=0x60,u8_0
+SYNTAX=u8_0
+#ACTION=if(%A==0){CALL(%PC+u8_0)}
+ACTION=GOTO(%PC+u8_0)
+
+
+NAME=LCALL
+DESC=Long Call
+USAGE=0x12,u16_0
+SYNTAX=u16_0
+ACTION=CALL(u16_0)
+
+
+NAME=LJMP
+DESC=Long Jump
+USAGE=0x02,u16_0
+SYNTAX=u16_0
+ACTION=GOTO(u16_0)
+
+
+# MOV
+# This occupies some 60 instructions, about a quarter of the instruction set
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x76,u8_0
+SYNTAX=RAM_INDIR(%R0),u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x77,u8_0
+SYNTAX=RAM_INDIR(%R1),u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xF6
+SYNTAX=RAM_INDIR(%R0),%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xF7
+SYNTAX=RAM_INDIR(%R1),%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xA6,u8_0
+SYNTAX=RAM_INDIR(%R0),RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xA7,u8_0
+SYNTAX=RAM_INDIR(%R1),RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x74,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xE6
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xE7
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xE8
+SYNTAX=%A,%R0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xE9
+SYNTAX=%A,%R1
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xEA
+SYNTAX=%A,%R2
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xEB
+SYNTAX=%A,%R3
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xEC
+SYNTAX=%A,%R4
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xED
+SYNTAX=%A,%R5
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xEE
+SYNTAX=%A,%R6
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xEF
+SYNTAX=%A,%R7
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xE5,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xA2,u8_0
+SYNTAX=%C,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x90,u16_0
+SYNTAX=%DPTR,u16_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x78,u8_0
+SYNTAX=%R0,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x79,u8_0
+SYNTAX=%R1,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x7A,u8_0
+SYNTAX=%R2,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x7B,u8_0
+SYNTAX=%R3,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x7C,u8_0
+SYNTAX=%R4,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x7D,u8_0
+SYNTAX=%R5,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x7E,u8_0
+SYNTAX=%R6,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x7F,u8_0
+SYNTAX=%R7,u8_0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xF8
+SYNTAX=%R0,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xF9
+SYNTAX=%R1,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xFA
+SYNTAX=%R2,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xFB
+SYNTAX=%R3,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xFC
+SYNTAX=%R4,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xFD
+SYNTAX=%R5,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xFE
+SYNTAX=%R6,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xFF
+SYNTAX=%R7,%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xA8,u8_0
+SYNTAX=%R0,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xA9,u8_0
+SYNTAX=%R1,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xAA,u8_0
+SYNTAX=%R2,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xAB,u8_0
+SYNTAX=%R3,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xAC,u8_0
+SYNTAX=%R4,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xAD,u8_0
+SYNTAX=%R5,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xAE,u8_0
+SYNTAX=%R6,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xAF,u8_0
+SYNTAX=%R7,RAM_DIR(u8_0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x92,u8_0
+SYNTAX=RAM_BIT(u8_0),%C
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x75,u8_0,u8_1
+SYNTAX=RAM_DIR(u8_0),u8_1
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x86,u8_0
+SYNTAX=RAM_DIR(u8_0),RAM_INDIR(%R0)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x87,u8_0
+SYNTAX=RAM_DIR(u8_0),RAM_INDIR(%R1)
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x88,u8_0
+SYNTAX=RAM_DIR(u8_0),%R0
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x89,u8_0
+SYNTAX=RAM_DIR(u8_0),%R1
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x8A,u8_0
+SYNTAX=RAM_DIR(u8_0),%R2
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x8B,u8_0
+SYNTAX=RAM_DIR(u8_0),%R3
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x8C,u8_0
+SYNTAX=RAM_DIR(u8_0),%R4
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x8D,u8_0
+SYNTAX=RAM_DIR(u8_0),%R5
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x8E,u8_0
+SYNTAX=RAM_DIR(u8_0),%R6
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0x8F,u8_0
+SYNTAX=RAM_DIR(u8_0),%R7
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+USAGE=0xF5,u8_0
+SYNTAX=RAM_DIR(u8_0),%A
+ACTION=nop
+
+NAME=MOV
+DESC=Move Memory
+# Warning: operands are sorta reversed on this, consider,u8_1,u8_0
+USAGE=0x85,u8_0,u8_1
+SYNTAX=RAM_DIR(u8_0),RAM_DIR(u8_1)
+ACTION=nop
+
+
+# MOVC
+
+NAME=MOVC
+DESC=Move Code Memory
+USAGE=0x93
+SYNTAX=%A,ADD(RAM_INDIR(%A),%DPTR)
+#SYNTAX=
+ACTION=nop
+CYCLES=2
+
+NAME=MOVC
+DESC=Move Code Memory
+USAGE=0x83
+SYNTAX=%A,ADD(RAM_INDIR(%A),%PC)
+#SYNTAX=
+ACTION=nop
+CYCLES=1
+
+
+# MOVX
+
+NAME=MOVX
+DESC=Move Extended Memory
+USAGE=0xF0
+CYCLES=2
+SYNTAX=RAM_EXT_DIR(%DPTR),%A
+ACTION=nop
+
+NAME=MOVX
+DESC=Move Extended Memory
+USAGE=0xF2
+SYNTAX=RAM_EXT_IND(%R0),%A
+ACTION=nop
+CYCLES=2
+
+NAME=MOVX
+DESC=Move Extended Memory
+USAGE=0xF3
+SYNTAX=RAM_EXT_IND(%R1),%A
+ACTION=nop
+CYCLES=2
+
+NAME=MOVX
+DESC=Move Extended Memory
+USAGE=0xE0
+SYNTAX=%A,RAM_EXT_DIR(%DPTR)
+ACTION=nop
+CYCLES=2
+
+NAME=MOVX
+DESC=Move Extended Memory
+USAGE=0xE2
+SYNTAX=%A,RAM_EXT_IND(%R0)
+ACTION=nop
+CYCLES=2
+
+NAME=MOVX
+DESC=Move Extended Memory
+USAGE=0xE3
+SYNTAX=%A,RAM_EXT_IND(%R1)
+ACTION=nop
+CYCLES=2
+
+
+NAME=MUL
+DESC=Multiply Accumulator by B
+USAGE=0xA4
+# Implied...?
+#SYNTAX=%A,%B
+SYNTAX=
+ACTION=nop
+CYCLES=4
+
+
+NAME=NOP
+DESC=No Operation
+USAGE=0x00
+SYNTAX=
+# This ones the real deal
+ACTION=nop
+CYCLES=1
+
+
+# ORL
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x42,u8_0
+SYNTAX=RAM_DIR(u8_0),%A
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x43,u8_0,u8_1
+SYNTAX=RAM_DIR(u8_0),u8_1
+ACTION=nop
+CYCLES=2
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x44,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x45,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x46
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x47
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x48
+SYNTAX=%A,%R0
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x49
+SYNTAX=%A,%R1
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x4A
+SYNTAX=%A,%R2
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x4B
+SYNTAX=%A,%R3
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x4C
+SYNTAX=%A,%R4
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x4D
+SYNTAX=%A,%R5
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x4E
+SYNTAX=%A,%R6
+ACTION=nop
+CYCLES=1
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x4F
+SYNTAX=%A,%R7
+ACTION=nop
+CYCLES=1
+
+# CHECKME: what is the difference between these two?
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0x72,u8_0
+SYNTAX=%C,RAM_BIT(u8_0)
+ACTION=nop
+CYCLES=2
+
+NAME=ORL
+DESC=Bitwise OR
+USAGE=0xA0,u8_0
+SYNTAX=%C,RAM_BIT(u8_0)
+ACTION=nop
+CYCLES=1
+
+
+NAME=POP
+DESC=Pop Value From Stack
+USAGE=0xD0,u8_0
+SYNTAX=RAM_DIR(u8_0)
+ACTION=nop
+CYCLES=2
+
+
+NAME=PUSH
+DESC=Push Value Onto Stack
+USAGE=0xC0,u8_0
+SYNTAX=RAM_DIR(u8_0)
+ACTION=nop
+CYCLES=2
+
+
+NAME=RET
+DESC=Return From Subroutine
+USAGE=0x22
+SYNTAX=
+ACTION=RETURN()
+CYCLES=2
+
+
+NAME=RETI
+DESC=Return From Interrupt
+USAGE=0x32
+SYNTAX=
+ACTION=RETURN()
+CYCLES=2
+
+
+NAME=RL
+DESC=Rotate Accumulator Left
+USAGE=0x23
+SYNTAX=%A
+ACTION=nop
+CYCLES=1
+
+
+NAME=RLC
+DESC=Rotate Accumulator Left Through Carry
+USAGE=0x33
+SYNTAX=%A
+ACTION=nop
+CYCLES=1
+
+
+NAME=RR
+DESC=Rotate Accumulator Right
+USAGE=0x03
+SYNTAX=%A
+ACTION=nop
+CYCLES=1
+
+
+NAME=RRC
+DESC=Rotate Accumulator Right Through Carry
+USAGE=0x13
+SYNTAX=%A
+ACTION=nop
+CYCLES=1
+
+
+# SETB
+
+NAME=SETB
+DESC=Set Bit
+USAGE=0xD3
+SYNTAX=%C
+ACTION=nop
+CYCLES=1
+
+NAME=SETB
+DESC=Set Bit
+USAGE=0xD2,u8_0
+SYNTAX=RAM_BIT(u8_0)
+ACTION=nop
+CYCLES=1
+
+
+#Reladdr must be within -128 or +127
+NAME=SJMP
+DESC=Short Jump
+USAGE=0x80,u8_0
+SYNTAX=u8_0
+ACTION=GOTO(%PC+u8_0)
+CYCLES=2
+
+
+# SUBB
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x94,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x95,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x96
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x97
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x98
+SYNTAX=%A,%R0
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x99
+SYNTAX=%A,%R1
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x9A
+SYNTAX=%A,%R2
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x9B
+SYNTAX=%A,%R3
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x9C
+SYNTAX=%A,%R4
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x9D
+SYNTAX=%A,%R5
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x9E
+SYNTAX=%A,%R6
+ACTION=nop
+CYCLES=1
+
+NAME=SUBB
+DESC=Subtract From Accumulator With Borrow
+USAGE=0x9F
+SYNTAX=%A,%R7
+ACTION=nop
+CYCLES=1
+
+
+NAME=SWAP
+DESC=Swap Accumulator Nibbles
+USAGE=0xC4
+SYNTAX=%A
+ACTION=nop
+CYCLES=1
+
+
+#XCH
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xC6
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xC7
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xC8
+SYNTAX=%A,%R0
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xC9
+SYNTAX=%A,%R1
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xCA
+SYNTAX=%A,%R2
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xCB
+SYNTAX=%A,%R3
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xCC
+SYNTAX=%A,%R4
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xCD
+SYNTAX=%A,%R5
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xCE
+SYNTAX=%A,%R6
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xCF
+SYNTAX=%A,%R7
+ACTION=nop
+CYCLES=1
+
+NAME=XCH
+DESC=Exchange Bytes
+USAGE=0xC5,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+CYCLES=2
+
+
+# XCHD
+
+NAME=XCHD
+DESC=Exchange Digits
+USAGE=0xD6
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+CYCLES=1
+
+NAME=XCHD
+DESC=Exchange Digits
+USAGE=0xD7
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+CYCLES=1
+
+
+# XRL
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x62,u8_0
+SYNTAX=RAM_DIR(u8_0),%A
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x63,u8_0,u8_1
+SYNTAX=RAM_DIR(u8_0),u8_1
+ACTION=nop
+CYCLES=2
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x64,u8_0
+SYNTAX=%A,u8_0
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x65,u8_0
+SYNTAX=%A,RAM_DIR(u8_0)
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x66
+SYNTAX=%A,RAM_INDIR(%R0)
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x67
+SYNTAX=%A,RAM_INDIR(%R1)
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x68
+SYNTAX=%A,%R0
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x69
+SYNTAX=%A,%R1
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x6A
+SYNTAX=%A,%R2
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x6B
+SYNTAX=%A,%R3
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x6C
+SYNTAX=%A,%R4
+ACTION=nop		
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x6D
+SYNTAX=%A,%R5
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x6E
+SYNTAX=%A,%R6
+ACTION=nop
+CYCLES=1
+
+NAME=XRL
+DESC=Bitwise Exclusive OR
+USAGE=0x6F
+SYNTAX=%A,%R7
+ACTION=nop
+CYCLES=1
+
+
+# No documentated function uses this, treat as undefined if occurs
+NAME=UNDEF
+DESC=Undefined Instruction
+USAGE=0xA5
+SYNTAX=
+ACTION=nop
+
