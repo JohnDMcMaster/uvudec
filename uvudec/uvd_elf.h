@@ -33,9 +33,10 @@ public:
 	
 	//virtual uv_err_t getSize(int *size) = 0;
 	
-	virtual void setHeaderData(UVDData *data);
-	//Get the header data representation
-	virtual uv_err_t getHeaderData(UVDData **data);
+	//Initialize based on some raw data
+	virtual uv_err_t setHeaderData(const UVDData *data) = 0;
+	//Get the raw header data representation
+	virtual uv_err_t getHeaderData(UVDData **data) = 0;
 
 	virtual void setFileData(UVDData *data);
 	/*
@@ -49,7 +50,7 @@ public:
 public:
 	//The actual data
 	//Note that this contains the size and offset
-	UVDData *m_headerData;
+	//UVDData *m_headerData;
 	//Supporting data in the file, if present
 	UVDData *m_fileData;
 	//Needed to do string lookups
@@ -87,6 +88,10 @@ public:
 	uv_err_t getType(int *type);
 	void setType(int type);
 
+	virtual uv_err_t getHeaderData(UVDData **data);
+	virtual uv_err_t setHeaderData(const UVDData *data);
+
+#if 0
 	uv_err_t getFlags(int *flags);
 	void setFlags(int flags);
 
@@ -105,6 +110,7 @@ public:
 
 	uv_err_t getTableEntrySize(int *entrySize);
 	void setTableEntrySize(int entrySize);
+#endif
 
 public:
 	//Section name
@@ -146,6 +152,10 @@ public:
 	uv_err_t getType(int *type);
 	void setType(int type);
 
+	virtual uv_err_t getHeaderData(UVDData **data);
+	virtual uv_err_t setHeaderData(const UVDData *data);
+
+#if 0
 	uv_err_t getVirtualAddress(int *address);
 	void setVirtualAddress(int address);
 
@@ -160,6 +170,7 @@ public:
 
 	uv_err_t getAlignment(int *alignment);
 	void setAligntment(int alignment);
+#endif
 
 public:
 	//Name of this section
@@ -176,6 +187,11 @@ public:
 	
 	//Make sure s is in the string table.  Return the index if specified
 	void addString(const std::string &s, unsigned int *index);
+
+	//String table must be recalculated
+	uv_err_t getFileData(UVDData **data);
+	//Only rebuilt when needed
+	uv_err_t ensureCurrentStringTableData();
 
 public:
 	std::vector<std::string> m_stringTable;
@@ -194,11 +210,15 @@ public:
 	//Blank ELF file
 	UVDElf();
 	~UVDElf();
+	//Setup with default stuffs
+	uv_err_t init();
+	uv_err_t initHeader();
+	
 	static uv_err_t getFromFile(const std::string &file, UVDElf **elf);
 	uv_err_t loadFromFile(const std::string &file);
 	//Get the raw binary image of this object
 	uv_err_t constructBinary(UVDData **data);
-	uv_err_t saveToFile(std::string &file);
+	uv_err_t saveToFile(const std::string &file);
 	
 	//Set the architecture
 	//Should throw error on unknown architecture?

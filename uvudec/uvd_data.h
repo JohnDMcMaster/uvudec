@@ -21,20 +21,31 @@ class UVDData
 public:
 	UVDData();
 	virtual ~UVDData();
-	void deinit();
+	virtual void deinit();
 	
 	//Returns human readable string representation of the source
 	virtual std::string getSource();
 	
-	//Read implementations will rely on each other, you must implement at least one
-	//like read(2)
-	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize);	
-	//like getchar(1)
-	virtual int read(unsigned int offset);
-	virtual int read(unsigned int offset, std::string &s, unsigned int readSize);	
+	//Read all of the data
+	virtual uv_err_t readData(char **buffer) const;	
+	virtual uv_err_t readData(unsigned int offset, char **buffer) const;	
+	virtual uv_err_t readData(unsigned int offset, char **buffer, unsigned int bufferSize) const;	
+	virtual uv_err_t readData(unsigned int offset, std::string &s, unsigned int readSize) const;	
+	//Core readData() implementation: child classes should implement this
+	//By default, this calls read()
+	virtual uv_err_t readData(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+	
+	//WARNING: next 2 read implementations will rely on each other, you must implement at least one
+	//Somewhat dangerous for new classes...maybe should do something different
+	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+	virtual int read(unsigned int offset) const;
+	virtual int read(unsigned int offset, std::string &s, unsigned int readSize) const;	
+
+	//Try to move away from returning int
+	virtual uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
 
 	//Saves to a file
-	uv_err_t saveToFile(const std::string &file);
+	virtual uv_err_t saveToFile(const std::string &file) const;
 
 	//Read as if an array, equivilent to read with bad error checking
 	//Made to make legacy functions using buffer conform easier to new code, will be deprecated
@@ -42,12 +53,14 @@ public:
 		
 	//How big the object is
 	//That is, the first value of read(offset) that would fail
-	virtual unsigned int size();
+	virtual uint32_t size() const = 0;
+	virtual uv_err_t size(uint32_t *sizeOut) const;
 	
 	/*
 	Given a list, concatenate in order and produce output data
 	*/
-	static uv_err_t concatenate(const std::vector<UVDData *> dataVector, UVDData **dataOut);
+	static uv_err_t concatenate(const std::vector<UVDData *> &dataVector, UVDData **dataOut);
+	//static uv_err_t concatenate(const std::vector<UVDData *> dataVector, UVDDataMemory *dataOut);
 };
 
 /*
@@ -66,8 +79,8 @@ public:
 	//Returns human readable string representation of the source
 	std::string getSource();	
 
-	int read(unsigned int offset, char *buffer, unsigned int bufferSize);
-	unsigned int size();
+	int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;
+	uint32_t size() const;
 
 public:	
 	std::string m_sFile;
@@ -89,21 +102,29 @@ public:
 	UVDDataMemory(const char *buffer, unsigned int bufferSize);
 	virtual ~UVDDataMemory();
 	std::string getSource();
+	//Reallocate storage.  Buffer data and pointer is invalidated
+	uv_err_t realloc(unsigned int bufferSize);
 	
-	int read(unsigned int offset, char *buffer, unsigned int bufferSize);
+	int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;
+	uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
+	uint32_t size() const;
 	
+public:
 	char *m_buffer;
 	unsigned int m_bufferSize;
 };
 
 /*
+Purpose of this class was to given another peice of data, be able to treat it as a discrete peice over a certain range
+
 A discrete peice of data
 It is undefined if the read will occur during init or during a request to get actual data
 Idea was to be able to setup for file I/O, but delay the action unless needed
-This is attached to a specific UVDData that it is read from
+T mkjhis is attached to a specific UVDData that it is read from
 
 This class is misguided, it should have descended from UVDData
 ...and now it does.  Stay to watch the fireworks...hopefully none
+FIXME: convert these to the UVDData APIs
 */
 class UVDDataChunk : public UVDData
 {
@@ -115,14 +136,6 @@ public:
 	uv_err_t init(UVDData *data, unsigned int minAddr, unsigned int maxAddr);
 	~UVDDataChunk();
 	
-	uv_err_t getData(const char *&buffer);
-	//Copy to preallocated buffer
-	uv_err_t copyData(char *buffer);
-	//Allocate memory and return it
-	uv_err_t copyData(char **buffer);
-	//Saves particular section to a file
-	uv_err_t saveToFile(const std::string &file);
-	
 	bool operator==(UVDDataChunk &other);
 
 	//min/max representation
@@ -131,18 +144,25 @@ public:
 
 	//offset/size representation
 	uint32_t getOffset();
-	uint32_t getSize();
+	uint32_t size() const;
 
+	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
 
 private:
+	//Internal function to get a reference to the data buffer
+	uv_err_t getData(const char * &buffer) const;
+#ifdef UGLY_READ_HACK
 	//If data has not been read yet, read it
 	uv_err_t ensureRead();
+#endif //UGLY_READ_HACK
 
 public:
 	UVDData *m_data;
 	unsigned int m_offset;
 	unsigned int m_bufferSize;
+#ifdef UGLY_READ_HACK
 	char *m_buffer;
+#endif //UGLY_READ_HACK
 };
 
 #ifdef __cplusplus

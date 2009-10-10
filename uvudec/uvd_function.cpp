@@ -28,17 +28,18 @@ uv_err_t UVDBinaryFunctionCodeShared::getHash(std::string &hash)
 
 uv_err_t UVDBinaryFunctionCodeShared::computeHash()
 {
-	const char *buff = NULL;
+	char *buff = NULL;
 	uint32_t buffSize = 0;
 
 	//Fetch our data
 	uv_assert_ret(m_dataChunk);
-	uv_assert_err_ret(m_dataChunk->getData(buff));
-	buffSize = m_dataChunk->getSize();
+	uv_assert_err_ret(m_dataChunk->readData(&buff));
+	buffSize = m_dataChunk->size();
 
 	//And compute an MD5
 	uv_assert_err_ret(uv_md5(buff, buffSize, m_MD5));
 	uv_assert_ret(!m_MD5.empty());
+	free(buff);
 	
 	return UV_ERR_OK;
 }

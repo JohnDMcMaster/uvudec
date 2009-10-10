@@ -10,6 +10,7 @@ JohnDMcMaster@gmail.com
 #include "uv_util.h"
 #include <string>
 #include <vector>
+#include <string.h>
 
 UVDConfig *g_config = NULL;
 

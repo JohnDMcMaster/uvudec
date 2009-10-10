@@ -23,6 +23,7 @@ These needed to be reworked for speed at some point
 #include "uv_debug.h"
 #include "uv_error.h"
 #include "uvd.h"
+#include <linux/limits.h>
 
 /* Get the name and args as a string */
 uv_err_t uvd_parse_func(const char *text, char **name, char **content);

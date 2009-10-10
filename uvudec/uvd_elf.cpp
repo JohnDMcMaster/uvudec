@@ -18,7 +18,7 @@ UVDElfHeaderEntry
 
 UVDElfHeaderEntry::UVDElfHeaderEntry()
 {
-	m_headerData = NULL;
+	//m_headerData = NULL;
 	m_fileData = NULL;
 	m_elf = NULL;
 }
@@ -27,17 +27,47 @@ UVDElfHeaderEntry::~UVDElfHeaderEntry()
 {
 }
 
-void UVDElfHeaderEntry::setHeaderData(UVDData *data)
-{
-	m_headerData = data;
-}
-
-uv_err_t UVDElfHeaderEntry::getHeaderData(UVDData **data)
+uv_err_t UVDElfProgramHeaderEntry::setHeaderData(const UVDData *data)
 {
 	uv_assert_ret(data);
-	//This is required
-	uv_assert_ret(m_headerData);
-	*data = m_headerData;
+	
+	int toRead = sizeof(m_programHeader);
+	uv_assert_ret(data->read(0, (char *)&m_programHeader, toRead) == toRead);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSectionHeaderEntry::setHeaderData(const UVDData *data)
+{
+	uv_assert_ret(data);
+	
+	int toRead = sizeof(m_sectionHeader);
+	uv_assert_ret(data->read(0, (char *)&m_sectionHeader, toRead) == toRead);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfProgramHeaderEntry::getHeaderData(UVDData **headerDataOut)
+{
+	UVDData *headerData = NULL;
+	
+	headerData = new UVDDataMemory((const char *)&m_programHeader, sizeof(m_programHeader));
+	uv_assert_ret(headerData);
+	
+	uv_assert_ret(headerDataOut);
+	*headerDataOut = headerData;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSectionHeaderEntry::getHeaderData(UVDData **headerDataOut)
+{
+	UVDData *headerData = NULL;
+	
+	headerData = new UVDDataMemory((const char *)&m_sectionHeader, sizeof(m_sectionHeader));
+	uv_assert_ret(headerData);
+
+	uv_assert_ret(headerDataOut);
+	*headerDataOut = headerData;
 	return UV_ERR_OK;
 }
 
@@ -77,63 +107,90 @@ void UVDElfSectionHeaderEntry::setName(const std::string &sName)
 	m_sName = sName;
 }
 
-#if 0
 uv_err_t UVDElfSectionHeaderEntry::getName(int *nameIndex)
 {
+	uv_assert_ret(nameIndex);
+	*nameIndex = m_sectionHeader.sh_name;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setName(int nameIndex)
 {
+	m_sectionHeader.sh_name = nameIndex;
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getType(int *type)
 {
+	uv_assert_ret(type);
+	*type = m_sectionHeader.sh_type;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setType(int type)
 {
+	m_sectionHeader.sh_type = type;
 }
 
+#if 0
 uv_err_t UVDElfSectionHeaderEntry::getVirtualAddress(int *address)
 {
+	uv_assert_ret(type);
+	*address = m_sectionHeader.sh_addr;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setVirtualAddress(int address)
 {
+	m_sectionHeader.sh_addr = address;
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getPhysicalAddress(int *address)
 {
+	uv_assert_ret(type);
+	*nameIndex = m_sectionHeader.sh_name;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setPhysicalAddress(int address)
 {
+	m_sectionHeader.sh_name = nameIndex;
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getMemorySize(int *size)
 {
+	uv_assert_ret(type);
+	*nameIndex = m_sectionHeader.sh_name;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setMemorySize(int size)
 {
+	m_sectionHeader.sh_name = nameIndex;
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getFlags(int *flags)
 {
+	uv_assert_ret(type);
+	*flags = m_sectionHeader.sh_flags;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setFlags(int flags)
 {
+	m_sectionHeader.sh_flags = flags;
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getAlignment(int *alignment)
 {
+	uv_assert_ret(type);
+	*alignment = m_sectionHeader.sh_addralign;
+	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setAligntment(int alignment)
 {
+	m_sectionHeader.sh_addralign = alignment;
 }
-
 #endif
 
 /*
@@ -256,9 +313,9 @@ uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 
 	//Check for magic
 	if( m_elfHeader.e_ident[EI_MAG0] != ELFMAG0
-			|| m_elfHeader.e_ident[EI_MAG0] != ELFMAG0
-			|| m_elfHeader.e_ident[EI_MAG0] != ELFMAG0
-			|| m_elfHeader.e_ident[EI_MAG0] != ELFMAG0 )
+			|| m_elfHeader.e_ident[EI_MAG1] != ELFMAG1
+			|| m_elfHeader.e_ident[EI_MAG2] != ELFMAG2
+			|| m_elfHeader.e_ident[EI_MAG3] != ELFMAG3 )
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
@@ -288,7 +345,7 @@ uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 		uv_assert_err_ret(dataChunk->init(m_data, start, start + toRead));
 	
 		//Data will be at uvd_max sizeof(program_header) as per above uvd_min() statement
-		dataChunk->copyData((char *)&pSection->m_programHeader);
+		dataChunk->read(0, (char *)&pSection->m_programHeader, sizeof(pSection->m_programHeader));
 
 		m_programHeaderEntries.push_back(pSection);
 	}
@@ -312,10 +369,110 @@ uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 		uv_assert_err_ret(dataChunk->init(m_data, start, start + toRead));
 		
 		//Data will be at uvd_max sizeof(section_header) as per above uvd_min() statement
-		dataChunk->copyData((char *)&pSection->m_sectionHeader);
+		dataChunk->read(0, (char *)&pSection->m_sectionHeader, sizeof(pSection->m_sectionHeader));
 	
 		m_sectionHeaderEntries.push_back(pSection);
 	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::init()
+{
+	/*
+	Setup default sections
+	We could discard these later if needed
+	*/
+	UVDElfSectionHeaderEntry *nullSection = NULL;
+	UVDElfSectionHeaderEntry *stringTableSection = NULL;
+	//XXX: should add SHT_SYMTAB entry?
+
+	//Fill in some defaults
+	uv_assert_err_ret(initHeader());
+
+	//Add the null section
+	//According to TIS, only SHT_NULL is defined, other fields are undefined
+	nullSection = new UVDElfSectionHeaderEntry();
+	uv_assert_ret(nullSection);
+	nullSection->setType(SHT_NULL);
+	uv_assert_err_ret(addSectionHeaderSection(nullSection));
+
+	//Add string table section
+	stringTableSection = new UVDElfStringTableSectionHeaderEntry();
+	uv_assert_ret(stringTableSection);
+	stringTableSection->setType(SHT_STRTAB);
+	uv_assert_err_ret(addSectionHeaderSection(stringTableSection));
+	//Register the index (only SHT_NULL was before this)
+	m_elfHeader.e_shstrndx = 1;
+
+	//Null string in string table must be first element
+	uv_assert_err_ret(addString(""));	
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::initHeader()
+{
+	//Header
+	//Magic
+	m_elfHeader.e_ident[EI_MAG0] = ELFMAG0;
+	m_elfHeader.e_ident[EI_MAG1] = ELFMAG1;
+	m_elfHeader.e_ident[EI_MAG2] = ELFMAG2;
+	m_elfHeader.e_ident[EI_MAG3] = ELFMAG3;
+	//Data class
+	m_elfHeader.e_ident[EI_CLASS] = ELFCLASS32;
+	//Data encoding...arbitrarily set to little endian since thats what GCC does
+	m_elfHeader.e_ident[EI_DATA] = ELFDATA2LSB;
+	//Must be set to this value
+	m_elfHeader.e_ident[EI_VERSION] = EV_CURRENT;
+	//Reserved, must be set to 0
+	for( int i = EI_NIDENT; i < EI_PAD; ++i )
+	{
+		m_elfHeader.e_ident[i] = 0;
+	}
+
+	//Relocatable object
+	m_elfHeader.e_type = ET_REL;
+	//Default to x86...just because
+	m_elfHeader.e_machine = EM_386;
+	//Same as e_ident[EI_VERSION]
+	m_elfHeader.e_version = EV_CURRENT;
+	//Assume non-executable, would have to be filled in later anyway
+	m_elfHeader.e_entry = 0;
+	//This is relocatable
+	m_elfHeader.e_phoff = 0;
+	//This is relocatable
+	m_elfHeader.e_shoff = 0;
+	//Assume no processor flags
+	m_elfHeader.e_flags = 0;
+	//No special padding
+	m_elfHeader.e_ehsize = sizeof(m_elfHeader);
+	//Default size
+	m_elfHeader.e_phentsize = sizeof(Elf32_Phdr);
+	//This will be dynamically adjusted, start at 0
+	m_elfHeader.e_phnum = 0;
+	//Default size
+	m_elfHeader.e_shentsize = sizeof(Elf32_Shdr);
+	//This will be dynamically adjusted, start at 0
+	m_elfHeader.e_shnum = 0;
+	//Relocatable
+	m_elfHeader.e_shstrndx = 0;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::getUVDElf(UVDElf **elfOut)
+{
+	UVDElf *elf = NULL;
+	
+	elf = new UVDElf();
+	uv_assert_ret(elf);
+	
+	//Fill in some basic data into the ELF header
+	uv_assert_err_ret(elf->init());
+	
+	uv_assert_ret(elfOut);
+	*elfOut = elf;
 
 	return UV_ERR_OK;
 }
@@ -330,7 +487,7 @@ uv_err_t UVDElf::getStringTableSectionHeaderEntry(UVDElfStringTableSectionHeader
 	//It should not be 0 (which is defined to be SHT_NULL), a good error check
 	uv_assert_ret(stringTableSectionHeaderIndex != 0);
 	//Make sure index is valid
-	uv_assert_ret(m_sectionHeaderEntries.size() < stringTableSectionHeaderIndex);
+	uv_assert_ret(stringTableSectionHeaderIndex < m_sectionHeaderEntries.size());
 	
 	//Grab it
 	section = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(m_sectionHeaderEntries[stringTableSectionHeaderIndex]);
@@ -375,6 +532,62 @@ void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsi
 	m_stringTable.push_back(sIn);
 }
 
+uv_err_t UVDElfStringTableSectionHeaderEntry::ensureCurrentStringTableData()
+{
+	//If our data object didn't previously exist, create it
+	if( m_fileData == NULL )
+	{
+		m_fileData = new UVDDataMemory(0);
+	}
+	uv_assert_ret(m_fileData);
+
+	//Construct the data table
+	//Is there a way we can check for dirty?
+	
+	//Check needed size
+	unsigned int dataSize = 0;
+	//First element should be empty (null) string
+	uv_assert_ret(m_stringTable.size() >= 1);
+	uv_assert_ret(m_stringTable[0].empty());
+	for( std::vector<std::string>::iterator iter = m_stringTable.begin(); iter != m_stringTable.end(); ++iter )
+	{
+		std::string s = *iter;
+		//Include null space
+		dataSize += s.size() + 1;
+	}
+	
+	//Reallocate space, if needed
+	UVDDataMemory *fileData = dynamic_cast<UVDDataMemory *>(m_fileData);
+	uv_assert_err_ret(fileData->realloc(dataSize));
+
+	//And copy strings in
+	unsigned int offset = 0;
+	for( std::vector<std::string>::iterator iter = m_stringTable.begin(); iter != m_stringTable.end(); ++iter )
+	{
+		std::string s = *iter;
+		//Include null space
+		unsigned int bufferSize = s.size() + 1;
+
+		uv_assert_err_ret(m_fileData->writeData(offset, s.c_str(), bufferSize));		
+		offset += bufferSize;
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfStringTableSectionHeaderEntry::getFileData(UVDData **dataOut)
+{
+	//Make sure our file data is current
+	uv_assert_err_ret(ensureCurrentStringTableData());
+	//String table file data is required
+	uv_assert_ret(m_fileData);
+
+	//Done, assign and return
+	uv_assert_ret(dataOut);
+	*dataOut = m_fileData;
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDElf::addString(const std::string &s, unsigned int *index)
 {
 	UVDElfStringTableSectionHeaderEntry *stringTableEntry = NULL;
@@ -402,8 +615,9 @@ uv_err_t UVDElf::getStringRelocatableElement(const std::string &s, UVDRelocatabl
 	uv_assert_err_ret(getStringTableSectionHeaderEntry(&stringTableEntry));
 	uv_assert_ret(stringTableEntry);
 	//And get the file data associated with it
-	uv_assert_ret(stringTableEntry->getFileData(&stringTableData));
-		
+	uv_assert_err_ret(stringTableEntry->getFileData(&stringTableData));
+	uv_assert_ret(stringTableData);
+	
 	relocatable = new UVDSelfLocatingRelocatableElement(relocationManager, stringTableData, stringTableIndex);
 	uv_assert_ret(relocatable);
 	uv_assert_ret(relocatableOut);
@@ -449,8 +663,7 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 
 	//Core sections
 	
-
-	//FIXME: the program and section header loops are virtually the same, reduce the code somehow
+	//TODO: the program and section header loops are virtually the same, reduce the code somehow
 
 	//Program header entries
 	for( std::vector<UVDElfProgramHeaderEntry *>::size_type i = 0; i < m_programHeaderEntries.size(); ++i )
@@ -498,6 +711,7 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 			headerSupportingData.push_back(supportingRelocatable);
 		}
 	}
+	m_elfHeader.e_phnum = m_programHeaderEntries.size();
 	
 	//Section header entries
 	// sh_name, sh_offset, sh_link need relocation
@@ -526,8 +740,9 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 		uv_assert_err_ret(getStringRelocatableElement(entry->m_sName, &nameRelocatable, &elfRelocationManager));
 		//sh_name is first element, see elf.h
 		unsigned int nameOffset = 0;
+		unsigned int nameSize = 4 /*sizeof(Elf32_Shdr.sh_name)*/;
 		//Create a fixup to that item at given offset within the header chunk
-		nameFixup = new UVDRelocationFixup(nameRelocatable, nameOffset);
+		nameFixup = new UVDRelocationFixup(nameRelocatable, nameOffset, nameSize);
 		uv_assert_ret(nameFixup);
 		//Register that offset to the header chunk
 		headerRelocatable->addFixup(nameFixup);
@@ -561,6 +776,7 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 			headerSupportingData.push_back(supportingRelocatable);
 		}
 	}
+	m_elfHeader.e_shnum = m_sectionHeaderEntries.size();
 	
 	//Now pack in the sections we were waiting on after the headers
 	for( std::vector<UVDRelocatableData *>::size_type i = 0; i < headerSupportingData.size(); ++i )
@@ -574,15 +790,19 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 	
 	//Compute the final object
 	uv_assert_err_ret(elfRelocationManager.applyPatch(dataOut));
+	uv_assert_ret(*dataOut);
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDElf::saveToFile(std::string &file)
+uv_err_t UVDElf::saveToFile(const std::string &file)
 {
 	UVDData *data = NULL;
+	//Get the raw binary data
 	uv_assert_err_ret(constructBinary(&data));
 	uv_assert_ret(data);
+	//And save it
+	uv_assert_err_ret(data->saveToFile(file));
 	
 	return UV_ERR_OK;
 }

@@ -113,8 +113,8 @@ UVDMemoryLocation::UVDMemoryLocation(unsigned int min_addr, unsigned int max_add
 bool UVDMemoryLocation::intersects(UVDMemoryLocation other) const
 {
 	//A aaaa B abababa A bbbbb B
-	return other.m_min_addr <= m_max_addr && other.m_max_addr >= m_min_addr
-			|| m_min_addr <= other.m_max_addr && m_max_addr >= other.m_min_addr;
+	return (other.m_min_addr <= m_max_addr && other.m_max_addr >= m_min_addr)
+			|| (m_min_addr <= other.m_max_addr && m_max_addr >= other.m_min_addr);
 }
 
 int UVDMemoryLocation::compareStatic(const UVDMemoryLocation *l, const UVDMemoryLocation *r) 

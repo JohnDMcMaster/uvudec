@@ -33,13 +33,14 @@ Ex:
 -a reference to another data section within the ELF file
 We may need to do a relative jump patch, which is not just an absolute address
 Base class does absolute addresses as this is the most common behavior
+Size is in bytes
 */
 class UVDRelocatableElement;
 class UVDRelocationFixup
 {
 public:
 	UVDRelocationFixup();
-	UVDRelocationFixup(UVDRelocatableElement *symbol, unsigned int offset);
+	UVDRelocationFixup(UVDRelocatableElement *symbol, unsigned int offset, unsigned int size);
 	~UVDRelocationFixup();
 	
 	//Apply the patch to this data
@@ -53,6 +54,9 @@ public:
 	//The position to apply the patch
 	//Relative to the data element passed in
 	unsigned int m_offset;
+	//How many bytes to apply to, in bytes
+	//Some data may use 4 byte addressing, other spots 1, for example
+	unsigned int m_size;
 };
 
 /*
@@ -92,8 +96,11 @@ public:
 	virtual ~UVDRelocatableElement();
 	
 	virtual void setDynamicValue(int dynamicValue);
+	virtual uv_err_t getDynamicValue(char const **dynamicValue);
+	/*
 	virtual int getDynamicValue(void);
 	virtual uv_err_t getDynamicValue(int *dynamicValue);
+	*/
 	
 public:
 	//Needed once we fix up all the values
@@ -115,7 +122,7 @@ public:
 	UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDRelocatableData *relocatableData, unsigned int offset = 0);
 	//Raw data structure
 	UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDData *data, unsigned int offset = 0);
-	virtual uv_err_t getDynamicValue(int *dynamicValue);
+	virtual uv_err_t getDynamicValue(char const **dynamicValue);
 
 public:
 	//List list we will be searching
@@ -140,16 +147,17 @@ public:
 	~UVDRelocationManager();
 	
 	//A symbol or similar concept that will be resolved later
-	void addRelocatableElement(UVDRelocatableElement *element);
+	uv_err_t addRelocatableElement(UVDRelocatableElement *element);
 	//A peice of data requiring the symbols above to be placed
 	//The symbols above will likely be contained somehow in these peices 
-	void addRelocatableData(UVDRelocatableData *data);
+	uv_err_t addRelocatableData(UVDRelocatableData *data);
 	
 	//Do linker like actions to relocate the data
 	//Generates a resulting final peice of data from concatentating all the peices together
-	uv_err_t applyPatch(UVDData *data);
 	//This version allocates the data
 	uv_err_t applyPatch(UVDData **data);
+	
+	//uv_err_t getDataSize(int *dataSize);
 
 public:
 	//All of the "symbols" we must keep track of

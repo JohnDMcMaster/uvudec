@@ -11,6 +11,9 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include "uvd_types.h"
 #include "uvd_format.h"
 #include "main.h"
+#include <string.h>
+#include <vector>
+#include <string>
 
 UVDInstructionShared::UVDInstructionShared()
 {

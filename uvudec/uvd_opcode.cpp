@@ -1,3 +1,4 @@
+#include <string.h>
 #include <string>
 #include <vector>
 #include "uv_util.h"

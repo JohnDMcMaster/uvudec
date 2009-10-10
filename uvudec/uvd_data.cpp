@@ -35,7 +35,49 @@ std::string UVDData::getSource()
 	return "";
 }
 
-int UVDData::read(unsigned int offset, char *buffer, unsigned int bufferSize)
+uv_err_t UVDData::readData(char **buffer) const
+{
+	unsigned int dataSize = size();
+	return UV_DEBUG(readData(0, buffer, dataSize));
+}
+
+uv_err_t UVDData::readData(unsigned int offset, char **buffer) const
+{
+	unsigned int dataSize = size();
+	return UV_DEBUG(readData(offset, buffer, dataSize));
+}
+
+uv_err_t UVDData::readData(unsigned int offset, char **bufferOut, unsigned int bufferSize) const
+{
+	char *buffer = NULL;
+	
+	buffer = (char *)malloc(bufferSize);
+	uv_assert_ret(buffer);
+	
+	uv_assert_err_ret(readData(offset, buffer, bufferSize));
+	
+	uv_assert_ret(bufferOut);
+	*bufferOut = buffer;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::readData(unsigned int offset, char *buffer, unsigned int bufferSize) const
+{
+	int readVal = read(offset, buffer, bufferSize);
+	uv_assert_ret(readVal >= 0);
+	uv_assert_ret(((unsigned int)readVal) == bufferSize);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::readData(unsigned int offset, std::string &s, unsigned int readSize) const
+{
+	int readValue = read(offset, s, readSize);
+	uv_assert_ret(readValue >= 0);
+	uv_assert_ret(((unsigned int)readValue) == readSize);
+	return UV_ERR_OK;
+}
+
+int UVDData::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
 	unsigned int end = offset + bufferSize;
 	unsigned int i = 0;
@@ -61,10 +103,10 @@ int UVDData::read(unsigned int offset, char *buffer, unsigned int bufferSize)
 	return i;
 }
 
-int UVDData::read(unsigned int offset)
+int UVDData::read(unsigned int offset) const
 {
-	char c;
-	int ret;
+	char c = 0;
+	int ret = 0;
 	
 	//UV_ENTER();
 
@@ -80,7 +122,7 @@ int UVDData::read(unsigned int offset)
 	return (unsigned int)(unsigned char)c;
 }
 
-int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize)
+int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize) const
 {
 	char *buff = NULL;
 	int rc = 0;
@@ -97,8 +139,23 @@ int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize)
 	return rc;
 }
 
-unsigned int UVDData::size()
+uv_err_t UVDData::writeData(unsigned int offset, const char *buffer, unsigned int bufferSize)
 {
+	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+uv_err_t UVDData::size(uint32_t *sizeOut) const
+{
+	uv_assert_ret(sizeOut);
+	*sizeOut = size();
+	return UV_ERR_OK;
+}
+
+/*
+uint32_t UVDData::size() const
+{
+printf("Size read\n");
+fflush(stdout);
 	int i = 0;
 
 	//UV_ENTER();
@@ -112,6 +169,61 @@ unsigned int UVDData::size()
 		++i;
 	}
 }
+*/
+
+static uv_err_t getDataSize(const std::vector<UVDData *> &dataVector, unsigned int *dataSizeOut)
+{
+	unsigned int dataSize = 0;
+	
+	for( std::vector<UVDData *>::const_iterator iter = dataVector.begin(); iter != dataVector.end(); ++iter )
+	{
+		UVDData *data = *iter;
+
+		uv_assert_ret(data);
+		dataSize += data->size();
+	}
+	uv_assert_ret(dataSizeOut);
+	*dataSizeOut = dataSize;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::concatenate(const std::vector<UVDData *> &dataVector, UVDData **dataOut)
+{
+	unsigned int expectedSize = 0;
+	unsigned int writePos = 0;
+	UVDDataMemory *fullData = NULL;
+	
+	uv_assert_err_ret(getDataSize(dataVector, &expectedSize));
+	fullData = new UVDDataMemory(expectedSize);
+	uv_assert_ret(fullData);
+	
+	for( std::vector<UVDData *>::const_iterator iter = dataVector.begin(); iter != dataVector.end(); ++iter )
+	{
+		UVDData *data = *iter;
+		char *bufferTemp = NULL;
+
+		uv_assert_ret(data);
+		//Get a copy of all data
+		uv_assert_err_ret(data->readData(0, &bufferTemp, data->size()));	
+		//And copy it into the new data element
+		uv_assert_err_ret(fullData->writeData(writePos, bufferTemp, data->size()));
+
+		free(bufferTemp);
+		bufferTemp = NULL;
+		//Update our offset		
+		writePos += data->size();
+	}
+	
+	uv_assert_ret(dataOut);
+	*dataOut = fullData;
+
+	return UV_ERR_OK;
+}
+
+/*
+UVDDataFile
+*/
 
 UVDDataFile::UVDDataFile()
 {
@@ -180,7 +292,7 @@ std::string UVDDataFile::getSource()
 	return m_sFile;
 }
 
-unsigned int UVDDataFile::size()
+uint32_t UVDDataFile::size() const
 {
 	struct stat statStruct;
 
@@ -190,10 +302,10 @@ unsigned int UVDDataFile::size()
 	{
 		return 0;
 	}
-	return (unsigned int)statStruct.st_size;
+	return (uint32_t)statStruct.st_size;
 }
 
-int UVDDataFile::read(unsigned int offset, char *buffer, unsigned int bufferSize)
+int UVDDataFile::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
 	int readRc = 0;
 	//UV_ENTER();
@@ -218,6 +330,10 @@ int UVDDataFile::read(unsigned int offset, char *buffer, unsigned int bufferSize
 	*/
 	return readRc;
 }
+
+/*
+UVDDataMemory
+*/
 
 UVDDataMemory::UVDDataMemory(unsigned int bufferSize)
 {
@@ -252,6 +368,39 @@ UVDDataMemory::~UVDDataMemory()
 	m_buffer = NULL;
 }
 
+uint32_t UVDDataMemory::size() const
+{
+	return m_bufferSize;
+}
+
+uv_err_t UVDDataMemory::realloc(unsigned int bufferSize)
+{
+	//No change?
+	if( bufferSize == m_bufferSize )
+	{
+		return UV_ERR_OK;
+	}
+	free(m_buffer);
+	//In case we can't realloc
+	m_bufferSize = 0;
+	m_buffer = (char *)malloc(bufferSize);
+	uv_assert_ret(m_buffer);
+	m_bufferSize = bufferSize;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDDataMemory::writeData(unsigned int offset, const char *buffer, unsigned int bufferSize)
+{
+	//Do we have enough space?
+	uv_assert_ret(m_bufferSize >= bufferSize + offset);
+	uv_assert_ret(buffer);
+	uv_assert_ret(m_buffer);
+	//Do the copy
+	memcpy(m_buffer + offset, buffer, bufferSize);
+
+	return UV_ERR_OK;
+}
+
 std::string UVDDataMemory::getSource()
 {
 	char buffer[64];
@@ -259,7 +408,7 @@ std::string UVDDataMemory::getSource()
 	return std::string(buffer);
 }
 
-int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSize)
+int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
 	if( offset > m_bufferSize )
 	{
@@ -281,7 +430,9 @@ UVDDataChunk::UVDDataChunk()
 	m_data = NULL;
 	m_offset = 0;
 	m_bufferSize = 0;
+#ifdef UGLY_READ_HACK
 	m_buffer = NULL;
+#endif //UGLY_READ_HACK
 }
 
 uv_err_t UVDDataChunk::init(UVDData *data)
@@ -293,14 +444,17 @@ uv_err_t UVDDataChunk::init(UVDData *data)
 uv_err_t UVDDataChunk::init(UVDData *data, unsigned int minAddr, unsigned int maxAddr)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
+#ifdef UGLY_READ_HACK
 	unsigned int dataSize = maxAddr - minAddr;
 	int readRc = -1;
+#endif //UGLY_READ_HACK
 	
 	uv_assert_ret(maxAddr >= minAddr);
 	
 	m_offset = minAddr;
 	m_bufferSize = maxAddr - minAddr;
 	
+#ifdef UGLY_READ_HACK
 	printf_debug("Constructing block of size: 0x%.8X\n", dataSize);
 	m_buffer = (char *)malloc(dataSize * sizeof(char));
 	uv_assert(m_buffer);
@@ -308,19 +462,25 @@ uv_err_t UVDDataChunk::init(UVDData *data, unsigned int minAddr, unsigned int ma
 	readRc = data->read(minAddr, m_buffer, dataSize);
 	uv_assert(readRc >= 0);
 	uv_assert(((unsigned int)readRc) == dataSize);
+#endif //UGLY_READ_HACK
 	
 	rc = UV_ERR_OK;
 
+#ifdef UGLY_READ_HACK
 error:
+#endif //UGLY_READ_HACK
 	return UV_DEBUG(rc);
 }
 
 UVDDataChunk::~UVDDataChunk()
 {
+#ifdef UGLY_READ_HACK
 	free(m_buffer);
 	m_buffer = NULL;
+#endif
 }
 
+#ifdef UGLY_READ_HACK
 uv_err_t UVDDataChunk::ensureRead()
 {
 	/*
@@ -342,7 +502,7 @@ uv_err_t UVDDataChunk::ensureRead()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDataChunk::getData(const char * &buffer)
+uv_err_t UVDDataChunk::getData(const char * &buffer) const
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
@@ -357,37 +517,33 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVDDataChunk::copyData(char *buffer)
+int UVDDataChunk::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
 	const char *pData = NULL;
-
+	unsigned int dataSize = size();
+	unsigned int readSize = dataSize;
+	
+	//Direct buffer overflow?
+	if( offset > dataSize )
+	{
+		return -1;
+	}
+	
+	//Default to read into entire buffer
+	readSize = bufferSize;
+	//Read only partial if we'd run out of room
+	if( offset + bufferSize > dataSize )
+	{
+		//Read only remaining data then
+		readSize = dataSize - offset;
+	}
+	
 	uv_assert_err_ret(getData(pData));
 
 	uv_assert_ret(buffer);
-	memcpy(buffer, pData, m_bufferSize);
+	memcpy(buffer, pData + offset, readSize);
 
 	return UV_ERR_OK;
-}
-
-uv_err_t UVDDataChunk::copyData(char **bufferOut)
-{
-	const char *pData = NULL;
-	char *buffer = NULL;
-	
-	uv_assert_err_ret(getData(pData));
-	buffer = (char *)malloc(m_bufferSize * sizeof(char));
-	uv_assert_ret(buffer);
-	memcpy(buffer, pData, m_bufferSize);
-	
-	uv_assert_ret(bufferOut);
-	*bufferOut = buffer;
-
-	return UV_ERR_OK;
-}
-	
-uv_err_t UVDDataChunk::saveToFile(const std::string &file)
-{
-	return UV_DEBUG(writeFile(file, m_buffer, m_bufferSize));
 }
 
 bool UVDDataChunk::operator==(UVDDataChunk &other)
@@ -413,6 +569,71 @@ bool UVDDataChunk::operator==(UVDDataChunk &other)
 	return !memcmp(m_buffer, other.m_buffer, m_bufferSize);
 }
 
+#else //UGLY_READ_HACK
+
+int UVDDataChunk::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
+{
+	uv_assert_ret(m_data);
+	//No caching, but works
+	uv_assert_err_ret(m_data->read(m_offset + offset, buffer, bufferSize));
+	return UV_ERR_OK;
+}
+
+bool UVDDataChunk::operator==(UVDDataChunk &other)
+{
+	char *localBuffer = NULL;
+	char *otherBuffer = NULL;
+	
+	//Size must be equal
+	if( m_bufferSize != other.m_bufferSize )
+	{
+		return false;
+	}
+
+	//See if we don't have to read, are the positions equal?
+	if( m_data == other.m_data && m_offset == other.m_offset )
+	{
+		return true;
+	}
+	
+	//Okay, we have to play hardball
+	//Brute force compare
+	if( UV_FAILED(readData(&localBuffer)) )
+	{
+		return false;
+	}
+	if( !localBuffer )
+	{
+		return false;
+	}
+	if( UV_FAILED(other.readData(&otherBuffer)) )
+	{
+		return false;
+	}
+	if( !otherBuffer )
+	{
+		return false;
+	}	
+	bool ret = !memcmp(localBuffer, otherBuffer, m_bufferSize);
+	free(localBuffer);
+	free(otherBuffer);
+
+	return ret;
+}
+#endif //else UGLY_READ_HACK
+	
+uv_err_t UVDData::saveToFile(const std::string &file) const
+{
+	unsigned int dataSize = size();
+	char *buffer = NULL;
+	
+	uv_assert_err_ret(readData(0, &buffer, dataSize));	
+
+	uv_assert_err_ret(writeFile(file, buffer, dataSize));
+	free(buffer);
+	return UV_ERR_OK;
+}
+
 uint32_t UVDDataChunk::getMin()
 {
 	return m_offset;
@@ -428,7 +649,7 @@ uint32_t UVDDataChunk::getOffset()
 	return m_offset;
 }
 
-uint32_t UVDDataChunk::getSize()
+uint32_t UVDDataChunk::size() const
 {
 	return m_bufferSize;
 }
