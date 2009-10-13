@@ -20,18 +20,6 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include "uvd_address.h"
 #include "uvd_language.h"
 
-/*
-During parse, several things can happen:
--Exact opcode match
--A prefix
--A multibyte opcode
-
-Before this was handled by function pointers and corresponding opcode table
-Seems a solid architecture, should stick with it
-*/
-
-//typedef uv_err_t (*uv_disasm_func)(struct );
-
 UVD *g_disasm = NULL;
 std::vector<UVDMemoryLocation> g_noncodingAddresses;
 
@@ -83,110 +71,6 @@ uv_err_t disassemble(std::string file, UVDConfig *config)
 	
 error:
 	return rc;
-	
-#if 0
-	uv_err_t rc = UV_ERR_GENERAL;
-	uint8_t *dat = NULL;	
-	unsigned int dat_sz = 0;
-	unsigned int read = 0;
-
-	UV_ENTER();
-
-	g_verbose = g_verbose_init;
-	printf_debug("Initializing opcodes...\n");
-	if( UV_FAILED(uv_disasm_opcode_init()) )
-	{
-		printf("ERROR: failed 8051 init\n");
-		UV_ERR(rc);
-		goto error;
-	}
-	/*
-	Read file
-	This is raw dat, NOT null terminated string
-	*/
-	g_verbose = g_verbose_processing;
-	printf_debug("Reading program data...\n");
-	if( UV_FAILED(read_file(file, &dat, &dat_sz)) )
-	{
-		printf("Couldn't read file: %s\n", file);
-		UV_ERR(rc);
-		goto error;		
-	}
-	printf_debug("Size: 0x%x (%d)\n", dat_sz, dat_sz);
-
-	/* Process file */	
-	read = 0;
-	printf_debug("Processing data...\n\n");
-	for( ;; )
-	{ 
-		uv_err_t rc_local = UV_ERR_GENERAL;
-		struct uv_inst_t *inst = NULL;
-		const size_t buff_sz = 256;
-		char buff[buff_sz];
-		int min_pos = read;
-		
-		//printf("\nProcessing @ offset 0x%.4X...\n", read); fflush(stdout);
-		fflush(stdout);
-		if( read > g_addr_max )
-		{
-			printf("\n\nDebug break\n");
-			break;
-		}
-		
-		rc_local = uv_disasm_next(dat, dat_sz, &read, 0, 0, 0, NULL, &inst);
-		if( UV_FAILED(rc_local) )
-		{
-			printf("Failed to get next instruction\n");
-			UV_ERR(rc);
-			goto error;
-		}
-		else if( rc_local == UV_ERR_DONE )
-		{
-			break;
-		}
-		
-		/* Print it then */
-		if( UV_FAILED(print_disasm(inst, &buff[0], buff_sz)) )
-		{
-			printf("Failed to print\n");
-			UV_ERR(rc);
-			goto error;
-		}
-		
-		if( g_addr_comment )
-		{
-			printf("# 0x%.4X\n", min_pos);
-		}
-		if( g_addr_label )
-		{
-			printf("X%.4X: ", min_pos);
-		}
-
-		if( g_verbose )
-		{
-			printf("INST: 0x%.4X: %s\n\n", min_pos, &buff[0]);
-		}
-		else
-		{
-			printf("%s\n", &buff[0]);
-		}
-		uv_inst_free(inst);
-		inst = NULL;
-	}
-	
-	if( g_verbose )
-	{
-		printf("\nDone\n");
-	}
-	
-	uv_disasm_opcode_deinit();
-	
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
-#endif
-
 }
 
 static void version(void)
