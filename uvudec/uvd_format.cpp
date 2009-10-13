@@ -9,9 +9,11 @@ unsigned int g_hex_addr_print_width = 4;
 int g_addr_comment = false;
 int g_addr_label = false;
 int g_print_used = false;
-int g_called_sources = true;
+//FIXME: slow
+int g_called_sources = false;
 int g_called_count = true;
-int g_jumped_sources = true;
+//FIXME: this is relaly slow, disable by default
+int g_jumped_sources = false;
 int g_jumped_count = true;
 int g_print_string_table = false;
 int g_print_header = false;

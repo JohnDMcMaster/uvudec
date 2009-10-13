@@ -230,8 +230,8 @@ static void usage(char *program_name)
 	printf("--input=<file name>: source for data\n");
 	printf("--output=<file name>: output program (default: stdout)\n");
 	printf("--debug=<file name>: debug output (default: stdout)\n");
-	printf("--print-jumped-addresses=<bool>: whether to print information about jumped to addresses\n");
-	printf("--print-called-addresses=<bool>: whether to print information about called to addresses\n");
+	printf("--print-jumped-addresses=<bool>: whether to print information about jumped to addresses (*1)\n");
+	printf("--print-called-addresses=<bool>: whether to print information about called to addresses (*1)\n");
 	printf("--help: print this message and exit\n");
 	printf("--version: print version and exit\n");
 	printf("\n");
@@ -240,6 +240,8 @@ static void usage(char *program_name)
 	printf("\ttrue includes case insensitive \"true\", non-zero numbers (ie 1)\n");
 	printf("\tfalse includes case insensitve \"false\", 0\n");
 	//printf("--binary\n");
+	printf("\n");
+	printf("*1: WARNING: currently slow, may be fixed in future releases\n");
 }
 
 #define UVD_OPTION_FILE_STDIN		"-"
