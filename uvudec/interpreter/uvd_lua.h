@@ -11,7 +11,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 #include <string>
 
-extern "C" {
+extern "C" 
+{
 #include "lua.h"
 }
 
