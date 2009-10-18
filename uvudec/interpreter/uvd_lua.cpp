@@ -1,6 +1,8 @@
 /*
+Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #ifdef USING_LUA
@@ -11,7 +13,8 @@ JohnDMcMaster@gmail.com
 #include <string>
 #include <math.h>
 
-extern "C" {
+extern "C" 
+{
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
