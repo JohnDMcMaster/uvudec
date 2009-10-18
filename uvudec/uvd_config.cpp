@@ -184,16 +184,16 @@ error:
 
 UVDConfig::UVDConfig()
 {
+	//Don't default to an unsupported language	
 #if defined(USING_JAVASCRIPT)
-	//Seems to work good
+	//Default: javascript has the highest preformance
 	m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
 #elif defined(USING_PYTHON)
-	//Slow due to lack of working API
-	//m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
+	//Slow due to lack of working API, but works fine
+	m_configInterpreterLangauge = UVD_LANGUAGE_PYTHON;
 #elif defined(USING_LUA)
-	//Default scripting engine
 	//No bitwise operators...annoying
-	//m_configInterpreterLanguage = UVD_LANGUAGE_LUA;
+	m_configInterpreterLangauge = UVD_LANGUAGE_LUA;
 #else
 #error No valid interpreters
 #endif

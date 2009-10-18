@@ -1,0 +1,87 @@
+Copyright 2008 John McMaster
+JohnDMcMaster@gmail.com
+Licensed under the terms of the BSD license.  See LICENSE for details.
+
+UV Universal Decompiler
+
+This application is primarily targetted at embedded platforms.  These typically
+have relativly simple instruction sets that can be easily represented by a
+simple opcode configuration file.  This program will not be fast, but the
+idea is to try to make new architectures easy to support.
+
+Generic compiler target support is under development.  Currently assemblers
+and compilers are isolated, but should soon be unified.
+
+
+
+FAQ
+
+Q: How do I add support for a new processor?
+A: Look at the 8051 example.  Please send in a file you created if you found
+it remotely useful for some architecture!
+
+Q: But I need feature X for the new processor?
+A: Some features are known to be lacking that will hopefully be supported
+soon.  Contact me if you'd really like the feature and I can try to work on it
+or work with you/someone to generate a patch for it.
+
+Q: Is a GUI planned?
+A: Eventually.  Probably Python based.
+
+Q: Can I use this is a library for application X?
+A: WIth minor modifications you probably could.  That was the original intent
+and I have tried to keep it with relativly clean external interfaces to allow
+for that.  I can provide a C interface if desirable.
+
+Q: Why are object libraries distributed as hashes rather than binaries?
+A: Mostly due to legal isues.  While SDCC libraries are likely to be freely
+distributable, I'm not sure on legalities of distributing reverse engineered
+binaries.
+
+Q: What would really help this project?
+A: Embedded compilers (if its permissible to give it to me) and system images.
+
+Q: What was used to test this?
+A: An 80C32 image from a laser was the base image.  As a non-biased testing
+sample, I have 80C32 images from Cisco switches.
+
+Q: Why are assemblers listed as "compilers"?
+A: Because they're close enough for the purpose of this project.
+
+Q: Why can a compiler and an architecture be added dynamically but not
+programming languages?
+A: Serously, how often do you need to add a new language?  Too complicated and
+not enough ROI.
+
+Q: Why not use libelf for ELF support?
+A: libelf didn't appear to do the relocations for me, which was most of the
+heavy lifting.  Actual ELF files are not hard to write to, so it made much
+cleaner code not to bother and just use elf.h
+
+Building
+
+You must select an embedded interpreter to use.  The simplest, but (currently)
+slowest is to use the system's python interpeter.  Currently reccomended is to
+use SpiderApe.  Easiest way if you are having issues is to get the jumbo
+source that includes all non-trivial supporting source code.  
+
+Currently all development is done on CentOS 5.3.  There are likely to be
+errors that are trivially fixed that are generated on other platforms (ie bad
+include assumptions).  I will try to fix this as it gets closer to Alpha
+status.
+
+Notes on different interpreters:
+- SpiderApe: should be built without plugin support to make it a static
+  executable (./configure --disable-plugins).
+- Python: uses system().  Python.h APIs and boost explored, but nothing
+  feasible enough to be happy with.
+- Lua: this was abandoned since Lua dosn't have bitwise operations and would
+  have been a pain otherwise.
+
+
+Data files
+
+Support for this is still under development at the time of this writting.
+Several ways to add binary data
+-As a text file.
+
