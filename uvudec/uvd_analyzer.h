@@ -136,7 +136,7 @@ public:
 public:
 	//Name of the function
 	std::string m_sName;
-	//Langauge specific human readable syntax
+	//Language specific human readable syntax
 	std::string m_sSyntax;
 	//Calling convention.  Architecture specific
 	unsigned int m_callingConvention;

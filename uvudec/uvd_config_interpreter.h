@@ -14,7 +14,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 
 /*
 A configuration specific expression
-Do not confuse with UVDInterpreterExpression which is internal to a specific langauge
+Do not confuse with UVDInterpreterExpression which is internal to a specific Language
 Translates config file syntax into that required by the actual interpreter used
 */
 class UVDConfigExpressionInterpreter;
@@ -32,9 +32,9 @@ public:
 public:
 	//Original config directive
 	std::string m_sExpression;
-	//The real langauge representation
+	//The real Language representation
 	UVDInterpreterExpression *m_interpreterExpression;
-	//So we can get the core langauge we are compiling for and other settings
+	//So we can get the core Language we are compiling for and other settings
 	UVDConfigExpressionInterpreter *m_configExpressionInterpreter;
 };
 

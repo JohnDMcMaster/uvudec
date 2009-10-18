@@ -2,9 +2,8 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
-
 
 /*
 Original use was to store relocatable object files to aid in static analysis
@@ -198,6 +197,33 @@ public:
 };
 
 /*
+Constant data
+Things like strings (const char *), program constants, lookup tables, etc
+*/
+class UVDElfRomData
+{
+public:
+	//The actual data
+	UVDData *m_data;
+	//Relocatable element so we can figure out where it was placed
+	UVDRelocatableElement *m_relocatable;	
+};
+
+/*
+*/
+class UVDElfSymbol
+{
+public:
+};
+
+/*
+*/
+class UVDElfFunction
+{
+public:
+};
+
+/*
 An ELF (Executable and Linker Format) reader/writter for working with relocatable object files
 Focus will be on section header since original idea was only to do object file storing/loading for reloc
 */
@@ -247,6 +273,28 @@ public:
 	static uv_err_t getUVDElf(UVDElf **out);
 	
 	uv_err_t getStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut);
+
+
+	//WARNING: under development
+
+	/*
+	Biggest data to add:
+	-Functions
+	-Global variables
+	-ROM data
+	*/
+		
+	//Adds constant data to .rodata
+	//Strings and what not
+	//Considering adding to .text instead to make processing easier...but this is more proper
+	uv_err_t addROMData(UVDRomData *romData)
+
+	//Program data
+	//Add arbitrary data to the text section
+	uv_err_t addTextData(UVDElfVariable *variable);
+	uv_err_t addFunction(UVDElfVariable *variable);
+
+
 
 private:
 	//If we loaded this, pointer to the raw data source

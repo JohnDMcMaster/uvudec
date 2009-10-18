@@ -13,7 +13,7 @@ UVDBinaryFunctionCodeShared::UVDBinaryFunctionCodeShared()
 	m_compilerOptions = NULL;
 	m_dataChunk = NULL;
 
-	m_langauge = UVD_LANGUAGE_UNKNOWN;
+	m_language = UVD_LANGUAGE_UNKNOWN;
 }
 
 uv_err_t UVDBinaryFunctionCodeShared::getHash(std::string &hash)

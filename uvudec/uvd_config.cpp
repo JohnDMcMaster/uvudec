@@ -184,13 +184,19 @@ error:
 
 UVDConfig::UVDConfig()
 {
+#if defined(USING_JAVASCRIPT)
+	//Seems to work good
+	m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
+#elif defined(USING_PYTHON)
+	//Slow due to lack of working API
+	//m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
+#elif defined(USING_LUA)
 	//Default scripting engine
 	//No bitwise operators...annoying
-	//m_configInterpreterLangauge = UVD_LANGUAGE_LUA;
-	//Slow due to lack of working API
-	//m_configInterpreterLangauge = UVD_LANGUAGE_PYTHON;
-	//Seems to work good
-	m_configInterpreterLangauge = UVD_LANGUAGE_JAVASCRIPT;
+	//m_configInterpreterLanguage = UVD_LANGUAGE_LUA;
+#else
+#error No valid interpreters
+#endif
 }
 
 uv_err_t UVDConfig::readSections(const std::string config_file, std::vector<UVDConfigSection> sectionsIn)

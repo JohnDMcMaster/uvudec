@@ -2,9 +2,8 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -93,7 +92,7 @@ static void usage(char *program_name)
 	printf("--verbose-analysis: for selectivly debugging code analysis\n");
 	printf("--verbose-processing: for selectivly debugging code post-analysis\n");
 	printf("--verbose-printing: for selectivly debugging print routine\n");
-	printf("--config-language=<language>: default config interpreter langauge (plugins may require specific)\n");
+	printf("--config-language=<language>: default config interpreter language (plugins may require specific)\n");
 #ifdef USING_LUA
 	printf("\tlua: use Lua\n");
 #endif //USING_LUA
@@ -233,24 +232,24 @@ int main(int argc, char **argv)
 #ifdef USING_LUA
 			else if( sLang == "lua" )
 			{
-				config->m_configInterpreterLangauge = UVD_LANGUAGE_LUA;
+				config->m_configInterpreterLanguage = UVD_LANGUAGE_LUA;
 			}
 #endif //USING_LUA
 #ifdef USING_PYTHON
 			else if( sLang == "python" )
 			{
-				config->m_configInterpreterLangauge = UVD_LANGUAGE_PYTHON;
+				config->m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
 			}
 #endif //USING_PYTHON
 #ifdef USING_JAVASCRIPT
 			else if( sLang == "javascript" )
 			{
-				config->m_configInterpreterLangauge = UVD_LANGUAGE_JAVASCRIPT;
+				config->m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
 			}
 #endif //USING_PYTHON
 			else
 			{
-				printf("Unknown langauge: <%s>\n", cur_arg);
+				printf("Unknown language: <%s>\n", cur_arg);
 				usage(argv[0]);
 				goto error;
 			}

@@ -2,7 +2,7 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #pragma once
@@ -19,10 +19,10 @@ class UVDDecompileNotes
 public:
 	UVDDecompileNotes();
 	
-	uv_err_t getOptimalLanguage(int &langauge);
+	uv_err_t getOptimalLanguage(int &Language);
 	
 public:
-	int m_optimalLangauge;
+	int m_optimalLanguage;
 };
 
 //Given disassembled instruction structures, produce code in given language

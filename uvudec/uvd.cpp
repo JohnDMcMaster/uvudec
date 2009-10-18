@@ -2,7 +2,7 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 
@@ -14,7 +14,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 //What we need...IS SOME ROPE!
 #if USING_ROPE
 #include <ext/rope>
-#endif
+#endif //USING_ROPE
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
@@ -133,7 +133,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	UVDCompiler *m_compiler;
 	UVDSupportedVersions m_versions;
 	UVDCompilerOptions *m_compilerOptions;
-	int m_langauge;
+	int m_language;
 	std::string m_code;
 	std::string m_origin;
 	std::string m_notes;functionCodeSharedfunctionCodeSharedfunctionCodeShared
@@ -882,14 +882,8 @@ UVD::UVD()
 //Factory function for construction
 uv_err_t UVD::getUVD(UVD **uvdIn, UVDData *data)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVD *uvd = NULL;
-	
-	if( !uvdIn )
-	{
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	
+		
 	uvd = new UVD();
 	if( !uvd )
 	{
@@ -901,9 +895,9 @@ uv_err_t UVD::getUVD(UVD **uvdIn, UVDData *data)
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
+	uv_assert_ret(uvdIn);
 	*uvdIn = uvd;
-	rc = UV_ERR_OK;
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 /*

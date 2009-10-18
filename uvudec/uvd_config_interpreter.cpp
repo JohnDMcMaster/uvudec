@@ -35,8 +35,8 @@ uv_err_t UVDConfigExpression::compile(const std::string &sExpression)
 }
 
 /************
-Langauge specific config interpreters
-These do fixup on config file to enable it to be executed in real langauges
+Language specific config interpreters
+These do fixup on config file to enable it to be executed in real languages
 ************/
 
 
@@ -179,8 +179,8 @@ uv_err_t UVDConfigExpressionInterpreter::compile(const std::string &sExp, UVDCon
 	Simply remove the register prefixes
 	
 	Two pass compilation here
-	-Translation into native langauge format
-	-Compiling native langauge to fast version
+	-Translation into native language format
+	-Compiling native language to fast version
 	*/
 	
 	std::string sExpCompiled;
@@ -298,7 +298,7 @@ uv_err_t UVDConfigExpressionInterpreter::getConfigExpressionInterpreter(UVDConfi
 	int selectedInterpreter = 0;
 	
 	uv_assert_ret(g_config);
-	selectedInterpreter = g_config->m_configInterpreterLangauge;
+	selectedInterpreter = g_config->m_configInterpreterLanguage;
 	switch( selectedInterpreter )
 	{
 #ifdef USING_PYTHON
@@ -337,8 +337,8 @@ uv_err_t UVDConfigExpressionInterpreter::getConfigExpressionInterpreter(UVDConfi
 uv_err_t UVDConfigExpressionInterpreter::getConfigExpression(UVDConfigExpression **expression_in)
 {
 	/*
-	This use to return a langauge specific config expression
-	The langauge specific code (compile) was moved to the interpreter to ease development
+	This use to return a language specific config expression
+	The language specific code (compile) was moved to the interpreter to ease development
 	*/
 	
 	UVDConfigExpression *expression = NULL;
@@ -348,7 +348,7 @@ uv_err_t UVDConfigExpressionInterpreter::getConfigExpression(UVDConfigExpression
 	
 	expression->m_configExpressionInterpreter = this;
 	
-	//Setup the real langauge compilation
+	//Setup the real language compilation
 	uv_assert_err_ret(m_interpreter->getInterpreterExpression(&expression->m_interpreterExpression));
 	uv_assert_ret(expression->m_interpreterExpression);
 	

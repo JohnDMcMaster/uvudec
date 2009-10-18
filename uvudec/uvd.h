@@ -2,9 +2,8 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
-
 
 #ifndef UV_DISASM_H
 #define UV_DISASM_H
@@ -53,7 +52,7 @@ Often times compiler is coded into the files or certain symbols (such as STL
 references) can be used to figure things out
 Note that every func can be, in theory, written in a different language
 */
-#define UV_DISASM_ACTION_DETECT_LANGAUGE		3
+#define UV_DISASM_ACTION_DETECT_Language		3
 
 /*
 Options
@@ -112,7 +111,7 @@ Maybe try to identify them and filter them out
 extern int g_memoric;
 
 /*
-Langauge specific options
+Language specific options
 */
 /*
 Assembly language specific

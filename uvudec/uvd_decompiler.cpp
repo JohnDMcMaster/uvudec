@@ -1,3 +1,10 @@
+/*
+Universal Decompiler (uvudec)
+Copyright 2008 John McMaster
+JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
+*/
+
 #include "uvd_decompiler.h"
 #include "uvd_c_decompiler.h"
 #include "uvd_compiler.h"
@@ -7,9 +14,9 @@ UVDDecompileNotes::UVDDecompileNotes()
 	language = UVD_LANGUAGE_UNKNOWN;
 }
 
-uv_err_t UVDDecompileNotes::getOptimalLanguage(int &langauge)
+uv_err_t UVDDecompileNotes::getOptimalLanguage(int &language)
 {
-	language = m_optimalLangauge;
+	language = m_optimalLanguage;
 }
 
 UVDDecompiler::UVDDecompiler()

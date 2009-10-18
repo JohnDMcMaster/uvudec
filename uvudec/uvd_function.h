@@ -57,7 +57,7 @@ public:
 	uv_err_t computeHash();
 		
 public:
-	//Giving code for langauge, compiler needed (used) to produce binary 
+	//Giving code for Language, compiler needed (used) to produce binary 
 	UVDCompiler *m_compiler;
 	//Version ranges that will produce this
 	UVDSupportedVersions m_versions;
@@ -67,10 +67,10 @@ public:
 	UVDDataChunk *m_dataChunk;
 
 	//UV_DISASM_LANG
-	//Programming langauge code representation is in (assembly, C, etc)
+	//Programming Language code representation is in (assembly, C, etc)
 	//Assembly may sound useless, but many MCU functions are well commented assembly
-	int m_langauge;
-	//Langauge specific code representation
+	int m_Language;
+	//Language specific code representation
 	std::string m_code;
 	//Description of where this code came from (ie a specific product)
 	std::string m_origin;

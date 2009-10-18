@@ -15,7 +15,7 @@ source file
 */
 #define UVD_LANGUAGE_UNKNOWN					0
 /*
-Machine langauge
+Machine language
 The output of an assembler
 */
 #define UVD_LANGUAGE_MACHINE					1

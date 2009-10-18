@@ -5,6 +5,45 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the BSD license.  See LICENSE for details.
 */
 
+#if 0
+
+
+
+TODO: figure out why use one over the other
+/* Relocation table entry without addend (in section of type SHT_REL).  */
+Elf32_Rel
+/* Relocation table entry with addend (in section of type SHT_RELA).  */
+Elf32_Rela
+
+
+
+
+
+To make relocatable ELF file
+1) Add code in .text
+
+2) Add entries .rel.text:
+typedef struct
+{
+  Elf32_Addr	r_offset;		/* Address */
+  Elf32_Word	r_info;			/* Relocation type and symbol index */
+} Elf32_Rel;
+Also must set sh_info (symbol table section) and sh_link (section to modify relocations on)
+
+3) Add symbol table in .symtab:
+typedef struct
+{
+  Elf32_Word	st_name;		/* Symbol name (string tbl index) */
+  Elf32_Addr	st_value;		/* Symbol value */
+  Elf32_Word	st_size;		/* Symbol size */
+  unsigned char	st_info;		/* Symbol type and binding */
+  unsigned char	st_other;		/* Symbol visibility */
+  Elf32_Section	st_shndx;		/* Section index */
+} Elf32_Sym;
+
+
+
+#endif
 
 #include "uvd_elf.h"
 #include "uvd_data.h"

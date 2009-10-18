@@ -27,7 +27,7 @@ What differs between same language compilers?
 SDCC inline assembly example (from SDCC manual)
 
 Issues shows
--need to translate between assembly variables and langauge (C) variables
+-need to translate between assembly variables and language (C) variables
 -How to setup start and end assembly
 -avoid warning is intersting to note
 	Esp considering that would issue "statement has no effect" on GCC
