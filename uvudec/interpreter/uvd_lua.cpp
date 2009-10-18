@@ -13,7 +13,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <string>
 #include <math.h>
 
-extern "C" {
+extern "C" 
+{
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
