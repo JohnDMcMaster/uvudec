@@ -1,0 +1,102 @@
+Universal Decompiler (uvudec)
+Copyright 2008 John McMaster
+JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
+
+Coding standards
+The following should be followed for a patch to be easily accepted.
+
+
+General theory: 
+-Whitespace is cheap, use it to make code readable
+-Code should at least be briefly commented for purpose
+-Coding style is tab width independent
+-Uses -Wall, -Werror
+
+
+Conditionals should be of the form (simple example):
+if( a < b )
+{
+	stuff..
+}
+else
+{
+	more stuff....
+}
+
+if( ((a < b) || (c < d)) && (e < f) )
+for( int i = 0; i < 10; ++i )
+Basic idea:
+-Spacing around conditional satement and operators allows better readability
+-Prefix operator is more efficient than postfix operator, especially on objects
+Reasons:
+-Forms that combine || and && even if correct will produce GCC warnings on some systems
+-if( <expresion> ) form helps distinguish expressions from the conditional
+
+Long conditionals:
+if( big nasty statement
+		&& other statement
+		&& other statement )
+{
+}
+
+DO NOT:
+-} else {
+- if(a){
+- if( a ) stuff;
+
+	
+Spacing
+-I use a style that is tab independent to avoid "I like 4 vs 8 space" issues
+-I happen to use 4 tabbed spacing
+-Spaces should not be used for indentation, always tabs.  Spaces make it annoying for me to edit files
+-Ideally lines should be 78 chars or less
+-Somewhat more enforced will be below 120 chars
+-For reference, my laptop puts about 165 across, so note I'm not fitting it to my screen
+
+
+Error handling
+-Old code was C based and tended to use goto based error handling
+-This is being phased out for destructor based handling
+-Any function that returns error should return of type uv_err_t if possible
+-Macros uv_assert_ret() and uv_assert_err_ret() are useful for checking errors
+-uv_assert() and uv_assert_err() are somewhat legacy macros that will use the goto label "error"
+-Use printf_error() for errors, printf_warning() for warnings, and printf_debug() for debugging 
+
+
+Variables
+-It is preferred to avoid global variables
+-Local variables are preferred to go to top of scope section
+-If nested index variables are required, name them something more descriptive than i, j, k
+	Ex: rowIndex, columnIndex
+-Name variabled descriptivly
+-Use C++ style naming.  In particular, it should be descriptive and not highly abbreviated
+	Ex: Use myVariable instead of my_variable
+	There is legacy code that uses C style naming from when it was written in C.  
+	
+Naming
+-Portions of the code use Hungarian notation
+-In particular, m_ and g_ should be used for member and global variables
+-Other uses are less important.  Encouraged especially when there are multiple representations of the same data in same scope.  Ex:
+	std::string sFile = "/bin/ls";
+	FILE *pFile = fopen(sFile.c_str(), "r");
+-I tend to use std:: instead of "using namespace std".  I don't have a huge objection to using namespace std, use it if you like
+-I don't like cout.  Don't use it. 
+	However, feel free to use C++ streams for internal streams if you like as long as its encapsulated
+
+
+File naming
+-I try to keep files beginning with "uvd_"
+	This is so they can later be included into other projects if desirable
+-Do not use characters other than: A-Z, a-z, _, and .
+
+
+Binaries
+-Features must be pre-processable out of the project
+	This keeps build requirements down for features not needed
+-The main executable must be able to be distributable in static form
+	If the library you require cannot meet this requirement, you will be likely an optional feature
+-Static binaries are UPX packed
+-RPMs and such should be built, but haven't
+	It works in a self contained dir as of now, so good enough for now
+	No binaries have been released
