@@ -1,6 +1,6 @@
-#include "uv_log.h"
-#include "uv_error.h"
-#include "uv_debug.h"
+#include "uvd_log.h"
+#include "uvd_error.h"
+#include "uvd_debug.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

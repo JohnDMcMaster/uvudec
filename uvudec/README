@@ -85,3 +85,12 @@ Support for this is still under development at the time of this writting.
 Several ways to add binary data
 -As a text file.
 
+Analysis data
+
+Analysis data currently can only be read from directories.  It will be 
+distributed as .tar.bz2 files and eventually should be directly readable and
+writable in this form.
+Symbol names are generated as a combination of the original executable and the
+symbol's offset in the file.  Resolving into actual symbol names is not fully
+worked out yet.  Likely a symbol with known value will propagate into an
+unknown archive.

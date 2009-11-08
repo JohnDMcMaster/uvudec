@@ -21,9 +21,9 @@ These needed to be reworked for speed at some point
 #include <time.h>
 #include <errno.h>
 #include <ctype.h>
-#include "uv_util.h"
-#include "uv_debug.h"
-#include "uv_error.h"
+#include "uvd_util.h"
+#include "uvd_debug.h"
+#include "uvd_error.h"
 #include "uvd.h"
 #include <linux/limits.h>
 

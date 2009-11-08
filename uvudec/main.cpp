@@ -10,9 +10,9 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
-#include "uv_error.h"
-#include "uv_util.h"
-#include "uv_log.h"
+#include "uvd_error.h"
+#include "uvd_util.h"
+#include "uvd_log.h"
 #include "uvd.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
@@ -188,59 +188,69 @@ error:
 
 }
 
+/*
+It would be cool to set system preferences to compile this selectivly in programs
+*/
+#define printf_help(format, ...) fprintf(stdout, format, ## __VA_ARGS__)
+
 static void version(void)
 {
-	printf("uvudec version " UVUDEC_VER_STRING "\n");
-	printf("Copyright 2009 John McMaster\n");
-	printf("Portions copyright GNU (MD5 implementation)\n");
-	printf("JohnDMcMaster@gmail.com\n");
+	printf_help("uvudec version " UVUDEC_VER_STRING "\n");
+	printf_help("Copyright 2009 John McMaster\n");
+	printf_help("Portions copyright GNU (MD5 implementation)\n");
+	printf_help("JohnDMcMaster@gmail.com\n");
 }
 
-static void usage(char *program_name)
+static void usage(const char *program_name)
 {
-	version();
-	printf("\n");
-	printf("Usage: %s <args>\n", program_name);
-	printf("Args:\n");
-	printf("--verbose: verbose output.  Equivilent to --verbose=3\n");
-	printf("--verbose=<level>: set verbose level.  0 (none) - 3 (most)\n");
-	printf("--verbose-init: for selectivly debugging configuration file reading\n");
-	printf("--verbose-analysis: for selectivly debugging code analysis\n");
-	printf("--verbose-processing: for selectivly debugging code post-analysis\n");
-	printf("--verbose-printing: for selectivly debugging print routine\n");
-	printf("--config-language=<language>: default config interpreter language (plugins may require specific)\n");
+	printf_help("\n");
+	printf_help("Usage: %s <args>\n", program_name);
+	printf_help("Args:\n");
+	printf_help("--verbose: verbose output.  Equivilent to --verbose=3\n");
+	printf_help("--verbose=<level>: set verbose level.  0 (none) - 3 (most)\n");
+	printf_help("--verbose-init: for selectivly debugging configuration file reading\n");
+	printf_help("--verbose-analysis: for selectivly debugging code analysis\n");
+	printf_help("--verbose-processing: for selectivly debugging code post-analysis\n");
+	printf_help("--verbose-printing: for selectivly debugging print routine\n");
+	printf_help("--config-language=<language>: default config interpreter language (plugins may require specific)\n");
 #ifdef USING_LUA
-	printf("\tlua: use Lua\n");
+	printf_help("\tlua: use Lua\n");
 #endif //USING_LUA
 #ifdef USING_PYTHON
-	printf("\tpython: use Python\n");
+	printf_help("\tpython: use Python\n");
 #endif //USING_PYTHON
 #ifdef USING_JAVASCRIPT
-	printf("\tjavascript: use javascript\n");
+	printf_help("\tjavascript: use javascript\n");
 #endif //USING_JAVASCRIPT
-	printf("--addr-min=<min>: minimum analysis address\n");
-	printf("--addr-max=<max>: maximum analysis address\n");
-	printf("--addr-exclude-min=<min>: minimum exclusion address\n");
-	printf("--addr-exclude-max=<max>: maximum exclusion address\n");
-	printf("--addr-comment: put comments on addresses\n");
-	printf("--addr-label: label addresses for jumping\n");
-	printf("--opcode-usage: opcode usage count table\n");
-	printf("--analysis-dir=<dir>: create skeleton data suitible for stored analysis\n");
-	printf("--input=<file name>: source for data\n");
-	printf("--output=<file name>: output program (default: stdout)\n");
-	printf("--debug=<file name>: debug output (default: stdout)\n");
-	printf("--print-jumped-addresses=<bool>: whether to print information about jumped to addresses (*1)\n");
-	printf("--print-called-addresses=<bool>: whether to print information about called to addresses (*1)\n");
-	printf("--help: print this message and exit\n");
-	printf("--version: print version and exit\n");
-	printf("\n");
-	printf("Special files: -: stdin\n");
-	printf("<bool>:\n");
-	printf("\ttrue includes case insensitive \"true\", non-zero numbers (ie 1)\n");
-	printf("\tfalse includes case insensitve \"false\", 0\n");
+	printf_help("--addr-min=<min>: minimum analysis address\n");
+	printf_help("--addr-max=<max>: maximum analysis address\n");
+	printf_help("--addr-exclude-min=<min>: minimum exclusion address\n");
+	printf_help("--addr-exclude-max=<max>: maximum exclusion address\n");
+	printf_help("--addr-comment: put comments on addresses\n");
+	printf_help("--addr-label: label addresses for jumping\n");
+	printf_help("--opcode-usage: opcode usage count table\n");
+	printf_help("--analysis-dir=<dir>: create skeleton data suitible for stored analysis\n");
+	printf_help("--input=<file name>: source for data\n");
+	printf_help("--output=<file name>: output program (default: stdout)\n");
+	printf_help("--debug=<file name>: debug output (default: stdout)\n");
+	printf_help("--print-jumped-addresses=<bool>: whether to print information about jumped to addresses (*1)\n");
+	printf_help("--print-called-addresses=<bool>: whether to print information about called to addresses (*1)\n");
+	printf_help("--help: print this message and exit\n");
+	printf_help("--version: print version and exit\n");
+	printf_help("\n");
+	printf_help("Special files: -: stdin\n");
+	printf_help("<bool>:\n");
+	printf_help("\ttrue includes case insensitive \"true\", non-zero numbers (ie 1)\n");
+	printf_help("\tfalse includes case insensitve \"false\", 0\n");
 	//printf("--binary\n");
-	printf("\n");
-	printf("*1: WARNING: currently slow, may be fixed in future releases\n");
+	printf_help("\n");
+	printf_help("*1: WARNING: currently slow, may be fixed in future releases\n");
+}
+
+static void help(const char *program_name)
+{
+	version();
+	usage(program_name);
 }
 
 #define UVD_OPTION_FILE_STDIN		"-"
@@ -366,7 +376,7 @@ int main(int argc, char **argv)
 			else
 			{
 				printf("Unknown language: <%s>\n", cur_arg);
-				usage(argv[0]);
+				help(argv[0]);
 				goto error;
 			}
 		}
@@ -438,14 +448,14 @@ int main(int argc, char **argv)
 		}
 		else if( !strcmp("--help", cur_arg) || !strcmp("-h", cur_arg) )
 		{
-			usage(argv[0]);
+			help(argv[0]);
 			rc = 0;
 			goto error;
 		}
 		else
 		{
 			printf("Unknown option: <%s>\n", cur_arg);
-			usage(argv[0]);
+			help(argv[0]);
 			goto error;
 		}
 	}
@@ -453,7 +463,7 @@ int main(int argc, char **argv)
 	if( targetFile.empty() )
 	{
 		printf_error("Target file not specified\n");
-		usage(argv[0]);
+		help(argv[0]);
 		goto error;
 	}
 

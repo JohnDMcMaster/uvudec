@@ -11,7 +11,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include <stdint.h>
 #include <string>
 #include "uvd_types.h"
-#include "uv_error.h"
+#include "uvd_error.h"
 
 #define UV_TEMP_PREFIX			"/tmp/uvXXXXXX"
 

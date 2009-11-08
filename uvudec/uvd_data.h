@@ -2,9 +2,8 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
-
 
 #ifndef UV_DISASM_DATA_H
 #define UV_DISASM_DATA_H
@@ -61,6 +60,19 @@ public:
 	*/
 	static uv_err_t concatenate(const std::vector<UVDData *> &dataVector, UVDData **dataOut);
 	//static uv_err_t concatenate(const std::vector<UVDData *> dataVector, UVDDataMemory *dataOut);
+
+	/*
+	TODO: implement this memory management scheme
+	UVDData objects are passed all about and are difficult to track
+	*/
+	static void incrementReferences(UVDData *data);
+	static void decreaseReferences(UVDData *data);
+
+private:
+	//NOTE: this is not currently implemented, but may be in the future
+	//When created, this should be 1
+	//When this reaches 0, the object should be destroyed
+	//int m_references;
 };
 
 /*
@@ -96,11 +108,22 @@ public:
 class UVDDataMemory : public UVDData
 {
 public:
+	UVDDataMemory();
 	//Create a buffer, reserving given size
 	UVDDataMemory(unsigned int bufferSize);
 	//Copy given buffer into this object
 	UVDDataMemory(const char *buffer, unsigned int bufferSize);
+	//static uv_err_t getUVDDataMemory(UVDDataMemory **data);
+	//Transfer buffer to this object
+	//The buffer will in effect be shared by this object
+	static uv_err_t getUVDDataMemoryByTransfer(UVDDataMemory **data,
+			char *buffer, unsigned int bufferSize,
+			//Should free() be called on the buffer at object destruction?
+			int freeAtDestruction = true);
+	//Do a copy
+	static uv_err_t getUVDDataMemoryByCopy(const UVDData *dataIn, UVDData **dataOut);
 	virtual ~UVDDataMemory();
+
 	std::string getSource();
 	//Reallocate storage.  Buffer data and pointer is invalidated
 	uv_err_t realloc(unsigned int bufferSize);
@@ -112,6 +135,8 @@ public:
 public:
 	char *m_buffer;
 	unsigned int m_bufferSize;
+	//Should m_buffer be freed at destruction?
+	int m_freeAtDestruction;
 };
 
 /*

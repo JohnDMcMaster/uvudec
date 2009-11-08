@@ -9,6 +9,13 @@ include Makefile.defaults
 $(shell touch Makefile.configure)
 include Makefile.configure
 
+ROOT_DIR=.
+COMPILER_DIR=$(ROOT_DIR)/compiler
+ELF_DIR=$(ROOT_DIR)/elf
+HASH_DIR=$(ROOT_DIR)/hash
+INTERPRETER_DIR=$(ROOT_DIR)/interpreter
+SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(ELF_DIR) $(HASH_DIR) $(INTERPRETER_DIR)
+
 # Man
 MAN_SECTION=3
 MAN_RAW=manpage
@@ -27,7 +34,7 @@ UVUDEC_VER_FLAGS=-DUVUDEC_VER_MAJOR=$(UVUDEC_VER_MAJOR) -DUVUDEC_VER_MINOR=$(UVU
 
 PACKAGE=uvudec
 
-INCLUDES += -I.
+INCLUDES += -I. -I$(COMPILER_DIR) -I$(ELF_DIR) -I$(HASH_DIR) 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
 WARNING_FLAGS=-Wall -Werror
@@ -107,28 +114,23 @@ LIBS += $(SPIDERAPE_STATIC) $(JS_STATIC)
 # LIBS +=  -lltdl
 endif
 
-
 CC_SRCS =   \
 
 CXX_SRCS = 	\
 			uvd_data.cpp \
 			main.cpp \
-			uv_debug.cpp \
-			uv_error.cpp \
-			uv_log.cpp \
-			uv_md5.cpp \
-			uv_md5_GNU.cpp \
-			uv_util.cpp \
+			uvd_debug.cpp \
+			uvd_error.cpp \
+			uvd_log.cpp \
+			uvd_util.cpp \
 			uvd.cpp \
 			uvd_address.cpp \
 			uvd_analysis.cpp \
 			uvd_analysis_db.cpp \
 			uvd_analyzer.cpp \
 			uvd_benchmark.cpp \
-			uvd_compiler.cpp \
 			uvd_config.cpp \
 			uvd_config_interpreter.cpp \
-			uvd_elf.cpp \
 			uvd_format.cpp \
 			uvd_function.cpp \
 			uvd_language.cpp \
@@ -143,21 +145,30 @@ CXX_SRCS = 	\
 			uvd_symbol.cpp \
 			uvd_types.cpp \
 			uvd_version.cpp \
-			interpreter/uvd_interpreter.cpp \
-			interpreter/uvd_javascript.cpp \
-			interpreter/uvd_javascript_spiderape.cpp \
-			interpreter/uvd_javascript_spidermonkey.cpp \
-			interpreter/uvd_lua.cpp \
-			interpreter/uvd_python.cpp \
+			$(COMPILER_DIR)/uvd_compiler.cpp \
+			$(ELF_DIR)/uvd_elf.cpp \
+			$(ELF_DIR)/uvd_elf_data.cpp \
+			$(ELF_DIR)/uvd_elf_header.cpp \
+			$(ELF_DIR)/uvd_elf_init.cpp \
+			$(ELF_DIR)/uvd_elf_relocation.cpp \
+			$(ELF_DIR)/uvd_elf_symbol.cpp \
+			$(HASH_DIR)/uvd_md5.cpp \
+			$(HASH_DIR)/uvd_md5_GNU.cpp \
+			$(INTERPRETER_DIR)/uvd_interpreter.cpp \
+			$(INTERPRETER_DIR)/uvd_javascript.cpp \
+			$(INTERPRETER_DIR)/uvd_javascript_spiderape.cpp \
+			$(INTERPRETER_DIR)/uvd_javascript_spidermonkey.cpp \
+			$(INTERPRETER_DIR)/uvd_lua.cpp \
+			$(INTERPRETER_DIR)/uvd_python.cpp \
 
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 EXE = uvudec
 
 # BEGIN TARGETS
 
-all: uv_udec
+all: uvudec
 
-uv_udec: depend $(OBJS) 
+uvudec: depend $(OBJS) 
 	$(CC) $(LFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE)
 ifeq ($(USING_UPX),Y)
 	$(UPX) $(EXE)
@@ -171,6 +182,14 @@ endif
 
 clean:
 	$(RM) *.o *~ $(EXE) $(OBJS) uv_log.txt Makefile.bak core.*
+	for curDir in $(SOURCE_DIRS); do \
+		rm -f "$${curDir}/*.o" "$${curDir}/*~" ;\
+	done;
+
+loop:
+	for file in $(SOURCE_DIRS); do \
+		echo "loop: $${file}" ;\
+	done;
 
 ifeq ($(USING_STATIC),Y)
 installer:
@@ -197,7 +216,7 @@ depend:
 # Remove annoying backup
 	$(RM) $(MAKEFILE_DEPEND).bak
 	
-.PHONY: all uv_udec .cpp.o clean dist depend
+.PHONY: all uvudec .cpp.o clean dist depend
 
 info:
 	@(echo "USING_UPX: $(USING_UPX)")

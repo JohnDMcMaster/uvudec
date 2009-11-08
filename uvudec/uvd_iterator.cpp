@@ -18,10 +18,10 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
-#include "uv_debug.h"
-#include "uv_error.h"
-#include "uv_log.h"
-#include "uv_util.h"
+#include "uvd_debug.h"
+#include "uvd_error.h"
+#include "uvd_log.h"
+#include "uvd_util.h"
 #include "uvd.h"
 #include "uvd_address.h"
 #include "uvd_analysis.h"
@@ -421,7 +421,8 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	UVDInstruction *inst = &instructionIn;
 	uint8_t opcode = 0;
 	unsigned int position = 0;
-	UVDData *data = m_uvd->m_data;
+	//UVDData *data = m_uvd->m_data;
+	UVDData *data = m_data;
 	UVDOpcodeLookupElement *element = NULL;
 	int opcodeRead = 0;
 	UVD *uvd = NULL;
@@ -432,6 +433,7 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	
 	uvd = m_uvd;
 	uv_assert_ret(uvd);
+	uv_assert(data);
 	
 	if( m_nextPosition > g_addr_max )
 	{
@@ -544,7 +546,7 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	}
 	
 	/* We now know the actual size, read the data we just iterated over */
-	if( m_uvd->m_data->read(inst->m_offset, inst->m_inst, inst->m_inst_size) != (int)inst->m_inst_size )
+	if( data->read(inst->m_offset, inst->m_inst, inst->m_inst_size) != (int)inst->m_inst_size )
 	{
 		UV_ERR(rc);
 		goto error;

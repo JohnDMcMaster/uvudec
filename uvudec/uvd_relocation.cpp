@@ -2,7 +2,7 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd_relocation.h"
@@ -28,11 +28,25 @@ UVDRelocationFixup::~UVDRelocationFixup()
 
 uv_err_t UVDRelocationFixup::applyPatch(UVDData *data)
 {
-	const char *dynamicValue = NULL;
+	return UV_DEBUG(applyPatchCore(data, false));
+}
 
-	uv_assert_ret(m_symbol);
-	uv_assert_err_ret(m_symbol->getDynamicValue(&dynamicValue));
-	//XXX: endianness issues
+uv_err_t UVDRelocationFixup::applyPatchCore(UVDData *data, bool useDefaultValue)
+{
+	const char *dynamicValue = NULL;
+	int defaultValue = RELOCATION_DEFAULT_VALUE;
+
+	//XXX: endianness, size issues
+	if( useDefaultValue )
+	{
+		dynamicValue = (const char *)&defaultValue;
+	}
+	else
+	{
+		uv_assert_ret(m_symbol);
+		uv_assert_err_ret(m_symbol->getDynamicValue(&dynamicValue));
+	}
+	
 	uv_assert_err_ret(data->writeData(m_offset, dynamicValue, m_size));
 	
 	return UV_ERR_OK;
@@ -42,6 +56,7 @@ uv_err_t UVDRelocationFixup::applyPatch(UVDData *data)
 UVDRelocatableData::UVDRelocatableData()
 {
 	m_data = NULL;
+	m_defaultRelocatableData = NULL;
 }
 
 UVDRelocatableData::UVDRelocatableData(UVDData *data)
@@ -55,12 +70,17 @@ UVDRelocatableData::~UVDRelocatableData()
 
 uv_err_t UVDRelocatableData::applyRelocations()
 {
+	return UV_DEBUG(applyRelocationsCore(false));
+}
+
+uv_err_t UVDRelocatableData::applyRelocationsCore(bool useDefaultValue)
+{
 	//Simply loop through all patches/relocations and apply all of them
 	for( std::set<UVDRelocationFixup *>::iterator iter = m_fixups.begin(); iter != m_fixups.end(); ++iter )
 	{
 		UVDRelocationFixup *fixup = *iter;
 		uv_assert_ret(fixup);
-		uv_assert_err_ret(fixup->applyPatch(m_data));
+		uv_assert_err_ret(fixup->applyPatchCore(m_data, useDefaultValue));
 	}
 
 	return UV_ERR_OK;
@@ -69,6 +89,39 @@ uv_err_t UVDRelocatableData::applyRelocations()
 void UVDRelocatableData::addFixup(UVDRelocationFixup *fixup)
 {
 	m_fixups.insert(fixup);
+}
+
+uv_err_t UVDRelocatableData::getRelocatableData(UVDData **data)
+{
+	uv_assert_ret(data);
+	//uv_assert_ret(m_data);
+	*data = m_data;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
+{
+	uv_assert_ret(data);
+	if( m_defaultRelocatableData )
+	{
+		*data = m_defaultRelocatableData;
+		return UV_ERR_OK;
+	}
+	
+	//Copy our data as a base
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByCopy(m_data, &m_defaultRelocatableData));
+	uv_assert_ret(m_defaultRelocatableData);
+	
+	//And fixup (zero) all the relocation places
+	for( std::set<UVDRelocationFixup *>::iterator iter = m_fixups.begin(); iter != m_fixups.end(); ++iter )
+	{
+		UVDRelocationFixup *fixup = *iter;
+		uv_assert_ret(fixup);
+		uv_assert_err_ret(fixup->applyPatchCore(m_defaultRelocatableData, true));
+	}
+	
+	*data = m_defaultRelocatableData;
+	return UV_ERR_OK;
 }
 
 UVDRelocatableElement::UVDRelocatableElement()
@@ -105,14 +158,99 @@ uv_err_t UVDRelocatableElement::getDynamicValue(int *dynamicValue)
 }
 */
 	
-uv_err_t UVDRelocatableElement::getDynamicValue(char const **dynamicValue)
+uv_err_t UVDRelocatableElement::getDynamicValue(int8_t *dynamicValue)
 {
+	int32_t temp = 0;
+	uv_assert_err_ret(getDynamicValue(&temp));
 	uv_assert_ret(dynamicValue);
-	uv_assert_ret(m_isDynamicValueValid);
-	//FIXME: endianess issues
-	*dynamicValue = (const char *)&m_dynamicValue;
+	*dynamicValue = (int8_t)temp;
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDRelocatableElement::getDynamicValue(uint8_t *dynamicValue)
+{
+	uint32_t temp = 0;
+	uv_assert_err_ret(getDynamicValue(&temp));
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = (uint8_t)temp;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableElement::getDynamicValue(int16_t *dynamicValue)
+{
+	int32_t temp = 0;
+	uv_assert_err_ret(getDynamicValue(&temp));
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = (int16_t)temp;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableElement::getDynamicValue(uint16_t *dynamicValue)
+{
+	uint32_t temp = 0;
+	uv_assert_err_ret(getDynamicValue(&temp));
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = (uint16_t)temp;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableElement::getDynamicValue(int32_t *dynamicValue)
+{
+	uint32_t temp = 0;
+	uv_assert_err_ret(getDynamicValue(&temp));
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = (uint32_t)temp;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableElement::getDynamicValue(uint32_t *dynamicValue)
+{
+	uv_assert_err_ret(updateDynamicValue());
+	uv_assert_ret(m_isDynamicValueValid);
+
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = m_dynamicValue;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableElement::getDynamicValue(char const **dynamicValue)
+{
+	uv_assert_err_ret(updateDynamicValue());
+	uv_assert_ret(m_isDynamicValueValid);
+
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = (const char *)&m_dynamicValue;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableElement::updateDynamicValue()
+{
+	//No update possible (we cannot validate m_isDynamicValidValid), but no error either
+	return UV_ERR_OK;
+}
+
+std::string UVDRelocatableElement::getName()
+{
+	return m_sName;
+}
+
+void UVDRelocatableElement::setName(const std::string &sName)
+{
+	m_sName = sName;
+}
+
+/*
+uv_err_t applyDynamicValue(char const **dynamicValue, int *value);
+{
+	uv_assert_ret(dynamicValue);
+	//FIXME: endianess issues
+	*dynamicValue = (const char *)&m_dynamicValue;
+	
+	return UV_ERR_OK;
+}
+*/
 
 UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement()
 {
@@ -172,7 +310,7 @@ uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamic
 	}
 
 	uv_assert_ret(dynamicValue);
-	m_dynamicValue = dataOffset + m_offset;
+	setDynamicValue(dataOffset + m_offset);
 	//XXX: endianess issues
 	*dynamicValue = (const char *)&m_dynamicValue;
 
@@ -203,6 +341,11 @@ uv_err_t UVDRelocationManager::addRelocatableData(UVDRelocatableData *data)
 
 uv_err_t UVDRelocationManager::applyPatch(UVDData **dataOut)
 {
+	return UV_DEBUG(applyPatchCore(dataOut, false));
+}
+
+uv_err_t UVDRelocationManager::applyPatchCore(UVDData **dataOut, bool useDefaultValue)
+{
 	std::vector<UVDData *> dataVector;
 
 	for( std::vector<UVDRelocatableData *>::iterator iter = m_data.begin(); iter != m_data.end(); ++iter )
@@ -212,8 +355,7 @@ uv_err_t UVDRelocationManager::applyPatch(UVDData **dataOut)
 
 		uv_assert_ret(relocatableData);
 		//Update the encapsulated data to reflect the relocations
-		uv_assert_err_ret(relocatableData->applyRelocations());
-		
+		uv_assert_err_ret(relocatableData->applyRelocationsCore(useDefaultValue));
 		
 		//And rack up the raw data so it can be assembled
 		data = relocatableData->m_data;
@@ -225,3 +367,36 @@ uv_err_t UVDRelocationManager::applyPatch(UVDData **dataOut)
 	return UV_ERR_OK;
 }
 
+UVDSimpleRelocationFixup::UVDSimpleRelocationFixup()
+{
+	m_relocationFixup = NULL;
+	m_data = NULL;
+}
+
+uv_err_t UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(UVDRelocationFixup *fixup,
+		char *data, int offset, int size)
+{
+	UVDSimpleRelocationFixup *simpleFixup = NULL;
+	
+	simpleFixup = new UVDSimpleRelocationFixup();
+	uv_assert_ret(simpleFixup);
+	simpleFixup->m_relocationFixup = fixup;
+	
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer((UVDDataMemory **)&simpleFixup->m_data,
+			//We are just applying patches, don't try to free the memory
+			data, size, false));
+	uv_assert_ret(simpleFixup->m_data);
+	
+	return UV_ERR_OK;
+}
+
+UVDSimpleRelocationFixup::~UVDSimpleRelocationFixup()
+{
+}
+
+uv_err_t UVDSimpleRelocationFixup::applyPatch()
+{
+	uv_assert_ret(m_relocationFixup);
+	uv_assert_err_ret(m_relocationFixup->applyPatch(m_data));
+	return UV_ERR_OK;
+}

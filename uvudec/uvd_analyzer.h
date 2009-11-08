@@ -185,7 +185,11 @@ public:
 	
 	//DB of currently analyzed program
 	uv_err_t getAnalyzedProgramDB(UVDAnalysisDBArchive **db);
-	
+
+private:
+	//Force a rebuild of the internal database
+	uv_err_t rebuildDb();
+
 public:
 	//Superblock for block representation of program
 	UVDAnalyzedBlock *m_block;

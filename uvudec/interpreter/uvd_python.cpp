@@ -10,7 +10,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <string>
 #include <sstream>
 #include <vector>
-#include "uv_util.h"
+#include "uvd_util.h"
 #include "uvd_python.h"
 #include "uvd_config.h"
 

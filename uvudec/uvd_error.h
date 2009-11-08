@@ -91,7 +91,7 @@ Need to figure out how to do a pointer to a const char * without typedef
 typedef const char * uv_const_char_ptr;
 
 /* This must come AFTER the type declarations here */
-#include "uv_debug.h"
+#include "uvd_debug.h"
 
 #ifdef __cplusplus
 }

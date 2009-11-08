@@ -1,6 +1,8 @@
 /*
+Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd.h"
@@ -355,10 +357,42 @@ uv_err_t UVDAnalyzer::getJumpedAddresses(UVDAnalyzedMemorySpace &jumpedAddresses
 	return UV_DEBUG(getAddresses(jumpedAddresses, UVD_MEMORY_REFERENCE_JUMP_DEST));
 }
 
+uv_err_t UVDAnalyzer::rebuildDb()
+{
+	printf_debug("Rebuilding analyzer database\n");
+	//Assumes all functions are already here and just need to be individually picked apart
+	
+	//Start clean
+	uv_assert_ret(m_curDb);
+	m_curDb->clear();
+
+	//Rebuild database for each function
+	//Since each UVDBinaryFunction had the UVDBinaryFunctionShared created with it,
+	//we simply strip out the local analysis specific data
+	for( std::vector<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
+	{
+		UVDBinaryFunction *binaryFunction = *iter;
+		//The metadata and such for this function
+		UVDBinaryFunctionShared *binaryFunctionShared = NULL;
+	
+		uv_assert_ret(binaryFunction);
+		//Get the shared section
+		binaryFunctionShared = binaryFunction->m_shared;
+		uv_assert_ret(binaryFunctionShared);
+		//And register it to the DB
+		uv_assert_err_ret(m_curDb->loadFunction(binaryFunctionShared));
+	}
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
 {
 	uv_assert_ret(db);
 	uv_assert_ret(m_curDb);
+	
+	//Just always rebuild for now, add dirty field later if needed
+	uv_assert_err_ret(rebuildDb());
 	
 	*db = m_curDb;
 	

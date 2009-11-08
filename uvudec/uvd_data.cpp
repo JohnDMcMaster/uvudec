@@ -12,8 +12,8 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "uv_debug.h"
-#include "uv_util.h"
+#include "uvd_debug.h"
+#include "uvd_util.h"
 #include "uvd_data.h"
 #include "uvd_types.h"
 
@@ -350,6 +350,13 @@ UVDDataMemory::UVDDataMemory(unsigned int bufferSize)
 #endif //NDEBUG
 }
 
+UVDDataMemory::UVDDataMemory()
+{
+	m_bufferSize = 0;
+	m_buffer = NULL;
+	m_freeAtDestruction = true;
+}
+
 UVDDataMemory::UVDDataMemory(const char *buffer, unsigned int bufferSize)
 {
 	m_buffer = (char *)malloc(bufferSize);
@@ -360,11 +367,49 @@ UVDDataMemory::UVDDataMemory(const char *buffer, unsigned int bufferSize)
 	
 	m_bufferSize = bufferSize;
 	memcpy(m_buffer, buffer, bufferSize);
+	m_freeAtDestruction = true;
+}
+
+uv_err_t UVDDataMemory::getUVDDataMemoryByTransfer(UVDDataMemory **dataIn,
+		char *buffer, unsigned int bufferSize,
+		int freeAtDestruction)
+{
+	UVDDataMemory *data = NULL;
+
+	//Allocate the raw object
+	data = new UVDDataMemory();
+	uv_assert_ret(data);
+	//And copy the data in
+	data->m_buffer = buffer;
+	data->m_bufferSize = bufferSize;
+	data->m_freeAtDestruction = freeAtDestruction;	
+	
+	uv_assert_ret(dataIn);
+	*dataIn = data;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDDataMemory::getUVDDataMemoryByCopy(const UVDData *dataIn, UVDData **dataOut)
+{
+	char *dataBuffer = NULL;
+	
+	//Get a copy of the data
+	uv_assert_ret(dataIn);
+	uv_assert_err_ret(dataIn->readData(&dataBuffer));
+	
+	//Create and return our ret object
+	uv_assert_err_ret(getUVDDataMemoryByTransfer((UVDDataMemory **)dataOut, dataBuffer, dataIn->size()));	
+	
+	return UV_ERR_OK;
 }
 
 UVDDataMemory::~UVDDataMemory()
 {
-	free(m_buffer);
+	if( m_freeAtDestruction )
+	{
+		free(m_buffer);
+	}
 	m_buffer = NULL;
 }
 

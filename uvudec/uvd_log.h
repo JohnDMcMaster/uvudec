@@ -10,7 +10,7 @@ Define UV_LOG_DISABLED to disable logging on preprocessor level
 #ifndef UV_LOG_H
 #define UV_LOG_H
 
-#include "uv_error.h"
+#include "uvd_error.h"
 #include <stdint.h>
 
 #ifdef __cplusplus

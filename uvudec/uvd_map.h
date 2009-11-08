@@ -8,7 +8,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #ifndef UV_DISASM_MAP_H
 #define UV_DISASM_MAP_H
 
-#include "uv_disasm_types.h"
+#include "uvd_disasm_types.h"
 
 #ifdef __cplusplus
 extern "C"

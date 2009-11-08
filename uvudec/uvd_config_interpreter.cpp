@@ -5,7 +5,7 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the BSD license.  See LICENSE for details.
 */
 
-#include "uv_util.h"
+#include "uvd_util.h"
 #include "uvd_config.h"
 #include "uvd_config_interpreter.h"
 #include "uvd_language.h"

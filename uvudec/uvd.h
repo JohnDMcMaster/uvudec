@@ -14,7 +14,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <set>
 #include <string>
 #include <vector>
-#include "uv_error.h"
+#include "uvd_error.h"
 #include "uvd_analyzer.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
@@ -165,6 +165,11 @@ protected:
 	//Force printing of header information
 	uv_err_t initialPrint();
 
+public:
+	//Source of data to disassemble
+	//Usually equal to m_uvd.m_data, but may be a smaller segment for finer analysis
+	UVDData *m_data;
+
 private:	
 	//Object we are iterating on
 	UVD *m_uvd;
@@ -207,11 +212,14 @@ public:
 	
 
 	UVDIterator begin();
+	UVDIterator begin(UVDData *data);
 	UVDIterator end();
+	UVDIterator end(UVDData *data);
 
 	uv_err_t disassemble(std::string file, std::string &output);
 	uv_err_t decompile(std::string file, int destinationLanguage, std::string &output);
 	
+	std::string analyzedSymbolName(std::string dataSource, uint32_t functionAddress);
 	
 	//Given a function location, do analysis on the section to do actual decompiling
 	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction);
@@ -242,6 +250,10 @@ public:
 	Since ideally UVDInustruction knows nothing about this engine, so better here than a toString'ish method there
 	*/
 	uv_err_t stringListAppend(UVDInstruction *inst, std::vector<std::string> &list);
+
+
+	uv_err_t analyzeFunction(UVDBinaryFunctionShared *functionShared);
+	uv_err_t analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared);
 
 public:
 	//Source of data to disassemble

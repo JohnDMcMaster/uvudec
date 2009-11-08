@@ -2,9 +2,8 @@
 Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
-
 
 /*
 Certain items must be placed and then have references placed among some set of items
@@ -24,6 +23,9 @@ Now that all locations have been fixed, apply the relocations to the known locat
 #include <set>
 #include "uvd_data.h"
 #include "uvd_types.h"
+
+//Byte value used for relocations on hashed functions
+#define RELOCATION_DEFAULT_VALUE		0
 
 /*
 A spot within a peice of data requiring a fixup
@@ -46,6 +48,7 @@ public:
 	//Apply the patch to this data
 	//m_symbol should hold a valid value by this point (or be calculable by call)
 	uv_err_t applyPatch(UVDData *data);
+	uv_err_t applyPatchCore(UVDData *data, bool useDefaultValue);
 	
 public:
 	//The value we were waiting on
@@ -57,6 +60,28 @@ public:
 	//How many bytes to apply to, in bytes
 	//Some data may use 4 byte addressing, other spots 1, for example
 	unsigned int m_size;
+};
+
+/*
+Applies to a single location rather than batch data processing schemes
+*/
+class UVDSimpleRelocationFixup
+{
+public:
+	UVDSimpleRelocationFixup();
+	uv_err_t getUVDSimpleRelocationFixup(UVDRelocationFixup *fixup,
+			char *data, int offset, int size);
+	~UVDSimpleRelocationFixup();
+	
+	//The simply "everything was already setup before" function
+	uv_err_t applyPatch();
+
+public:
+	//Calculates where to apply value
+	//The calculation will occur internally as part of a UVDRelocatableElement
+	UVDRelocationFixup *m_relocationFixup;
+	//The target
+	UVDData *m_data;
 };
 
 /*
@@ -73,12 +98,25 @@ public:
 	
 	//Assume all symbolic values have been placed and now have symbols
 	uv_err_t applyRelocations();
+	uv_err_t applyRelocationsCore(bool useDefaultValue);
 	void addFixup(UVDRelocationFixup *);
+	
+	//Get a raw copy of the data
+	//Relocatable elements will have the last appliex fixup value, if any
+	//It will be freed at the destruction of this object
+	uv_err_t getRelocatableData(UVDData **data);
+
+	//Get a default representation of the relocatable data
+	//Fills in relocatable entries with 0's and returns
+	//It will be freed at the destruction of this object
+	uv_err_t getDefaultRelocatableData(UVDData **data);
 	
 public:
 	//The temporary peice of data
 	//This will be compiled into a larger chunk
 	UVDData *m_data;
+	//Cache of the default (0'd) relocatable data
+	UVDData *m_defaultRelocatableData;
 
 	//Locations that require fixups
 	//Addresses specified are relative to m_data
@@ -95,18 +133,48 @@ public:
 	UVDRelocatableElement();
 	virtual ~UVDRelocatableElement();
 	
-	virtual void setDynamicValue(int dynamicValue);
+	//dynamicValue is in the local system encoding
+	virtual void setDynamicValue(int32_t dynamicValue);
+	//If it must be calculated on the fly as needed
+	virtual uv_err_t updateDynamicValue();
+
+	//Making this work nicely is still under dev
+	//Encoding will be returned as m_encoding, not as local system encoding
+	//Signed vs unsigned may not be necessary then?
+	uv_err_t getDynamicValue(int8_t *dynamicValue);
+	uv_err_t getDynamicValue(uint8_t *dynamicValue);
+	uv_err_t getDynamicValue(int16_t *dynamicValue);
+	uv_err_t getDynamicValue(uint16_t *dynamicValue);
+	uv_err_t getDynamicValue(int32_t *dynamicValue);
+	uv_err_t getDynamicValue(uint32_t *dynamicValue);
+	//Size in bytes
+	//virtual uv_err_t getDynamicValue(char const **dynamicValue, int dynamicValueSize);
 	virtual uv_err_t getDynamicValue(char const **dynamicValue);
+
 	/*
 	virtual int getDynamicValue(void);
 	virtual uv_err_t getDynamicValue(int *dynamicValue);
 	*/
 	
+	//If this symbol has a name, get it
+	std::string getName();
+	void setName(const std::string &sName);
+	
+protected:
+	//To make solving endianess issues later easier
+	//static virtual uv_err_t applyDynamicValue(char const **dynamicValue, int *value);
+	
 public:
+	//The output encoding if the result is a number
+	//Meant to solve big/little endian issues
+	int m_encoding;
 	//Needed once we fix up all the values
-	int m_dynamicValue;
+	//Most all values are 32 bit or less, use special class later if needed
+	uint32_t m_dynamicValue;
 	//Have we at least made a token effort to put a valid value in?
 	int m_isDynamicValueValid;
+	//Name, if applicable
+	std::string m_sName;
 };
 
 /*
@@ -156,6 +224,7 @@ public:
 	//Generates a resulting final peice of data from concatentating all the peices together
 	//This version allocates the data
 	uv_err_t applyPatch(UVDData **data);
+	uv_err_t applyPatchCore(UVDData **dataOut, bool useDefaultValue);
 	
 	//uv_err_t getDataSize(int *dataSize);
 
@@ -164,6 +233,7 @@ public:
 	//It would be ideal, but might not be required, for all symbols to be registered here before added as a section
 	std::set<UVDRelocatableElement *> m_relocatableElements;
 	//Subsets we must operate on
+	//Usually these will also be used for calculating the relocation values
 	std::vector<UVDRelocatableData *> m_data;
 };
 

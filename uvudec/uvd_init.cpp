@@ -15,10 +15,10 @@ JohnDMcMaster@gmail.com
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
-#include "uv_debug.h"
-#include "uv_error.h"
-#include "uv_log.h"
-#include "uv_util.h"
+#include "uvd_debug.h"
+#include "uvd_error.h"
+#include "uvd_log.h"
+#include "uvd_util.h"
 #include "uvd.h"
 #include "uvd_address.h"
 #include "uvd_analysis.h"

@@ -47,7 +47,7 @@
 # endif
 #endif
 
-#include "uv_md5_GNU.h"
+#include "uvd_md5_GNU.h"
 
 #ifdef _LIBC
 # include <endian.h>

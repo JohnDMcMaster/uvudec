@@ -65,6 +65,15 @@ Error handling
 
 
 Variables
+-All variables must have a default value
+	DO
+		std::string myString;
+			Default constructor assigns empty string
+		int i = 0;
+	DO NOT
+		int *p;
+		int i;
+	Structures can be a bit tricky, no official policy at this time
 -It is preferred to avoid global variables
 -Local variables are preferred to go to top of scope section
 -If nested index variables are required, name them something more descriptive than i, j, k

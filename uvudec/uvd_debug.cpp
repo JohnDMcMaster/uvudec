@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "uvd_types.h"
-#include "uv_debug.h"
-#include "uv_error.h"
+#include "uvd_debug.h"
+#include "uvd_error.h"
 
 int g_verbose = FALSE;
 const char *g_last_func = NULL;

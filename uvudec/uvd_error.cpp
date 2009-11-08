@@ -1,5 +1,5 @@
-#include "uv_error.h"
-#include "uv_log.h"
+#include "uvd_error.h"
+#include "uvd_log.h"
 #include <stdio.h>
 
 uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, int line, const char *func)

@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "uvd_types.h"
-#include "uv_debug.h"
+#include "uvd_debug.h"
 
 UVDVarient::UVDVarient()
 {

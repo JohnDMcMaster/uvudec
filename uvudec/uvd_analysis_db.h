@@ -46,6 +46,9 @@ public:
 	//All
 	virtual uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false) = 0;
 
+	//Erase the database
+	virtual uv_err_t clear();
+
 public:
 };
 
@@ -62,6 +65,7 @@ public:
 	*/
 	uv_err_t loadData(std::string &file);
 	//Add a single function to the DB
+	//This registers functions found during analysis
 	uv_err_t loadFunction(UVDBinaryFunctionShared *function);
 	
 	/*
@@ -73,9 +77,13 @@ public:
 		-If it does exist, it will assume is destination dir and files should be ovverwritten (ie an update)
 	*/
 	uv_err_t saveData(std::string &file);
+	uv_err_t saveFunctionCodeSharedData(UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionCode, const std::string &outputDir, int functionIndex, std::string &config);
+	uv_err_t saveFunctionData(UVDBinaryFunctionShared *function, const std::string &outputDir, std::string &config);
 	
 	//All
 	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false);
+
+	virtual uv_err_t clear();
 
 public:
 	//Function database
@@ -102,6 +110,8 @@ public:
 	//FIXME: what if we are examining a multi-part executable?
 	//Not an issue for now since embedded are fully static
 	uv_err_t getAnalyzedProgramDB(UVDAnalysisDB **db);
+
+	virtual uv_err_t clear();
 
 public:
 	std::vector<UVDAnalysisDB *> m_dbs;

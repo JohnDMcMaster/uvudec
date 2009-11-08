@@ -11,7 +11,16 @@ Copyright (C) 1995-1997,1999,2000,2001,2004,2005
     Free Software Foundation, Inc.
 This file is part of the GNU C Library.
 
+libtar (coming soon):
+3 clause BSD
 
+libzip2 (coming soon):
+4 clause BSD
+
+
+Full license (uvudec):
+
+Universal Decompiler (uvudec)
 Copyright (c) 2008, John McMaster
 All rights reserved.
 
@@ -36,4 +45,6 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
 

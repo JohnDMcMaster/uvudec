@@ -1,0 +1,37 @@
+This is the bug tracking system
+
+Known issues
+
+TODO
+-Improve complicated operand printing
+-Function call resolution in DB functions
+	Resolves relative call issues
+	Normalize values to make even hashes?
+		Immediates
+		Addresses
+-Export functions to database
+	Will allow perfect decompilation of known coderee
+	In progress...connected.
+-Support more architectures
+-Support config pre-processor
+	Allows inheritance of processor families
+-Parse while loops
+-Parse for loops
+-Parse if/else
+-Intelligent conditionals
+	Instead of
+		temp = i - 32;
+		if( temp > 0 )
+			temp = 64 - i
+			if( temp > 0 )
+	Use
+		if( i > 32 && i < 64 )
+	Could also be done as part of a logic analyzer
+-Parse switch (early impl as if?)
+-Target decompilation for actual assemblers/compilers
+-Create a C interface, if desired
+-Trim non-coding parts of code
+	Ex: function may have a few bytes padding after RET for alignment on next function
+-Logic/flow analyzer
+	Find independance of variables
+-Stop memory leaks: fill in destructors

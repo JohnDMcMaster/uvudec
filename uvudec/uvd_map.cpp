@@ -1,7 +1,7 @@
 #ifdef NOT_DEFINED
-#include "uv_disasm_map.h"
-#include "uv_disasm_types.h"
-#include "uv_error.h"
+#include "uvd_disasm_map.h"
+#include "uvd_disasm_types.h"
+#include "uvd_error.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

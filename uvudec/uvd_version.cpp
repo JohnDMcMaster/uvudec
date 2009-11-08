@@ -1,5 +1,6 @@
 #include "uvd_version.h"
-#include "uv_util.h"
+#include "uvd_util.h"
+#include <vector>
 
 UVDVersion::UVDVersion()
 {

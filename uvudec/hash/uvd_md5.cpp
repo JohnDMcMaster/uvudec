@@ -6,8 +6,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd_types.h" 
-#include "uv_md5.h"
-#include "uv_md5_GNU.h"
+#include "uvd_md5.h"
+#include "uvd_md5_GNU.h"
 #include <stdlib.h>
 
 void uv_md5_format(char resblock[16], std::string &sOut)

@@ -6,7 +6,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 */
 
 
-#include "uv_error.h"
+#include "uvd_error.h"
 
 #ifndef UV_DEBUG_H
 #define UV_DEBUG_H
