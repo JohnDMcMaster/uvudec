@@ -11,6 +11,7 @@ include Makefile.configure
 
 ROOT_DIR=.
 COMPILER_DIR=$(ROOT_DIR)/compiler
+DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 HASH_DIR=$(ROOT_DIR)/hash
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
@@ -34,7 +35,12 @@ UVUDEC_VER_FLAGS=-DUVUDEC_VER_MAJOR=$(UVUDEC_VER_MAJOR) -DUVUDEC_VER_MINOR=$(UVU
 
 PACKAGE=uvudec
 
-INCLUDES += -I. -I$(COMPILER_DIR) -I$(ELF_DIR) -I$(HASH_DIR) 
+INCLUDES += -I. 
+#for curDir in $(SOURCE_DIRS); do \
+#	INCLUDES += " -I$${curDir}" ;\
+#done;
+INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR)
+
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
 WARNING_FLAGS=-Wall -Werror
@@ -117,7 +123,6 @@ endif
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			uvd_data.cpp \
 			main.cpp \
 			uvd_debug.cpp \
 			uvd_error.cpp \
@@ -146,6 +151,7 @@ CXX_SRCS = 	\
 			uvd_types.cpp \
 			uvd_version.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
+			$(DATA_DIR)/uvd_data.cpp \
 			$(ELF_DIR)/uvd_elf.cpp \
 			$(ELF_DIR)/uvd_elf_data.cpp \
 			$(ELF_DIR)/uvd_elf_header.cpp \
@@ -186,11 +192,6 @@ clean:
 		rm -f "$${curDir}/*.o" "$${curDir}/*~" ;\
 	done;
 
-loop:
-	for file in $(SOURCE_DIRS); do \
-		echo "loop: $${file}" ;\
-	done;
-
 ifeq ($(USING_STATIC),Y)
 installer:
 	
@@ -229,3 +230,4 @@ info:
 	@(echo "")
 	@(echo "LIBS: $(LIBS)")
 	@(echo "LFLAGS: $(LFLAGS)")
+	@(echo "INCLUDES: $(INCLUDES)")

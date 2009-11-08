@@ -65,7 +65,11 @@ uv_err_t UVDData::readData(unsigned int offset, char *buffer, unsigned int buffe
 {
 	int readVal = read(offset, buffer, bufferSize);
 	uv_assert_ret(readVal >= 0);
-	uv_assert_ret(((unsigned int)readVal) == bufferSize);
+	if( ((unsigned int)readVal) != bufferSize )
+	{
+		printf("Read bytes: %d, expected: %d\n", readVal, bufferSize);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
 	return UV_ERR_OK;
 }
 
@@ -110,7 +114,7 @@ int UVDData::read(unsigned int offset) const
 	
 	//UV_ENTER();
 
-	ret = read(offset, &c, 1);
+	ret = read(offset, &c, sizeof(char));
 	if( ret < 0 )
 	{
 		return ret;
@@ -507,6 +511,8 @@ uv_err_t UVDDataChunk::init(UVDData *data, unsigned int minAddr, unsigned int ma
 	readRc = data->read(minAddr, m_buffer, dataSize);
 	uv_assert(readRc >= 0);
 	uv_assert(((unsigned int)readRc) == dataSize);
+#else
+	m_data = data;
 #endif //UGLY_READ_HACK
 	
 	rc = UV_ERR_OK;
@@ -568,6 +574,8 @@ int UVDDataChunk::read(unsigned int offset, char *buffer, unsigned int bufferSiz
 	unsigned int dataSize = size();
 	unsigned int readSize = dataSize;
 	
+printf("read, offset: %d, bufferSize: %d, data size: %d\n", offset, bufferSize, dataSize);
+
 	//Direct buffer overflow?
 	if( offset > dataSize )
 	{
@@ -588,7 +596,7 @@ int UVDDataChunk::read(unsigned int offset, char *buffer, unsigned int bufferSiz
 	uv_assert_ret(buffer);
 	memcpy(buffer, pData + offset, readSize);
 
-	return UV_ERR_OK;
+	return readSize;
 }
 
 bool UVDDataChunk::operator==(UVDDataChunk &other)
