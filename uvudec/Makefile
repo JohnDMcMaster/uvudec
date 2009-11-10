@@ -160,6 +160,7 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_header.cpp \
 			$(ELF_DIR)/uvd_elf_init.cpp \
 			$(ELF_DIR)/uvd_elf_relocation.cpp \
+			$(ELF_DIR)/uvd_elf_string_table.cpp \
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
 			$(HASH_DIR)/uvd_md5_GNU.cpp \

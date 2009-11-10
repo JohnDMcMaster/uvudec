@@ -16,6 +16,22 @@ FIXME: class is a mess, needs cleanup
 #include <string>
 #include <elf.h>
 
+//Section names
+//The section name for the section string table
+#define UVD_ELF_SECTION_SECTION_STRING_TABLE			".shstrtab"
+//The section name for the symbol string table
+#define UVD_ELF_SECTION_SYMBOL_STRING_TABLE				".strtab"
+//Symbol table
+#define UVD_ELF_SECTION_SYMBOL_TABLE					".symtab"
+//Executable data
+#define UVD_ELF_SECTION_EXECUTABLE						".text"
+/*
+//Uninitialized data at program startup
+#define UVD_ELF_SECTION_UNINITIALIZED_DATA				".bss"
+//Dynamic linking information
+#define UVD_ELF_SECTION_DYNAMIC_LINKING					".dynamic"
+*/
+
 /*
 Supporting data to a specific section header entry
 Ex:
@@ -301,6 +317,23 @@ public:
 };
 
 /*
+Section that holds actual symbol data
+*/
+class UVDElfSymbolSectionHeaderEntry : public UVDElfSectionHeaderEntry
+{
+public:
+	UVDElfSymbolSectionHeaderEntry();
+	~UVDElfSymbolSectionHeaderEntry();
+
+	uv_err_t addSymbol(UVDElfSymbol *symbol);
+	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	uv_err_t getSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	
+public:
+	std::vector<UVDElfSymbol *> m_symbols;
+};
+
+/*
 A global variable
 */
 class UVDElfVariable : public UVDElfSymbol
@@ -387,6 +420,7 @@ public:
 	uv_err_t addProgramHeaderSection(UVDElfProgramHeaderEntry *section);
 	uv_err_t addSectionHeaderSection(UVDElfSectionHeaderEntry *section);
 	
+	//WARNING: this is currently find, not get (ie won't create on not found)
 	uv_err_t getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **section);
 	
 	
@@ -422,19 +456,23 @@ public:
 	uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
 	//Get the section header for .strtab
 	uv_err_t getSymbolStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut);
+
+	/*
+	.symtab
+	Used for symbols
+	*/
+	//Get the table holding the actual symbols
+	uv_err_t getSymbolTableSectionHeaderEntry(UVDElfSymbolSectionHeaderEntry **sectionOut);
 	//Higher level functions
 	//Some arbitrary symbol, it is not know what it represents
 	uv_err_t addSymbol(UVDElfSymbol *symbol);
 	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	uv_err_t getSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	
-	//WARNING: under development
-
 	/*
-	Biggest data to add:
-	-Functions
-	-Global variables
-	-ROM data
+	.text
+	Holds executable information
+	Stores the analyzed functions
 	*/
 	
 	//Raw data adds
@@ -453,6 +491,8 @@ public:
 	uv_err_t addFunction(UVDElfFunction *function);
 	//Register a variable to current ELF file
 	uv_err_t addVariable(UVDElfVariable *variable);
+
+	void printDebug();
 
 private:
 	//If we loaded this, pointer to the raw data source

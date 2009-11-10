@@ -175,7 +175,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 			}
 			
 			UVDBinaryFunctionInstance *codeShared = NULL;
-			codeShared = new UVDBinaryFunctionInstance();
+			uv_assert_err_ret(UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(&codeShared));
 			uv_assert_ret(codeShared);
 			
 			UVDData *data = NULL;
@@ -183,7 +183,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 			uv_assert_err_ret(UVDDataFile::getUVDDataFile(&data, valueImpl));
 			dataChunk = new UVDDataChunk();
 			uv_assert_err_ret(dataChunk->init(data));
-			codeShared->m_dataChunk = dataChunk;
+			codeShared->setData(dataChunk);
 			
 			//Ignore valueSrc for now
 			
@@ -198,7 +198,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunctionShared *function)
 {
 	uv_assert_ret(function);
-	printf_debug("loadFunction: %p\n", function);
+	printf_debug("loadFunction: 0x%.8X\n", (unsigned int)function);
 	m_functions.push_back(function);
 	return UV_ERR_OK;
 }
@@ -218,21 +218,31 @@ int g_writeRelocatableBinary = true;
 int g_writeElfFile = true;
 
 
-uv_err_t UVDAnalysisDBArchive::saveFunctionCodeSharedData(UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionCode, const std::string &outputDir, int functionIndex, std::string &config)
+uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
+		UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionInstance,
+		const std::string &outputDir, int functionIndex, std::string &config)
 {
+//printf("output dir: %s\n", outputDir.c_str());
 	char buff[256];
+	UVDData *data = NULL;
 	
-	uv_assert_ret(functionCode);
+	uv_assert_ret(functionInstance);
+	data = functionInstance->getData();
+	uv_assert_ret(data);
+		
+	std::string sOutputFilePrefix;
+	//snprintf(buff, sizeof(buff), "%s/%s", outputDir.c_str(), functionInstance->m_symbolName.c_str());
+	sOutputFilePrefix = functionInstance->m_symbolName;
 	
 	if( g_writeRawBinary )
 	{
 		//Raw binary
 		std::string binRawFile;
-		snprintf(buff, 256, "%s/%s_%d_raw.bin", outputDir.c_str(), function->m_name.c_str(), functionIndex);
+		snprintf(buff, sizeof(buff), "%s/%s__%d_raw.bin", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
 		binRawFile = buff;
+		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting raw binary to file: %s\n", binRawFile.c_str());
 		config += "BINARY_RAW=" + binRawFile + "\n";
-		uv_assert_ret(functionCode->m_dataChunk);
-		uv_assert_err_ret(functionCode->m_dataChunk->saveToFile(binRawFile));
+		uv_assert_err_ret(data->saveToFile(binRawFile));
 	}
 
 #if RELOCATABLE_WRITE_BINRARIES
@@ -240,15 +250,15 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionCodeSharedData(UVDBinaryFunctionShare
 	{
 		//Relocatable fixed binary
 		std::string binRelocatableFile;
-		snprintf(buff, 256, "%s_%d_relocatable.bin", function->m_name.c_str(), functionIndex);
+		snprintf(buff, sizeof(buff), "%s__%d_relocatable.bin", sOutputFilePrefix.c_str(), functionIndex);
+		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting relocatable binary to file: %s\n", binRelocatableFile.c_str());
 		binRelocatableFile = buff;
 		config += "BINARY_RELOCATABLE=" + binRelocatableFile + "\n";
-		uv_assert_ret(functionCode->m_dataChunk);
-		uv_assert_err_ret(functionCode->m_dataChunk->saveToFile(outputDir + "/" + binRelocatableFile));
+		uv_assert_err_ret(data->saveToFile(outputDir + "/" + binRelocatableFile));
 	
 		//TODO: add config for relocations
 		std::string binRelocatableConfigFile;
-		snprintf(buff, 256, "%s/%s_%d_relocatable.cfg", outputDir.c_str(), function->m_name.c_str(), functionIndex);
+		snprintf(buff, 256, "%s/%s_%d_relocatable.cfg", outputDir.c_str(), functionInstance->m_symbolName.c_str(), functionIndex);
 		binRelocatableConfigFile = buff;
 		config += "BINARY_RELOCATABLE_CONFIG=" + binRelocatableConfigFile + "\n";
 		//Get relocations here and save file...
@@ -261,11 +271,12 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionCodeSharedData(UVDBinaryFunctionShare
 		UVDElf *elf = NULL;
 		
 		std::string elfFile;
-		snprintf(buff, 256, "%s/%s_%d.elf", outputDir.c_str(), function->m_name.c_str(), functionIndex);
+		snprintf(buff, sizeof(buff), "%s/%s__%d.elf", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
 		elfFile = buff;
+		printf_debug_level(UVD_DEBUG_TEMP, "Writting ELF file to: %s\n", elfFile.c_str());
 		config += "BINARY_ELF=" + elfFile + "\n";
 
-		uv_assert_err_ret(functionCode->toUVDElf(&elf));
+		uv_assert_err_ret(functionInstance->toUVDElf(&elf));
 		uv_assert_ret(elf);
 		//And save it
 		uv_assert_err_ret(elf->saveToFile(elfFile));
@@ -275,27 +286,27 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionCodeSharedData(UVDBinaryFunctionShare
 	if( g_computeFunctionMD5 )
 	{
 		std::string md5;
-		uv_assert_err_ret(functionCode->getHash(md5));
+		uv_assert_err_ret(functionInstance->getHash(md5));
 		config += "MD5=" + md5 + "\n";
 	}
 
 	if( g_computeFunctionRelocatableMD5 )
 	{
 		std::string md5;
-		uv_assert_err_ret(functionCode->getRelocatableHash(md5));
+		uv_assert_err_ret(functionInstance->getRelocatableHash(md5));
 		config += "MD5_RELOCATABLE=" + md5 + "\n";
 	}
 
 	//Code is optional, sometimes we just have binary and know its, say, printf
-	if( !functionCode->m_code.empty() )
+	if( !functionInstance->m_code.empty() )
 	{
 		std::string srcFile;
 		
-		snprintf(buff, 256, "%s/%s_%d.c", outputDir.c_str(), function->m_name.c_str(), functionIndex);
+		snprintf(buff, 256, "%s/%s_%d.c", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
 		srcFile = buff;
 		
 		config += "SRC=" + srcFile + "\n";
-		uv_assert_err_ret(writeFile(srcFile, functionCode->m_code));
+		uv_assert_err_ret(writeFile(srcFile, functionInstance->m_code));
 	}
 
 	return UV_ERR_OK;
@@ -314,8 +325,8 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *functio
 	
 	for( std::vector<UVDBinaryFunctionInstance *>::size_type j = 0; j < function->m_representations.size(); ++j )
 	{	
-		UVDBinaryFunctionInstance *functionCode = function->m_representations[j];
-		uv_assert_err_ret(saveFunctionCodeSharedData(function, functionCode, outputDir, j, config));
+		UVDBinaryFunctionInstance *functionInstance = function->m_representations[j];
+		uv_assert_err_ret(saveFunctionInstanceSharedData(function, functionInstance, outputDir, j, config));
 		//config += "VER_MIN=" + 1 + "\n";
 		//config += "VER_MAX=" + 2 + "\n";
 		if( j + 1 < function->m_representations.size() )
@@ -346,7 +357,7 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 	std::string config;
 	
 	printf_debug("this = %p\n", this);
-	printf_debug("Iterating over functions: %d\n", m_functions.size());
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Iterating over functions: %d\n", m_functions.size());
 	
 	//Loop for each function
 	for( std::vector<UVDBinaryFunctionShared *>::size_type i = 0; i < m_functions.size(); ++i )
@@ -388,7 +399,7 @@ uv_err_t UVDAnalysisDBArchive::queryFunctionByBinary(UVDDataChunk *dataChunk, st
 			uv_assert_ret(functionShared);
 			
 			//Match?
-			if( dataChunk == functionShared->m_dataChunk )
+			if( dataChunk == functionShared->getData() )
 			{
 				//Yipee!
 				funcs.push_back(function);

@@ -218,6 +218,7 @@ public:
 
 	uv_err_t disassemble(std::string file, std::string &output);
 	uv_err_t decompile(std::string file, int destinationLanguage, std::string &output);
+	uv_err_t decompilePrint(std::string &output);
 	
 	std::string analyzedSymbolName(std::string dataSource, uint32_t functionAddress);
 	

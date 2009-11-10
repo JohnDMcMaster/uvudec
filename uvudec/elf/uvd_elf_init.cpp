@@ -219,7 +219,10 @@ uv_err_t UVDElf::init()
 	We could discard these later if needed
 	*/
 	UVDElfSectionHeaderEntry *nullSection = NULL;
-	UVDElfSectionHeaderEntry *stringTableSection = NULL;
+	UVDElfSectionHeaderEntry *sectionStringTableSection = NULL;
+	UVDElfSectionHeaderEntry *symbolStringTableSection = NULL;
+	UVDElfSectionHeaderEntry *symbolTableSection = NULL;
+	UVDElfSectionHeaderEntry *executableSection = NULL;
 	//XXX: should add SHT_SYMTAB entry?
 
 	//Fill in some defaults
@@ -232,17 +235,55 @@ uv_err_t UVDElf::init()
 	nullSection->setType(SHT_NULL);
 	uv_assert_err_ret(addSectionHeaderSection(nullSection));
 
-	//Add string table section
-	stringTableSection = new UVDElfStringTableSectionHeaderEntry();
-	uv_assert_ret(stringTableSection);
-	stringTableSection->setType(SHT_STRTAB);
-	uv_assert_err_ret(addSectionHeaderSection(stringTableSection));
-	//Register the index (only SHT_NULL was before this)
-	m_elfHeader.e_shstrndx = 1;
+printDebug();
 
+	//Add section header string table section
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
+			&sectionStringTableSection));
+	uv_assert_err_ret(addSectionHeaderSection(sectionStringTableSection));
+	//Register the index (only SHT_NULL was before this)
+	//We could alternativly do this as a UVDRelocatable
+	m_elfHeader.e_shstrndx = 1;
 	//Null string in string table must be first element
-	uv_assert_err_ret(addSectionHeaderString(""));	
+	uv_assert_err_ret(addSectionHeaderString(""));
+
+	//Add symbol string table section
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
+			&symbolStringTableSection));
+	uv_assert_err_ret(addSectionHeaderSection(symbolStringTableSection));
+	//Null string in string table must be first element
 	uv_assert_err_ret(addSymbolString(""));	
 
+	//Add symbol table section
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_TABLE,
+			&symbolTableSection));
+	uv_assert_err_ret(addSectionHeaderSection(symbolTableSection));
+
+	//Add executable data section
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
+			&executableSection));
+	uv_assert_err_ret(addSectionHeaderSection(executableSection));
+
+printDebug();
+
 	return UV_ERR_OK;
+}
+
+void UVDElf::printDebug()
+{
+	printf("\nELF debug dump\n");
+	for( unsigned int i = 0; i < m_sectionHeaderEntries.size(); ++i )
+	{
+		UVDElfSectionHeaderEntry *pCurSection = m_sectionHeaderEntries[i];
+		if( !pCurSection )
+		{
+			printf("Bad section at index %d\n", i);
+			continue;
+		}
+		
+		std::string sCurName;
+		pCurSection->getName(sCurName);
+		printf("Sections[%d]: <%s>\n", i, sCurName.c_str());
+	}
+	printf("Dump completed\n");
 }
