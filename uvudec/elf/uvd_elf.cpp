@@ -68,7 +68,7 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 
 	uv_assert_ret(relocatableData);
 
-	relocatableData->getRelocatableData(&rawData);
+	uv_assert_err_ret(relocatableData->getRelocatableData(&rawData));
 	uv_assert_ret(rawData);
 
 	//Convert UVD relocations to ELF relocations
@@ -112,35 +112,29 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 
 uv_err_t UVDElf::addSymbol(UVDElfSymbol *symbol)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	UVDElfSymbolSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSymbolTableSectionHeaderEntry(&section));
+	uv_assert_ret(section);
+	return UV_DEBUG(section->addSymbol(symbol));	
 }
 
 uv_err_t UVDElf::findSymbol(const std::string &sName, UVDElfSymbol **symbol)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	UVDElfSymbolSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSymbolTableSectionHeaderEntry(&section));
+	uv_assert_ret(section);
+	return UV_DEBUG(section->findSymbol(sName, symbol));	
 }
 
 uv_err_t UVDElf::getSymbol(const std::string &sName, UVDElfSymbol **symbolOut)
 {
-	UVDElfSymbol *symbol = NULL;
-
-	//If it already exists, return it
-	if( UV_SUCCEEDED(findSymbol(sName, symbolOut)) )
-	{
-		return UV_ERR_OK;
-	}
+	UVDElfSymbolSectionHeaderEntry *section = NULL;
 	
-	//Otherwise we must create it
-	
-	symbol = new UVDElfSymbol();
-	uv_assert_ret(symbol);
-	
-	symbol->setSymbolName(sName);
-	uv_assert_err_ret(addSymbol(symbol));
-
-	uv_assert_ret(symbolOut);
-	*symbolOut = symbol;
-	return UV_ERR_OK;
+	uv_assert_err_ret(getSymbolTableSectionHeaderEntry(&section));
+	uv_assert_ret(section);
+	return UV_DEBUG(section->getSymbol(sName, symbolOut));	
 }
 
 uv_err_t UVDElf::getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeaderEntry **sectionOut)
@@ -166,102 +160,14 @@ uv_err_t UVDElf::getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeader
 	return UV_ERR_OK;
 }
 
-UVDElfStringTableSectionHeaderEntry::UVDElfStringTableSectionHeaderEntry()
-{
-}
-
-UVDElfStringTableSectionHeaderEntry::~UVDElfStringTableSectionHeaderEntry()
-{
-}
-
-void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsigned int *index)
-{
-	for( unsigned int i = 0; i < m_stringTable.size(); ++i )
-	{
-		const std::string &sCur = m_stringTable[i];
-		//Already in there?
-		if( sCur == sIn )
-		{
-			//Its present, return it
-			if( index )
-			{
-				*index = i;
-			}
-			return;
-		}
-	}
-	//No found, add it
-	if( index )
-	{
-		*index = m_stringTable.size();
-	}
-	m_stringTable.push_back(sIn);
-}
-
-uv_err_t UVDElfStringTableSectionHeaderEntry::ensureCurrentStringTableData()
-{
-	//If our data object didn't previously exist, create it
-	if( m_fileData == NULL )
-	{
-		m_fileData = new UVDDataMemory(0);
-	}
-	uv_assert_ret(m_fileData);
-
-	//Construct the data table
-	//Is there a way we can check for dirty?
-	
-	//Check needed size
-	unsigned int dataSize = 0;
-	//First element should be empty (null) string
-	uv_assert_ret(m_stringTable.size() >= 1);
-	uv_assert_ret(m_stringTable[0].empty());
-	for( std::vector<std::string>::iterator iter = m_stringTable.begin(); iter != m_stringTable.end(); ++iter )
-	{
-		std::string s = *iter;
-		//Include null space
-		dataSize += s.size() + 1;
-	}
-	
-	//Reallocate space, if needed
-	UVDDataMemory *fileData = dynamic_cast<UVDDataMemory *>(m_fileData);
-	uv_assert_err_ret(fileData->realloc(dataSize));
-
-	//And copy strings in
-	unsigned int offset = 0;
-	for( std::vector<std::string>::iterator iter = m_stringTable.begin(); iter != m_stringTable.end(); ++iter )
-	{
-		std::string s = *iter;
-		//Include null space
-		unsigned int bufferSize = s.size() + 1;
-
-		uv_assert_err_ret(m_fileData->writeData(offset, s.c_str(), bufferSize));		
-		offset += bufferSize;
-	}
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfStringTableSectionHeaderEntry::getFileData(UVDData **dataOut)
-{
-	//Make sure our file data is current
-	uv_assert_err_ret(ensureCurrentStringTableData());
-	//String table file data is required
-	uv_assert_ret(m_fileData);
-
-	//Done, assign and return
-	uv_assert_ret(dataOut);
-	*dataOut = m_fileData;
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDElf::addSectionHeaderString(const std::string &s, unsigned int *index)
 {
-	return UV_DEBUG(addStringCore(".shstrtab", s, index));
+	return UV_DEBUG(addStringCore(UVD_ELF_SECTION_SECTION_STRING_TABLE, s, index));
 }
 
 uv_err_t UVDElf::addSymbolString(const std::string &s, unsigned int *index)
 {
-	return UV_DEBUG(addStringCore(".strtab", s, index));
+	return UV_DEBUG(addStringCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s, index));
 }
 
 uv_err_t UVDElf::addStringCore(const std::string &sSection, const std::string &s, unsigned int *index)
@@ -271,8 +177,9 @@ uv_err_t UVDElf::addStringCore(const std::string &sSection, const std::string &s
 
 	//Get the table
 	uv_assert_err_ret(getSectionHeaderByName(sSection, &sectionHeaderEntry));
-	uv_assert_ret(stringTableEntry);
+	uv_assert_ret(sectionHeaderEntry);
 	stringTableEntry = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionHeaderEntry);
+	uv_assert_ret(stringTableEntry);
 	//And call its string managment
 	stringTableEntry->addString(s, index);
 	
@@ -282,13 +189,13 @@ uv_err_t UVDElf::addStringCore(const std::string &sSection, const std::string &s
 uv_err_t UVDElf::getSectionHeaderStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatableOut,
 		UVDRelocationManager *relocationManager)
 {
-	return UV_DEBUG(getStringRelocatableElementCore(".shstrtab", s, relocatableOut, relocationManager));
+	return UV_DEBUG(getStringRelocatableElementCore(UVD_ELF_SECTION_SECTION_STRING_TABLE, s, relocatableOut, relocationManager));
 }
 
 uv_err_t UVDElf::getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatableOut,
 		UVDRelocationManager *relocationManager)
 {
-	return UV_DEBUG(getStringRelocatableElementCore(".strtab", s, relocatableOut, relocationManager));
+	return UV_DEBUG(getStringRelocatableElementCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s, relocatableOut, relocationManager));
 }
 
 uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, const std::string &s,
@@ -367,8 +274,10 @@ uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionH
 		UVDElfSectionHeaderEntry *pCurSection = m_sectionHeaderEntries[i];
 		std::string sCurName;
 		
+
 		uv_assert_ret(pCurSection);
 		pCurSection->getName(sCurName);
+printf("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
 		//Found it?
 		if( sCurName == sName )
 		{

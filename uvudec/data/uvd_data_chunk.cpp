@@ -169,10 +169,12 @@ bool UVDDataChunk::operator==(UVDDataChunk &other)
 
 int UVDDataChunk::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
-	uv_assert_ret(m_data);
+	if( !m_data )
+	{
+		return -1;
+	}
 	//No caching, but works
-	uv_assert_err_ret(m_data->read(m_offset + offset, buffer, bufferSize));
-	return UV_ERR_OK;
+	return m_data->read(m_offset + offset, buffer, bufferSize);
 }
 
 bool UVDDataChunk::operator==(UVDDataChunk &other)

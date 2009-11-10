@@ -188,7 +188,7 @@ public:
 
 private:
 	//Force a rebuild of the internal database
-	uv_err_t rebuildDb();
+	//uv_err_t rebuildDb();
 
 public:
 	//Superblock for block representation of program
@@ -218,7 +218,7 @@ public:
 	UVDAnalysisDBArchive *m_curDb;
 	
 	//List of functions found
-	std::vector<UVDBinaryFunction *> m_functions;
+	//std::vector<UVDBinaryFunction *> m_functions;
 };
 
 #endif //UVD_ANALYZER_H

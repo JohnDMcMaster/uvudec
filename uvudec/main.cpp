@@ -228,6 +228,7 @@ static void usage(const char *program_name)
 	printf_help("--addr-exclude-max=<max>: maximum exclusion address\n");
 	printf_help("--addr-comment: put comments on addresses\n");
 	printf_help("--addr-label: label addresses for jumping\n");
+	printf_help("--analysis-only: only do analysis, don't print data\n");
 	printf_help("--opcode-usage: opcode usage count table\n");
 	printf_help("--analysis-dir=<dir>: create skeleton data suitible for stored analysis\n");
 	printf_help("--input=<file name>: source for data\n");
@@ -288,6 +289,31 @@ uv_err_t parseFileOption(const std::string optionFileIn, FILE **pOptionFileIn)
 	*pOptionFileIn = pOptionFile;
 
 	return UV_ERR_OK;
+}
+
+bool argToBool(const std::string &sArg)
+{
+	if( strcmp(sArg.c_str(), "true") == 0 )
+	{
+		return true;
+	}
+	else if( strcmp(sArg.c_str(), "false") == 0 )
+	{
+		return false;
+	}
+	else if( sArg == "0" )
+	{
+		return false;
+	}
+	else if( sArg == "1" )
+	{
+		return true;
+	}
+	else
+	{
+		//Default...should error?
+		return true;
+	}
 }
 
 int main(int argc, char **argv)
@@ -429,6 +455,11 @@ int main(int argc, char **argv)
 		else if( strstr(cur_arg, "--analysis-dir=") == cur_arg )
 		{
 			config->m_analysisDir = cur_arg + sizeof("--analysis-dir=") - 1;
+		}
+		else if( strstr(cur_arg, "--analysis-only=") == cur_arg )
+		{
+			std::string sAnalysisOnly = cur_arg + sizeof("--analysis-only=") - 1;
+			config->m_analysisOnly = argToBool(sAnalysisOnly);
 		}
 		else if( strstr(cur_arg, "--print-jumped-addresses=") == cur_arg )
 		{

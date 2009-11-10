@@ -107,6 +107,7 @@ public:
 
 public:
 	std::string m_analysisDir;
+	int m_analysisOnly;
 	
 	std::vector<std::string> m_args; 
 	//Default interpreter to use for script files

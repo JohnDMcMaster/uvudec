@@ -11,7 +11,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #ifndef UV_DEBUG_H
 #define UV_DEBUG_H
 
-#define DEBUG_BREAK()			do { printf("DEBUG BREAK\n"); exit(1); } while ( 0 )
+#define DEBUG_BREAK()			do { printf("DEBUG BREAK (%s:%d)\n", __FILE__, __LINE__); exit(1); } while ( 0 )
 
 #ifdef __cplusplus
 extern "C"
@@ -29,12 +29,14 @@ extern FILE *g_pOutputFile;
 
 //Don't print anything
 #define UVD_DEBUG_NONE			0
+//A message that should be disabled for production, but is used for current diagnosis
+#define UVD_DEBUG_TEMP			1
 //Only print high level status messages
-#define UVD_DEBUG_PASSES		1
+#define UVD_DEBUG_PASSES		2
 //Main sections being executed
-#define UVD_DEBUG_SUMMARY		2
+#define UVD_DEBUG_SUMMARY		3
 //Debug messages from each section
-#define UVD_DEBUG_VERBOSE		3
+#define UVD_DEBUG_VERBOSE		4
 extern int g_verbose_level;
 
 const char *get_last_func();

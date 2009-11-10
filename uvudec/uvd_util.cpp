@@ -459,7 +459,7 @@ uv_err_t writeFile(const std::string &sFile, const char *buff, size_t buffsz)
 	if( !pFile )
 	{
 		UV_DEBUG(rc);
-		printf_debug("Could not open file: %s\n", sFile.c_str());
+		printf("Could not open file: %s\n", sFile.c_str());
 		goto error;
 	}
 

@@ -70,9 +70,16 @@ uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(const std::string
 	UVDElfSectionHeaderEntry *sectionHeader = NULL;
 	
 	//String table?
-	if( sSection == ".strtab" )
+	if( sSection == UVD_ELF_SECTION_SYMBOL_STRING_TABLE
+			|| sSection == UVD_ELF_SECTION_SECTION_STRING_TABLE )
 	{
 		sectionHeader = new UVDElfStringTableSectionHeaderEntry();
+		uv_assert_ret(sectionHeader);
+		sectionHeader->setType(SHT_STRTAB);
+	}
+	else if( sSection == UVD_ELF_SECTION_SYMBOL_TABLE )
+	{
+		sectionHeader = new UVDElfSymbolSectionHeaderEntry();
 	}
 	//Default to generic structure
 	else
@@ -165,6 +172,7 @@ uv_err_t UVDElfSectionHeaderEntry::getName(std::string &sName)
 void UVDElfSectionHeaderEntry::setName(const std::string &sName)
 {
 	m_sName = sName;
+printf("Set name to %s\n", m_sName.c_str());
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getName(int *nameIndex)

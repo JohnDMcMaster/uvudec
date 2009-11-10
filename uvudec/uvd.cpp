@@ -88,6 +88,40 @@ error:
 	return UV_DEBUG(rc);
 }
 
+static std::string mangleFileToSymbol(const std::string &sIn)
+{
+	/*
+	There are a lot of cases not covered for now
+	*/
+
+	//Start by getting the basename
+	//basename may modify string, make a copy
+	char buff[512];
+	strcpy(buff, sIn.c_str());
+	char *szBasename = basename(buff);
+	if( !szBasename )
+	{
+		return "";
+	}
+	std::string sBasename = szBasename;
+	
+	//remove everything after . (assume extension)
+	for( ;; )
+	{
+		std::string::size_type pos = sBasename.rfind('.');
+		if( pos == std::string::npos )
+		{
+			break;
+		}
+		//Get substring
+		sBasename = sBasename.substr(0, pos);
+	}
+	
+	//All other stuff replace with _
+	
+	return sBasename;
+}
+
 std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t functionAddress)
 {
 	/*
@@ -99,7 +133,8 @@ std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t functionAdd
 
 	//file + address
 	//Do mangling to make sure we don't have dots and such
-	snprintf(buff, 512, "uvudec__%s__%.4X", dataSource.c_str(), functionAddress);
+	std::string mangeledDataSource = mangleFileToSymbol(dataSource);
+	snprintf(buff, 512, "uvudec__%s__%.4X", mangeledDataSource.c_str(), functionAddress);
 	return std::string(buff);
 }
 
@@ -120,8 +155,9 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uv_assert_ret(dataChunk);
 	uv_assert_err_ret(dataChunk->init(m_data, functionBlock->getMinAddress(), functionBlock->getMaxAddress()));
 	*/
-	functionBlock->getDataChunk(&dataChunk);
+	uv_assert_err_ret(functionBlock->getDataChunk(&dataChunk));
 	uv_assert_ret(dataChunk);
+	uv_assert_ret(dataChunk->m_data);
 
 	function = new UVDBinaryFunction();
 	uv_assert_ret(function);
@@ -140,7 +176,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	functionShared->m_description = "Automatically generated.";	
 
 	//Create the single known instance of this function
-	functionInstance = new UVDBinaryFunctionInstance();
+	uv_assert_err_ret(UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(&functionInstance));
 	uv_assert_ret(functionInstance);
 	//Only specific instances get symbol designations
 	functionInstance->m_symbolName = analyzedSymbolName(sourceBase, minAddress);	
@@ -154,13 +190,13 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	std::string m_origin;
 	std::string m_notes;
 	*/
-	functionInstance->m_dataChunk = dataChunk;
+	functionInstance->setData(dataChunk);
 	//And register it to that particular function
 	functionShared->m_representations.push_back(functionInstance);
 	
 	function->m_shared = functionShared;
 	function->m_uvd = this;
-	function->m_dataChunk = dataChunk;
+	function->m_data = dataChunk;
 	
 	*functionIn = function;
 
@@ -286,44 +322,42 @@ error:
 
 uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDAnalyzedBlock *block = NULL;
 	UVDAnalyzedCode *analyzedCode = NULL;
 	UVDAnalyzedCodeShared *analyzedCodeShared = NULL;
 	UVDDataChunk *dataChunk = NULL;
 	//uint32_t dataSize = 0;
 	
-	uv_assert(blockOut);
+	uv_assert_ret(blockOut);
 	
 	printf_debug("Constructing block 0x%.8X:0x%.8X\n", minAddr, maxAddr);
+	uv_assert_ret(m_data);
 
-	uv_assert(minAddr <= maxAddr);
-	uv_assert(maxAddr <= g_addr_max);
+	uv_assert_ret(minAddr <= maxAddr);
+	uv_assert_ret(maxAddr <= g_addr_max);
 	//dataSize = maxAddr - minAddr;
 
 	block = new UVDAnalyzedBlock();
-	uv_assert(block);
+	uv_assert_ret(block);
 	
 	analyzedCode = new UVDAnalyzedCode();
-	uv_assert(analyzedCode);
+	uv_assert_ret(analyzedCode);
 	block->m_code = analyzedCode;
 
 	analyzedCodeShared = new UVDAnalyzedCodeShared();
-	uv_assert(analyzedCodeShared);
+	uv_assert_ret(analyzedCodeShared);
 	analyzedCode->m_shared = analyzedCodeShared;
 
 	dataChunk = new UVDDataChunk();
-	uv_assert(dataChunk);
+	uv_assert_ret(dataChunk);
+	uv_assert_ret(m_data);
+	uv_assert_err_ret(dataChunk->init(m_data, minAddr, maxAddr));
+	uv_assert_ret(dataChunk->m_data);
 	analyzedCodeShared->m_dataChunk = dataChunk;
-
-	uv_assert_err(dataChunk->init(m_data, minAddr, maxAddr));
 
 	*blockOut = block;
 
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryLocation *l, UVDAnalyzedMemoryLocation *r)
@@ -559,10 +593,6 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 	unsigned int dat_sz = 0;
 	//unsigned int read = 0;
 	std::string configFile;
-	UVDIterator iter;
-	//UVDIterator iterEnd;
-	int printPercentage = 1;
-	int printNext = printPercentage;
 	
 	UV_ENTER();
 
@@ -595,6 +625,29 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 
 	//Most of program time should be spent here
 	uv_assert_err_ret(analyze());
+
+	uv_assert_ret(m_config);
+	if( !m_config->m_analysisOnly )
+	{
+		uv_assert_err_ret(decompilePrint(output));
+	}
+
+	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
+	decompileBenchmark.stop();
+	printf_debug_level(UVD_DEBUG_PASSES, "decompile time: %s\n", decompileBenchmark.toString().c_str());
+	
+//printf("DEBUG BREAK\n");
+//exit(1);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::decompilePrint(std::string &output)
+{
+	UVDIterator iter;
+	//UVDIterator iterEnd;
+	int printPercentage = 1;
+	int printNext = printPercentage;
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: printing...\n");
 	UVDBenchmark decompilePrintBenchmark;
@@ -667,13 +720,6 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 
 	decompilePrintBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile print time (%d records): %s\n", iterations, decompilePrintBenchmark.toString().c_str());
-		
-	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
-	decompileBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "decompile time: %s\n", decompileBenchmark.toString().c_str());
-	
-//printf("DEBUG BREAK\n");
-//exit(1);
 
 	return UV_ERR_OK;
 }

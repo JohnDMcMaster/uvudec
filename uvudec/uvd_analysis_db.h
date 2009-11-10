@@ -40,8 +40,12 @@ public:
 	*/
 	virtual uv_err_t saveData(std::string &file) = 0;
 	
-	//Given a binary, try to match possible representations
-	//"Best" (highest level, most expected)
+	/*
+	Whats with the clear params here?
+	Seems they aren't even used
+	Given a binary, try to match possible representations
+	"Best" (highest level, most expected)
+	*/
 	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, UVDBinaryFunctionShared **func);
 	//All
 	virtual uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false) = 0;
@@ -77,7 +81,7 @@ public:
 		-If it does exist, it will assume is destination dir and files should be ovverwritten (ie an update)
 	*/
 	uv_err_t saveData(std::string &file);
-	uv_err_t saveFunctionCodeSharedData(UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionCode, const std::string &outputDir, int functionIndex, std::string &config);
+	uv_err_t saveFunctionInstanceSharedData(UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionCode, const std::string &outputDir, int functionIndex, std::string &config);
 	uv_err_t saveFunctionData(UVDBinaryFunctionShared *function, const std::string &outputDir, std::string &config);
 	
 	//All

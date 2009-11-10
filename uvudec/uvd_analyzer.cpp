@@ -357,9 +357,10 @@ uv_err_t UVDAnalyzer::getJumpedAddresses(UVDAnalyzedMemorySpace &jumpedAddresses
 	return UV_DEBUG(getAddresses(jumpedAddresses, UVD_MEMORY_REFERENCE_JUMP_DEST));
 }
 
+/*
 uv_err_t UVDAnalyzer::rebuildDb()
 {
-	printf_debug("Rebuilding analyzer database\n");
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Rebuilding analyzer database\n");
 	//Assumes all functions are already here and just need to be individually picked apart
 	
 	//Start clean
@@ -385,6 +386,7 @@ uv_err_t UVDAnalyzer::rebuildDb()
 
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
 {
@@ -392,7 +394,7 @@ uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
 	uv_assert_ret(m_curDb);
 	
 	//Just always rebuild for now, add dirty field later if needed
-	uv_assert_err_ret(rebuildDb());
+	//uv_assert_err_ret(rebuildDb());
 	
 	*db = m_curDb;
 	

@@ -134,7 +134,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 	//Seek for first func start
 	uv_assert_err(nextReferencedAddress(superblock, referencedAddresses, iterAddresses, UVD_MEMORY_REFERENCE_CALL_DEST, true));
 
-	printf_debug("Starting at end? %d\n", iterAddresses == referencedAddresses.end());
+	//printf_debug("Starting at end? %d\n", iterAddresses == referencedAddresses.end());
 
 	while( iterAddresses != referencedAddresses.end() )
 	{
@@ -195,9 +195,11 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		functionShared = function->m_shared;
 		uv_assert_err_ret(analyzeFunction(functionShared));
 		uv_assert_err_ret(curDb->loadFunction(functionShared));
+//uv_assert(functionShared->m_representations[0]->m_dataChunk->m_data);
 	
 		iterAddresses = iterNextAddress;
 	}
+	printf_debug_level(UVD_DEBUG_SUMMARY, "found functions: %d\n", curDb->m_functions.size());
 
 	rc = UV_ERR_OK;
 	
@@ -245,9 +247,8 @@ uv_err_t UVD::analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunct
 	UVDData *data = NULL;
 
 	uv_assert_ret(binaryFunctionCodeShared);
-	data = binaryFunctionCodeShared->m_dataChunk;
+	data = binaryFunctionCodeShared->getData();
 	uv_assert_ret(data);
-
 	
 	return UV_ERR_OK;
 }
@@ -315,17 +316,20 @@ uv_err_t UVD::generateAnalysisDir()
 	dbConcentrator = m_analyzer->m_db;
 	uv_assert_ret(dbConcentrator);
 	
-	printf_debug("Fetching DB...\n");
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Fetching DB...\n");
 	//uv_assert_err_ret(dbConcentrator->getAnalyzedProgramDB(&curDb));
 	uv_assert_err_ret(m_analyzer->getAnalyzedProgramDB(&curDb));
 	uv_assert_ret(curDb);
+	printf_debug_level(UVD_DEBUG_SUMMARY, "going to save functions: %d\n", curDb->m_functions.size());
 
-	printf_debug("Saving data...\n");
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving data...\n");
 	uv_assert_err_ret(curDb->saveData(m_config->m_analysisDir));
-	printf_debug("Data saved!\n");
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Data saved!\n");
 	
 	analysisSaveBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "analysis save time: %s\n", analysisSaveBenchmark.toString().c_str());
+
+DEBUG_BREAK();
 
 	return UV_ERR_OK;
 }
