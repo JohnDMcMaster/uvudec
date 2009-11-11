@@ -8,6 +8,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 #include "uvd_instruction.h"
@@ -108,10 +109,13 @@ public:
 public:
 	std::string m_analysisDir;
 	int m_analysisOnly;
+	//If any are set, will only output analysis of symbols at the given addresses
+	std::set<int> m_analysisOutputAddresses; 
 	
 	std::vector<std::string> m_args; 
 	//Default interpreter to use for script files
 	int m_configInterpreterLanguage;
+	
 };
 
 //Default configuration options

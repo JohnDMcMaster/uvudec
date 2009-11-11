@@ -212,7 +212,7 @@ uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, co
 	
 	//Find the section header for the string table (specified as part of the elf header)
 	uv_assert_err_ret(getSectionHeaderByName(sSection, &sectionHeaderEntry));
-	uv_assert_ret(stringTableEntry);
+	uv_assert_ret(sectionHeaderEntry);
 	stringTableEntry = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionHeaderEntry);
 	//And get the file data associated with it
 	uv_assert_err_ret(stringTableEntry->getFileData(&stringTableData));
@@ -261,27 +261,27 @@ uv_err_t UVDElf::addProgramHeaderSection(UVDElfProgramHeaderEntry *section)
 
 uv_err_t UVDElf::addSectionHeaderSection(UVDElfSectionHeaderEntry *section)
 {
+	uv_assert_ret(section);
 	m_sectionHeaderEntries.push_back(section);
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **section)
+uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **sectionOut)
 {
-	uv_assert_ret(section);
+	uv_assert_ret(sectionOut);
 	
 	for( unsigned int i = 0; i < m_sectionHeaderEntries.size(); ++i )
 	{
 		UVDElfSectionHeaderEntry *pCurSection = m_sectionHeaderEntries[i];
 		std::string sCurName;
-		
 
 		uv_assert_ret(pCurSection);
 		pCurSection->getName(sCurName);
-printf("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
+		//printf_debug("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
 		//Found it?
 		if( sCurName == sName )
 		{
-			*section = pCurSection;
+			*sectionOut = pCurSection;
 			return UV_ERR_OK;
 		}
 	}

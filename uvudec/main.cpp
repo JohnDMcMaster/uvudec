@@ -31,7 +31,7 @@ Seems a solid architecture, should stick with it
 
 //typedef uv_err_t (*uv_disasm_func)(struct );
 
-UVD *g_disasm = NULL;
+UVD *g_uvd = NULL;
 std::vector<UVDMemoryLocation> g_noncodingAddresses;
 
 uv_err_t disassemble(std::string file, UVDConfig *config)
@@ -60,7 +60,7 @@ uv_err_t disassemble(std::string file, UVDConfig *config)
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	uv_assert_all(disasm);
-	g_disasm = disasm;
+	g_uvd = disasm;
 	disasm->m_noncodingAddresses = g_noncodingAddresses;
 	disasm->changeConfig(config);
 	
@@ -224,11 +224,14 @@ static void usage(const char *program_name)
 #endif //USING_JAVASCRIPT
 	printf_help("--addr-min=<min>: minimum analysis address\n");
 	printf_help("--addr-max=<max>: maximum analysis address\n");
+	//printf_help("--addr-include=<min>,<max>: analyze range\n");
 	printf_help("--addr-exclude-min=<min>: minimum exclusion address\n");
 	printf_help("--addr-exclude-max=<max>: maximum exclusion address\n");
+	//printf_help("--addr-exclude=<min>,<max>: don't analyze range\n");
 	printf_help("--addr-comment: put comments on addresses\n");
 	printf_help("--addr-label: label addresses for jumping\n");
 	printf_help("--analysis-only: only do analysis, don't print data\n");
+	printf_help("--analysis-address=<address>: only output analysis data for specified address\n");
 	printf_help("--opcode-usage: opcode usage count table\n");
 	printf_help("--analysis-dir=<dir>: create skeleton data suitible for stored analysis\n");
 	printf_help("--input=<file name>: source for data\n");
@@ -460,6 +463,12 @@ int main(int argc, char **argv)
 		{
 			std::string sAnalysisOnly = cur_arg + sizeof("--analysis-only=") - 1;
 			config->m_analysisOnly = argToBool(sAnalysisOnly);
+		}
+		else if( strstr(cur_arg, "--analysis-address=") == cur_arg )
+		{
+			std::string sAnalysisAddress = cur_arg + sizeof("--analysis-address=") - 1;
+			int iAnalysisAddress = strtol(sAnalysisAddress.c_str(), NULL, 0);
+			config->m_analysisOutputAddresses.insert(iAnalysisAddress);
 		}
 		else if( strstr(cur_arg, "--print-jumped-addresses=") == cur_arg )
 		{

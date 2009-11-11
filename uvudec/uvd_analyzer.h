@@ -185,6 +185,13 @@ public:
 	
 	//DB of currently analyzed program
 	uv_err_t getAnalyzedProgramDB(UVDAnalysisDBArchive **db);
+	//Register a newly analyzed function
+	//Will reflect the analyzedProgramDB to reflect the newly found function instance
+	uv_err_t loadFunction(UVDBinaryFunction *function);
+
+	//To fetch the original data
+	uv_err_t functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **function);
+	uv_err_t functionInstanceToFunction(UVDBinaryFunctionInstance *functionInstance, UVDBinaryFunction **function);
 
 private:
 	//Force a rebuild of the internal database
@@ -217,8 +224,8 @@ public:
 	//May be listed in m_db
 	UVDAnalysisDBArchive *m_curDb;
 	
-	//List of functions found
-	//std::vector<UVDBinaryFunction *> m_functions;
+	//List of functions found during analysis
+	std::set<UVDBinaryFunction *> m_functions;
 };
 
 #endif //UVD_ANALYZER_H

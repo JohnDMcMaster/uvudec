@@ -150,11 +150,6 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uv_assert_ret(functionBlock);
 	uv_assert_ret(functionIn);
 	
-	/*
-	dataChunk = new UVDDataChunk();
-	uv_assert_ret(dataChunk);
-	uv_assert_err_ret(dataChunk->init(m_data, functionBlock->getMinAddress(), functionBlock->getMaxAddress()));
-	*/
 	uv_assert_err_ret(functionBlock->getDataChunk(&dataChunk));
 	uv_assert_ret(dataChunk);
 	uv_assert_ret(dataChunk->m_data);
@@ -168,6 +163,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 
 	uint32_t minAddress = 0;
 	uv_assert_err_ret(functionBlock->getMinAddress(minAddress));
+	function->m_offset = minAddress;
 	std::string sourceBase = uv_basename(m_data->getSource());
 	
 	//The true name of the function is unknown

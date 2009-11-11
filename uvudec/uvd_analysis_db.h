@@ -15,7 +15,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 
 /*
 Manages data to aid in analysis of binaries
-Original purpose was to include pre-decompiled functions for CRT analysis
+Original purpose was to include pre-decompiled functions for CRT and related analysis
 */
 class UVDAnalysisDB
 {
@@ -56,6 +56,9 @@ public:
 public:
 };
 
+/*
+A file format analysis DB
+*/
 class UVDAnalysisDBArchive : public UVDAnalysisDB
 {
 public:
@@ -89,12 +92,17 @@ public:
 
 	virtual uv_err_t clear();
 
+private:
+	uv_err_t shouldSaveFunction(UVDBinaryFunctionShared *functionShared);
+
 public:
 	//Function database
 	std::vector<UVDBinaryFunctionShared *> m_functions;
 };
 
-//Collection of UVDAnalysisDB
+/*
+Collection of UVDAnalysisDB
+*/
 class UVDAnalysisDBConcentrator : public UVDAnalysisDB
 {
 public:

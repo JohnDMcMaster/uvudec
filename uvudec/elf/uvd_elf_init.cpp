@@ -158,6 +158,7 @@ uv_err_t UVDElf::getFromRelocatableDataCore(UVDRelocatableData *relocatableData,
 	uv_assert_err_ret(UVDElf::getUVDElf(&elf));
 	uv_assert_ret(elf);
 	uv_assert_err_ret(elf->addRelocatableDataCore(relocatableData, symbolPrefix, sDataSection, sRelocationSection));
+	*out = elf;
 
 	return UV_DEBUG(UV_ERR_OK);
 }
@@ -235,8 +236,6 @@ uv_err_t UVDElf::init()
 	nullSection->setType(SHT_NULL);
 	uv_assert_err_ret(addSectionHeaderSection(nullSection));
 
-printDebug();
-
 	//Add section header string table section
 	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
 			&sectionStringTableSection));
@@ -263,8 +262,6 @@ printDebug();
 	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
 			&executableSection));
 	uv_assert_err_ret(addSectionHeaderSection(executableSection));
-
-printDebug();
 
 	return UV_ERR_OK;
 }
