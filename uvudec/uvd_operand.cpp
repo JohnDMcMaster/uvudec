@@ -403,7 +403,8 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 		printf_debug("Print func\n");
 		printf_debug("Print func, args: %d, func: %s\n", m_func->m_args.size(), functionName.c_str());
 		
-		if( UV_SUCCEEDED(g_disasm->m_symMap->getSym(functionName, &sym_value)) )
+		//FIXME: global UVD ref
+		if( UV_SUCCEEDED(g_uvd->m_symMap->getSym(functionName, &sym_value)) )
 		{
 			printf_debug("Got sym\n");
 			uv_assert(sym_value);

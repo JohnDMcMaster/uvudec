@@ -194,8 +194,8 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		uv_assert_err_ret(blockToFunction(functionBlock, &function));
 		functionShared = function->m_shared;
 		uv_assert_err_ret(analyzeFunction(functionShared));
-		uv_assert_err_ret(curDb->loadFunction(functionShared));
-//uv_assert(functionShared->m_representations[0]->m_dataChunk->m_data);
+		//uv_assert_err_ret(curDb->loadFunction(functionShared));
+		uv_assert_err_ret(m_analyzer->loadFunction(function));
 	
 		iterAddresses = iterNextAddress;
 	}

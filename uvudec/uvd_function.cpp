@@ -163,6 +163,9 @@ UVDBinaryFunction::UVDBinaryFunction()
 	m_data = NULL;
 	m_uvd = NULL;
 	m_shared = NULL;
+	m_offset = 0;
 }
 
-
+UVDBinaryFunction::~UVDBinaryFunction()
+{
+}

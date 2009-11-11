@@ -172,7 +172,6 @@ uv_err_t UVDElfSectionHeaderEntry::getName(std::string &sName)
 void UVDElfSectionHeaderEntry::setName(const std::string &sName)
 {
 	m_sName = sName;
-printf("Set name to %s\n", m_sName.c_str());
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getName(int *nameIndex)

@@ -5,6 +5,7 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the BSD license.  See LICENSE for details.
 */
 
+#include "main.h"
 #include "uvd_analysis_db.h"
 #include "uvd_util.h"
 #include "elf/uvd_elf.h"
@@ -338,6 +339,38 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *functio
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *functionShared)
+{
+	uv_assert_ret(g_config);	
+	if( g_config->m_analysisOutputAddresses.empty() )
+	{
+		return UV_ERR_OK;
+	}
+	
+	UVD *uvd = NULL;
+	UVDAnalyzer *analyzer = NULL;
+	UVDBinaryFunction *function = NULL;
+	uint32_t iFunctionAddress = 0;
+	
+	//FIXME: global reference
+	uvd = g_uvd;
+	uv_assert_ret(uvd);
+	analyzer = uvd->m_analyzer;
+	uv_assert_ret(analyzer);
+	uv_assert_err_ret(analyzer->functionSharedToFunction(functionShared, &function));
+	uv_assert_ret(function);
+	iFunctionAddress = function->m_offset;
+
+	if( g_config->m_analysisOutputAddresses.find(iFunctionAddress) != g_config->m_analysisOutputAddresses.end() )
+	{
+		return UV_ERR_OK;
+	}
+	else
+	{
+		return UV_ERR_GENERAL;
+	}
+}
+
 uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 {
 	std::string outputDir;
@@ -363,6 +396,13 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 	for( std::vector<UVDBinaryFunctionShared *>::size_type i = 0; i < m_functions.size(); ++i )
 	{
 		UVDBinaryFunctionShared *function = m_functions[i];
+		
+		uv_assert_ret(function);
+		
+		if( UV_FAILED(shouldSaveFunction(function)) )
+		{
+			continue;
+		}
 
 		printf_debug("m_functions[%d] = %p\n", i, function);
 		uv_assert_err_ret(saveFunctionData(function, outputDir, config));
