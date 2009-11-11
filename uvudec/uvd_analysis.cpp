@@ -278,8 +278,6 @@ uv_err_t UVD::constructBlocks()
 	
 	printf_debug("\n");
 
-//DEBUG_BREAK();
-
 	blockAnalysisBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "block analysis time: %s\n", blockAnalysisBenchmark.toString().c_str());
 
@@ -328,8 +326,6 @@ uv_err_t UVD::generateAnalysisDir()
 	
 	analysisSaveBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "analysis save time: %s\n", analysisSaveBenchmark.toString().c_str());
-
-//DEBUG_BREAK();
 
 	return UV_ERR_OK;
 }
