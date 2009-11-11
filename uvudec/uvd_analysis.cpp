@@ -329,7 +329,7 @@ uv_err_t UVD::generateAnalysisDir()
 	analysisSaveBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "analysis save time: %s\n", analysisSaveBenchmark.toString().c_str());
 
-DEBUG_BREAK();
+//DEBUG_BREAK();
 
 	return UV_ERR_OK;
 }

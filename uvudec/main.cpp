@@ -230,7 +230,7 @@ static void usage(const char *program_name)
 	//printf_help("--addr-exclude=<min>,<max>: don't analyze range\n");
 	printf_help("--addr-comment: put comments on addresses\n");
 	printf_help("--addr-label: label addresses for jumping\n");
-	printf_help("--analysis-only: only do analysis, don't print data\n");
+	printf_help("--analysis-only[=<bool>]: only do analysis, don't print data\n");
 	printf_help("--analysis-address=<address>: only output analysis data for specified address\n");
 	printf_help("--opcode-usage: opcode usage count table\n");
 	printf_help("--analysis-dir=<dir>: create skeleton data suitible for stored analysis\n");
@@ -463,6 +463,10 @@ int main(int argc, char **argv)
 		{
 			std::string sAnalysisOnly = cur_arg + sizeof("--analysis-only=") - 1;
 			config->m_analysisOnly = argToBool(sAnalysisOnly);
+		}
+		else if( strcmp(cur_arg, "--analysis-only") == 0 )
+		{
+			config->m_analysisOnly = true;
 		}
 		else if( strstr(cur_arg, "--analysis-address=") == cur_arg )
 		{
