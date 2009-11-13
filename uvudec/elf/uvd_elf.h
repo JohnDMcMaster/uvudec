@@ -415,7 +415,9 @@ public:
 	void setArchitecture(int archIn);
 
 	int getProgramHeaderTableSize();
+	int getNumberProgramHeaderTableEntries();
 	int getSectionHeaderTableSize();
+	int getNumberSectionHeaderTableEntries();
 
 	uv_err_t addProgramHeaderSection(UVDElfProgramHeaderEntry *section);
 	uv_err_t addSectionHeaderSection(UVDElfSectionHeaderEntry *section);
