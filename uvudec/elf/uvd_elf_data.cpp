@@ -34,6 +34,9 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 		uv_assert_err_ret(fixup->applyPatch());
 	}
 
+printf("num section header: %d\n", m_elfHeader.e_shnum);
+//printf("item address: 0x%.8X\n", &(m_elfHeader.e_shnum));
+//DEBUG_BREAK();
 	
 	UVDRelocationManager elfRelocationManager;
 	//Since we construct the section header entries before placing supporting data, these must be stored in a temporary location

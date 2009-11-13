@@ -373,20 +373,32 @@ UVDSimpleRelocationFixup::UVDSimpleRelocationFixup()
 	m_data = NULL;
 }
 
-uv_err_t UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(UVDRelocationFixup *fixup,
-		char *data, int offset, int size)
+uv_err_t UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(
+		UVDSimpleRelocationFixup **simpleFixupOut, UVDRelocatableElement *relocatableElement,
+		char *data, int size)
 {
 	UVDSimpleRelocationFixup *simpleFixup = NULL;
+	UVDRelocationFixup *relocationFixup = NULL;
+	//Apply at location
+	int offset = 0;
+	
+	uv_assert_ret(relocatableElement);
 	
 	simpleFixup = new UVDSimpleRelocationFixup();
 	uv_assert_ret(simpleFixup);
-	simpleFixup->m_relocationFixup = fixup;
+
+	relocationFixup = new UVDRelocationFixup(relocatableElement, offset, size);
+	uv_assert_ret(relocationFixup);
+	simpleFixup->m_relocationFixup = relocationFixup;
 	
+	//We need to transfer the buffer (as opposed to copy contents) since it needs to be applied to the real data
 	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer((UVDDataMemory **)&simpleFixup->m_data,
 			//We are just applying patches, don't try to free the memory
 			data, size, false));
 	uv_assert_ret(simpleFixup->m_data);
 	
+	uv_assert_ret(simpleFixupOut);
+	*simpleFixupOut = simpleFixup;
 	return UV_ERR_OK;
 }
 

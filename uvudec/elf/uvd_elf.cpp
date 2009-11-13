@@ -240,6 +240,16 @@ int UVDElf::getSectionHeaderTableSize()
 	return m_elfHeader.e_shentsize * m_elfHeader.e_shnum;
 }
 
+int UVDElf::getNumberProgramHeaderTableEntries()
+{
+	return m_programHeaderEntries.size();
+}
+
+int UVDElf::getNumberSectionHeaderTableEntries()
+{
+	return m_sectionHeaderEntries.size();
+}
+
 uv_err_t UVDElf::getArchitecture(int *archOut)
 {
 	uv_assert_ret(archOut);

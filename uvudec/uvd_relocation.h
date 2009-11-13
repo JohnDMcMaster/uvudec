@@ -42,6 +42,7 @@ class UVDRelocationFixup
 {
 public:
 	UVDRelocationFixup();
+	//A symbol value and an offset to apply the patch (along with data size, if needed)
 	UVDRelocationFixup(UVDRelocatableElement *symbol, unsigned int offset, unsigned int size);
 	~UVDRelocationFixup();
 	
@@ -69,8 +70,14 @@ class UVDSimpleRelocationFixup
 {
 public:
 	UVDSimpleRelocationFixup();
-	uv_err_t getUVDSimpleRelocationFixup(UVDRelocationFixup *fixup,
-			char *data, int offset, int size);
+	//Creates a simplified version of a previously created fixup 
+	//This may be removed, it seems below was real intention
+	//uv_err_t getUVDSimpleRelocationFixup(UVDSimpleRelocationFixup **simpleFixupOut, UVDRelocationFixup *fixup,
+	//		char *data, int offset, int size);
+	//Creates a fixup from scratch
+	static uv_err_t getUVDSimpleRelocationFixup(
+			UVDSimpleRelocationFixup **simpleFixupOut, UVDRelocatableElement *relocatableElement,
+			char *data, int size);
 	~UVDSimpleRelocationFixup();
 	
 	//The simply "everything was already setup before" function
@@ -146,7 +153,8 @@ public:
 	uv_err_t getDynamicValue(int16_t *dynamicValue);
 	uv_err_t getDynamicValue(uint16_t *dynamicValue);
 	uv_err_t getDynamicValue(int32_t *dynamicValue);
-	uv_err_t getDynamicValue(uint32_t *dynamicValue);
+	//Currently the core functionality of all other primatives
+	virtual uv_err_t getDynamicValue(uint32_t *dynamicValue);
 	//Size in bytes
 	//virtual uv_err_t getDynamicValue(char const **dynamicValue, int dynamicValueSize);
 	virtual uv_err_t getDynamicValue(char const **dynamicValue);
