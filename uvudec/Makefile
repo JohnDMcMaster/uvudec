@@ -15,7 +15,8 @@ DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 HASH_DIR=$(ROOT_DIR)/hash
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
-SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(ELF_DIR) $(HASH_DIR) $(INTERPRETER_DIR)
+UTIL_DIR=$(ROOT_DIR)/util
+SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(ELF_DIR) $(HASH_DIR) $(INTERPRETER_DIR) $(UTIL_DIR)
 
 # Man
 MAN_SECTION=3
@@ -39,7 +40,7 @@ INCLUDES += -I.
 #for curDir in $(SOURCE_DIRS); do \
 #	INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR)
+INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(UTIL_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -127,7 +128,6 @@ CXX_SRCS = 	\
 			uvd_debug.cpp \
 			uvd_error.cpp \
 			uvd_log.cpp \
-			uvd_util.cpp \
 			uvd.cpp \
 			uvd_address.cpp \
 			uvd_analysis.cpp \
@@ -170,6 +170,9 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_javascript_spidermonkey.cpp \
 			$(INTERPRETER_DIR)/uvd_lua.cpp \
 			$(INTERPRETER_DIR)/uvd_python.cpp \
+			$(UTIL_DIR)/uvd_util.cpp \
+			$(UTIL_DIR)/uvd_util_string.cpp \
+			$(UTIL_DIR)/uvd_util_file.cpp \
 
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 EXE = uvudec
