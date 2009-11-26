@@ -118,7 +118,10 @@ uv_err_t UVDElfProgramHeaderEntry::getHeaderData(UVDData **headerDataOut)
 {
 	UVDData *headerData = NULL;
 	
-	headerData = new UVDDataMemory((const char *)&m_programHeader, sizeof(m_programHeader));
+	//The actual data remains the same using this
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer((UVDDataMemory **)&headerData,
+			(char *)&m_programHeader, sizeof(m_programHeader),
+			false));
 	uv_assert_ret(headerData);
 	
 	uv_assert_ret(headerDataOut);
@@ -129,7 +132,7 @@ uv_err_t UVDElfProgramHeaderEntry::getHeaderData(UVDData **headerDataOut)
 uv_err_t UVDElfSectionHeaderEntry::getHeaderData(UVDData **headerDataOut)
 {
 	UVDData *headerData = NULL;
-	
+		
 	headerData = new UVDDataMemory((const char *)&m_sectionHeader, sizeof(m_sectionHeader));
 	uv_assert_ret(headerData);
 
@@ -157,6 +160,7 @@ UVDElfSectionHeaderEntry
 
 UVDElfSectionHeaderEntry::UVDElfSectionHeaderEntry()
 {
+	memset(&m_sectionHeader, 0, sizeof(m_sectionHeader));
 }
 
 UVDElfSectionHeaderEntry::~UVDElfSectionHeaderEntry()
@@ -266,6 +270,7 @@ UVDElfProgramHeaderEntry
 
 UVDElfProgramHeaderEntry::UVDElfProgramHeaderEntry()
 {
+	memset(&m_programHeader, 0, sizeof(m_programHeader));
 }
 
 UVDElfProgramHeaderEntry::~UVDElfProgramHeaderEntry()
