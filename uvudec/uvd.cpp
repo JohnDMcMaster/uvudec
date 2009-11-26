@@ -1,5 +1,5 @@
 /*
-Universal Decompiler (uvudec)
+UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
@@ -678,7 +678,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 		line = *iter;
 		printf_debug("Line (0x%.8X): %s\n", iter.getPosition(), line.c_str());
 
-		//This didn't help, must be some other bottleneck
+		//This didn't help for the bottleneck under investigation
 #if USING_ROPE
 		outputRope += (
 #else
@@ -688,14 +688,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 #if USING_ROPE
 				).c_str()
 #endif //USING_ROPE
-				;
-		/*
-		if( startPos > 16 )
-		{
-			break;
-		}
-		*/
-				
+				;				
 		printf_debug("\n");
 		if( UV_FAILED(iter.next()) )
 		{
