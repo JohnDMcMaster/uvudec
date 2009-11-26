@@ -239,6 +239,7 @@ public:
 public:
 	//All of the "symbols" we must keep track of
 	//It would be ideal, but might not be required, for all symbols to be registered here before added as a section
+	//These will be applied in order
 	std::set<UVDRelocatableElement *> m_relocatableElements;
 	//Subsets we must operate on
 	//Usually these will also be used for calculating the relocation values
