@@ -33,7 +33,7 @@ public:
 	uv_err_t updateDynamicValue()
 	{
 		uv_assert_ret(m_elf);
-printf("section header entries: %d\n", m_elf->getNumberSectionHeaderTableEntries());
+		//printf("section header entries: %d\n", m_elf->getNumberSectionHeaderTableEntries());
 		setDynamicValue(m_elf->getNumberSectionHeaderTableEntries());
 		return UV_ERR_OK;
 	}
@@ -220,10 +220,13 @@ uv_err_t UVDElf::initHeader()
 	m_elfHeader.e_version = EV_CURRENT;
 	//Assume non-executable, would have to be filled in later anyway
 	m_elfHeader.e_entry = 0;
+
 	//This is relocatable
 	m_elfHeader.e_phoff = 0;
+
 	//This is relocatable
 	m_elfHeader.e_shoff = 0;
+
 	//Assume no processor flags
 	m_elfHeader.e_flags = 0;
 	//No special padding
