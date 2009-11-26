@@ -34,10 +34,11 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 		uv_assert_err_ret(fixup->applyPatch());
 	}
 
-printf("num section header: %d\n", m_elfHeader.e_shnum);
+//printf("num section header: %d\n", m_elfHeader.e_shnum);
 //printf("item address: 0x%.8X\n", &(m_elfHeader.e_shnum));
 //DEBUG_BREAK();
 	
+	//Stores all the relocations so we can apply it to the assembled data
 	UVDRelocationManager elfRelocationManager;
 	//Since we construct the section header entries before placing supporting data, these must be stored in a temporary location
 	std::vector<UVDRelocatableData *> headerSupportingData;
@@ -45,9 +46,16 @@ printf("num section header: %d\n", m_elfHeader.e_shnum);
 	//Header
 	UVDDataMemory *elfHeaderData = NULL;
 	UVDRelocatableData *elfHeaderRelocatable = NULL;
+	//To compute ph/sh_offset
+	UVDRelocatableData *firstSectionHeaderRelocatableData = NULL;
+	UVDRelocatableData *firstProgramHeaderRelocatableData = NULL;
 	
 	//Header
-	elfHeaderData = new UVDDataMemory((const char *)&m_elfHeader, sizeof(m_elfHeader));
+	//elfHeaderData = new UVDDataMemory((const char *)&m_elfHeader, sizeof(m_elfHeader));
+	//This must be the actual data to get relocations correct
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&elfHeaderData,
+			(char *)&m_elfHeader, sizeof(m_elfHeader)));
+
 	elfHeaderRelocatable = new UVDRelocatableData(elfHeaderData);
 	uv_assert_ret(elfHeaderRelocatable);
 	elfRelocationManager.addRelocatableData(elfHeaderRelocatable);
@@ -73,6 +81,11 @@ printf("num section header: %d\n", m_elfHeader.e_shnum);
 		headerRelocatable = new UVDRelocatableData(headerData);
 		uv_assert_ret(headerRelocatable);
 		
+		if( !firstProgramHeaderRelocatableData )
+		{
+			firstProgramHeaderRelocatableData = headerRelocatable;
+		}
+
 		//Store the header data
 		elfRelocationManager.addRelocatableData(headerRelocatable);
 		//Store the supporting data, if it is needed
@@ -100,10 +113,16 @@ printf("num section header: %d\n", m_elfHeader.e_shnum);
 			
 			//Add it in after we have placed headers
 			headerSupportingData.push_back(supportingRelocatable);
+		
+		
+			//Add stuff so we can locate it
+			
+			//And its size
+			//uv_assert_err_ret(supportingRelocatable->getSize(&entry->m_programHeader.p_filesz));
 		}
 	}
 	m_elfHeader.e_phnum = m_programHeaderEntries.size();
-	
+		
 	//Section header entries
 	// sh_name, sh_offset, sh_link need relocation
 	//ignore sh_link for now
@@ -138,6 +157,11 @@ printf("num section header: %d\n", m_elfHeader.e_shnum);
 		//Register that offset to the header chunk
 		headerRelocatable->addFixup(nameFixup);
 		
+		if( !firstSectionHeaderRelocatableData )
+		{
+			firstSectionHeaderRelocatableData = headerRelocatable;
+		}
+		
 		//Store the header data
 		elfRelocationManager.addRelocatableData(headerRelocatable);
 		//Store the supporting data, if it is needed
@@ -169,6 +193,21 @@ printf("num section header: %d\n", m_elfHeader.e_shnum);
 	}
 	m_elfHeader.e_shnum = m_sectionHeaderEntries.size();
 	
+	
+	//Table offsets
+	//Fixup data to the location of the first table element
+	//Section header offset
+	UVDSimpleRelocationFixup *sectionHeaderOffsetFixup = NULL;
+	UVDRelocatableElement *sectionHeaderOffsetSymbol = NULL;
+	uv_assert_ret(firstSectionHeaderRelocatableData);
+	sectionHeaderOffsetSymbol = new UVDSelfLocatingRelocatableElement(&elfRelocationManager, firstSectionHeaderRelocatableData);
+	uv_assert_err_ret(UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(
+			&sectionHeaderOffsetFixup, sectionHeaderOffsetSymbol,
+			(char *)&m_elfHeader.e_shoff, sizeof(m_elfHeader.e_shoff)));
+	uv_assert_err_ret(sectionHeaderOffsetFixup->applyPatch());
+	//m_relocationFixups.push_back(sectionHeaderOffsetFixup);
+
+
 	//Now pack in the sections we were waiting on after the headers
 	for( std::vector<UVDRelocatableData *>::size_type i = 0; i < headerSupportingData.size(); ++i )
 	{
