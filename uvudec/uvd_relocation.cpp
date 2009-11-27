@@ -64,6 +64,41 @@ UVDRelocatableData::UVDRelocatableData(UVDData *data)
 	m_data = data;
 }
 
+class UVDRelocatableDataPlaceholder : public UVDRelocatableData
+{
+public:
+	UVDRelocatableDataPlaceholder();
+	~UVDRelocatableDataPlaceholder();
+	
+public:
+	//Statically allocated data structure
+	//Empty data structure opreations to make other operations work nicely
+	UVDDataPlaceholder m_dataPlaceholder;
+};
+
+UVDRelocatableDataPlaceholder::UVDRelocatableDataPlaceholder()
+{
+	m_data = &m_dataPlaceholder;
+	m_defaultRelocatableData = &m_dataPlaceholder;
+}
+
+UVDRelocatableDataPlaceholder::~UVDRelocatableDataPlaceholder()
+{
+}
+
+uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **dataOut)
+{
+	UVDRelocatableData *data = NULL;
+	
+	data = new UVDRelocatableDataPlaceholder();
+	uv_assert_ret(data);
+
+	uv_assert_ret(dataOut);
+	*dataOut = data;
+
+	return UV_ERR_OK;
+}
+
 UVDRelocatableData::~UVDRelocatableData()
 {
 }
