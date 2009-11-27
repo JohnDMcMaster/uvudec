@@ -42,7 +42,7 @@ extern int g_verbose_level;
 const char *get_last_func();
 
 #define printf_warn printf_debug
-#define printf_error printf
+#define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
 
 /*
 uv_assert is only enabled during debugging.
