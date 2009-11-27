@@ -108,7 +108,7 @@ public:
 	Its m_data is gauranteed to have a unique valid address and have a zero
 	size
 	*/
-	uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **data);
+	static uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **data);
 	~UVDRelocatableData();
 	
 	//Assume all symbolic values have been placed and now have symbols
@@ -235,6 +235,7 @@ public:
 	//A symbol or similar concept that will be resolved later
 	//This has shown to not be used in practice
 	//uv_err_t addRelocatableElement(UVDRelocatableElement *element);
+	
 	//A peice of data requiring the symbols above to be placed
 	//The symbols above will likely be contained somehow in these peices 
 	uv_err_t addRelocatableData(UVDRelocatableData *data);
