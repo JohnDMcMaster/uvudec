@@ -133,7 +133,10 @@ uv_err_t UVDElfSectionHeaderEntry::getHeaderData(UVDData **headerDataOut)
 {
 	UVDData *headerData = NULL;
 		
-	headerData = new UVDDataMemory((const char *)&m_sectionHeader, sizeof(m_sectionHeader));
+	//The actual data remains the same using this
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer((UVDDataMemory **)&headerData,
+			(char *)&m_sectionHeader, sizeof(m_sectionHeader),
+			false));
 	uv_assert_ret(headerData);
 
 	uv_assert_ret(headerDataOut);
