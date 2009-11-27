@@ -152,9 +152,10 @@ CXX_SRCS = 	\
 			uvd_version.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(DATA_DIR)/uvd_data.cpp \
+			$(DATA_DIR)/uvd_data_chunk.cpp \
 			$(DATA_DIR)/uvd_data_file.cpp \
 			$(DATA_DIR)/uvd_data_memory.cpp \
-			$(DATA_DIR)/uvd_data_chunk.cpp \
+			$(DATA_DIR)/uvd_data_placeholder.cpp \
 			$(ELF_DIR)/uvd_elf.cpp \
 			$(ELF_DIR)/uvd_elf_data.cpp \
 			$(ELF_DIR)/uvd_elf_header.cpp \

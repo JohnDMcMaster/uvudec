@@ -76,6 +76,31 @@ private:
 };
 
 /*
+A UVDData that holds no data
+Used for special purposes, sort of like a NULL element
+*/
+class UVDDataPlaceholder : public UVDData
+{
+public:
+	UVDDataPlaceholder();
+	~UVDDataPlaceholder();
+
+	virtual std::string getSource();
+
+	//These always return 0
+	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+	virtual int read(unsigned int offset) const;
+	virtual int read(unsigned int offset, std::string &s, unsigned int readSize) const;	
+	
+	//Also 0
+	virtual uint32_t size() const;
+	virtual uv_err_t size(uint32_t *sizeOut) const;
+
+	//Always an error for nonzero inputs
+	uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
+};
+
+/*
 A file based data source
 This is roughly equivilent to binutils BFD
 */
