@@ -86,7 +86,7 @@ UVDRelocatableDataPlaceholder::~UVDRelocatableDataPlaceholder()
 {
 }
 
-uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **dataOut)
+uv_err_t UVDRelocatableData::getUVDRelocatableDataPlaceholder(UVDRelocatableData **dataOut)
 {
 	UVDRelocatableData *data = NULL;
 	
@@ -326,7 +326,11 @@ uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamic
 		UVDRelocatableData *relocatableData = NULL;
 		UVDData *data = NULL;
 
-		uv_assert_ret(iter != relocatableDataSet.end());
+		if( iter == relocatableDataSet.end() )
+		{
+			printf_error("Could not find needed relocatable value out of %d entries\n", relocatableDataSet.size());
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
 		relocatableData = *iter;
 		
 		uv_assert_ret(relocatableData);
