@@ -23,6 +23,7 @@ UVDElfStringTableSectionHeaderEntry::~UVDElfStringTableSectionHeaderEntry()
 
 void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsigned int *index)
 {
+	int netIndex = 0;
 	for( unsigned int i = 0; i < m_stringTable.size(); ++i )
 	{
 		const std::string &sCur = m_stringTable[i];
@@ -32,15 +33,16 @@ void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsi
 			//Its present, return it
 			if( index )
 			{
-				*index = i;
+				*index = netIndex;
 			}
 			return;
 		}
+		netIndex += sCur.size() + 1;
 	}
-	//No found, add it
+	//Not found, add it
 	if( index )
 	{
-		*index = m_stringTable.size();
+		*index = netIndex;
 	}
 	m_stringTable.push_back(sIn);
 }
