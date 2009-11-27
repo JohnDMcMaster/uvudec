@@ -95,7 +95,7 @@ error:
 	printf_debug("Initializing opcodes...\n");
 	if( UV_FAILED(uv_disasm_opcode_init()) )
 	{
-		printf("ERROR: failed 8051 init\n");
+		printf_error("failed 8051 init\n");
 		UV_ERR(rc);
 		goto error;
 	}
@@ -239,6 +239,7 @@ static void usage(const char *program_name)
 	printf_help("--debug=<file name>: debug output (default: stdout)\n");
 	printf_help("--print-jumped-addresses=<bool>: whether to print information about jumped to addresses (*1)\n");
 	printf_help("--print-called-addresses=<bool>: whether to print information about called to addresses (*1)\n");
+	printf_help("--useless-ascii-art: append nifty ascii art headers to output files\n");
 	printf_help("--help: print this message and exit\n");
 	printf_help("--version: print version and exit\n");
 	printf_help("\n");
@@ -484,6 +485,10 @@ int main(int argc, char **argv)
 			std::string argArg = cur_arg + sizeof("--print-called-addresses=") - 1;
 			g_called_sources = false;
 		}
+		else if( !strcmp("--useless-ascii-art", cur_arg))
+		{
+			config->m_uselessASCIIArt = true;
+		}
 		else if( !strcmp("--version", cur_arg))
 		{
 			version();
@@ -531,7 +536,11 @@ int main(int argc, char **argv)
 	
 	printf_debug("min: 0x%.4X, max: 0x%.4X\n", g_addr_min, g_addr_max);
 
-	disassemble(targetFile, config);
+	if( UV_FAILED(disassemble(targetFile, config)) )
+	{
+		printf_error("Top level disassemble failed\n");
+		goto error;
+	}
 	
 	uv_log_deinit();
 	rc = 0;

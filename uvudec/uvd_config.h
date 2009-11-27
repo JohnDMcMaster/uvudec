@@ -109,6 +109,7 @@ public:
 public:
 	std::string m_analysisDir;
 	int m_analysisOnly;
+	int m_uselessASCIIArt;
 	//If any are set, will only output analysis of symbols at the given addresses
 	std::set<int> m_analysisOutputAddresses; 
 	
