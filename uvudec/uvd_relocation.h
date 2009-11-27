@@ -101,6 +101,14 @@ class UVDRelocatableData
 public:
 	UVDRelocatableData();
 	UVDRelocatableData(UVDData *data);
+	/*
+	For table structures, sometimes a placeholder is needed at the beginning
+	of the table to reference instead of the first element, which can be more
+	complicated to aquire
+	Its m_data is gauranteed to have a unique valid address and have a zero
+	size
+	*/
+	uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **data);
 	~UVDRelocatableData();
 	
 	//Assume all symbolic values have been placed and now have symbols
