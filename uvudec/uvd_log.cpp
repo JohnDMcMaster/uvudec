@@ -1,3 +1,10 @@
+/*
+UVNet Universal Decompiler (uvudec)
+Copyright 2008 John McMaster
+JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
+*/
+
 #include "uvd_log.h"
 #include "uvd_error.h"
 #include "uvd_debug.h"
