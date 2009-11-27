@@ -100,6 +100,8 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 			UVDSelfLocatingRelocatableElement *relocationElement = NULL;
 			//We must wrap the data in this, but assume it requires no patchups for now
 			UVDRelocatableData *supportingRelocatable = NULL;
+			//UVDRelocationFixup *offsetFixup = NULL;
+			//UVDSelfLocatingRelocatableElement *offsetElement = NULL;
 		
 			supportingRelocatable = new UVDRelocatableData(supportingData);
 			uv_assert_ret(supportingRelocatable);
@@ -114,11 +116,19 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 			//Add it in after we have placed headers
 			headerSupportingData.push_back(supportingRelocatable);
 		
-		
-			//Add stuff so we can locate it
+			/*
+			//offset
+			//How to compute the value: calculate the offset in our data list
+			offsetElement = new UVDSelfLocatingRelocatableElement(&elfRelocationManager, supportingRelocatable);
+			uv_assert_ret(offsetElement);
+			//Where to apply it
+			offsetFixup = new UVDRelocationFixup(offsetElement,
+					(unsigned int)&entry->m_programHeader.p_offset, sizeof(entry->m_programHeader.p_offset));
+			supportingRelocatable->addFixup(offsetFixup);
+			*/
 			
-			//And its size
-			//uv_assert_err_ret(supportingRelocatable->getSize(&entry->m_programHeader.p_filesz));
+			//size
+			uv_assert_err_ret(supportingData->size(&entry->m_programHeader.p_filesz));
 		}
 	}
 	m_elfHeader.e_phnum = m_programHeaderEntries.size();
@@ -176,6 +186,8 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 			UVDSelfLocatingRelocatableElement *relocationElement = NULL;
 			//We must wrap the data in this, but assume it requires no patchups for now
 			UVDRelocatableData *supportingRelocatable = NULL;
+			//UVDRelocationFixup *offsetFixup = NULL;
+			//UVDSelfLocatingRelocatableElement *offsetElement = NULL;
 		
 			supportingRelocatable = new UVDRelocatableData(supportingData);
 			uv_assert_ret(supportingRelocatable);
@@ -189,6 +201,23 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 			
 			//Add it in after we have placed headers
 			headerSupportingData.push_back(supportingRelocatable);
+
+			/*
+			//offset
+			//How to compute the value: calculate the offset in our data list
+			offsetElement = new UVDSelfLocatingRelocatableElement(&elfRelocationManager, supportingRelocatable);
+			uv_assert_ret(offsetElement);
+			//Where to apply it
+			offsetFixup = new UVDRelocationFixup(offsetElement,
+					(unsigned int)&entry->m_sectionHeader.sh_offset, sizeof(entry->m_sectionHeader.sh_offset));
+			supportingRelocatable->addFixup(offsetFixup);
+			*/
+			
+			//size
+			uint32_t sectionSize = 0;
+			uv_assert_err_ret(supportingData->size(&sectionSize));
+			printf("Section size: 0x%.8X\n", sectionSize);
+			entry->m_sectionHeader.sh_size = sectionSize;
 		}
 	}
 	m_elfHeader.e_shnum = m_sectionHeaderEntries.size();
