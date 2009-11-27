@@ -123,7 +123,13 @@ uv_err_t UVDDataMemory::realloc(unsigned int bufferSize)
 uv_err_t UVDDataMemory::writeData(unsigned int offset, const char *buffer, unsigned int bufferSize)
 {
 	//Do we have enough space?
-	uv_assert_ret(m_bufferSize >= bufferSize + offset);
+	if( m_bufferSize < bufferSize + offset )
+	{
+		printf_error("buffer availible (m_bufferSize): 0x%.8X, needed (bufferSize + offset): 0x%.8X\n",
+				m_bufferSize, bufferSize + offset);
+		return UV_DEBUG(UV_ERR_GENERAL);		
+	}
+	
 	uv_assert_ret(buffer);
 	uv_assert_ret(m_buffer);
 	//Do the copy
