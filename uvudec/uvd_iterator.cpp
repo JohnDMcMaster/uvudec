@@ -18,6 +18,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
+#include "uvd_ascii_art.h"
 #include "uvd_debug.h"
 #include "uvd_error.h"
 #include "uvd_log.h"
@@ -172,14 +173,18 @@ uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint
 
 uv_err_t UVDIterator::initialPrint()
 {
+	UVDConfig *config = NULL;
 	UVDAnalyzer *analyzer = NULL;
 	char szBuff[256];
 	
 	UV_ENTER();
 	
 	uv_assert_ret(m_uvd);
-	analyzer = m_uvd->m_analyzer;
+	config = m_uvd->m_config;
+	uv_assert_ret(config);
 
+	uv_assert_ret(m_uvd);
+	analyzer = m_uvd->m_analyzer;
 	
 	if( g_print_header )
 	{
@@ -195,7 +200,15 @@ uv_err_t UVDIterator::initialPrint()
 		m_indexBuffer.push_back(line);
 		m_indexBuffer.push_back("");
 		m_indexBuffer.push_back("");
-	}	
+	}
+	
+	if( config->m_uselessASCIIArt )
+	{
+		std::string art = getRandomUVNetASCIIArt() + "\n";
+		m_indexBuffer.push_back(art);
+		m_indexBuffer.push_back("");
+		m_indexBuffer.push_back("");		
+	}
 
 	//String table
 	if( g_print_string_table )
