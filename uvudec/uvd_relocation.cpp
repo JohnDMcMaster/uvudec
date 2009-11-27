@@ -325,12 +325,14 @@ UVDRelocationManager::~UVDRelocationManager()
 {
 }
 
+/*
 uv_err_t UVDRelocationManager::addRelocatableElement(UVDRelocatableElement *element)
 {
 	uv_assert_ret(element);
 	m_relocatableElements.insert(element);
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVDRelocationManager::addRelocatableData(UVDRelocatableData *data)
 {

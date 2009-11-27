@@ -225,7 +225,8 @@ public:
 	~UVDRelocationManager();
 	
 	//A symbol or similar concept that will be resolved later
-	uv_err_t addRelocatableElement(UVDRelocatableElement *element);
+	//This has shown to not be used in practice
+	//uv_err_t addRelocatableElement(UVDRelocatableElement *element);
 	//A peice of data requiring the symbols above to be placed
 	//The symbols above will likely be contained somehow in these peices 
 	uv_err_t addRelocatableData(UVDRelocatableData *data);
@@ -242,7 +243,7 @@ public:
 	//All of the "symbols" we must keep track of
 	//It would be ideal, but might not be required, for all symbols to be registered here before added as a section
 	//These will be applied in order
-	std::set<UVDRelocatableElement *> m_relocatableElements;
+	//std::set<UVDRelocatableElement *> m_relocatableElements;
 	//Subsets we must operate on
 	//Usually these will also be used for calculating the relocation values
 	std::vector<UVDRelocatableData *> m_data;
