@@ -75,7 +75,7 @@ uint32_t UVDAnalyzedMemoryLocation::getReferenceTypes()
 	
 		if( !value )
 		{
-			printf_error("ERROR: missing value\n");
+			printf_error("missing value\n");
 			exit(1);
 		}
 		

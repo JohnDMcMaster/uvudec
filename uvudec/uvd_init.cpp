@@ -100,7 +100,7 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	printf_debug("Initializing config...\n");
 	if( UV_FAILED(init_config(configFile)) )
 	{
-		printf("ERROR: failed 8051 init\n");
+		printf_error("failed 8051 init\n");
 		return UV_ERR(UV_ERR_GENERAL);
 	}
 	/*
