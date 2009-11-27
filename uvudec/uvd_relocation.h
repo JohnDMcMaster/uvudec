@@ -132,7 +132,9 @@ public:
 
 /*
 A value that will later be updated to have a concrete value
-eg: the address of g_debug
+eg:
+	the address of g_debug
+	number of items in something
 */
 class UVDRelocatableElement
 {
