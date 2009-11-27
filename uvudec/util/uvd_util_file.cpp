@@ -67,7 +67,8 @@ uv_err_t isDir(const std::string &file)
 	
 	if( stat(file.c_str(), &buff) )
 	{
-		return UV_DEBUG(UV_ERR_GENERAL);
+		//Doesn't exist: not a dir
+		return UV_ERR_GENERAL;
 	}
 	
 	if( buff.st_mode & S_IFDIR )
