@@ -133,6 +133,7 @@ CXX_SRCS = 	\
 			uvd_analysis.cpp \
 			uvd_analysis_db.cpp \
 			uvd_analyzer.cpp \
+			uvd_ascii_art.cpp \
 			uvd_benchmark.cpp \
 			uvd_config.cpp \
 			uvd_config_interpreter.cpp \

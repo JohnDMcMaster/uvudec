@@ -198,6 +198,7 @@ UVDConfig::UVDConfig()
 #error No valid interpreters
 #endif
 	m_analysisOnly = false;
+	m_uselessASCIIArt = false;
 }
 
 uv_err_t UVDConfig::readSections(const std::string config_file, std::vector<UVDConfigSection> sectionsIn)
