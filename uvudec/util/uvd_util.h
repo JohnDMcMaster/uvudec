@@ -16,6 +16,14 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define UV_TEMP_PREFIX			"/tmp/uvXXXXXX"
 
 /*
+Use NULL as a base address
+Convert to a pointer
+Get the address of a memory location
+Since this is a hard coded value, compiler will optimize into a hard coded full address
+*/
+#define OFFSET_OF(type, field)			((unsigned long) &(((type *) 0)->field))
+
+/*
 GNU headers don't cope well with min/max...lame
 They don't expose it, but get confused if you try to define it yourself
 maybe caused issues with member functions?
