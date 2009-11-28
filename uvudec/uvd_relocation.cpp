@@ -1,5 +1,5 @@
 /*
-Universal Decompiler (uvudec)
+UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
@@ -7,6 +7,9 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 #include "uvd_relocation.h"
 
+/*
+UVDRelocationFixup
+*/
 
 UVDRelocationFixup::UVDRelocationFixup()
 {
@@ -52,6 +55,9 @@ uv_err_t UVDRelocationFixup::applyPatchCore(UVDData *data, bool useDefaultValue)
 	return UV_ERR_OK;
 }
 
+/*
+UVDRelocatableData
+*/
 	
 UVDRelocatableData::UVDRelocatableData()
 {
@@ -63,6 +69,10 @@ UVDRelocatableData::UVDRelocatableData(UVDData *data)
 {
 	m_data = data;
 }
+
+/*
+UVDRelocatableDataPlaceholder
+*/
 
 class UVDRelocatableDataPlaceholder : public UVDRelocatableData
 {
@@ -158,6 +168,10 @@ uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
 	*data = m_defaultRelocatableData;
 	return UV_ERR_OK;
 }
+
+/*
+UVDRelocatableElement
+*/
 
 UVDRelocatableElement::UVDRelocatableElement()
 {
