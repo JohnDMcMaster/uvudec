@@ -138,6 +138,8 @@ uv_err_t UVDElf::constructProgramHeaderSectionBinary(UVDRelocationManager &elfRe
 	//Containers
 	UVDRelocatableData *headerRelocatable = NULL;
 	
+	printf_warn("XXX THIS CODE PROBABLY NEEDS FIXING TO MATCH SH\n");
+
 	uv_assert_ret(entry);
 
 	//Allocate memory for the program header	
@@ -251,36 +253,35 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	*/
 	if( supportingData )
 	{
-		//Create a relocation so it can be properly placed
-		UVDSelfLocatingRelocatableElement *relocatableElement = NULL;
 		//We must wrap the data in this, but assume it requires no patchups for now
 		UVDRelocatableData *supportingRelocatable = NULL;
 		UVDRelocationFixup *offsetFixup = NULL;
+		UVDRelocatableElement *offsetRelocatableElement = NULL;
+		UVDRelocatableElement *sizeRelocatableElement = NULL;
+		UVDRelocationFixup *sizeFixup = NULL;
 	
 		supportingRelocatable = new UVDRelocatableData(supportingData);
 		uv_assert_ret(supportingRelocatable);
-
-		//We want it to point to the supporting data
-		//And of course add the structure that will deteruvd_mine its position
-		relocatableElement = new UVDSelfLocatingRelocatableElement(&elfRelocationManager, supportingRelocatable);
-		uv_assert_ret(relocatableElement);
-		
-		//Add it in after we have placed headers
+		//Add it in after we have placed headers to preserve table order
 		headerSupportingData.push_back(supportingRelocatable);
 
-		//offset
+		//sh_offset
+		//We want it to point to the supporting data
+		//And of course add the structure that will deteruvd_mine its position
+		offsetRelocatableElement = new UVDSelfLocatingRelocatableElement(&elfRelocationManager, supportingRelocatable);
+		uv_assert_ret(offsetRelocatableElement);
 		//How to compute the value: calculate the offset in our data list
 		//Where to apply it
-		offsetFixup = new UVDRelocationFixup(relocatableElement,
+		offsetFixup = new UVDRelocationFixup(offsetRelocatableElement,
 				OFFSET_OF(Elf32_Shdr, sh_offset), sizeof(entry->m_sectionHeader.sh_offset));
-		//XXX: this has issues during relocations
 		headerRelocatable->addFixup(offsetFixup);
 		
-		//size
-		uint32_t sectionSize = 0;
-		uv_assert_err_ret(supportingData->size(&sectionSize));
-		//printf("Section size: 0x%.8X\n", sectionSize);
-		entry->m_sectionHeader.sh_size = sectionSize;
+		//sh_size		
+		sizeRelocatableElement = new UVDSelfSizingRelocatableElement(supportingRelocatable);
+		uv_assert_ret(sizeRelocatableElement);
+		sizeFixup = new UVDRelocationFixup(sizeRelocatableElement,
+				OFFSET_OF(Elf32_Shdr, sh_size), sizeof(entry->m_sectionHeader.sh_size));
+		headerRelocatable->addFixup(sizeFixup);
 	}
 	
 	return UV_ERR_OK;

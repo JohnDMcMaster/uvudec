@@ -164,6 +164,12 @@ uv_err_t UVDElfHeaderEntry::getFileData(UVDData **data)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDElfProgramHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
+{
+	uv_assert_ret(m_fileData);
+	return UV_DEBUG(m_fileData->size(sectionSize));
+}
+
 /*
 UVDElfSectionHeaderEntry
 */
@@ -210,6 +216,12 @@ uv_err_t UVDElfSectionHeaderEntry::getType(int *type)
 void UVDElfSectionHeaderEntry::setType(int type)
 {
 	m_sectionHeader.sh_type = type;
+}
+
+uv_err_t UVDElfSectionHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
+{
+	uv_assert_ret(m_fileData);
+	return UV_DEBUG(m_fileData->size(sectionSize));
 }
 
 #if 0
