@@ -195,19 +195,20 @@ public:
 	std::string m_sName;
 };
 
+class UVDRelocationManager;
+
 /*
 Capable of finding its own final address
 Its value is some relocatable data chunk that was found in the final output list
 */
-class UVDRelocationManager;
 class UVDSelfLocatingRelocatableElement : public UVDRelocatableElement
 {
 public:
 	UVDSelfLocatingRelocatableElement();
 	//Look for the encapsulated data
-	UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDRelocatableData *relocatableData, unsigned int offset = 0);
+	UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDRelocatableData *relocatableData, uint32_t padding = 0);
 	//Raw data structure
-	UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDData *data, unsigned int offset = 0);
+	UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDData *data, uint32_t padding = 0);
 	virtual uv_err_t getDynamicValue(char const **dynamicValue);
 
 public:
@@ -219,8 +220,30 @@ public:
 	UVDRelocatableData *m_relocatableData;
 	//If above is not specified, fall back on this
 	UVDData *m_data;
-	//Offset from the data start position
-	unsigned int m_offset;
+	//Additional offset from the data start position
+	uint32_t m_offset;
+};
+
+/*
+Capable of finding a UVDData/UVDRelocatableData's size
+Designed to be used as an offset + size combo of above
+*/
+class UVDSelfSizingRelocatableElement : public UVDRelocatableElement
+{
+public:
+	UVDSelfSizingRelocatableElement();
+	//Get the size from given data
+	UVDSelfSizingRelocatableElement(UVDRelocatableData *relocatableData, uint32_t padding = 0);
+	UVDSelfSizingRelocatableElement(UVDData *data, uint32_t padding = 0);
+	virtual uv_err_t getDynamicValue(char const **dynamicValue);
+
+public:
+	//The item we must use
+	UVDRelocatableData *m_relocatableData;
+	//If above is not specified, fall back on this
+	UVDData *m_data;
+	//Additional padding from calculated size
+	uint32_t m_padding;
 };
 
 /*

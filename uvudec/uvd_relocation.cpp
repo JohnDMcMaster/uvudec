@@ -295,7 +295,7 @@ UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement()
 	m_offset = 0;
 }
 
-UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDRelocatableData *relocatableData, unsigned int offset)
+UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDRelocatableData *relocatableData, uint32_t offset)
 {
 	m_manager = manager;
 	m_relocatableData = relocatableData;
@@ -303,7 +303,7 @@ UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement(UVDRelocati
 	m_offset = offset;
 }
 
-UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDData *data, unsigned int offset)
+UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement(UVDRelocationManager *manager, UVDData *data, uint32_t offset)
 {
 	m_manager = manager;
 	m_relocatableData = NULL;
@@ -313,7 +313,7 @@ UVDSelfLocatingRelocatableElement::UVDSelfLocatingRelocatableElement(UVDRelocati
 
 uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamicValue)
 {
-	unsigned int dataOffset = 0;
+	uint32_t dataOffset = 0;
 
 	uv_assert_ret(m_manager);
 	//At least one of these must be specified
@@ -348,13 +348,72 @@ uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamic
 		++iter;
 	}
 
-	uv_assert_ret(dynamicValue);
 	setDynamicValue(dataOffset + m_offset);
 	//XXX: endianess issues
+	uv_assert_ret(dynamicValue);
 	*dynamicValue = (const char *)&m_dynamicValue;
 
 	return UV_ERR_OK;
 }
+
+/*
+UVDSelfSizingRelocatableElement
+*/
+
+UVDSelfSizingRelocatableElement::UVDSelfSizingRelocatableElement()
+{
+	m_relocatableData = NULL;
+	m_data = NULL;
+	m_padding = 0;
+}
+
+UVDSelfSizingRelocatableElement::UVDSelfSizingRelocatableElement(UVDRelocatableData *relocatableData, uint32_t padding)
+{
+	m_relocatableData = relocatableData;
+	m_data = NULL;
+	m_padding = padding;
+}
+
+UVDSelfSizingRelocatableElement::UVDSelfSizingRelocatableElement(UVDData *data, uint32_t padding)
+{
+	m_relocatableData = NULL;
+	m_data = data;
+	m_padding = padding;
+}
+
+uv_err_t UVDSelfSizingRelocatableElement::getDynamicValue(char const **dynamicValue)
+{
+	UVDData *data = NULL;
+	uint32_t dataSize = 0;
+
+	//At least one of these must be specified
+	if( m_relocatableData )
+	{
+		data = m_relocatableData->m_data;
+	}
+	else if( m_data )
+	{
+		data = m_data;
+	}
+	else
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	
+	uv_assert_ret(data);
+	uv_assert_err_ret(data->size(&dataSize));
+	
+	setDynamicValue(dataSize + m_padding);
+	//XXX: endianess issues
+	uv_assert_ret(dynamicValue);
+	*dynamicValue = (const char *)&m_dynamicValue;
+
+	return UV_ERR_OK;
+}
+
+/*
+UVDRelocationManager
+*/
 
 UVDRelocationManager::UVDRelocationManager()
 {
