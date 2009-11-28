@@ -15,6 +15,7 @@ DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 HASH_DIR=$(ROOT_DIR)/hash
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
+RELOCATION_DIR=$(ROOT_DIR)/relocation
 UTIL_DIR=$(ROOT_DIR)/util
 SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(ELF_DIR) $(HASH_DIR) $(INTERPRETER_DIR) $(UTIL_DIR)
 
@@ -40,7 +41,7 @@ INCLUDES += -I.
 #for curDir in $(SOURCE_DIRS); do \
 #	INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(UTIL_DIR)
+INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -147,7 +148,6 @@ CXX_SRCS = 	\
 			uvd_operand.cpp \
 			uvd_operator.cpp \
 			uvd_register.cpp \
-			uvd_relocation.cpp \
 			uvd_symbol.cpp \
 			uvd_types.cpp \
 			uvd_version.cpp \
@@ -172,6 +172,12 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_javascript_spidermonkey.cpp \
 			$(INTERPRETER_DIR)/uvd_lua.cpp \
 			$(INTERPRETER_DIR)/uvd_python.cpp \
+			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
+			$(RELOCATION_DIR)/uvd_relocatable_element.cpp \
+			$(RELOCATION_DIR)/uvd_relocation.cpp \
+			$(RELOCATION_DIR)/uvd_relocation_fixup.cpp \
+			$(RELOCATION_DIR)/uvd_relocation_manager.cpp \
+			$(RELOCATION_DIR)/uvd_simple_relocation_fixup.cpp \
 			$(UTIL_DIR)/uvd_util.cpp \
 			$(UTIL_DIR)/uvd_util_string.cpp \
 			$(UTIL_DIR)/uvd_util_file.cpp \
