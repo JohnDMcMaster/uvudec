@@ -127,16 +127,11 @@ CC_SRCS =   \
 
 CXX_SRCS = 	\
 			main.cpp \
-			uvd_debug.cpp \
-			uvd_error.cpp \
-			uvd_log.cpp \
 			uvd.cpp \
 			uvd_address.cpp \
 			uvd_analysis.cpp \
 			uvd_analysis_db.cpp \
 			uvd_analyzer.cpp \
-			uvd_ascii_art.cpp \
-			uvd_benchmark.cpp \
 			uvd_config_interpreter.cpp \
 			uvd_format.cpp \
 			uvd_function.cpp \
@@ -147,7 +142,6 @@ CXX_SRCS = 	\
 			uvd_operand.cpp \
 			uvd_operator.cpp \
 			uvd_register.cpp \
-			uvd_types.cpp \
 			uvd_version.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(DATA_DIR)/uvd_data.cpp \
@@ -179,6 +173,12 @@ CXX_SRCS = 	\
 			$(RELOCATION_DIR)/uvd_relocation_fixup.cpp \
 			$(RELOCATION_DIR)/uvd_relocation_manager.cpp \
 			$(RELOCATION_DIR)/uvd_simple_relocation_fixup.cpp \
+			$(UTIL_DIR)/uvd_ascii_art.cpp \
+			$(UTIL_DIR)/uvd_benchmark.cpp \
+			$(UTIL_DIR)/uvd_debug.cpp \
+			$(UTIL_DIR)/uvd_error.cpp \
+			$(UTIL_DIR)/uvd_log.cpp \
+			$(UTIL_DIR)/uvd_types.cpp \
 			$(UTIL_DIR)/uvd_util.cpp \
 			$(UTIL_DIR)/uvd_util_string.cpp \
 			$(UTIL_DIR)/uvd_util_file.cpp \
