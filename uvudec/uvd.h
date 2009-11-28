@@ -230,11 +230,13 @@ public:
 	//Core code analysis function
 	//Structure should be pre-set with data before entry
 	uv_err_t analyzeCode(UVDAnalyzedCodeShared &UVDAnalyzedCodeShared);
+	uv_err_t analyzeConstData();
 	uv_err_t analyzeStrings();
 	uv_err_t constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut);
 	uv_err_t constructBlocks();
 	uv_err_t constructFunctionBlocks(UVDAnalyzedBlock *superblock);
 	uv_err_t constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &superblockLocations, UVDAnalyzedMemoryLocations::iterator &iterSuperblock);
+	uv_err_t analyzeControlFlow();
 	//Analyze control structures: if, else, etc
 	uv_err_t analyzeBlock(UVDAnalyzedBlock *block);
 	//Create output suitible for building analysis database

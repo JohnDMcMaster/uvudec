@@ -100,7 +100,6 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 
 	printf_debug("\n");
 	printf_debug("\n");
-	UV_ENTER();
 	
 	uv_assert_ret(m_analyzer);
 	uv_assert_err_ret(m_analyzer->getAnalyzedProgramDB(&curDb));
@@ -259,7 +258,6 @@ uv_err_t UVD::constructBlocks()
 	UVDAnalyzedBlock *superblock = NULL;
 	
 	printf_debug("\n");
-	UV_ENTER();
 	printf_debug_level(UVD_DEBUG_PASSES, "uvd: block analysis...\n");
 	UVDBenchmark blockAnalysisBenchmark;
 	blockAnalysisBenchmark.start();
@@ -330,31 +328,14 @@ uv_err_t UVD::generateAnalysisDir()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::analyze()
+uv_err_t UVD::analyzeControlFlow()
 {
-	uv_err_t rc = UV_ERR_GENERAL;
-	int verbose_pre = g_verbose;
 	UVDIterator iter;
 	int printPercentage = 1;
 	int printNext = printPercentage;
 	UVDBenchmark controlStructureAnalysisBenchmark;
 
-	UV_ENTER();
-	
-	g_verbose = g_verbose_analysis;
-	
-	//Set a default compiler to generate code for
-	//How this is set will probably change dramatically in the future
-	uv_assert(m_format);
-	m_format->m_compiler = new UVDCompiler();
-	
-	if( UV_FAILED(analyzeStrings()) )
-	{
-		UV_DEBUG(rc);
-		goto error;
-	}
-	
-	printf_debug_level(UVD_DEBUG_PASSES, "uvd: raw control structure analysis...\n");
+	printf_debug_level(UVD_DEBUG_PASSES, "uvd: control flow analysis...\n");
 	controlStructureAnalysisBenchmark.start();
 
 	iter = begin();
@@ -387,7 +368,7 @@ uv_err_t UVD::analyze()
 
 		printf_debug("Next instruction (start: 0x%.8X, end: 0x%.8X): %s\n", startPos, endPos, instruction.m_shared->m_memoric.c_str());
 
-		uv_assert_err(instruction.m_shared->analyzeAction());
+		uv_assert_err_ret(instruction.m_shared->analyzeAction());
 		printf_debug("Action: %s, type: %d\n", action.c_str(), instruction.m_shared->m_inst_class);
 		//See if its a call instruction
 		if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_CALL )
@@ -405,7 +386,7 @@ uv_err_t UVD::analyze()
 			UVDVariableMap mapOut;
 			std::string sAddr;
 
-			uv_assert_err(instruction.collectVariables(environment));
+			uv_assert_err_ret(instruction.collectVariables(environment));
 						
 			/*
 			Add iterator specific environment
@@ -418,16 +399,12 @@ uv_err_t UVD::analyze()
 			//About 0.03 sec per exec...need to speed it up
 			//Weird...cast didn't work to solve pointer incompatibility
 			uv_assert_ret(m_interpreter);
-			uv_assert_err(m_interpreter->interpretKeyed(action, environment, mapOut));
-			if( mapOut.find(SCRIPT_KEY_CALL) == mapOut.end() )
-			{
-				UV_DEBUG(rc);
-				goto error;
-			}
+			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+			uv_assert_ret(mapOut.find(SCRIPT_KEY_CALL) != mapOut.end());
 			mapOut[SCRIPT_KEY_CALL].getString(sAddr);
 			targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
 			
-			uv_assert_err(m_analyzer->insertCallReference(targetAddress, startPos));
+			uv_assert_err_ret(m_analyzer->insertCallReference(targetAddress, startPos));
 			//uv_assert_err(m_analyzer->insertReference(targetAddress, startPos, ));
 			m_analyzer->updateCache(startPos, mapOut);
 		}
@@ -446,7 +423,7 @@ uv_err_t UVD::analyze()
 			UVDVariableMap mapOut;
 			std::string sAddr;
 
-			uv_assert_err(instruction.collectVariables(environment));
+			uv_assert_err_ret(instruction.collectVariables(environment));
 						
 			/*
 			Add iterator specific environment
@@ -458,31 +435,49 @@ uv_err_t UVD::analyze()
 
 			//About 0.03 sec per exec...need to speed it up
 			//Weird...cast didn't work to solve pointer incompatibility
-			uv_assert(m_interpreter);
-			if( UV_FAILED(m_interpreter->interpretKeyed(action, environment, mapOut)) )
-			{
-				UV_DEBUG(rc);
-				goto error;
-			}
-			if( mapOut.find(SCRIPT_KEY_JUMP) == mapOut.end() )
-			{
-				UV_DEBUG(rc);
-				goto error;
-			}
+			uv_assert_ret(m_interpreter);
+			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+			uv_assert_ret(mapOut.find(SCRIPT_KEY_JUMP) != mapOut.end());
 			mapOut[SCRIPT_KEY_JUMP].getString(sAddr);
 			targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
 			
-			uv_assert_err(m_analyzer->insertJumpReference(targetAddress, startPos));
+			uv_assert_err_ret(m_analyzer->insertJumpReference(targetAddress, startPos));
 			m_analyzer->updateCache(startPos, mapOut);
 		}
 	}
 	controlStructureAnalysisBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "control structure analysis time: %s\n", controlStructureAnalysisBenchmark.toString().c_str());
+	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis time: %s\n", controlStructureAnalysisBenchmark.toString().c_str());
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::analyzeConstData()
+{
+	uv_assert_err_ret(analyzeStrings());
+	return UV_ERR_OK;
+}
 	
-	//Now that instructions have undergone basic processing, turn code into blocks
+uv_err_t UVD::analyze()
+{
+	uv_err_t rc = UV_ERR_GENERAL;
+	int verbose_pre = g_verbose;
+	
+	g_verbose = g_verbose_analysis;
+	
+	//Set a default compiler to generate code for
+	//How this is set will probably change drastically in the future
+	uv_assert(m_format);
+	m_format->m_compiler = new UVDCompiler();
+	
+	//Strings must be found first to find ROM data to exclude from disassembly
+	uv_assert_err(analyzeConstData());
+	//Then find constrol flow
+	uv_assert_err(analyzeControlFlow());
+	//Now that instructions have undergone basic processing,
+	//turn code into blocks using the control flow
 	uv_assert_err(constructBlocks());
-	
-	uv_assert_err_ret(generateAnalysisDir());
+	//And output analysis files, if requested
+	uv_assert_err(generateAnalysisDir());
 	
 	rc = UV_ERR_OK;
 	

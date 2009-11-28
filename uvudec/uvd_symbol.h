@@ -5,6 +5,10 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the BSD license.  See LICENSE for details.
 */
 
+/*
+These are config symbols
+*/
+
 #pragma once
 
 #include <string>
