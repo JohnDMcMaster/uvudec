@@ -47,11 +47,67 @@ typedef struct
 
 #include "uvd_elf.h"
 #include "uvd_data.h"
+#include "uvd_relocation.h"
 #include "uvd_types.h"
 #include "uvd_util.h"
 #include <elf.h>
 #include <vector>
 #include <string>
+
+/*
+start UVDElfStringTableElement
+*/
+
+class UVDElfStringTableElement : public UVDRelocatableElement
+{
+public:
+	UVDElfStringTableElement();
+	UVDElfStringTableElement(UVDElf *elf, const std::string &sSection, const std::string &s);
+	~UVDElfStringTableElement();
+
+	virtual uv_err_t updateDynamicValue();
+	
+public:
+	//The elf object so we can ID tables and such
+	UVDElf *m_elf;
+	//The string table we are operating on
+	std::string m_sSection;
+	//The string we are looking for
+	std::string m_s;
+};
+
+UVDElfStringTableElement::UVDElfStringTableElement()
+{
+	m_elf = NULL;
+}
+
+UVDElfStringTableElement::UVDElfStringTableElement(UVDElf *elf, const std::string &sSection, const std::string &s)
+{
+	m_elf = elf;
+	m_sSection = sSection;
+	m_s = s;
+}
+
+UVDElfStringTableElement::~UVDElfStringTableElement()
+{
+}
+
+uv_err_t UVDElfStringTableElement::updateDynamicValue()
+{
+	uint32_t stringTableIndex = 0;
+
+	uv_assert_ret(m_elf);
+
+	//Find the string table index (offset)
+	uv_assert_err_ret(m_elf->addStringCore(m_sSection, m_s, &stringTableIndex));
+	setDynamicValue(stringTableIndex);
+
+	return UV_ERR_OK;
+}
+
+/*
+end UVDElfStringTableElement
+*/
 
 uv_err_t UVDElf::addRelocatableData(UVDRelocatableData *relocatableData,
 		const std::string &rawDataSymbolName)
@@ -201,15 +257,18 @@ uv_err_t UVDElf::getSymbolStringRelocatableElement(const std::string &s, UVDRelo
 uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, const std::string &s,
 		UVDRelocatableElement **relocatableOut, UVDRelocationManager *relocationManager)
 {
-	UVDSelfLocatingRelocatableElement *relocatable = NULL;
+	UVDRelocatableElement *relocatable = NULL;
 	UVDData *stringTableData = NULL;
 	unsigned int stringTableIndex = 0;
 	UVDElfSectionHeaderEntry *sectionHeaderEntry = NULL;
 	UVDElfStringTableSectionHeaderEntry *stringTableEntry = NULL;
 
 	//Make sure this string is registered
+	//what if a string is removed?  Don't think it will be done soon, but "what if"
+	//It will get added at the end anyway, may not be necessary
 	uv_assert_err_ret(addStringCore(sSection, s, &stringTableIndex));
-	
+	printf("Index of string <%s> in table %s: %d\n", s.c_str(), sSection.c_str(), stringTableIndex);
+
 	//Find the section header for the string table (specified as part of the elf header)
 	uv_assert_err_ret(getSectionHeaderByName(sSection, &sectionHeaderEntry));
 	uv_assert_ret(sectionHeaderEntry);
@@ -222,7 +281,8 @@ uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, co
 	//This is the wrong type of relocatable
 	//Needs to be specialised to do string table indexing
 	//Needs a string table and a string
-	relocatable = new UVDSelfLocatingRelocatableElement(relocationManager, stringTableData, stringTableIndex);
+	//relocatable = new UVDSelfLocatingRelocatableElement(relocationManager, stringTableData, stringTableIndex);
+	relocatable = new UVDElfStringTableElement(this, sSection, s);
 	uv_assert_ret(relocatable);
 	uv_assert_ret(relocatableOut);
 	*relocatableOut = relocatable;

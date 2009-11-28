@@ -1,5 +1,5 @@
 /*
-Universal Decompiler (uvudec)
+UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
@@ -13,34 +13,6 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <vector>
 #include <string>
 
-/*
-To properly set the number of section headers during save
-This was designed as a test only and is likely to be removed
-in favor of just setting it instead of registering a fixup
-*/
-class UVDElfNumberSectionHeadersRelocatableElement : public UVDRelocatableElement
-{
-public:
-	UVDElfNumberSectionHeadersRelocatableElement()
-	{
-	}
-
-	UVDElfNumberSectionHeadersRelocatableElement(UVDElf *elf)
-	{
-		m_elf = elf;
-	}
-	
-	uv_err_t updateDynamicValue()
-	{
-		uv_assert_ret(m_elf);
-		//printf("section header entries: %d\n", m_elf->getNumberSectionHeaderTableEntries());
-		setDynamicValue(m_elf->getNumberSectionHeaderTableEntries());
-		return UV_ERR_OK;
-	}
-
-public:
-	UVDElf *m_elf;
-};
 
 UVDElf::UVDElf()
 {
@@ -235,16 +207,6 @@ uv_err_t UVDElf::initHeader()
 	m_elfHeader.e_phentsize = sizeof(Elf32_Phdr);
 	//This will be dynamically adjusted, start at 0
 	m_elfHeader.e_phnum = 0;
-	
-	//This could have just as easily been put in write binary,
-	//but needed something simple to test the simple relocation fixups 
-	UVDSimpleRelocationFixup *headerNumFixup = NULL;
-	UVDRelocatableElement *headerNumSymbol = NULL;
-	headerNumSymbol = new UVDElfNumberSectionHeadersRelocatableElement(this);
-	uv_assert_err_ret(UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(
-			&headerNumFixup, headerNumSymbol,
-			(char *)&m_elfHeader.e_shnum, sizeof(m_elfHeader.e_shnum)));
-	m_relocationFixups.push_back(headerNumFixup);
 	
 	//Default size
 	m_elfHeader.e_shentsize = sizeof(Elf32_Shdr);
