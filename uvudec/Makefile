@@ -10,6 +10,7 @@ $(shell touch Makefile.configure)
 include Makefile.configure
 
 ROOT_DIR=.
+ASSEMBLY_DIR=$(ROOT_DIR)/assembly
 COMPILER_DIR=$(ROOT_DIR)/compiler
 DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
@@ -42,7 +43,7 @@ INCLUDES += -I.
 #for curDir in $(SOURCE_DIRS); do \
 #	INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
+INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -135,13 +136,13 @@ CXX_SRCS = 	\
 			uvd_format.cpp \
 			uvd_function.cpp \
 			uvd_language.cpp \
-			uvd_instruction.cpp \
 			uvd_iterator.cpp \
-			uvd_opcode.cpp \
-			uvd_operand.cpp \
 			uvd_operator.cpp \
-			uvd_register.cpp \
 			uvd_version.cpp \
+			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
+			$(ASSEMBLY_DIR)/uvd_opcode.cpp \
+			$(ASSEMBLY_DIR)/uvd_operand.cpp \
+			$(ASSEMBLY_DIR)/uvd_register.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(DATA_DIR)/uvd_data.cpp \
 			$(DATA_DIR)/uvd_data_chunk.cpp \
