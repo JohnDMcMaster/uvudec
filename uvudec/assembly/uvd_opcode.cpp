@@ -4,11 +4,11 @@
 #include "uvd_util.h"
 #include "uvd_address.h"
 #include "uvd_config.h"
+#include "uvd_config_symbol.h"
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_types.h"
 #include "uvd_opcode.h"
-#include "uvd_symbol.h"
 
 /**********************
 Begin init related

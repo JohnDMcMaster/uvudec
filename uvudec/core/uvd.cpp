@@ -5,7 +5,6 @@ JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -30,12 +29,12 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_address.h"
 #include "uvd_analysis.h"
 #include "uvd_benchmark.h"
+#include "uvd_config_symbol.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_language.h"
 #include "uvd_types.h"
-#include "uvd_symbol.h"
 
 /*
 TODO: there was a paradigm shift between how to analyze functions

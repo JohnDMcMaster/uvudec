@@ -21,7 +21,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_instruction.h"
 #include "uvd_opcode.h"
 #include "uvd_register.h"
-#include "uvd_symbol.h"
+#include "uvd_config_symbol.h"
 #include "uvd_types.h"
 
 //From linux/stringify.h
