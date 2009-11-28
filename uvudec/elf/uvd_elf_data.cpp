@@ -293,6 +293,20 @@ Top level construction
 	
 uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 {
+	/*
+	There are two common techniques for placing relocatables:
+	-Two pass approach
+		First pass: place the data
+		Second pass: query each reolcatable info from the placed data
+	-Fixup approach
+		As each data item is placed, record locations that need fixup
+		Apply all the fixups now that the data is placed
+	The fixup approach is used
+	It probably resulted in longer code than the two pass approach and is slower,
+	but seemed more easy to follow at the time, especially with regards to
+	maintaining the code
+	*/
+
 	//Stores all the relocations so we can apply it to the assembled data
 	UVDRelocationManager elfRelocationManager;
 	//Since we construct the section header entries before placing supporting data,
