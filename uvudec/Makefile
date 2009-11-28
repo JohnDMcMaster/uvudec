@@ -14,6 +14,7 @@ COMPILER_DIR=$(ROOT_DIR)/compiler
 DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 HASH_DIR=$(ROOT_DIR)/hash
+INIT_DIR=$(ROOT_DIR)/init
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
 RELOCATION_DIR=$(ROOT_DIR)/relocation
 UTIL_DIR=$(ROOT_DIR)/util
@@ -41,7 +42,7 @@ INCLUDES += -I.
 #for curDir in $(SOURCE_DIRS); do \
 #	INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
+INCLUDES += -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -136,19 +137,16 @@ CXX_SRCS = 	\
 			uvd_analyzer.cpp \
 			uvd_ascii_art.cpp \
 			uvd_benchmark.cpp \
-			uvd_config.cpp \
 			uvd_config_interpreter.cpp \
 			uvd_format.cpp \
 			uvd_function.cpp \
 			uvd_language.cpp \
-			uvd_init.cpp \
 			uvd_instruction.cpp \
 			uvd_iterator.cpp \
 			uvd_opcode.cpp \
 			uvd_operand.cpp \
 			uvd_operator.cpp \
 			uvd_register.cpp \
-			uvd_symbol.cpp \
 			uvd_types.cpp \
 			uvd_version.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
@@ -166,6 +164,9 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
 			$(HASH_DIR)/uvd_md5_GNU.cpp \
+			$(INIT_DIR)/uvd_config.cpp \
+			$(INIT_DIR)/uvd_init.cpp \
+			$(INIT_DIR)/uvd_symbol.cpp \
 			$(INTERPRETER_DIR)/uvd_interpreter.cpp \
 			$(INTERPRETER_DIR)/uvd_javascript.cpp \
 			$(INTERPRETER_DIR)/uvd_javascript_spiderape.cpp \
