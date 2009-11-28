@@ -12,6 +12,7 @@ include Makefile.configure
 ROOT_DIR=.
 ASSEMBLY_DIR=$(ROOT_DIR)/assembly
 COMPILER_DIR=$(ROOT_DIR)/compiler
+CORE_DIR=$(ROOT_DIR)/core
 DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 HASH_DIR=$(ROOT_DIR)/hash
@@ -43,7 +44,7 @@ INCLUDES += -I.
 #for curDir in $(SOURCE_DIRS); do \
 #	INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
+INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -127,16 +128,10 @@ endif
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			main.cpp \
-			uvd.cpp \
 			uvd_address.cpp \
-			uvd_analysis.cpp \
-			uvd_analysis_db.cpp \
-			uvd_analyzer.cpp \
 			uvd_format.cpp \
 			uvd_function.cpp \
 			uvd_language.cpp \
-			uvd_iterator.cpp \
 			uvd_operator.cpp \
 			uvd_version.cpp \
 			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
@@ -144,6 +139,12 @@ CXX_SRCS = 	\
 			$(ASSEMBLY_DIR)/uvd_operand.cpp \
 			$(ASSEMBLY_DIR)/uvd_register.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
+			$(CORE_DIR)/main.cpp \
+			$(CORE_DIR)/uvd.cpp \
+			$(CORE_DIR)/uvd_analysis.cpp \
+			$(CORE_DIR)/uvd_analysis_db.cpp \
+			$(CORE_DIR)/uvd_analyzer.cpp \
+			$(CORE_DIR)/uvd_iterator.cpp \
 			$(DATA_DIR)/uvd_data.cpp \
 			$(DATA_DIR)/uvd_data_chunk.cpp \
 			$(DATA_DIR)/uvd_data_file.cpp \
