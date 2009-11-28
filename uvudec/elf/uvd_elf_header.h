@@ -61,6 +61,7 @@ public:
 	virtual uv_err_t getFileData(UVDData **data);
 	//virtual uv_err_t getFileData(UVDRelocatableDataMemory *data) = 0;
 	//virtual uv_err_t getFileData(UVDRelocatableDataMemory **data) = 0;
+	virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize) = 0;
 	
 	//Add a fixup location to the file data
 	//void addFileRelocation(UVDRelocatableData *relocation);
@@ -116,6 +117,8 @@ public:
 
 	virtual uv_err_t getHeaderData(UVDData **data);
 	virtual uv_err_t setHeaderData(const UVDData *data);
+
+	uv_err_t getSupportingDataSize(uint32_t *sectionSize);
 
 #if 0
 	uv_err_t getFlags(int *flags);
@@ -184,6 +187,8 @@ public:
 	virtual uv_err_t getHeaderData(UVDData **data);
 	virtual uv_err_t setHeaderData(const UVDData *data);
 
+	uv_err_t getSupportingDataSize(uint32_t *sectionSize);
+
 #if 0
 	uv_err_t getVirtualAddress(int *address);
 	void setVirtualAddress(int address);
@@ -226,6 +231,8 @@ public:
 	uv_err_t getFileData(UVDData **data);
 	//Only rebuilt when needed
 	uv_err_t ensureCurrentStringTableData();
+
+	uv_err_t getSupportingDataSize(uint32_t *sectionSize);
 
 public:
 	std::vector<std::string> m_stringTable;

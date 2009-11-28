@@ -103,3 +103,9 @@ uv_err_t UVDElfStringTableSectionHeaderEntry::getFileData(UVDData **dataOut)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDElfStringTableSectionHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
+{
+	uv_assert_err_ret(ensureCurrentStringTableData());
+	uv_assert_ret(m_fileData);
+	return UV_DEBUG(m_fileData->size(sectionSize));
+}
