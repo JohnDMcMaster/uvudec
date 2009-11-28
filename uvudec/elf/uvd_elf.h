@@ -286,6 +286,26 @@ public:
 	void printDebug();
 
 private:
+	//Elf header
+	uv_err_t constructElfHeaderBinary(UVDRelocationManager *elfRelocationManager);
+	uv_err_t constructProgramHeaderBinaryPhoff(UVDRelocationManager *elfRelocationManager,
+			UVDRelocatableData *elfHeaderRelocatable);
+	uv_err_t constructSectionHeaderBinaryShoff(UVDRelocationManager *elfRelocationManager,
+			UVDRelocatableData *elfHeaderRelocatable);
+	//Section header
+	uv_err_t constructProgramHeaderBinary(UVDRelocationManager &elfRelocationManager,
+			std::vector<UVDRelocatableData *> &headerSupportingData);
+	uv_err_t constructProgramHeaderSectionBinary(UVDRelocationManager &elfRelocationManager,
+			std::vector<UVDRelocatableData *> &headerSupportingData,
+			UVDElfProgramHeaderEntry *entry);
+	//Program header
+	uv_err_t constructSectionHeaderBinary(UVDRelocationManager &elfRelocationManager,
+			std::vector<UVDRelocatableData *> &headerSupportingData);
+	uv_err_t constructSectionHeaderSectionBinary(UVDRelocationManager &elfRelocationManager,
+			std::vector<UVDRelocatableData *> &headerSupportingData,
+			UVDElfSectionHeaderEntry *entry);
+
+private:
 	//If we loaded this, pointer to the raw data source
 	UVDData *m_data;
 	//Program header sections
@@ -296,8 +316,6 @@ private:
 	UVDData *m_elfHeaderExtra;
 	//Raw elf header structure
 	Elf32_Ehdr m_elfHeader;
-	//Fixups we must apply to various data structures before writting out the final file
-	std::vector<UVDSimpleRelocationFixup *> m_relocationFixups;
 };
 
 #endif
