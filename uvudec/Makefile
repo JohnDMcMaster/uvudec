@@ -132,7 +132,6 @@ CXX_SRCS = 	\
 			uvd_analysis.cpp \
 			uvd_analysis_db.cpp \
 			uvd_analyzer.cpp \
-			uvd_config_interpreter.cpp \
 			uvd_format.cpp \
 			uvd_function.cpp \
 			uvd_language.cpp \
@@ -159,6 +158,7 @@ CXX_SRCS = 	\
 			$(HASH_DIR)/uvd_md5.cpp \
 			$(HASH_DIR)/uvd_md5_GNU.cpp \
 			$(INIT_DIR)/uvd_config.cpp \
+			$(INIT_DIR)/uvd_config_interpreter.cpp \
 			$(INIT_DIR)/uvd_init.cpp \
 			$(INIT_DIR)/uvd_symbol.cpp \
 			$(INTERPRETER_DIR)/uvd_interpreter.cpp \
