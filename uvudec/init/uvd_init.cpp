@@ -1,6 +1,8 @@
 /*
+UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include <assert.h>
@@ -23,13 +25,12 @@ JohnDMcMaster@gmail.com
 #include "uvd_address.h"
 #include "uvd_analysis.h"
 #include "uvd_benchmark.h"
+#include "uvd_config_symbol.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_register.h"
-#include "uvd_symbol.h"
 #include "uvd_types.h"
-//#include "interpreter/uvd_interpreter.h"
 
 /*
 file: data file to target

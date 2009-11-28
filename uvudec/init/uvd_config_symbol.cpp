@@ -1,4 +1,11 @@
-#include "uvd_symbol.h"
+/*
+UVNet Universal Decompiler (uvudec)
+Copyright 2008 John McMaster
+JohnDMcMaster@gmail.com
+Licensed under terms of the three clause BSD license, see LICENSE for details
+*/
+
+#include "uvd_config_symbol.h"
 #include <string>
 
 UVDSymbol::UVDSymbol()
