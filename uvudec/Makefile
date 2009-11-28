@@ -18,9 +18,10 @@ ELF_DIR=$(ROOT_DIR)/elf
 HASH_DIR=$(ROOT_DIR)/hash
 INIT_DIR=$(ROOT_DIR)/init
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
+LANGUAGE_DIR=$(ROOT_DIR)/language
 RELOCATION_DIR=$(ROOT_DIR)/relocation
 UTIL_DIR=$(ROOT_DIR)/util
-SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(ELF_DIR) $(HASH_DIR) $(INTERPRETER_DIR) $(UTIL_DIR)
+SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(CORE_DIR) $(DATA_DIR) $(ELF_DIR) $(HASH_DIR) $(INIT_DIR) $(INTERPRETER_DIR) $(LANGUAGE_DIR) $(UTIL_DIR) $(RELOCATION_DIR)
 
 # Man
 MAN_SECTION=3
@@ -44,7 +45,7 @@ INCLUDES += -I.
 #for curDir in $(SOURCE_DIRS); do \
 #	INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
+INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(INTERPRETER_DIR) -I$(LANGUAGE_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -131,7 +132,6 @@ CXX_SRCS = 	\
 			uvd_address.cpp \
 			uvd_format.cpp \
 			uvd_function.cpp \
-			uvd_language.cpp \
 			uvd_operator.cpp \
 			uvd_version.cpp \
 			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
@@ -169,6 +169,7 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_javascript_spidermonkey.cpp \
 			$(INTERPRETER_DIR)/uvd_lua.cpp \
 			$(INTERPRETER_DIR)/uvd_python.cpp \
+			$(LANGUAGE_DIR)/uvd_language.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_element.cpp \
 			$(RELOCATION_DIR)/uvd_relocation.cpp \
