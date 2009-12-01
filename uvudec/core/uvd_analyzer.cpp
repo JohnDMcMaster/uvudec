@@ -8,7 +8,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd.h"
 #include "uvd_analysis_db.h"
 #include "uvd_analyzer.h"
-#include "uvd_function.h"
+#include "uvd_binary_function.h"
 #include <algorithm>
 
 UVDMemoryReference::UVDMemoryReference()

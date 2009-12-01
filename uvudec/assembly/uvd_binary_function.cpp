@@ -6,7 +6,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd_md5.h"
-#include "uvd_function.h"
+#include "uvd_binary_function.h"
 #include "uvd_language.h"
 #include "uvd_elf.h"
 

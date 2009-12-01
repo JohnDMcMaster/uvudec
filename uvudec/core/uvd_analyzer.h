@@ -13,6 +13,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #include "uvd_address.h"
 #include "uvd_data.h"
 #include "uvd_analysis_db.h"
+#include "uvd_binary_symbol.h"
 
 /*
 Ways that memory locations are used (referenced)
@@ -225,7 +226,11 @@ public:
 	UVDAnalysisDBArchive *m_curDb;
 	
 	//List of functions found during analysis
+	//XXX: should this get replaced by the symbol DB?
 	std::set<UVDBinaryFunction *> m_functions;
+	//All of the symbols discovered during this analysis
+	//m_functions should be contained in this
+	UVDBinarySymbolManager m_symbolManager;
 };
 
 #endif //UVD_ANALYZER_H
