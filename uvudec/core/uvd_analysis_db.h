@@ -11,7 +11,7 @@ Licensed under the terms of the BSD license.  See LICENSE for details.
 #define UVD_ANALYSIS_DB_H
 
 #include "uvd_types.h"
-#include "uvd_function.h"
+#include "uvd_binary_function.h"
 
 /*
 Manages data to aid in analysis of binaries

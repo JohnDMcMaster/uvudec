@@ -131,9 +131,10 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 			uvd_address.cpp \
 			uvd_format.cpp \
-			uvd_function.cpp \
 			uvd_operator.cpp \
 			uvd_version.cpp \
+			$(ASSEMBLY_DIR)/uvd_binary_function.cpp \
+			$(ASSEMBLY_DIR)/uvd_binary_symbol.cpp \
 			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
 			$(ASSEMBLY_DIR)/uvd_opcode.cpp \
 			$(ASSEMBLY_DIR)/uvd_operand.cpp \
