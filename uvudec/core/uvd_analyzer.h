@@ -232,7 +232,9 @@ public:
 	std::set<UVDBinaryFunction *> m_functions;
 	//All of the symbols discovered during this analysis
 	//m_functions should be contained in this
-	UVDBinarySymbolManager m_symbolManager;
+	UVDBinarySymbolManager *m_symbolManager;
+
+	UVD *m_uvd;
 };
 
 #endif //UVD_ANALYZER_H

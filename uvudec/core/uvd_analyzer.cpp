@@ -205,6 +205,8 @@ UVDAnalyzer::UVDAnalyzer()
 {
 	m_block = NULL;
 	m_db = NULL;
+	m_uvd = NULL;
+	m_symbolManager = NULL;
 }
 
 uv_err_t UVDAnalyzer::init()

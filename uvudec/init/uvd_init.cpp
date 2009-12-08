@@ -92,6 +92,7 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	uv_assert(m_interpreter);
 	m_analyzer = new UVDAnalyzer();
 	uv_assert(m_analyzer);
+	m_analyzer->m_uvd = this;
 	uv_assert_err_ret(m_analyzer->init());
 	m_config = new UVDConfig();
 	uv_assert(m_config);
