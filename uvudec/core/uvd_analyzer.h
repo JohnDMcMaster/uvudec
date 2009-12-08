@@ -196,6 +196,10 @@ public:
 
 	uv_err_t mapSymbols();
 
+	//After interpreting these instructions, add to analysis DB info based on mined attributes
+	uv_err_t analyzeCall(uint32_t startPos, const UVDVariableMap &attributes);
+	uv_err_t analyzeJump(uint32_t startPos, const UVDVariableMap &attributes);
+
 private:
 	//Force a rebuild of the internal database
 	//uv_err_t rebuildDb();

@@ -457,11 +457,9 @@ uv_err_t UVD::analyzeControlFlow()
 			SYNTAX=u8_0
 			ACTION=CALL(%PC&0x1F00+u8_0+0x6000)
 			*/
-			
-			unsigned int targetAddress = 0;
+
 			UVDVariableMap environment;
 			UVDVariableMap mapOut;
-			std::string sAddr;
 
 			uv_assert_err_ret(instruction.collectVariables(environment));
 						
@@ -477,30 +475,9 @@ uv_err_t UVD::analyzeControlFlow()
 			//Weird...cast didn't work to solve pointer incompatibility
 			uv_assert_ret(m_interpreter);
 			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
-			uv_assert_ret(mapOut.find(SCRIPT_KEY_CALL) != mapOut.end());
-			mapOut[SCRIPT_KEY_CALL].getString(sAddr);
-			targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
 			
-			uv_assert_err_ret(m_analyzer->insertCallReference(targetAddress, startPos));
-			//uv_assert_err(m_analyzer->insertReference(targetAddress, startPos, ));
-			m_analyzer->updateCache(startPos, mapOut);
-		
-#ifdef BASIC_SYMBOL_ANALYSIS			
-			/*
-			Only simple versions can be parsed for now
-			Must have a single immediate as the target value with no calculation required
-			*/
-			if( UV_SUCCEEDED(instruction.m_shared->isImmediateOnlyFunction()) )
-			{
-				uint32_t relocatableDataSize = 0;
-				uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
-
-				//We know the location of a call symbol relocation
-				uv_assert_ret(m_analyzer->m_symbolManager);
-				uv_assert_err_ret(m_analyzer->m_symbolManager->addAbsoluteFunctionRelocation(targetAddress,
-						startPos, relocatableDataSize));
-			}
-#endif
+			uv_assert_err_ret(m_analyzer->analyzeCall(startPos, mapOut));
+			
 		}
 		else if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
 		{
@@ -512,10 +489,8 @@ uv_err_t UVD::analyzeControlFlow()
 			ACTION=GOTO(%PC+u8_1)
 			*/
 
-			unsigned int targetAddress = 0;
 			UVDVariableMap environment;
 			UVDVariableMap mapOut;
-			std::string sAddr;
 
 			uv_assert_err_ret(instruction.collectVariables(environment));
 						
@@ -531,25 +506,8 @@ uv_err_t UVD::analyzeControlFlow()
 			//Weird...cast didn't work to solve pointer incompatibility
 			uv_assert_ret(m_interpreter);
 			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
-			uv_assert_ret(mapOut.find(SCRIPT_KEY_JUMP) != mapOut.end());
-			mapOut[SCRIPT_KEY_JUMP].getString(sAddr);
-			targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
-			
-			uv_assert_err_ret(m_analyzer->insertJumpReference(targetAddress, startPos));
-			m_analyzer->updateCache(startPos, mapOut);
 
-#ifdef BASIC_SYMBOL_ANALYSIS			
-			if( UV_SUCCEEDED(instruction.m_shared->isImmediateOnlyFunction()) )
-			{
-				uint32_t relocatableDataSize = 0;
-				uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
-
-				//We know the location of a jump symbol relocation
-				uv_assert_ret(m_analyzer->m_symbolManager);
-				uv_assert_err_ret(m_analyzer->m_symbolManager->addAbsoluteLabelRelocation(targetAddress,
-						startPos, relocatableDataSize));
-			}
-#endif
+			uv_assert_err_ret(m_analyzer->analyzeJump(startPos, mapOut));
 		}
 	}
 	controlStructureAnalysisBenchmark.stop();

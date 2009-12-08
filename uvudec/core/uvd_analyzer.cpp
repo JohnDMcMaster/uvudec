@@ -471,3 +471,64 @@ uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targ
 	*functionOut = functionToOutput;
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDAnalyzer::analyzeCall(uint32_t startPos, const UVDVariableMap &attributes)
+{
+	std::string sAddr;
+	unsigned int targetAddress = 0;
+
+	uv_assert_ret(attributes.find(SCRIPT_KEY_CALL) != attributes.end());
+	(*attributes.find(SCRIPT_KEY_CALL)).second.getString(sAddr);
+	targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
+	
+	uv_assert_err_ret(insertCallReference(targetAddress, startPos));
+	//uv_assert_err(insertReference(targetAddress, startPos, ));
+	updateCache(startPos, attributes);
+
+#ifdef BASIC_SYMBOL_ANALYSIS			
+	/*
+	Only simple versions can be parsed for now
+	Must have a single immediate as the target value with no calculation required
+	*/
+	if( UV_SUCCEEDED(instruction.m_shared->isImmediateOnlyFunction()) )
+	{
+		uint32_t relocatableDataSize = 0;
+		uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
+
+		//We know the location of a call symbol relocation
+		uv_assert_ret(m_symbolManager);
+		uv_assert_err_ret(m_symbolManager->addAbsoluteFunctionRelocation(targetAddress,
+				startPos, relocatableDataSize));
+	}
+#endif
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::analyzeJump(uint32_t startPos, const UVDVariableMap &attributes)
+{
+	std::string sAddr;
+	unsigned int targetAddress = 0;
+
+	uv_assert_ret(attributes.find(SCRIPT_KEY_JUMP) != attributes.end());
+	(*attributes.find(SCRIPT_KEY_JUMP)).second.getString(sAddr);
+	targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
+	
+	uv_assert_err_ret(insertJumpReference(targetAddress, startPos));
+	updateCache(startPos, attributes);
+
+#ifdef BASIC_SYMBOL_ANALYSIS			
+	if( UV_SUCCEEDED(instruction.m_shared->isImmediateOnlyFunction()) )
+	{
+		uint32_t relocatableDataSize = 0;
+		uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
+
+		//We know the location of a jump symbol relocation
+		uv_assert_ret(m_symbolManager);
+		uv_assert_err_ret(m_symbolManager->addAbsoluteLabelRelocation(targetAddress,
+				startPos, relocatableDataSize));
+	}
+#endif
+
+	return UV_ERR_OK;
+}
