@@ -132,7 +132,6 @@ CXX_SRCS = 	\
 			uvd_address.cpp \
 			uvd_format.cpp \
 			uvd_operator.cpp \
-			uvd_version.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_function.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_symbol.cpp \
 			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
@@ -186,7 +185,8 @@ CXX_SRCS = 	\
 			$(UTIL_DIR)/uvd_util.cpp \
 			$(UTIL_DIR)/uvd_util_string.cpp \
 			$(UTIL_DIR)/uvd_util_file.cpp \
-
+			$(UTIL_DIR)/uvd_version.cpp \
+			
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 EXE = uvudec
 
