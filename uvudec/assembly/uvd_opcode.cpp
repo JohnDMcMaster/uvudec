@@ -762,6 +762,10 @@ uv_err_t UVDOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			}
 		}
 
+		
+		//Compute some things to help speed up analysis and know the nature of this instruction
+		uv_assert_err(inst_shared->analyzeAction());
+
 		printf_debug("Doing actual store\n");
 		m_lookupTable[primary_opcode] = inst_shared;
 		printf_debug("Stored processed\n");
