@@ -5,6 +5,12 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the BSD license.  See LICENSE for details.
 */
 
+/*
+TODO:
+This is an ancient file in the history of this project
+The code may be a bit archaic and needs some cleanup
+*/
+
 #pragma once
 
 #include <vector>
@@ -230,10 +236,17 @@ public:
 	std::string getHumanReadableUsage();
 	//Make ready instruction class
 	uv_err_t analyzeAction();
+	//For doing certain analysis shortcuts
+	//Means action is a single function with a single identifier as an argument
+	uv_err_t isImmediateOnlyFunction();
+	//identifier size in bits
+	uv_err_t getImmediateOnlyFunctionAttributes(/*std::string &func,
+			std::string &identifier, */uint32_t *identifierSizeOut);
+
+private:
+	uv_err_t isImmediateOnlyFunctionCore();
 
 public:
-
-
 
 	//Primary descrpition of what it does
 	//imm32=<0x23456789> or <ESP>
@@ -297,6 +310,8 @@ public:
 	/* Configuration file line that it came from */
 	int m_config_line_syntax;
 	int m_config_line_usage;
+	
+	uv_err_t m_isImmediateOnlyFunction;
 };
 
 

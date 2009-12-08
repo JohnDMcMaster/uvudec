@@ -10,6 +10,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_instruction.h"
 #include "uvd_types.h"
 #include "uvd_format.h"
+#include "uvd_util.h"
 #include "main.h"
 #include <string.h>
 #include <vector>
@@ -27,6 +28,7 @@ UVDInstructionShared::UVDInstructionShared()
 	m_inst_class = UVD_INSTRUCTION_CLASS_UNKNOWN;
 	m_config_line_syntax = 0;
 	m_config_line_usage = 0;
+	m_isImmediateOnlyFunction = UV_ERR_GENERAL;
 }
 
 std::string UVDInstructionShared::getHumanReadableUsage()
@@ -71,8 +73,97 @@ uv_err_t UVDInstructionShared::analyzeAction()
 	{
 		m_inst_class = UVD_INSTRUCTION_CLASS_UNKNOWN;
 	}
+	
+	m_isImmediateOnlyFunction = isImmediateOnlyFunctionCore();
+	
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDInstructionShared::isImmediateOnlyFunction()
+{
+	/*
+	FIXME:
+	Make this cached or something
+	There is no reason we should recompute this every time
+	Ideal situation is should be computed when action is set
+	
+	Should be suitable to do during analyzeAction
+	*/
+	
+	return m_isImmediateOnlyFunction;
+}
+
+uv_err_t UVDInstructionShared::getImmediateOnlyFunctionAttributes(/*std::string &func,
+		std::string &identifier,*/ uint32_t *identifierSizeOut)
+{
+	int identifierSize = 0;
+	std::string func;
+	std::string identifier;
+			
+
+	//printf("m_action: %s\n", m_action.c_str());
+	uv_assert_err_ret(isImmediateOnlyFunction());
+	
+	//Split it up a bit	
+	//If this fails it doesn't meet the criteria
+	uv_assert_err_ret(parseFunc(m_action, func, identifier));
+
+	//identifiers type is encoded as a prefix
+	//<var> := <type>_<name>
+	//<type> := <sign char><size in bits>
+	//u8_0
+	if( identifier.find("8") != std::string::npos )
+	{
+		identifierSize = 8;
+	}
+	else if( identifier.find("16") != std::string::npos )
+	{
+		identifierSize = 16;
+	}
+	else if( identifier.find("32") != std::string::npos )
+	{
+		identifierSize = 32;
+	}
+	else
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	
+	uv_assert_ret(identifierSizeOut);
+	*identifierSizeOut = identifierSize;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDInstructionShared::isImmediateOnlyFunctionCore()
+{
+	std::string name;
+	std::string content;
+	
+	//Split it up a bit	
+	//If this fails it doesn't meet the criteria
+	if( UV_FAILED(parseFunc(m_action, name, content)) )
+	{
+		return UV_ERR_GENERAL;
+	}
+
+	//Simple, only immediate
+	//ACTION=CALL(u16_0)
+	if( UV_SUCCEEDED(isConfigIdentifier(content)) )
+	{
+		return UV_ERR_OK;
+	}
+	//Complex, some ugly expression
+	//ACTION=CALL(%PC&0x1F00+u8_0+0x6000)
+	else
+	{
+		return UV_ERR_GENERAL;
+	}
+}
+
+/*
+UVDInstruction
+*/
 
 UVDInstruction::UVDInstruction()
 {
@@ -287,3 +378,4 @@ uv_err_t UVDInstruction::collectVariables(UVDVariableMap &environment)
 error:
 	return UV_DEBUG(rc);
 }
+
