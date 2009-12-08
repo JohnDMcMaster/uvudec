@@ -190,7 +190,7 @@ UVDConfig::UVDConfig()
 	m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
 #elif defined(USING_PYTHON)
 	//Slow due to lack of working API, but works fine
-	m_configInterpreterLangauge = UVD_LANGUAGE_PYTHON;
+	m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
 #elif defined(USING_LUA)
 	//No bitwise operators...annoying
 	m_configInterpreterLangauge = UVD_LANGUAGE_LUA;
