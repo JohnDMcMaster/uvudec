@@ -169,3 +169,19 @@ UVDBinaryFunction::UVDBinaryFunction()
 UVDBinaryFunction::~UVDBinaryFunction()
 {
 }
+
+uv_err_t UVDBinaryFunction::getMin(uint32_t *out)
+{
+	uv_assert_ret(out);
+	*out = m_offset;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinaryFunction::getMax(uint32_t *out)
+{
+	uv_assert_ret(m_data);
+	uv_assert_ret(out);
+	uv_assert_ret(m_data->size(out));
+	*out += m_offset;
+	return UV_ERR_OK;
+}
