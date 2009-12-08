@@ -121,6 +121,16 @@ static std::string mangleFileToSymbol(const std::string &sIn)
 	return sBasename;
 }
 
+std::string UVD::analyzedSymbolName(uint32_t functionAddress)
+{
+	if( m_data )
+	{
+		std::string dataSource = uv_basename(m_data->getSource());
+		return analyzedSymbolName(dataSource, functionAddress);
+	}
+	return "";
+}
+
 std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t functionAddress)
 {
 	/*
@@ -163,7 +173,6 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uint32_t minAddress = 0;
 	uv_assert_err_ret(functionBlock->getMinAddress(minAddress));
 	function->m_offset = minAddress;
-	std::string sourceBase = uv_basename(m_data->getSource());
 	
 	//The true name of the function is unknown
 	//This name is stored as a way to figure out the real name vs the current symbol name 
@@ -174,7 +183,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uv_assert_err_ret(UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(&functionInstance));
 	uv_assert_ret(functionInstance);
 	//Only specific instances get symbol designations
-	functionInstance->m_symbolName = analyzedSymbolName(sourceBase, minAddress);	
+	functionInstance->m_symbolName = analyzedSymbolName(minAddress);	
 	/*
 	Skip for now:
 	UVDCompiler *m_compiler;
