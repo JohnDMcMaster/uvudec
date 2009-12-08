@@ -30,7 +30,10 @@ uv_err_t parseFunc(const std::string &text, std::string &name, std::string &cont
 	char *nameTemp = NULL;
 	char *contentTemp = NULL;
 
-	uv_assert_err_ret(uvd_parse_func(text.c_str(), &nameTemp, &contentTemp));
+	if( UV_FAILED(uvd_parse_func(text.c_str(), &nameTemp, &contentTemp)) )
+	{
+		return UV_ERR_GENERAL;
+	}
 
 	uv_assert_ret(nameTemp);
 	name = nameTemp;
@@ -306,7 +309,10 @@ uv_err_t uvd_parse_func(const char *text, char **name, char **content)
 	uv_assert_all(copy);
 
 	loc = strstr(copy, "(");
-	uv_assert_all(loc);
+	if( !loc )
+	{
+		return UV_ERR_GENERAL;
+	}
 	loc[0] = 0;
 	++loc;
 	
@@ -322,7 +328,7 @@ uv_err_t uvd_parse_func(const char *text, char **name, char **content)
 			//Did we find at least one?
 			if( end == loc )
 			{
-				return UV_DEBUG(UV_ERR_GENERAL);
+				return UV_ERR_GENERAL;
 			}
 			break;
 		}
@@ -341,7 +347,7 @@ uv_err_t uvd_parse_func(const char *text, char **name, char **content)
 	rc = UV_ERR_OK;
 	
 error:
-	return UV_DEBUG(rc);
+	return rc;
 }
 
 std::vector<std::string> charPtrArrayToVector(char **argv, int argc)
@@ -478,4 +484,41 @@ uint64_t getTimingMicroseconds(void)
 	gettimeofday(&tv, &tz);
 	tm=localtime(&tv.tv_sec);
 	return ((tm->tm_hour * 60 + tm->tm_min) * 60 + tm->tm_sec) * 1000000 + tv.tv_usec;
+}
+
+uv_err_t isCSymbol(const std::string &in)
+{
+	//[a-zA-Z_][z-zA-Z0-9_].
+
+	if( in.empty() )
+	{
+		return UV_ERR_GENERAL;
+	}
+	
+	//[a-zA-Z_]
+	if( !(in[0] >= 'a' && in[0] <= 'z'
+			|| in[0] >= 'A' && in[0] <= 'Z'
+			|| in[0] == '_') )
+	{
+		return UV_ERR_GENERAL;
+	}
+	
+	//[z-zA-Z0-9_].
+	for( std::string::size_type i = 1; i < in.size(); ++i )
+	{
+		if( !(in[0] >= 'a' && in[0] <= 'z'
+				|| in[0] >= 'A' && in[0] <= 'Z'
+				|| in[0] >= '0' && in[0] <= '9'
+				|| in[0] == '_') )
+		{
+			return UV_ERR_GENERAL;
+		}
+	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t isConfigIdentifier(const std::string &in)
+{
+	return isCSymbol(in);
 }

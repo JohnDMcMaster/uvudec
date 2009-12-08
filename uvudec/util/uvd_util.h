@@ -123,5 +123,15 @@ uv_err_t getArguments(const std::string &in, std::vector<std::string> &out);
 //Used for benchmarking
 uint64_t getTimingMicroseconds(void);
 
+/*
+Is the string a legal C symbol?
+*/
+uv_err_t isCSymbol(const std::string &in);
+/*
+Is the input a legal config identifier?
+Currently they must follow C symbol syntax
+*/
+uv_err_t isConfigIdentifier(const std::string &in);
+
 #endif /* ifndef UV_UTIL_H */
 
