@@ -21,6 +21,14 @@ FIXME: class is a mess, needs cleanup
 #include <elf.h>
 
 /*
+For representing architectures TIS/GNU does not define
+Wrap it in hopes this project becomes popular enough to appear in some versions of <elf.h> ;)
+*/
+#ifndef EM_UVUDEC
+#define EM_UVUDEC					0xBAE2
+#endif //EM_UVUDEC
+
+/*
 Constant data
 Things like strings (const char *), program constants, lookup tables, etc
 */

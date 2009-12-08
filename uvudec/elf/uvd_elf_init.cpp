@@ -145,6 +145,14 @@ uv_err_t UVDElf::getFromRelocatableDataCore(UVDRelocatableData *relocatableData,
 	Here we must convert this arbitrary form to an ELF structure which may be, for now, repr as a UVD relocatable
 	*/
 	
+	/*
+	From <elf.h>
+	   If it is necessary to assign new unofficial EM_* values, please
+	   pick large random numbers (0x8523, 0xa7f2, etc.) to minimize the
+	   chances of collision with official or non-GNU unofficial values.  
+	*/
+
+
 	UVDElf *elf = NULL;
 	//Data gets placed in section headers
 	UVDElfSectionHeaderEntry *sectionHeaderEntry = NULL;
