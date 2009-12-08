@@ -5,6 +5,11 @@ JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
+/*
+This does UVD prepping analysis before passing data off to m_analyzer
+Things such as interpreting results and converting to generic structures
+*/
+
 #include "uvd_benchmark.h"
 #include "uvd_analysis.h"
 #include "uvd.h"
@@ -479,6 +484,23 @@ uv_err_t UVD::analyzeControlFlow()
 			uv_assert_err_ret(m_analyzer->insertCallReference(targetAddress, startPos));
 			//uv_assert_err(m_analyzer->insertReference(targetAddress, startPos, ));
 			m_analyzer->updateCache(startPos, mapOut);
+		
+#ifdef BASIC_SYMBOL_ANALYSIS			
+			/*
+			Only simple versions can be parsed for now
+			Must have a single immediate as the target value with no calculation required
+			*/
+			if( UV_SUCCEEDED(instruction.m_shared->isImmediateOnlyFunction()) )
+			{
+				uint32_t relocatableDataSize = 0;
+				uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
+
+				//We know the location of a call symbol relocation
+				uv_assert_ret(m_analyzer->m_symbolManager);
+				uv_assert_err_ret(m_analyzer->m_symbolManager->addAbsoluteFunctionRelocation(targetAddress,
+						startPos, relocatableDataSize));
+			}
+#endif
 		}
 		else if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
 		{
@@ -515,6 +537,19 @@ uv_err_t UVD::analyzeControlFlow()
 			
 			uv_assert_err_ret(m_analyzer->insertJumpReference(targetAddress, startPos));
 			m_analyzer->updateCache(startPos, mapOut);
+
+#ifdef BASIC_SYMBOL_ANALYSIS			
+			if( UV_SUCCEEDED(instruction.m_shared->isImmediateOnlyFunction()) )
+			{
+				uint32_t relocatableDataSize = 0;
+				uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
+
+				//We know the location of a jump symbol relocation
+				uv_assert_ret(m_analyzer->m_symbolManager);
+				uv_assert_err_ret(m_analyzer->m_symbolManager->addAbsoluteLabelRelocation(targetAddress,
+						startPos, relocatableDataSize));
+			}
+#endif
 		}
 	}
 	controlStructureAnalysisBenchmark.stop();
