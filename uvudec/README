@@ -58,6 +58,37 @@ A: libelf didn't appear to do the relocations for me, which was most of the
 heavy lifting.  Actual ELF files are not hard to write to, so it made much
 cleaner code not to bother and just use elf.h
 
+Q: What is the EM_UVUDEC value?
+A: TIS only defines a limited number of EM_* values.  The scope of this project
+easily leads itself to needing to specify many non-standard architectures.
+Additionally, many architectures need to be further refined from the base EM_*
+value, such as defining the differences between different MIPS processor cores.
+To make using other tools easy as possible though, if a standard value exists,
+e_machine will be set to the standard value.  Always check for the .uvudec
+section for extended information even if a base architecture is specified.
+If there is a conflict, you probably want to take the .uvudec section value.
+
+Q: How did you chose the EM_UVUDEC value?
+A:
+In <elf.h>:
+If it is necessary to assign new unofficial EM_* values, please
+pick large random numbers (0x8523, 0xa7f2, etc.) to minimize the
+chances of collision with official or non-GNU unofficial values.  
+
+So...
+
+[mcmaster@localhost uvudec]$ python
+Python 2.4.6 (#1, Sep 11 2009, 13:42:46)
+[GCC 4.1.2 20080704 (Red Hat 4.1.2-44)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import random
+>>> random.seed()
+>>> random.randint(0x8000, 0xFFFF)
+47842
+Using gcalctool:
+47842 -> 0xBAE2
+
+
 Building
 
 You must select an embedded interpreter to use.  The simplest, but (currently)
