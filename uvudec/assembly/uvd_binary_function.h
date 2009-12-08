@@ -6,6 +6,11 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 /*
+These data structures are somewhat messed up
+It has some artifacts from not strongly seperating current analysis from the analysis DB
+*/
+
+/*
 Binary functions as opposed those for processing config directives
 (the config directive functions actually came first)
 The naming in this file should admittedly be cleaned up
@@ -176,6 +181,10 @@ class UVDBinaryFunction
 public:
 	UVDBinaryFunction();
 	~UVDBinaryFunction();
+ 
+ 	//Locations in the source file
+	uv_err_t getMin(uint32_t *out);
+	uv_err_t getMax(uint32_t *out);
 
 public:
 	//Raw binary representation of function as it was found in the program
