@@ -431,6 +431,11 @@ uv_err_t UVDAnalyzer::functionSharedToFunction(UVDBinaryFunctionShared *function
 	return UV_DEBUG(functionInstanceToFunction(functionInstance, functionOut));
 }
 
+uv_err_t UVDAnalyzer::mapSymbols()
+{
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targetFunctionInstance, UVDBinaryFunction **functionOut)
 {
 	UVDBinaryFunction *functionToOutput = NULL;
