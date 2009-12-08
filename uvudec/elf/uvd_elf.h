@@ -100,6 +100,28 @@ public:
 
 	uv_err_t getData(UVDData **data);
 	void setData(UVDData *data);
+	
+	/*
+	From TIS ELF specification
+
+	STB_LOCAL Local symbols are not visible outside the object file containing their
+	definition. Local symbols of the same name may exist in multiple files
+	without interfering with each other.
+	STB_GLOBAL Global symbols are visible to all object files being combined. One file's
+	definition of a global symbol will satisfy another file's undefined reference
+	to the same global symbol.
+	STB_WEAK Weak symbols resemble global symbols, but their definitions have lower
+	precedence.
+	STB_LOPROC through Values in this inclusive range are reserved for processor-specific semantics.
+	STB_HIPROC
+	In each symbol table,
+	*/
+	//void setVisibility(int visibility);
+	//uv_err_t getVisibility(int *visibility);
+ 
+ public:
+ 	//The symbol's (function's/variable's) name
+
 
 public:
 	//The symbol's (function's/variable's) name
