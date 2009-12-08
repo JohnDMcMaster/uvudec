@@ -274,6 +274,9 @@ uv_err_t UVD::constructBlocks()
 	//Functions
 	uv_assert_err(constructFunctionBlocks(superblock));
 	
+	//Map the symbols into blocks/functions
+	uv_assert_err(mapSymbols());	
+
 	printf_debug("\n");
 
 	blockAnalysisBenchmark.stop();
@@ -283,6 +286,18 @@ uv_err_t UVD::constructBlocks()
 	
 error:
 	return UV_DEBUG(rc);
+}
+
+uv_err_t UVD::mapSymbols()
+{
+	/*
+	Map symbols into functions
+	*/
+	
+	uv_assert_ret(m_analyzer);
+	uv_assert_err_ret(m_analyzer->mapSymbols());
+	
+	return UV_ERR_OK;
 }
 
 uv_err_t UVD::analyzeBlock(UVDAnalyzedBlock *block)

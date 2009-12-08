@@ -220,6 +220,8 @@ public:
 	uv_err_t decompile(std::string file, int destinationLanguage, std::string &output);
 	uv_err_t decompilePrint(std::string &output);
 	
+	std::string analyzedSymbolName(uint32_t functionAddress);
+	//This should get moved to util
 	std::string analyzedSymbolName(std::string dataSource, uint32_t functionAddress);
 	
 	//Given a function location, do analysis on the section to do actual decompiling
@@ -234,6 +236,7 @@ public:
 	uv_err_t analyzeStrings();
 	uv_err_t constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut);
 	uv_err_t constructBlocks();
+	uv_err_t mapSymbols();
 	uv_err_t constructFunctionBlocks(UVDAnalyzedBlock *superblock);
 	uv_err_t constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &superblockLocations, UVDAnalyzedMemoryLocations::iterator &iterSuperblock);
 	uv_err_t analyzeControlFlow();

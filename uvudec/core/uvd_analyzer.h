@@ -194,6 +194,8 @@ public:
 	uv_err_t functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **function);
 	uv_err_t functionInstanceToFunction(UVDBinaryFunctionInstance *functionInstance, UVDBinaryFunction **function);
 
+	uv_err_t mapSymbols();
+
 private:
 	//Force a rebuild of the internal database
 	//uv_err_t rebuildDb();
