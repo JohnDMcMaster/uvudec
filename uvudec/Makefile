@@ -231,12 +231,13 @@ MAKEFILE_DEPEND=Makefile.depend
 $(shell touch $(MAKEFILE_DEPEND))
 include $(MAKEFILE_DEPEND)
 
+# Silicenced because they started to take up a lot of screen during each build
 # Ignore cannot find stdio.h stuff
 depend:
-	$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null
+	@($(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null)
 # Remove annoying backup
-	$(RM) $(MAKEFILE_DEPEND).bak
-	
+	@($(RM) $(MAKEFILE_DEPEND).bak)
+ 	
 .PHONY: all uvudec .cpp.o clean dist depend
 
 info:
