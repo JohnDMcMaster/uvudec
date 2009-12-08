@@ -267,7 +267,7 @@ uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, co
 	//what if a string is removed?  Don't think it will be done soon, but "what if"
 	//It will get added at the end anyway, may not be necessary
 	uv_assert_err_ret(addStringCore(sSection, s, &stringTableIndex));
-	printf("Index of string <%s> in table %s: %d\n", s.c_str(), sSection.c_str(), stringTableIndex);
+	//printf_debug("Index of string <%s> in table %s: %d\n", s.c_str(), sSection.c_str(), stringTableIndex);
 
 	//Find the section header for the string table (specified as part of the elf header)
 	uv_assert_err_ret(getSectionHeaderByName(sSection, &sectionHeaderEntry));
