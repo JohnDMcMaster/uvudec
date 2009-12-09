@@ -6,6 +6,50 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd_relocation.h"
+#include "uvd_binary_symbol.h"
+
+
+/*
+UVDBinarySymbolElement
+A relocation value based on a binary symbol
+*/
+class UVDBinarySymbolElement : public UVDRelocatableElement
+{
+public:
+	UVDBinarySymbolElement();
+	UVDBinarySymbolElement(UVDBinarySymbol *binarySymbol);
+	~UVDBinarySymbolElement();
+
+	virtual uv_err_t updateDynamicValue();
+	
+public:
+	UVDBinarySymbol *m_binarySymbol;
+};
+
+UVDBinarySymbolElement::UVDBinarySymbolElement()
+{
+	m_binarySymbol = NULL;
+}
+
+UVDBinarySymbolElement::UVDBinarySymbolElement(UVDBinarySymbol *binarySymbol)
+{
+	m_binarySymbol = binarySymbol;
+}
+
+UVDBinarySymbolElement::~UVDBinarySymbolElement()
+{
+}
+
+uv_err_t UVDBinarySymbolElement::updateDynamicValue()
+{
+	uint32_t symbolAddress = 0;
+
+	uv_assert_ret(m_binarySymbol);
+	uv_assert_err_ret(m_binarySymbol->getSymbolAddress(&symbolAddress));
+	setDynamicValue(symbolAddress);
+
+	return UV_ERR_OK;
+}
 
 /*
 UVDRelocationFixup
@@ -55,3 +99,24 @@ uv_err_t UVDRelocationFixup::applyPatchCore(UVDData *data, bool useDefaultValue)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDRelocationFixup::getUnknownSymbolRelocationFixup(UVDRelocationFixup **fixupOut, uint32_t offset, uint32_t size)
+{
+	return UV_DEBUG(getSymbolRelocationFixup(fixupOut, NULL, offset, size));
+}
+
+uv_err_t UVDRelocationFixup::getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *binarySymbol, uint32_t offset, uint32_t size)
+{
+	UVDRelocationFixup *fixup = NULL;
+	UVDRelocatableElement *element = NULL;
+	
+	element = new UVDBinarySymbolElement(binarySymbol);
+	uv_assert_ret(element);
+	
+	fixup = new UVDRelocationFixup(element, offset, size);
+	uv_assert_ret(fixup);
+	
+	uv_assert_ret(fixupOut);
+	*fixupOut = fixup;
+	
+	return UV_ERR_OK;
+}

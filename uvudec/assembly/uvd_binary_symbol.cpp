@@ -7,6 +7,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 #include "uvd_binary_symbol.h"
 #include "uvd_binary_function.h"
+#include "uvd.h"
 
 /*
 UVDBinarySymbol
@@ -43,7 +44,21 @@ uv_err_t UVDBinarySymbol::getSymbolName(std::string &name)
 
 uv_err_t UVDBinarySymbol::addRelocation(uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	UVDRelocationFixup *fixup = NULL;
+	
+	//static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offset, uint32_t size);
+	//We do not know the symbol it is assicated with yet, these will be collected and fixed in collectRelocations()
+	uv_assert_err_ret(UVDRelocationFixup::getUnknownSymbolRelocationFixup(&fixup, relocatableDataOffset, relocatableDataSize));
+
+	/*
+	uv_assert_err_ret(UVDBinaryRelocation::getUVDBinaryRelocation(&relocation,
+			relocatableDataOffset, relocatableDataSize));
+	uv_assert_ret(fixup);
+	
+	uv_assert_ret(m_relocatableData);
+	*/
+	m_relocatableData->addFixup(fixup);
+
 	/*
 	UVDBinaryRelocation *relocation = NULL;
 	
@@ -52,13 +67,19 @@ uv_err_t UVDBinarySymbol::addRelocation(uint32_t relocatableDataOffset, uint32_t
 	uv_assert_ret(relocation);
 	m_relocations.push_back(relocation);
 	
-	return UV_ERR_OK;
 	*/
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinarySymbol::getSymbolAddress(uint32_t *symbolAddress)
 {
 	return UV_DEBUG(m_symbolAddress.getDynamicValue(symbolAddress));
+}
+
+uv_err_t UVDBinarySymbol::setSymbolAddress(uint32_t symbolAddress)
+{
+	m_symbolAddress.setDynamicValue(symbolAddress);
+	return UV_ERR_OK;
 }
 
 /*
@@ -79,7 +100,32 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 	//Copy for now..do add later if needed
 	m_relocatableData->m_fixups = otherSymbol->m_relocatableData->m_fixups;
 
+	/*
+	FIXME: does this still need to be done?
+	reason may actually just be more due to seperated analysis objects that need merging
+	
+	Register the fixups to being to this symbol
+	This is due to during analysis not knowing where functions are until after the first pass is complete
+	Ex: 
+		say we find the first function call
+		we have a function we called from and a function entry point
+		But we haven't found enough function entry points to know our source function
+		This code patches up that source function now that we know what it is
+	*/
+
 	return UV_ERR_OK;	
+}
+
+/*
+UVDLabelBinarySymbol
+*/
+
+UVDLabelBinarySymbol::UVDLabelBinarySymbol()
+{
+}
+
+UVDLabelBinarySymbol::~UVDLabelBinarySymbol()
+{
 }
 
 /*
@@ -88,6 +134,7 @@ UVDBinarySymbolManager
 
 UVDBinarySymbolManager::UVDBinarySymbolManager()
 {
+	m_analyzer = NULL;
 }
 
 UVDBinarySymbolManager::~UVDBinarySymbolManager()
@@ -164,4 +211,82 @@ uv_err_t UVDBinarySymbolManager::doCollectRelocations(UVDBinaryFunction *functio
 	uv_assert_err_ret(functionInstance->addRelocations(analysisSymbol));
 
 	return UV_ERR_OK;	
+}
+
+uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t functionAddress,
+		uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
+{
+	UVDBinarySymbol *symbol = NULL;
+	UVDBinaryFunctionInstance *functionSymbol = NULL;
+	UVD *uvd = NULL;
+	std::string symbolName;
+
+	uv_assert_ret(m_analyzer);
+	uvd = m_analyzer->m_uvd;
+	uv_assert_ret(uvd);
+
+	//Start by getting the symbol, if it exists
+	//Get name
+	symbolName = uvd->analyzedSymbolName(functionAddress);
+	//Query symbol
+	if( UV_FAILED(findSymbol(symbolName, &symbol)) )
+	{
+		//Create it new then
+		functionSymbol = new UVDBinaryFunctionInstance();
+		uv_assert_ret(functionSymbol);
+		uv_assert_err_ret(functionSymbol->init());
+		functionSymbol->setSymbolAddress(functionAddress);
+		functionSymbol->setSymbolName(symbolName);
+		//Register it
+		uv_assert_err_ret(addSymbol(functionSymbol));
+	}
+	else
+	{
+		functionSymbol = dynamic_cast<UVDBinaryFunctionInstance *>(symbol);
+		//functionSymbol = (UVDBinaryFunctionInstance *)(symbol);
+		uv_assert_ret(functionSymbol);
+	}
+
+	uv_assert_err_ret(functionSymbol->addRelocation(relocatableDataOffset, relocatableDataSize));
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocation(uint32_t labelAddress,
+		uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
+{
+	UVDBinarySymbol *symbol = NULL;
+	UVDLabelBinarySymbol *labelSymbol = NULL;
+	UVD *uvd = NULL;
+	std::string symbolName;
+
+	uv_assert_ret(m_analyzer);
+	uvd = m_analyzer->m_uvd;
+	uv_assert_ret(uvd);
+
+	//Start by getting the symbol, if it exists
+	//Get name
+	symbolName = uvd->analyzedSymbolName(labelAddress);
+	//Query symbol
+	if( UV_FAILED(findSymbol(symbolName, &symbol)) )
+	{
+		//Create it new then
+		labelSymbol = new UVDLabelBinarySymbol();
+		uv_assert_ret(labelSymbol);
+		uv_assert_err_ret(labelSymbol->init());
+		labelSymbol->setSymbolAddress(labelAddress);
+		labelSymbol->setSymbolName(symbolName);
+		//Register it
+		uv_assert_err_ret(addSymbol(labelSymbol));
+	}
+	else
+	{
+		//labelSymbol = dynamic_cast<UVDLabelBinarySymbol *>(symbol);
+		labelSymbol = (UVDLabelBinarySymbol *)(symbol);
+		uv_assert_ret(labelSymbol);
+	}
+
+	uv_assert_err_ret(labelSymbol->addRelocation(relocatableDataOffset, relocatableDataSize));
+	
+	return UV_ERR_OK;
 }

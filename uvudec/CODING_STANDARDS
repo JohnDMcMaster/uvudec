@@ -12,6 +12,11 @@ General theory:
 -Code should at least be briefly commented for purpose
 -Coding style is tab width independent
 -Uses -Wall, -Werror
+-Take care to avoid corrupted program states, this can take a long time to trace
+	-Always initialize primitives (local scope, constructors)
+-Strong error checking should be used
+-Avoid global variables
+	-There are still some left, they have migration plans
 
 
 Conditionals should be of the form (simple example):
@@ -49,6 +54,8 @@ DO NOT:
 Spacing
 -I use a style that is tab independent to avoid "I like 4 vs 8 space" issues
 -I happen to use 4 tabbed spacing
+	-This can come up as an issue for #define tables that are hard to read unless aligned...I don't have a good solution to this yet
+	-If I was extremist in this policy, I would have continued onto next line using \ and tabbed over two tabs
 -Spaces should not be used for indentation, always tabs.  Spaces make it annoying for me to edit files
 -Ideally lines should be 78 chars or less
 -Somewhat more enforced will be below 120 chars
@@ -105,6 +112,7 @@ Binaries
 	This keeps build requirements down for features not needed
 -The main executable must be able to be distributable in static form
 	If the library you require cannot meet this requirement, you will be likely an optional feature
+	Consider being able to dynamically load the library...although this does introduce a number of issues
 -Static binaries are UPX packed
 -RPMs and such should be built, but haven't
 	It works in a self contained dir as of now, so good enough for now
