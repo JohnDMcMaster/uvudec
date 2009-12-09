@@ -235,8 +235,8 @@ public:
 	//XXX: should this get replaced by the symbol DB?
 	std::set<UVDBinaryFunction *> m_functions;
 	//All of the symbols discovered during this analysis
-	//m_functions should be contained in this
-	UVDBinarySymbolManager *m_symbolManager;
+	//m_functions should be contained in this as well
+	UVDBinarySymbolManager m_symbolManager;
 
 	UVD *m_uvd;
 };

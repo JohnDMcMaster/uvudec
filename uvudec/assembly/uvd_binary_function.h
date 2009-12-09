@@ -45,6 +45,7 @@ UVDBinaryFunction
 #include "uvd_data.h"
 #include "uvd_version.h"
 #include "uvd_relocation.h"
+#include "uvd_binary_symbol.h"
 #include <string>
 #include <vector>
 
@@ -79,12 +80,13 @@ printf__version_1_2__optimized.bin
 */
 
 //A specific implementation of function recorded from analysis 
+//This has replaced UVDFunctionBinarySymbol
 class UVDElf;
-class UVDBinaryFunctionInstance
+class UVDBinaryFunctionInstance : public UVDBinarySymbol
 {
 public:
 	UVDBinaryFunctionInstance();
-	~UVDBinaryFunctionInstance();
+	virtual ~UVDBinaryFunctionInstance();
 	uv_err_t init();
 	static uv_err_t getUVDBinaryFunctionInstance(UVDBinaryFunctionInstance **out);
 	
@@ -123,13 +125,14 @@ public:
 	UVDCompilerOptions *m_compilerOptions;
 private:
 	//Binary version stored in DB
-	UVDData *m_data;
+	//This has been take over by the m_data in the UVDBinarySymbol class
+	//UVDData *m_data;
 public:
 	//The relocations for this function
 	//Stuff like where g_debug is used
 	//Also stored is a relocatable version of the function
-	UVDRelocatableData *m_relocatableData;
-
+	//Now in UVDBinarySymbol
+	//UVDRelocatableData *m_relocatableData;
 	//UV_DISASM_LANG
 	//Programming Language code representation is in (assembly, C, etc)
 	//Assembly may sound useless, but many MCU functions are well commented assembly
@@ -150,7 +153,8 @@ public:
 	Note that while the real function name is shared between various implementations,
 	the symbol name is specific to a particular implementation
 	*/
-	std::string m_symbolName; 
+	//Superceded by def in UVDBinarySymbol
+	//std::string m_symbolName;
 };
 
 /*
@@ -186,6 +190,11 @@ public:
 	uv_err_t getMin(uint32_t *out);
 	uv_err_t getMax(uint32_t *out);
 
+	//One and only one should be associated with this object
+	UVDBinaryFunctionInstance *getFunctionInstance();
+	//One and only one should be associated with this object
+	void setFunctionInstance(UVDBinaryFunctionInstance *instance);
+
 public:
 	//Raw binary representation of function as it was found in the program
 	//This version should not be processed for relocatables
@@ -199,6 +208,9 @@ public:
 	//Offset that was found at in original data (m_uvd->m_data)
 	//Size can be queried from m_data, may add redudent here for convienence
 	uint32_t m_offset;
+private:
+	//Cache of the instance we are using so we don't have to query it from the DB
+	UVDBinaryFunctionInstance *m_instance;
 };
 
 #endif //UVD_FUNCTION_H

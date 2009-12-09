@@ -10,11 +10,13 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_language.h"
 #include "uvd_elf.h"
 
+/*
+UVDBinaryFunctionInstance
+*/
 UVDBinaryFunctionInstance::UVDBinaryFunctionInstance()
 {
 	m_compiler = NULL;
 	m_compilerOptions = NULL;
-	m_data = NULL;
 	m_relocatableData = NULL;
 
 	m_language = UVD_LANGUAGE_UNKNOWN;
@@ -26,8 +28,7 @@ UVDBinaryFunctionInstance::~UVDBinaryFunctionInstance()
 
 uv_err_t UVDBinaryFunctionInstance::init()
 {
-	m_relocatableData = new UVDRelocatableData();
-	uv_assert_ret(m_relocatableData);
+	uv_assert_err_ret(UVDBinarySymbol::init());
 	
 	return UV_ERR_OK;
 }
@@ -154,15 +155,24 @@ uv_err_t UVDBinaryFunctionInstance::computeRelocatableHash()
 	return UV_ERR_OK;
 }
 
+/*
+UVDBinaryFunctionShared
+*/
+
 UVDBinaryFunctionShared::UVDBinaryFunctionShared()
 {
 }
+
+/*
+UVDBinaryFunction
+*/
 
 UVDBinaryFunction::UVDBinaryFunction()
 {
 	m_data = NULL;
 	m_uvd = NULL;
 	m_shared = NULL;
+	m_instance = NULL;
 	m_offset = 0;
 }
 
@@ -184,4 +194,27 @@ uv_err_t UVDBinaryFunction::getMax(uint32_t *out)
 	uv_assert_ret(m_data->size(out));
 	*out += m_offset;
 	return UV_ERR_OK;
+}
+
+UVDBinaryFunctionInstance *UVDBinaryFunction::getFunctionInstance()
+{
+	//Try to find the instance if it wasn't already cached
+	if( !m_instance )
+	{
+		if( !m_shared )
+		{
+			return NULL;
+		}
+		if( m_shared->m_representations.size() != 1 )
+		{
+			return NULL;
+		}
+		m_instance = m_shared->m_representations[0];
+	}
+	return m_instance;
+}
+
+void UVDBinaryFunction::setFunctionInstance(UVDBinaryFunctionInstance *instance)
+{
+	m_instance = instance;
 }

@@ -206,7 +206,7 @@ UVDAnalyzer::UVDAnalyzer()
 	m_block = NULL;
 	m_db = NULL;
 	m_uvd = NULL;
-	m_symbolManager = NULL;
+	//m_symbolManager = NULL;
 }
 
 uv_err_t UVDAnalyzer::init()
@@ -433,11 +433,6 @@ uv_err_t UVDAnalyzer::functionSharedToFunction(UVDBinaryFunctionShared *function
 	return UV_DEBUG(functionInstanceToFunction(functionInstance, functionOut));
 }
 
-uv_err_t UVDAnalyzer::mapSymbols()
-{
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targetFunctionInstance, UVDBinaryFunction **functionOut)
 {
 	UVDBinaryFunction *functionToOutput = NULL;
@@ -496,8 +491,8 @@ uv_err_t UVDAnalyzer::analyzeCall(uint32_t startPos, const UVDVariableMap &attri
 		uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
 
 		//We know the location of a call symbol relocation
-		uv_assert_ret(m_symbolManager);
-		uv_assert_err_ret(m_symbolManager->addAbsoluteFunctionRelocation(targetAddress,
+		//uv_assert_ret(m_symbolManager);
+		uv_assert_err_ret(m_symbolManager.addAbsoluteFunctionRelocation(targetAddress,
 				startPos, relocatableDataSize));
 	}
 #endif
@@ -524,11 +519,28 @@ uv_err_t UVDAnalyzer::analyzeJump(uint32_t startPos, const UVDVariableMap &attri
 		uv_assert_err_ret(instruction.m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
 
 		//We know the location of a jump symbol relocation
-		uv_assert_ret(m_symbolManager);
-		uv_assert_err_ret(m_symbolManager->addAbsoluteLabelRelocation(targetAddress,
+		//uv_assert_ret(m_symbolManager);
+		uv_assert_err_ret(m_symbolManager.addAbsoluteLabelRelocation(targetAddress,
 				startPos, relocatableDataSize));
 	}
 #endif
 
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::mapSymbols()
+{
+	//uv_assert_ret(m_symbolManager);
+	
+	//For each function, find its associated symbols
+	//This algorithm can be made linear for some extra interaction
+	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
+	{
+		UVDBinaryFunction *function = *iter;
+		uv_assert_ret(function);
+
+		//Get all the relocations for this particular function and register the fixups
+		uv_assert_err_ret(m_symbolManager.collectRelocations(function));
+	}
 	return UV_ERR_OK;
 }

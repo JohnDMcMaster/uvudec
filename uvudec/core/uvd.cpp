@@ -165,6 +165,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 
 	function = new UVDBinaryFunction();
 	uv_assert_ret(function);
+	//uv_assert_err_ret(function->init());
 
 	functionShared = new UVDBinaryFunctionShared();
 	printf_debug("new UVDBinaryFunctionShared: 0x%.8X\n", (unsigned int)function);	
@@ -182,8 +183,10 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	//Create the single known instance of this function
 	uv_assert_err_ret(UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(&functionInstance));
 	uv_assert_ret(functionInstance);
+	functionInstance->m_symbolAddress = UVDRelocatableElement(minAddress);
 	//Only specific instances get symbol designations
-	functionInstance->m_symbolName = analyzedSymbolName(minAddress);	
+	functionInstance->m_symbolName = analyzedSymbolName(minAddress);
+	
 	/*
 	Skip for now:
 	UVDCompiler *m_compiler;
