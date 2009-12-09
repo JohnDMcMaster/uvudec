@@ -162,6 +162,7 @@ public:
 //TODO: make a compare method to key to UVDMemoryLocation instead 
 typedef std::map<uint32_t, UVDAnalyzedMemoryLocation *> UVDAnalyzedMemorySpace;
 typedef std::vector<UVDAnalyzedMemoryLocation *> UVDAnalyzedMemoryLocations;
+class UVDInstruction;
 //Holds data that resulted from binary analysis or advanced hints from user
 class UVDAnalyzer
 {
@@ -197,8 +198,8 @@ public:
 	uv_err_t mapSymbols();
 
 	//After interpreting these instructions, add to analysis DB info based on mined attributes
-	uv_err_t analyzeCall(uint32_t startPos, const UVDVariableMap &attributes);
-	uv_err_t analyzeJump(uint32_t startPos, const UVDVariableMap &attributes);
+	uv_err_t analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
+	uv_err_t analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
 
 private:
 	//Force a rebuild of the internal database

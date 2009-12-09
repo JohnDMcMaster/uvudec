@@ -38,6 +38,7 @@ Base class does absolute addresses as this is the most common behavior
 Size is in bytes
 */
 class UVDRelocatableElement;
+class UVDBinarySymbol;
 class UVDRelocationFixup
 {
 public:
@@ -50,6 +51,15 @@ public:
 	//m_symbol should hold a valid value by this point (or be calculable by call)
 	uv_err_t applyPatch(UVDData *data);
 	uv_err_t applyPatchCore(UVDData *data, bool useDefaultValue);
+	
+	//For current analysis where we do not know which function (or abstract block) we are apart of yet
+	static uv_err_t getUnknownSymbolRelocationFixup(UVDRelocationFixup **fixupOut, uint32_t offset, uint32_t size);
+	/*
+	A relocation fixup for the symbol given
+	Gives a fixup such that it will get the address value of the symbol and patch the offset + size as needed
+	Default system endianess is assumed
+	*/
+	static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offset, uint32_t size);
 	
 public:
 	//The value we were waiting on
@@ -141,6 +151,7 @@ public:
 
 /*
 A value that will later be updated to have a concrete value
+In fact, should probably rename to UVDRelocatableValue, was probably one of those 2AM naming decisions
 eg:
 	the address of g_debug
 	number of items in something

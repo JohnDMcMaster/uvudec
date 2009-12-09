@@ -31,6 +31,7 @@ public:
 	//FIXME: this is analysis specific...should it be here?
 	//If this is a symbol in our currently analyzed data, the address it presides at 
 	uv_err_t getSymbolAddress(uint32_t *symbolAddress);
+	uv_err_t setSymbolAddress(uint32_t symbolAddress);
 	/*
 	uv_err_t getOffset(uint32_t *offset);
 	*/
@@ -40,6 +41,7 @@ public:
 	//A basic form
 	uv_err_t addRelocation(uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
 	//Add relocations from other symbol to this one
+	//Used for merging analysis data
 	uv_err_t addRelocations(const UVDBinarySymbol *otherSymbol);
 
 public:
@@ -83,6 +85,19 @@ public:
 };
 
 /*
+A label is a location jumped to, ie a relocation based off of IP
+Usually they occur only internally to functions and are not referenced outside that function
+Exception: BASIC code...yuck
+	In this case the decompiler is useless and you are better off reading the assembly.  Good luck! 
+*/
+class UVDLabelBinarySymbol : public UVDBinarySymbol
+{
+public:
+	UVDLabelBinarySymbol();
+	~UVDLabelBinarySymbol();
+ };
+
+/*
 A symbol of read only data
 Their value cannot be changed
 ELF notes
@@ -97,7 +112,11 @@ public:
 	~UVDROMBinarySymbol();
 };
 
+/*
+A collection of symbols belonging to a common analysis
+*/
 class UVDBinaryFunction;
+class UVDAnalyzer;
 class UVDBinarySymbolManager
 {
 public:
@@ -106,6 +125,21 @@ public:
 
 	uv_err_t findSymbol(std::string &name, UVDBinarySymbol **symbol);
 	uv_err_t addSymbol(UVDBinarySymbol *symbol);
+	//Shortcuts for now
+	//These will create the function/label if necessary
+	/*
+	ie from a call
+	functionAddress: the call target of the function
+	relocatableDataOffset: the address of the data that contains the function address
+	relocatableDataSize: the size of the section storing the function address
+		If there is not enough room to store, an error will be thrown
+	*/
+	uv_err_t addAbsoluteFunctionRelocation(uint32_t functionAddress,
+			uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+	//ie from a goto
+	uv_err_t addAbsoluteLabelRelocation(uint32_t labelAddress,
+			uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+
 	//Find the function symbol passed in and add all relocations, if any
 	uv_err_t collectRelocations(UVDBinaryFunction *function);
 
@@ -115,6 +149,8 @@ private:
 public:
 	//Symbol names must be unique
 	std::map<std::string, UVDBinarySymbol *> m_symbols;
+	//Needed to convert addresses to symbol names
+	UVDAnalyzer *m_analyzer;
 };
 
 #endif

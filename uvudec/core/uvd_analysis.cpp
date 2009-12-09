@@ -476,7 +476,7 @@ uv_err_t UVD::analyzeControlFlow()
 			uv_assert_ret(m_interpreter);
 			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
 			
-			uv_assert_err_ret(m_analyzer->analyzeCall(startPos, mapOut));
+			uv_assert_err_ret(m_analyzer->analyzeCall(&instruction, startPos, mapOut));
 			
 		}
 		else if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
@@ -507,7 +507,7 @@ uv_err_t UVD::analyzeControlFlow()
 			uv_assert_ret(m_interpreter);
 			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
 
-			uv_assert_err_ret(m_analyzer->analyzeJump(startPos, mapOut));
+			uv_assert_err_ret(m_analyzer->analyzeJump(&instruction, startPos, mapOut));
 		}
 	}
 	controlStructureAnalysisBenchmark.stop();
