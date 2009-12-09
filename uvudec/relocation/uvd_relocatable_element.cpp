@@ -17,6 +17,12 @@ UVDRelocatableElement::UVDRelocatableElement()
 	m_isDynamicValueValid = false;
 }
 
+UVDRelocatableElement::UVDRelocatableElement(uint32_t dynamicValue)
+{
+	m_dynamicValue = dynamicValue;
+	m_isDynamicValueValid = true;
+}
+
 UVDRelocatableElement::~UVDRelocatableElement()
 {
 }

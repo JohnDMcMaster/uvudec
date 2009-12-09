@@ -211,6 +211,8 @@ public:
 	//Get the raw binary image of this object
 	uv_err_t constructBinary(UVDData **data);
 	uv_err_t saveToFile(const std::string &file);
+
+	//Deprecated
 	//Construct from a UVD relocatable
 	//Assumes in the .text section
 	static uv_err_t getFromRelocatableData(UVDRelocatableData *relocatableData,

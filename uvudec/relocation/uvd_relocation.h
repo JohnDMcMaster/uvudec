@@ -92,6 +92,7 @@ public:
 };
 
 /*
+Some data that has items that need relocations applied to it
 This can include things with and without symbolic values (symbolic values are repr by UVDRelocatableElement)
 -ELF section headers
 -functions that need variable addresses filled in
@@ -148,6 +149,8 @@ class UVDRelocatableElement
 {
 public:
 	UVDRelocatableElement();
+	//A const value of sorts, set it from the start
+	UVDRelocatableElement(uint32_t dynamicValue);
 	virtual ~UVDRelocatableElement();
 	
 	//dynamicValue is in the local system encoding
@@ -248,6 +251,7 @@ public:
 
 /*
 Contains all the data to be fixed up as well as the symbols
+This and UVDData should probably be merged and done recursivly
 */
 class UVDRelocationManager
 {
