@@ -468,7 +468,7 @@ uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targ
 	return UV_ERR_OK;
 }
 
-//#define BASIC_SYMBOL_ANALYSIS			
+#define BASIC_SYMBOL_ANALYSIS			
 
 uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
 {
@@ -483,7 +483,7 @@ uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos
 	//uv_assert_err(insertReference(targetAddress, startPos, ));
 	updateCache(startPos, attributes);
 
-#ifdef BASIC_SYMBOL_ANALYSIS			
+#ifdef BASIC_SYMBOL_ANALYSIS
 	/*
 	Only simple versions can be parsed for now
 	Must have a single immediate as the target value with no calculation required
@@ -504,6 +504,8 @@ uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos
 
 	return UV_ERR_OK;
 }
+
+//#undef BASIC_SYMBOL_ANALYSIS
 
 uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
 {

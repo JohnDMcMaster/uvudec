@@ -35,13 +35,32 @@ public:
 	/*
 	uv_err_t getOffset(uint32_t *offset);
 	*/
+
+	virtual uv_err_t getSymbolSize(uint32_t *symbolSize);
+	//virtual uv_err_t setSymbolSize(uint32_t symbolSize);
 	
-	//A relocation inside this relocation, if applicable
-	//Some symbols are so small this is not practical, such as variables
-	//A basic form
-	uv_err_t addRelocation(uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
-	//Add relocations from other symbol to this one
-	//Used for merging analysis data
+	/*
+	A relocation inside this relocation, if applicable
+	Some symbols are so small this is not practical, such as variables
+	A basic form
+	The offset is relative to the data inside this function
+	*/
+	uv_err_t addRelativeRelocation(uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+	//This is equivilent to above, except that the function start is subtracted from the offset
+	//Provided as convienence
+	uv_err_t addAbsoluteRelocation(uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+	
+	/*
+	Add a location where this symbol is used using the programs absolute address
+	Basic form
+	*/
+	uv_err_t addSymbolUse(uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+	
+	/*
+	Add relocations from other symbol to this one
+	Used for merging analysis data
+	The other symbol will contain all the areas it was referenced
+	*/
 	uv_err_t addRelocations(const UVDBinarySymbol *otherSymbol);
 
 public:
@@ -55,9 +74,45 @@ public:
 	//Stuff like where g_debug is used
 	//Also stored is a relocatable version of the function
 	UVDRelocatableData *m_relocatableData;
+	//Locations where this symbol is used throughout the code, ie not (necessary) in this function
+	//std::map<uint32_t, UVDRelocationFixup *> m_symbolUsageLocations;
+	std::set<UVDRelocationFixup *> m_symbolUsageLocations;
 
 	//Computes the symbol address
 	UVDRelocatableElement m_symbolAddress;
+	//Computed through m_data
+	//UVDRelocatableElement m_symbolSize;	
+};
+
+/*
+A number of issues of being aggressive with symbols during analysis
+In particular, we cannot be sure whether things are functions, labels, etc
+	In particular, one may jump back to the start of a loop, which causes issues with analysis
+	Must do some sort of voting mentality to get the true symbol
+*/
+class UVDAnalyzedBinarySymbol
+{
+public:
+	UVDAnalyzedBinarySymbol();
+	~UVDAnalyzedBinarySymbol();
+
+	/*
+	Return the best guess at what the symbol really is
+	*/
+	uv_err_t getBestUVDBinarySymbol(UVDBinarySymbol **symbolOut);
+
+	//Register use as a label
+	void registerLabelUsage(uint32_t usageAddress);
+	//As a function
+	void registerFunctionUsage(uint32_t usageAddress);
+	//As a variable
+	void registerVariableUsage(uint32_t usageAddress);
+	
+public:
+	//How many of each of the particular types 
+	std::vector<uint32_t> m_labelHits;
+	std::vector<uint32_t> m_functionHits;
+	std::vector<uint32_t> m_variableHits;
 };
 
 #if 0
