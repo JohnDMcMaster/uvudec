@@ -315,6 +315,28 @@ uv_err_t UVDBinarySymbolManager::findSymbol(std::string &name, UVDBinarySymbol *
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(std::string &name, UVDAnalyzedBinarySymbol **symbolOut)
+{
+	UVDBinarySymbol *symbolRaw = NULL;
+	UVDAnalyzedBinarySymbol *symbol = NULL;
+	uv_err_t rc = UV_ERR_GENERAL;
+	
+	//Don't print for errors
+	rc = findSymbol(name, &symbolRaw);
+	if( UV_FAILED(rc) )
+	{
+		return rc;
+	}
+
+	symbol = dynamic_cast<UVDAnalyzedBinarySymbol *>(symbolRaw);
+	uv_assert_ret(symbol);
+	
+	uv_assert_ret(symbolOut);
+	*symbolOut = symbol;
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDBinarySymbolManager::addSymbol(UVDBinarySymbol *symbol)
 {
 	uv_assert_ret(symbol);
@@ -377,7 +399,7 @@ uv_err_t UVDBinarySymbolManager::doCollectRelocations(UVDBinaryFunction *functio
 uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t functionAddress,
 		uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
 {
-	UVDBinarySymbol *symbol = NULL;
+	UVDAnalyzedBinarySymbol *symbol = NULL;
 	UVD *uvd = NULL;
 	std::string symbolName;
 
@@ -389,21 +411,18 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t function
 	//Get name
 	symbolName = uvd->analyzedSymbolName(functionAddress);
 	//Query symbol
-	if( UV_FAILED(findSymbol(symbolName, &symbol)) )
+	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
 	{
-		UVDBinaryFunctionInstance *functionSymbol = NULL;
-
-		//printf("First symbol hit\n");
 		//Create it new then
-		functionSymbol = new UVDBinaryFunctionInstance();
-		uv_assert_ret(functionSymbol);
-		uv_assert_err_ret(functionSymbol->init());
-		functionSymbol->setSymbolAddress(functionAddress);
-		functionSymbol->setSymbolName(symbolName);
+		symbol = new UVDAnalyzedBinarySymbol();
+		uv_assert_ret(symbol);
+		uv_assert_err_ret(symbol->init());
+		symbol->setSymbolAddress(functionAddress);
+		symbol->setSymbolName(symbolName);
 		//Register it
-		uv_assert_err_ret(addSymbol(functionSymbol));
-		symbol = functionSymbol;
+		uv_assert_err_ret(addSymbol(symbol));
 	}
+	/*
 	else
 	{
 		UVDBinaryFunctionInstance *functionSymbol = NULL;
@@ -416,8 +435,10 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t function
 		}
 		//uv_assert_ret(functionSymbol);
 	}
+	*/
 
 	uv_assert_ret(symbol);
+	symbol->registerLabelUsage(functionAddress);
 	uv_assert_err_ret(symbol->addSymbolUse(relocatableDataOffset, relocatableDataSize));
 	
 	return UV_ERR_OK;
@@ -426,7 +447,7 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t function
 uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocation(uint32_t labelAddress,
 		uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
 {
-	UVDBinarySymbol *symbol = NULL;
+	UVDAnalyzedBinarySymbol *symbol = NULL;
 	UVD *uvd = NULL;
 	std::string symbolName;
 
@@ -438,20 +459,18 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocation(uint32_t labelAddres
 	//Get name
 	symbolName = uvd->analyzedSymbolName(labelAddress);
 	//Query symbol
-	if( UV_FAILED(findSymbol(symbolName, &symbol)) )
+	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
 	{
-		UVDLabelBinarySymbol *labelSymbol = NULL;
-
 		//Create it new then
-		labelSymbol = new UVDLabelBinarySymbol();
-		uv_assert_ret(labelSymbol);
-		uv_assert_err_ret(labelSymbol->init());
-		labelSymbol->setSymbolAddress(labelAddress);
-		labelSymbol->setSymbolName(symbolName);
+		symbol = new UVDAnalyzedBinarySymbol();
+		uv_assert_ret(symbol);
+		uv_assert_err_ret(symbol->init());
+		symbol->setSymbolAddress(labelAddress);
+		symbol->setSymbolName(symbolName);
 		//Register it
-		uv_assert_err_ret(addSymbol(labelSymbol));
-		symbol = labelSymbol;
+		uv_assert_err_ret(addSymbol(symbol));
 	}
+	/*
 	else
 	{
 		UVDLabelBinarySymbol *labelSymbol = NULL;
@@ -463,7 +482,10 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocation(uint32_t labelAddres
 			printf_warn("previous symbol was not a label symbol as now indicated (0x%.4X)\n", labelAddress);
 		}
 	}
-
+	*/
+	
+	uv_assert_ret(symbol);
+	symbol->registerLabelUsage(labelAddress);
 	uv_assert_err_ret(symbol->addSymbolUse(relocatableDataOffset, relocatableDataSize));
 	
 	return UV_ERR_OK;

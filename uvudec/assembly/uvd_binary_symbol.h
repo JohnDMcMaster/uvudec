@@ -90,7 +90,7 @@ In particular, we cannot be sure whether things are functions, labels, etc
 	In particular, one may jump back to the start of a loop, which causes issues with analysis
 	Must do some sort of voting mentality to get the true symbol
 */
-class UVDAnalyzedBinarySymbol
+class UVDAnalyzedBinarySymbol : public UVDBinarySymbol
 {
 public:
 	UVDAnalyzedBinarySymbol();
@@ -179,6 +179,8 @@ public:
 	~UVDBinarySymbolManager();
 
 	uv_err_t findSymbol(std::string &name, UVDBinarySymbol **symbol);
+	//If this one is used for analysis, make sure its an analyzed version
+	uv_err_t findAnalyzedSymbol(std::string &name, UVDAnalyzedBinarySymbol **symbol);
 	uv_err_t addSymbol(UVDBinarySymbol *symbol);
 	//Shortcuts for now
 	//These will create the function/label if necessary
