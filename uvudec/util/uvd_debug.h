@@ -41,7 +41,9 @@ extern int g_verbose_level;
 
 const char *get_last_func();
 
-#define printf_warn printf_debug
+//#define printf_warn printf_debug
+//Or should this be treated as a level 1 error?
+#define printf_warn(format, ...) printf("WARNING: " format, ## __VA_ARGS__)
 #define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
 
 /*

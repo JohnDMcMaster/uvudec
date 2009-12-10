@@ -109,7 +109,7 @@ public:
 
 	void setData(UVDData *data);
 	UVDData *getData();
-
+	
 private:
 	//Force hash compute
 	uv_err_t computeHash();
