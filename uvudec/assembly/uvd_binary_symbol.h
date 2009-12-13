@@ -24,6 +24,10 @@ public:
 	UVDBinarySymbol();
 	virtual ~UVDBinarySymbol();
 
+	/*
+	UVDRelocatableElement also has a name, this has caused some conflicts
+	
+	*/ 
 	void setSymbolName(const std::string &name);
 	uv_err_t getSymbolName(std::string &name);
 	virtual uv_err_t init();
@@ -54,7 +58,8 @@ public:
 	Add a location where this symbol is used using the programs absolute address
 	Basic form
 	*/
-	uv_err_t addSymbolUse(uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+	uv_err_t addSymbolUse(uint32_t relocatableDataOffsetBytes, uint32_t relocatableDataSizeBytes);
+	uv_err_t addSymbolUseByBits(uint32_t relocatableDataOffsetBytes, uint32_t relocatableDataSizeBits);
 	
 	/*
 	Add relocations from other symbol to this one
@@ -73,9 +78,10 @@ public:
 	//The relocations contained within this symbol
 	//Stuff like where g_debug is used
 	//Also stored is a relocatable version of the function
+	//Note that all relocation fixups should be of type UVDBinarySymbolElement as they are expected to all be symbol fixups
 	UVDRelocatableData *m_relocatableData;
 	//Locations where this symbol is used throughout the code, ie not (necessary) in this function
-	//std::map<uint32_t, UVDRelocationFixup *> m_symbolUsageLocations;
+	//Done primarily because early on we only know the symbol destination and must concentrate where it is used
 	std::set<UVDRelocationFixup *> m_symbolUsageLocations;
 
 	//Computes the symbol address
@@ -178,6 +184,8 @@ public:
 	UVDBinarySymbolManager();
 	~UVDBinarySymbolManager();
 
+	uv_err_t findSymbolByAddress(uint32_t address, UVDBinarySymbol **symbol);
+
 	uv_err_t findSymbol(std::string &name, UVDBinarySymbol **symbol);
 	//If this one is used for analysis, make sure its an analyzed version
 	uv_err_t findAnalyzedSymbol(std::string &name, UVDAnalyzedBinarySymbol **symbol);
@@ -192,10 +200,14 @@ public:
 		If there is not enough room to store, an error will be thrown
 	*/
 	uv_err_t addAbsoluteFunctionRelocation(uint32_t functionAddress,
-			uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes);
+	uv_err_t addAbsoluteFunctionRelocationByBits(uint32_t functionAddress,
+			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits);
 	//ie from a goto
 	uv_err_t addAbsoluteLabelRelocation(uint32_t labelAddress,
-			uint32_t relocatableDataOffset, uint32_t relocatableDataSize);
+			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes);
+	uv_err_t addAbsoluteLabelRelocationByBits(uint32_t labelAddress,
+			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits);
 
 	//Find the function symbol passed in and add all relocations, if any
 	uv_err_t collectRelocations(UVDBinaryFunction *function);
@@ -205,9 +217,33 @@ private:
 
 public:
 	//Symbol names must be unique
-	std::map<std::string, UVDBinarySymbol *> m_symbols;
 	//Needed to convert addresses to symbol names
 	UVDAnalyzer *m_analyzer;
+
+private:
+	std::map<std::string, UVDBinarySymbol *> m_symbols;
+	std::map<uint32_t, UVDBinarySymbol *> m_symbolsByAddress;
+};
+
+/*
+UVDBinarySymbolElement
+A relocation value based on a binary symbol
+This solves a lot of consistency issues
+*/
+class UVDBinarySymbolElement : public UVDRelocatableElement
+{
+public:
+	UVDBinarySymbolElement();
+	UVDBinarySymbolElement(UVDBinarySymbol *binarySymbol);
+	~UVDBinarySymbolElement();
+
+	virtual uv_err_t updateDynamicValue();
+
+	virtual uv_err_t getName(std::string &s);
+	virtual uv_err_t setName(const std::string &s);
+	
+public:
+	UVDBinarySymbol *m_binarySymbol;
 };
 
 #endif

@@ -241,7 +241,7 @@ public:
 	uv_err_t isImmediateOnlyFunction();
 	//identifier size in bits
 	uv_err_t getImmediateOnlyFunctionAttributes(/*std::string &func,
-			std::string &identifier, */uint32_t *identifierSizeOut);
+			std::string &identifier, */uint32_t *identifierSizeBitsOut);
 
 private:
 	uv_err_t isImmediateOnlyFunctionCore();
@@ -261,7 +261,7 @@ public:
 	/* Base opcode */
 	uint8_t m_opcode[MAX_OPCODE_SIZE];
 	/* How many bytes the opcode is */
-	unsigned int m_opcode_length;
+	uint32_t m_opcode_length;
 	/*
 	Including immediates, prefix, etc, how long 
 	Not valid for the following:
@@ -270,14 +270,14 @@ public:
 		We'll see if something else comes up
 	This will likely server as an estimate only
 	*/
-	unsigned int m_total_length;
+	uint32_t m_total_length;
 	/*
 	Some instructions are valid for a range of opcodes, but aren't aligned on nice bit masks 
 	So, just use this
 	Discontinuous opcodes should be specified in different structures
 	A range of 0 means only this instruction, 1 would indicate the next one as well, etc
 	*/
-	unsigned int m_opcode_range_offset;
+	uint32_t m_opcode_range_offset;
 
 	/* 
 	This can be trickey.
@@ -285,9 +285,9 @@ public:
 	However, even an approx num for now could be useful
 	Use cpi hi and low to address the corner cases
 	*/
-	unsigned int m_cpi;
-	unsigned int m_cpi_low;
-	unsigned int m_cpi_hi;
+	uint32_t m_cpi;
+	uint32_t m_cpi_low;
+	uint32_t m_cpi_hi;
 	
 	/* used to parse out from binary, head of usage linked list */
 	/*struct uv_inst_usage_t *usage;*/
@@ -296,7 +296,7 @@ public:
 	Instruction class 
 	If class is "prefix" or "extension", many of these fields do not hold meaningful values
 	*/
-	int m_inst_class;
+	uint32_t m_inst_class;
 
 	/*
 	head of operand linked list 
@@ -308,8 +308,8 @@ public:
 	//struct uv_inst_parse_t *m_parse;
 
 	/* Configuration file line that it came from */
-	int m_config_line_syntax;
-	int m_config_line_usage;
+	uint32_t m_config_line_syntax;
+	uint32_t m_config_line_usage;
 	
 	uv_err_t m_isImmediateOnlyFunction;
 };

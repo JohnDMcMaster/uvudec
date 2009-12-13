@@ -72,14 +72,25 @@ uv_err_t UVDBinarySymbol::addAbsoluteRelocation(uint32_t relocatableDataOffset, 
 	return UV_DEBUG(addRelativeRelocation(relativeOffset, relocatableDataSize));
 }
 
-uv_err_t UVDBinarySymbol::addSymbolUse(uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
+uv_err_t UVDBinarySymbol::addSymbolUse(uint32_t relocatableDataOffsetBytes, uint32_t relocatableDataSizeBytes)
+{
+	return UV_DEBUG(addSymbolUseByBits(relocatableDataOffsetBytes, relocatableDataSizeBytes * 8));
+}
+
+uv_err_t UVDBinarySymbol::addSymbolUseByBits(uint32_t relocatableDataOffsetBytes, uint32_t relocatableDataSizeBits)
 {
 	UVDRelocationFixup *fixup = NULL;
 	
 	//static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offset, uint32_t size);
 	//We do not know the symbol it is assicated with yet, these will be collected and fixed in collectRelocations()
-	uv_assert_err_ret(UVDRelocationFixup::getUnknownSymbolRelocationFixup(&fixup, relocatableDataOffset, relocatableDataSize));
+	//uv_assert_err_ret(UVDRelocationFixup::getUnknownSymbolRelocationFixup(&fixup, relocatableDataOffset, relocatableDataSize));
+	//CHECKME: this seems like it was actually obviously this symbol, not unknown
+	uv_assert_err_ret(UVDRelocationFixup::getSymbolRelocationFixupByBits(&fixup, this, relocatableDataOffsetBytes, relocatableDataSizeBits));
+	
 	uv_assert_ret(fixup);
+	//Asserts added to track down issue early
+	uv_assert_ret(fixup->m_symbol);
+	//uv_assert_ret(!fixup->m_symbol->getName().empty());
 	m_symbolUsageLocations.insert(fixup);
 
 	return UV_ERR_OK;
@@ -155,8 +166,13 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 		
 		uv_assert_ret(curFixup);
 		curFixupStart = curFixup->m_offset;
-		curFixupEnd = curFixup->m_offset + curFixup->m_size;
+		curFixupEnd = curFixup->m_offset + curFixup->getSizeBytes();
 
+		uv_assert_ret(curFixup->m_symbol);
+		//It has instead been decided this will be solved by setting all relevent symbols after this analysis pass
+		//This will become an issue later because ELF writting uses the relocations directly
+		//uv_assert_ret(!curFixup->m_symbol->getName().empty());
+		
 		//Does the relocation apply within this symbol?
 		if( curFixupStart >= symbolStart && curFixupEnd <= symbolEnd )
 		{
@@ -339,9 +355,15 @@ uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(std::string &name, UVDAnalyz
 
 uv_err_t UVDBinarySymbolManager::addSymbol(UVDBinarySymbol *symbol)
 {
+	uint32_t symbolAddress = 0;
+
 	uv_assert_ret(symbol);
 	uv_assert_ret(!symbol->m_symbolName.empty());
 	m_symbols[symbol->m_symbolName] = symbol;
+
+	uv_assert_err_ret(symbol->getSymbolAddress(&symbolAddress));
+	m_symbolsByAddress[symbolAddress] = symbol;
+
 	return UV_ERR_OK;
 }
 
@@ -396,8 +418,15 @@ uv_err_t UVDBinarySymbolManager::doCollectRelocations(UVDBinaryFunction *functio
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t functionAddress,
-		uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
+uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t functionAddressBytes,
+		uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes)
+{
+	return UV_DEBUG(addAbsoluteFunctionRelocationByBits(functionAddressBytes,
+			relocatableDataOffset, relocatableDataSizeBytes * 8));
+}
+
+uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t functionAddress,
+		uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits)
 {
 	UVDAnalyzedBinarySymbol *symbol = NULL;
 	UVD *uvd = NULL;
@@ -439,13 +468,20 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t function
 
 	uv_assert_ret(symbol);
 	symbol->registerLabelUsage(functionAddress);
-	uv_assert_err_ret(symbol->addSymbolUse(relocatableDataOffset, relocatableDataSize));
+	uv_assert_err_ret(symbol->addSymbolUseByBits(relocatableDataOffset, relocatableDataSizeBits));
 	
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocation(uint32_t labelAddress,
-		uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
+		uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes)
+{
+	return UV_DEBUG(addAbsoluteLabelRelocationByBits(labelAddress,
+			relocatableDataOffset, relocatableDataSizeBytes * 8));
+}
+
+uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocationByBits(uint32_t labelAddress,
+		uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits)
 {
 	UVDAnalyzedBinarySymbol *symbol = NULL;
 	UVD *uvd = NULL;
@@ -486,7 +522,73 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocation(uint32_t labelAddres
 	
 	uv_assert_ret(symbol);
 	symbol->registerLabelUsage(labelAddress);
-	uv_assert_err_ret(symbol->addSymbolUse(relocatableDataOffset, relocatableDataSize));
+	uv_assert_err_ret(symbol->addSymbolUseByBits(relocatableDataOffset, relocatableDataSizeBits));
 	
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDBinarySymbolManager::findSymbolByAddress(uint32_t address, UVDBinarySymbol **symbolOut)
+{
+	std::map<uint32_t, UVDBinarySymbol *>::iterator iter = m_symbolsByAddress.find(address);
+	
+	uv_assert_ret(iter != m_symbolsByAddress.end());
+	uv_assert_ret(symbolOut);
+	*symbolOut = (*iter).second;
+	
+	return UV_ERR_OK; 
+}
+
+/*
+UVDBinarySymbolElement
+*/
+
+UVDBinarySymbolElement::UVDBinarySymbolElement()
+{
+	m_binarySymbol = NULL;
+}
+
+UVDBinarySymbolElement::UVDBinarySymbolElement(UVDBinarySymbol *binarySymbol)
+{
+	m_binarySymbol = binarySymbol;
+}
+
+UVDBinarySymbolElement::~UVDBinarySymbolElement()
+{
+}
+
+uv_err_t UVDBinarySymbolElement::updateDynamicValue()
+{
+	uint32_t symbolAddress = 0;
+
+	uv_assert_ret(m_binarySymbol);
+	uv_assert_err_ret(m_binarySymbol->getSymbolAddress(&symbolAddress));
+	setDynamicValue(symbolAddress);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbolElement::getName(std::string &s)
+{
+	if( !m_binarySymbol )
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	if( UV_FAILED(m_binarySymbol->getSymbolName(s)) )
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbolElement::setName(const std::string &sName)
+{
+	if( !m_binarySymbol )
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	m_binarySymbol->setSymbolName(sName);
+	return UV_ERR_OK;
+}
+
+
