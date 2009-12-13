@@ -124,14 +124,16 @@ uv_err_t UVDRelocatableElement::updateDynamicValue()
 	return UV_ERR_OK;
 }
 
-std::string UVDRelocatableElement::getName()
+uv_err_t UVDRelocatableElement::getName(std::string &s)
 {
-	return m_sName;
+	s = m_sName;
+	return UV_ERR_OK;
 }
 
-void UVDRelocatableElement::setName(const std::string &sName)
+uv_err_t UVDRelocatableElement::setName(const std::string &sName)
 {
 	m_sName = sName;
+	return UV_ERR_OK;
 }
 
 /*
@@ -192,7 +194,7 @@ uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamic
 		relocatableData = *iter;
 		
 		uv_assert_ret(relocatableData);
-		data = relocatableData->m_data;
+		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
 		uv_assert_ret(data);
 		
 		//See if we have a match
@@ -247,7 +249,7 @@ uv_err_t UVDSelfSizingRelocatableElement::getDynamicValue(char const **dynamicVa
 	//At least one of these must be specified
 	if( m_relocatableData )
 	{
-		data = m_relocatableData->m_data;
+		uv_assert_err_ret(m_relocatableData->getRelocatableData(&data));
 	}
 	else if( m_data )
 	{

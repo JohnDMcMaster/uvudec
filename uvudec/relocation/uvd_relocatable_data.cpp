@@ -106,6 +106,7 @@ uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
 	}
 	
 	//Copy our data as a base
+	uv_assert_ret(m_data);
 	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByCopy(m_data, &m_defaultRelocatableData));
 	uv_assert_ret(m_defaultRelocatableData);
 	
@@ -121,3 +122,7 @@ uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
 	return UV_ERR_OK;
 }
 
+void UVDRelocatableData::setData(UVDData *data)
+{
+	m_data = data;
+}
