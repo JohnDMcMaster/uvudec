@@ -159,12 +159,14 @@ void uv_signal_handler(int sig)
 	...and you'll never be right, no matter what you say!
 	*/
 	printf("Received signal: %s\n", sig_str);
+/*
 #ifdef NDEBUG
 	printf("Not compiled with debugging support, no trace information availible\n");
 #else
 	printf("Last function: %s\n", get_last_func());
 #endif
-	/* exit() is not a "safe" function.  See man signal */
+*/
+	//exit() is not a "safe" function.  See man signal
 	_exit(1);
 }
 
