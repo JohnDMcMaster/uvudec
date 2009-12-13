@@ -72,7 +72,7 @@ UVDElfHeaderEntry::~UVDElfHeaderEntry()
 {
 }
 
-uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut)
+uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntryCore(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut)
 {
 	UVDElfSectionHeaderEntry *sectionHeader = NULL;
 	
@@ -87,6 +87,10 @@ uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(const std::string
 	else if( sSection == UVD_ELF_SECTION_SYMBOL_TABLE )
 	{
 		sectionHeader = new UVDElfSymbolSectionHeaderEntry();
+	}
+	else if( sSection == UVD_ELF_SECTION_EXECUTABLE )
+	{
+		sectionHeader = new UVDElfTextSectionHeaderEntry();
 	}
 	//Default to generic structure
 	else
@@ -373,3 +377,58 @@ void UVDElfProgramHeaderEntry::setTableEntrySize(int entrySize)
 }
 
 #endif
+
+/*
+UVDElfTextSectionHeaderEntry
+*/
+
+UVDElfTextSectionHeaderEntry::UVDElfTextSectionHeaderEntry()
+{
+}
+
+UVDElfTextSectionHeaderEntry::~UVDElfTextSectionHeaderEntry()
+{
+}
+
+uv_err_t UVDElfTextSectionHeaderEntry::getFileData(UVDData **dataOut)
+{
+	/*
+	Collect all of the symbols in relocatable (relocations 0'd form) and concatentate
+	*/
+	std::vector<UVDData *> dataVector;
+	UVDElfSymbolSectionHeaderEntry *symbolSection = NULL;
+	
+	uv_assert_ret(m_elf);
+	uv_assert_err_ret(m_elf->getSymbolTableSectionHeaderEntry(&symbolSection));
+	
+	/*
+	NOTE: not all symbols are defined
+	If they aren't, they won't have a symbol->m_relocatableData.m_data
+	*/
+	//printf("num symbols: %d\n", symbolSection->m_symbols.size());	
+	for( std::vector<UVDElfSymbol *>::iterator iter = symbolSection->m_symbols.begin();
+			iter != symbolSection->m_symbols.end(); ++iter )
+	{
+		UVDElfSymbol *symbol = *iter;
+		UVDData *symbolData = NULL;
+		UVDRelocatableData *relocatableData = NULL;
+		
+		uv_assert_ret(symbol);
+		relocatableData = &(symbol->m_relocatableData);
+		uv_assert_ret(relocatableData);
+		//Skip undefined symbols, they don't form the data set
+		if( !relocatableData->m_data )
+		{
+			continue;
+		}
+		uv_assert_err_ret(relocatableData->getDefaultRelocatableData(&symbolData));
+		uv_assert_ret(symbolData);
+		
+		//printf("Symbol dtata 0x%.8X\n", (unsigned int)symbolData);
+		dataVector.push_back(symbolData);
+	}
+
+	uv_assert_err_ret(UVDData::concatenate(dataVector, dataOut));
+
+	return UV_ERR_OK;
+}

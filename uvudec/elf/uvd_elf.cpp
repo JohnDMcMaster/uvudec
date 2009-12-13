@@ -112,7 +112,7 @@ end UVDElfStringTableElement
 uv_err_t UVDElf::addRelocatableData(UVDRelocatableData *relocatableData,
 		const std::string &rawDataSymbolName)
 {
-	return UV_DEBUG(addRelocatableDataCore(relocatableData, rawDataSymbolName, ".text", ".rel.text"));
+	return UV_DEBUG(addRelocatableDataCore(relocatableData, rawDataSymbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
 }
 
 uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
@@ -142,7 +142,10 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 		originalSymbol = fixup->m_symbol;
 		uv_assert_ret(originalSymbol);
 		
-		uv_assert_err_ret(getSymbol(originalSymbol->getName(), &symbol));
+		std::string symbolName;
+		uv_assert_err_ret(originalSymbol->getName(symbolName));
+		uv_assert_ret(!symbolName.empty());
+		uv_assert_err_ret(getSymbol(symbolName, &symbol));
 		uv_assert_ret(symbol);
 		
 		elfRelocation = new UVDElfRelocation();
@@ -157,9 +160,10 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 	UVDElfSymbol *symbol = NULL;
 	symbol = new UVDElfSymbol();
 	uv_assert_ret(symbol);
-	symbol->setSymbolName(rawDataSymbolName);
+	symbol->setName(rawDataSymbolName);
 	//Get a copy of the symbol's data and save it
 	uv_assert_err_ret(relocatableData->getRelocatableData(&rawData));
+	uv_assert_ret(rawData);
 	symbol->setData(rawData);
 	uv_assert_err_ret(addSymbol(symbol));
 	
@@ -358,4 +362,14 @@ uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionH
 	
 	//Not a totally abnormal error, don't log
 	return UV_ERR_NOTFOUND;
+}
+
+uv_err_t UVDElf::getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut)
+{
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntryCore(sSection, sectionHeaderOut));
+	uv_assert_ret(sectionHeaderOut);
+	uv_assert_ret(*sectionHeaderOut);
+	(*sectionHeaderOut)->m_elf = this;
+	
+	return UV_ERR_OK;
 }
