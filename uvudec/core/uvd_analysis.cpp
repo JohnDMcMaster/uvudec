@@ -315,7 +315,6 @@ uv_err_t UVD::analyzeBlock(UVDAnalyzedBlock *block)
 
 uv_err_t UVD::generateAnalysisDir()
 {
-	UVDAnalysisDBConcentrator *dbConcentrator = NULL;
 	UVDAnalysisDBArchive *curDb = NULL;
 
 	uv_assert_ret(m_config);
@@ -329,11 +328,8 @@ uv_err_t UVD::generateAnalysisDir()
 	analysisSaveBenchmark.start();
 
 	uv_assert_ret(m_analyzer);
-	dbConcentrator = m_analyzer->m_db;
-	uv_assert_ret(dbConcentrator);
 	
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Fetching DB...\n");
-	//uv_assert_err_ret(dbConcentrator->getAnalyzedProgramDB(&curDb));
 	uv_assert_err_ret(m_analyzer->getAnalyzedProgramDB(&curDb));
 	uv_assert_ret(curDb);
 	printf_debug_level(UVD_DEBUG_SUMMARY, "going to save functions: %d\n", curDb->m_functions.size());

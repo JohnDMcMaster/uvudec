@@ -367,7 +367,8 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 	return UV_ERR_OK;
 }
 
-int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryLocation *l, UVDAnalyzedMemoryLocation *r)
+/*
+static int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryLocation *l, UVDAnalyzedMemoryLocation *r)
 {
 	if( l == r )
 	{
@@ -387,6 +388,7 @@ int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryLocation *l, UVDAnalyzedMemory
 	//Both different and non-null: standard comapre
 	return r->m_min_addr - l-> m_min_addr;
 }
+*/
 
 uv_err_t memorySpaceToMemoryLocations(const UVDAnalyzedMemorySpace &space, UVDAnalyzedMemoryLocations& ret)
 {
@@ -415,8 +417,9 @@ error:
 
 uv_err_t UVD::constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &superblockLocations, UVDAnalyzedMemoryLocations::iterator &iterSuperblock)
 {
+	//Commented out because its not being used?  What about labeling?
 	return UV_ERR_OK;
-/*	
+/*
 	uv_err_t rc = UV_ERR_GENERAL;
 	uint32_t lastSuperblockLocation = 0;
 	uint32_t superblockMinAddress = 0;

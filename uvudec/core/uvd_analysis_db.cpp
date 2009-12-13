@@ -327,6 +327,16 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *functio
 	for( std::vector<UVDBinaryFunctionInstance *>::size_type j = 0; j < function->m_representations.size(); ++j )
 	{	
 		UVDBinaryFunctionInstance *functionInstance = function->m_representations[j];
+		
+		uv_assert_ret(functionInstance);
+		//FIXME: this is a temp check
+		{
+			std::string name;
+			//Should have a symbol name by now
+			uv_assert_err_ret(functionInstance->getSymbolName(name));
+			uv_assert_ret(!name.empty());
+		}
+		
 		uv_assert_err_ret(saveFunctionInstanceSharedData(function, functionInstance, outputDir, j, config));
 		//config += "VER_MIN=" + 1 + "\n";
 		//config += "VER_MAX=" + 2 + "\n";
@@ -404,7 +414,7 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 			continue;
 		}
 
-		printf_debug("m_functions[%d] = %p\n", i, function);
+		printf_debug("m_functions[%d] = %0x%.8X\n", i, (unsigned int)function);
 		uv_assert_err_ret(saveFunctionData(function, outputDir, config));
 
 		if( i < m_functions.size() )
