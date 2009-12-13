@@ -201,6 +201,9 @@ public:
 	uv_err_t analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
 	uv_err_t analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
 
+	uv_err_t assignDefaultSymbolNames();
+	uv_err_t identifyKnownFunctions();
+
 private:
 	//Force a rebuild of the internal database
 	//uv_err_t rebuildDb();
@@ -226,8 +229,10 @@ public:
 	
 	std::map<uint32_t, UVDVariableMap> m_analysisCache;
 
+#if USING_PREVIOUS_ANALYSIS
 	//Database of previous analysis
 	UVDAnalysisDBConcentrator *m_db;
+#endif
 	//Database constructed from currnet program
 	//May be listed in m_db
 	UVDAnalysisDBArchive *m_curDb;

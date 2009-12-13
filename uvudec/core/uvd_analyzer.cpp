@@ -33,6 +33,11 @@ UVDAnalyzedMemoryLocation::UVDAnalyzedMemoryLocation(unsigned int min_addr, unsi
 
 uv_err_t UVDAnalyzedMemoryLocation::insertReference(uint32_t from, uint32_t type)
 {
+	/*
+	FIXME: this code has been superseded by some more advanced code
+	Consider migrating the advanced code here and/or deleting this code
+	*/
+
 	UVDMemoryReference *reference = NULL;
 	
 	UV_ENTER();
@@ -204,7 +209,9 @@ UVDAnalyzedFunctionShared::UVDAnalyzedFunctionShared()
 UVDAnalyzer::UVDAnalyzer()
 {
 	m_block = NULL;
+#if USING_PREVIOUS_ANALYSIS
 	m_db = NULL;
+#endif
 	m_uvd = NULL;
 	//m_symbolManager = NULL;
 	m_symbolManager.m_analyzer = this;
@@ -212,9 +219,11 @@ UVDAnalyzer::UVDAnalyzer()
 
 uv_err_t UVDAnalyzer::init()
 {
+#if USING_PREVIOUS_ANALYSIS
 	m_db = new UVDAnalysisDBConcentrator();
 	uv_assert_ret(m_db);
 	uv_assert_err_ret(m_db->init());
+#endif
 
 	//Create a blank archive to fill from current program
 	m_curDb = new UVDAnalysisDBArchive();
@@ -492,20 +501,20 @@ uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos
 	uv_assert_ret(instruction->m_shared);
 	if( UV_SUCCEEDED(instruction->m_shared->isImmediateOnlyFunction()) )
 	{
-		uint32_t relocatableDataSize = 0;
-		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
+		uint32_t relocatableDataSizeBits = 0;
+		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits));
 
 		//We know the location of a call symbol relocation
 		//uv_assert_ret(m_symbolManager);
-		uv_assert_err_ret(m_symbolManager.addAbsoluteFunctionRelocation(targetAddress,
-				startPos, relocatableDataSize));
+		uv_assert_err_ret(m_symbolManager.addAbsoluteFunctionRelocationByBits(targetAddress,
+				startPos, relocatableDataSizeBits));
 	}
 #endif
 
 	return UV_ERR_OK;
 }
 
-//#undef BASIC_SYMBOL_ANALYSIS
+#undef BASIC_SYMBOL_ANALYSIS
 
 uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
 {
@@ -524,13 +533,13 @@ uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos
 	uv_assert_ret(instruction->m_shared);
 	if( UV_SUCCEEDED(instruction->m_shared->isImmediateOnlyFunction()) )
 	{
-		uint32_t relocatableDataSize = 0;
-		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSize));
+		uint32_t relocatableDataSizeBits = 0;
+		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits));
 
 		//We know the location of a jump symbol relocation
 		//uv_assert_ret(m_symbolManager);
-		uv_assert_err_ret(m_symbolManager.addAbsoluteLabelRelocation(targetAddress,
-				startPos, relocatableDataSize));
+		uv_assert_err_ret(m_symbolManager.addAbsoluteLabelRelocationByBits(targetAddress,
+				startPos, relocatableDataSizeBits));
 	}
 #endif
 
@@ -539,8 +548,6 @@ uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos
 
 uv_err_t UVDAnalyzer::mapSymbols()
 {
-	//uv_assert_ret(m_symbolManager);
-	
 	//For each function, find its associated symbols
 	//This algorithm can be made linear for some extra interaction
 	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
@@ -551,5 +558,131 @@ uv_err_t UVDAnalyzer::mapSymbols()
 		//Get all the relocations for this particular function and register the fixups
 		uv_assert_err_ret(m_symbolManager.collectRelocations(function));
 	}
+
+	//Assign default symbol names
+	uv_assert_err_ret(assignDefaultSymbolNames());
+		
+	//Use object file database to identify previously known functions
+	identifyKnownFunctions();
+	
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDAnalyzer::assignDefaultSymbolNames()
+{
+	/*
+	Although the UVDBinarySymbol objects already have names,
+	we must link them to the UVDBinarySymbolElement UVDRelocatableElement
+	so that they can get the core symbol attributes as needed
+	
+	This is done by doing address lookups
+	*/
+	
+	//printf("Default sym names\n");
+
+	/*
+	Loop through all functions
+	*/
+	//printf("Functions: %d\n", m_functions.size());
+	for( std::set<UVDBinaryFunction *>::iterator iterFunctions = m_functions.begin();
+			iterFunctions != m_functions.end(); ++iterFunctions )
+	{
+		UVDBinaryFunction *function = *iterFunctions;
+		UVDBinaryFunctionInstance *functionInstance = NULL;
+		
+		uv_assert_ret(function);			
+		functionInstance = function->getFunctionInstance();
+		uv_assert_ret(functionInstance);
+		/*
+		{
+			std::string name;
+			uint32_t size = 0;
+			uv_assert_err_ret(functionInstance->getSymbolName(name));
+			uv_assert_err_ret(functionInstance->getSymbolSize(&size));
+			printf("Function: %s, size: 0x%.4X\n", name.c_str(), size);
+		}
+		*/
+		/*
+		For all of the places we have to patch this symbol, 
+		make sure each of those symbols we must resolve will have a name associated with them
+		*/
+		for( std::set<UVDRelocationFixup *>::iterator iter = functionInstance->m_relocatableData->m_fixups.begin();
+				iter != functionInstance->m_relocatableData->m_fixups.end(); ++iter )
+		{
+			UVDRelocationFixup *fixup = *iter;
+			UVDRelocatableElement *relocatableElement = NULL;
+			UVDBinarySymbolElement *binarySymbolElement = NULL;
+			UVDBinarySymbol *relocationsSymbol = NULL;
+			uint32_t symbolAddress = 0;
+			
+			uv_assert_ret(fixup);		
+			relocatableElement = fixup->m_symbol;
+			uv_assert_ret(relocatableElement);
+			
+			//Relocations from analysis should be of this type
+			binarySymbolElement = dynamic_cast<UVDBinarySymbolElement *>(relocatableElement);
+			uv_assert_ret(binarySymbolElement);
+			
+			//What was the recorded address of this symbol?
+			uv_assert_err_ret(binarySymbolElement->getDynamicValue(&symbolAddress));
+			//Fetch the associated UVDBinarySYmbol
+			uv_assert_err_ret(m_symbolManager.findSymbolByAddress(symbolAddress, &relocationsSymbol));
+			uv_assert_ret(relocationsSymbol);
+			{
+				std::string s;
+				//uint32_t size = 0;
+				uv_assert_err_ret(relocationsSymbol->getSymbolName(s));
+				//uv_assert_err_ret(relocationsSymbol->getSymbolSize(size));
+				uv_assert_ret(!s.empty());
+				//printf("\tfixup %s @ 0x%.4X\n", s.c_str(), fixup->m_offset);
+			}
+			//early sanity check
+			{
+				uint32_t size = 0;
+				uv_assert_err_ret(functionInstance->getSymbolSize(&size));
+				uv_assert_ret(fixup->m_offset < size);
+			}
+			//And link them
+			binarySymbolElement->m_binarySymbol = relocationsSymbol;
+		}
+
+		/*
+		These are all of the locations this symbol is used
+		This is not really used here it seems
+		*/
+		for( std::set<UVDRelocationFixup *>::iterator iterUsage = functionInstance->m_symbolUsageLocations.begin();
+				iterUsage != functionInstance->m_symbolUsageLocations.end(); ++iterUsage )
+		{
+			UVDRelocationFixup *fixup = *iterUsage;
+			UVDRelocatableElement *relocatableElement = NULL;
+			UVDBinarySymbolElement *binarySymbolElement = NULL;
+			UVDBinarySymbol *relocationsSymbol = NULL;
+			uint32_t symbolAddress = 0;
+
+			uv_assert_ret(fixup);
+			relocatableElement = fixup->m_symbol;
+			uv_assert_ret(relocatableElement);
+			
+			//Relocations from analysis should be of this type
+			binarySymbolElement = dynamic_cast<UVDBinarySymbolElement *>(relocatableElement);
+			uv_assert_ret(binarySymbolElement);
+			
+			//What was the recorded address of this symbol?
+			uv_assert_err_ret(binarySymbolElement->getDynamicValue(&symbolAddress));
+			//Fetch the associated UVDBinarySYmbol
+			uv_assert_err_ret(m_symbolManager.findSymbolByAddress(symbolAddress, &relocationsSymbol));
+			uv_assert_ret(relocationsSymbol);
+			//And link them
+			binarySymbolElement->m_binarySymbol = relocationsSymbol;
+		}
+	}
+
+	return UV_ERR_OK;
+}
+	
+uv_err_t UVDAnalyzer::identifyKnownFunctions()
+{
+	//TODO: compare symbols with database
+	return UV_ERR_OK;
+}
+
