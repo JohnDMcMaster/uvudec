@@ -475,15 +475,23 @@ int main(int argc, char **argv)
 			int iAnalysisAddress = strtol(sAnalysisAddress.c_str(), NULL, 0);
 			config->m_analysisOutputAddresses.insert(iAnalysisAddress);
 		}
+		else if( strcmp(cur_arg, "--print-jumped-addresses") == 0 )
+		{
+			g_jumped_sources = true;
+		}
 		else if( strstr(cur_arg, "--print-jumped-addresses=") == cur_arg )
 		{
-			std::string argArg = cur_arg + sizeof("--print-jumped-addresses=") - 1;
-			g_jumped_sources = false;
+			std::string arg = cur_arg + sizeof("--print-jumped-addresses=") - 1;
+			g_jumped_sources  = argToBool(arg);
+		}
+		else if( strcmp(cur_arg, "--print-called-addresses") == 0 )
+		{
+			g_called_sources = true;
 		}
 		else if( strstr(cur_arg, "--print-called-addresses=") == cur_arg )
 		{
-			std::string argArg = cur_arg + sizeof("--print-called-addresses=") - 1;
-			g_called_sources = false;
+			std::string arg = cur_arg + sizeof("--print-called-addresses=") - 1;
+			g_called_sources = argToBool(arg);
 		}
 		else if( !strcmp("--useless-ascii-art", cur_arg))
 		{
