@@ -131,7 +131,7 @@ uv_err_t UVDElf::getUVDElf(UVDElf **elfOut)
 uv_err_t UVDElf::getFromRelocatableData(UVDRelocatableData *relocatableData,
 		const std::string &symbolPrefix, UVDElf **out)
 {
-	return UV_DEBUG(getFromRelocatableDataCore(relocatableData, symbolPrefix, ".text", ".rel.text", out));
+	return UV_DEBUG(getFromRelocatableDataCore(relocatableData, symbolPrefix, UVD_ELF_SECTION_EXECUTABLE, ".rel.text", out));
 }
 
 uv_err_t UVDElf::getFromRelocatableDataCore(UVDRelocatableData *relocatableData,
@@ -155,13 +155,13 @@ uv_err_t UVDElf::getFromRelocatableDataCore(UVDRelocatableData *relocatableData,
 
 	UVDElf *elf = NULL;
 	//Data gets placed in section headers
-	UVDElfSectionHeaderEntry *sectionHeaderEntry = NULL;
+	//UVDElfSectionHeaderEntry *sectionHeaderEntry = NULL;
 
 	uv_assert_ret(relocatableData);
 	
 	//Figure out appropriete section header entry
-	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(sDataSection, &sectionHeaderEntry));
-	uv_assert_ret(sectionHeaderEntry);
+	//uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(sDataSection, &sectionHeaderEntry));
+	//uv_assert_ret(sectionHeaderEntry);
 	
 	//Get a template ELF object
 	uv_assert_err_ret(UVDElf::getUVDElf(&elf));
@@ -263,7 +263,7 @@ uv_err_t UVDElf::init()
 	uv_assert_err_ret(addSectionHeaderSection(nullSection));
 
 	//Add section header string table section
-	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
+	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
 			&sectionStringTableSection));
 	uv_assert_err_ret(addSectionHeaderSection(sectionStringTableSection));
 	//Register the index (only SHT_NULL was before this)
@@ -273,19 +273,19 @@ uv_err_t UVDElf::init()
 	uv_assert_err_ret(addSectionHeaderString(""));
 
 	//Add symbol string table section
-	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
+	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
 			&symbolStringTableSection));
 	uv_assert_err_ret(addSectionHeaderSection(symbolStringTableSection));
 	//Null string in string table must be first element
 	uv_assert_err_ret(addSymbolString(""));	
 
 	//Add symbol table section
-	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_TABLE,
+	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_TABLE,
 			&symbolTableSection));
 	uv_assert_err_ret(addSectionHeaderSection(symbolTableSection));
 
 	//Add executable data section
-	uv_assert_err_ret(UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
+	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
 			&executableSection));
 	uv_assert_err_ret(addSectionHeaderSection(executableSection));
 

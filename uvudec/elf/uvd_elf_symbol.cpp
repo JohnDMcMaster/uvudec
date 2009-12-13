@@ -7,13 +7,14 @@ UVDElfSymbol
 
 UVDElfSymbol::UVDElfSymbol()
 {
-	m_data = NULL;
+	//m_relocatableData = NULL;
 }
 
 UVDElfSymbol::~UVDElfSymbol()
 {
 }
 
+/*
 void UVDElfSymbol::setSymbolName(const std::string &sName)
 {
 	m_sName = sName;
@@ -23,17 +24,27 @@ std::string UVDElfSymbol::getSymbolName()
 {
 	return m_sName;
 }
+*/
 
 uv_err_t UVDElfSymbol::getData(UVDData **data)
 {
-	uv_assert_ret(data);
-	*data = m_data;
+	//uv_assert_ret(m_relocatableData);
+	//We usually want to return the relocated version
+	uv_assert_err_ret(m_relocatableData.getDefaultRelocatableData(data));
 	return UV_ERR_OK;
 }
 
-void UVDElfSymbol::setData(UVDData *data)
+uv_err_t UVDElfSymbol::setData(UVDData *data)
 {
-	m_data = data;
+	/*
+	{
+		std::string sName;
+		getName(sName);
+		printf("Setting symbol(0x%.8X, %s) data to 0x%.8X\n", (unsigned int)this, sName.c_str(), (unsigned int)data);
+	}
+	*/
+	m_relocatableData.setData(data);
+	return UV_ERR_OK;
 }
 
 /*
@@ -50,6 +61,9 @@ UVDElfSymbolSectionHeaderEntry::~UVDElfSymbolSectionHeaderEntry()
 
 uv_err_t UVDElfSymbolSectionHeaderEntry::addSymbol(UVDElfSymbol *symbol)
 {
+	uv_assert_ret(symbol);
+	//Don't do this, there are external symbols without data
+	//uv_assert_ret(symbol->m_relocatableData.m_data);
 	m_symbols.push_back(symbol);
 	return UV_ERR_OK;
 }
@@ -65,7 +79,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::findSymbol(const std::string &sName, UV
 		
 		uv_assert_ret(symbol);
 		
-		sSymbolName = symbol->getSymbolName();
+		uv_assert_err_ret(symbol->getName(sSymbolName));
 		if( sSymbolName == sName )
 		{
 			uv_assert_ret(symbolOut);
@@ -89,7 +103,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSymbol(const std::string &sName, UVD
 	
 	symbol = new UVDElfSymbol();
 	uv_assert_ret(symbol);
-	symbol->setSymbolName(sName);
+	symbol->setName(sName);
 	uv_assert_err_ret(addSymbol(symbol));
 	
 	uv_assert_ret(symbolOut);
@@ -124,5 +138,20 @@ uv_err_t UVDElf::getSymbolTableSectionHeaderEntry(UVDElfSymbolSectionHeaderEntry
 
 	uv_assert_ret(sectionOut);
 	*sectionOut = section;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSymbol::getRelocation(UVDElfRelocation **relocationOut)
+{
+	UVDElfRelocation *relocation = NULL;
+	
+	relocation = new UVDElfRelocation();
+	uv_assert_ret(relocation);
+	
+	relocation->setSymbol(this);
+	
+	uv_assert_ret(relocationOut);
+	*relocationOut = relocation;
+	
 	return UV_ERR_OK;
 }

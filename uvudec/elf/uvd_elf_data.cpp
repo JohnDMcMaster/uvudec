@@ -231,12 +231,13 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	headerRelocatable = new UVDRelocatableData(headerData);
 	uv_assert_ret(headerRelocatable);
 	
+	//printf("Constructing section %s\n", entry->m_sName.c_str());
+
 	//Section name
 	//Get a token to the location the data will eventually be fixed to
 	uv_assert_err_ret(getSectionHeaderStringRelocatableElement(entry->m_sName, &nameRelocatable, &elfRelocationManager));
-	unsigned int nameOffset = OFFSET_OF(Elf32_Shdr, sh_name);
-	//arg couldn't get that sizeof to work
-	unsigned int nameSize = sizeof(Elf32_Word);
+	uint32_t nameOffset = OFFSET_OF(Elf32_Shdr, sh_name);
+	uint32_t nameSize = sizeof(Elf32_Word);
 	//Create a fixup to that item at given offset within the header chunk
 	nameFixup = new UVDRelocationFixup(nameRelocatable, nameOffset, nameSize);
 	uv_assert_ret(nameFixup);
@@ -251,6 +252,7 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	If there is supporting data, fill in the address
 	Otherwise, assume address was 0'd from the earlier read request
 	*/
+	uv_assert_ret(entry->m_sName != ".text" || supportingData);
 	if( supportingData )
 	{
 		//We must wrap the data in this, but assume it requires no patchups for now
@@ -264,6 +266,7 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 		uv_assert_ret(supportingRelocatable);
 		//Add it in after we have placed headers to preserve table order
 		headerSupportingData.push_back(supportingRelocatable);
+		//printf("supporting data (relocatable = 0x%.8X) size: 0x%.8X\n", (unsigned int)supportingRelocatable, supportingData->size());
 
 		//sh_offset
 		//We want it to point to the supporting data

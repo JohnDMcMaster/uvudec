@@ -174,7 +174,7 @@ public:
 	~UVDElfSectionHeaderEntry();
  
  	//Specialized data structures are used for different sections
-	static uv_err_t getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
+	static uv_err_t getUVDElfSectionHeaderEntryCore(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
 
 	uv_err_t getName(std::string &sName);
 	void setName(const std::string &sname);

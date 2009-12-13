@@ -41,20 +41,38 @@ public:
 	UVDRelocatableElement *m_relocatable;	
 };
 
+/*
+A specialized fixup version for ELF files
+Ignores a lot of functionality of UVDRelocationFixup, so beware
+*/
 class UVDElfSymbol;
-class UVDElfRelocation
+class UVDElfRelocation : UVDRelocationFixup
 {
 public:
 	UVDElfRelocation();
 	~UVDElfRelocation();
 	
 	/*
+	FIXME: below seems wrong.  From TIS ELF specification (1-22):
+	r_offset
+	This member gives the location at which to apply the relocation action. For
+	a relocatable file, the value is the byte offset from the beginning of the
+	section to the storage unit affected by the relocation.
+
 	Reloctions are done on an absolute basis of the data in the file
 	If there was another chunk of data before this one, it must be accounted for
 	Essentially this makes a relocation on a relocation
 	For now, only a single symbol is stored in object files, making this factor 0 for now
 	*/
-	uv_err_t getFileOffset(uint32_t *elfSymbolFileOffset);
+	//uv_err_t getFileOffset(uint32_t *elfSymbolFileOffset);
+
+	//Set the value of r_offset
+	//These two sets are equivilent, eliminate setSectionOffset later
+	uv_err_t setSectionOffset(uint32_t sectionOffset);
+	uv_err_t getSectionOffset(uint32_t *sectionOffset);	
+	virtual uv_err_t setOffset(uint32_t offset);
+	virtual uv_err_t getOffset(uint32_t *offset);
+
 	uv_err_t updateRelocationTypeByBits(unsigned int nBits);
 	//raw index into the symbol table
 	//in practice might do this by a UVD relocation into m_relocation
@@ -73,8 +91,10 @@ public:
 	void setRelocationType(int type);
 
 public:
+	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
 	//The symbol we will be relocating against
-	UVDElfSymbol *m_symbol;
+	//UVDElfSymbol *m_symbol;
+	
 	//Switch to Elf32_Rela if needed
 	Elf32_Rel m_relocation;
 	//The symbol index for the relocation is dynamic and can only be figured out after symbols are placed
@@ -86,20 +106,31 @@ Some sort of globally visible symbol
 All symbols occur in a single table and each symbol has a reference to the relavent section
 There will be an assumption for now that since all relocations I want are in functions,
 all relocations will be done in symbols' data
+
+This is a hybrid between UVDRelocatableElement and UVDRelocatableData, 
+but don't like multiple inheritance
+UVDRelocatableData is instead put inside
 */
-class UVDElfSymbol
+class UVDElfSymbol : public UVDRelocatableElement
 {
 public:
 	UVDElfSymbol();
 	~UVDElfSymbol();
 
+	//Superseeded by UVDRelocatableElement::getName(), setName()
 	//Set symbol name
-	void setSymbolName(const std::string &sName);
+	//void setSymbolName(const std::string &sName);
 	//Get symbol name
-	std::string getSymbolName();
+	//std::string getSymbolName();
 
+	//Symbol payload
 	uv_err_t getData(UVDData **data);
-	void setData(UVDData *data);
+	uv_err_t setData(UVDData *data);
+	
+	void addRelocation(UVDElfRelocation *relocation);
+	
+	//Get a template relocation value for this symbol
+	uv_err_t getRelocation(UVDElfRelocation **relocationOut);
 	
 	/*
 	From TIS ELF specification
@@ -116,8 +147,8 @@ public:
 	STB_HIPROC
 	In each symbol table,
 	*/
-	//void setVisibility(int visibility);
-	//uv_err_t getVisibility(int *visibility);
+	void setVisibility(int visibility);
+	uv_err_t getVisibility(int *visibility);
  
  public:
  	//The symbol's (function's/variable's) name
@@ -125,14 +156,15 @@ public:
 
 public:
 	//The symbol's (function's/variable's) name
-	std::string m_sName;
+	//std::string m_sName;
 	//The actual data this symbol represents, if its resolved
 	//If the symbol is not resolved, data will be NULL
-	UVDData *m_data;
+	//Relocatable form so we can do some util stuff like get zerod version
+	UVDRelocatableData m_relocatableData;
 	//The ELF symbol structure
 	Elf32_Sym m_symbol;
-	//Offsets are taken from here and stored in file
-	//UVDRelocatableElement *m_relocatable;
+	//Relocations
+	//std::vector<UVDElfRelocation *> m_relocations;
 };
 
 /*
@@ -150,6 +182,22 @@ public:
 	
 public:
 	std::vector<UVDElfSymbol *> m_symbols;
+};
+
+/*
+Section that holds executable data
+*/
+class UVDElfTextSectionHeaderEntry : public UVDElfSectionHeaderEntry
+{
+public:
+	UVDElfTextSectionHeaderEntry();
+	~UVDElfTextSectionHeaderEntry();
+
+	//This is a compilation of all of the symbols
+	virtual uv_err_t getFileData(UVDData **data);
+	//virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize);
+
+public:
 };
 
 /*
@@ -316,6 +364,8 @@ public:
 	uv_err_t addVariable(UVDElfVariable *variable);
 
 	void printDebug();
+
+	uv_err_t getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
 
 private:
 	//Elf header
