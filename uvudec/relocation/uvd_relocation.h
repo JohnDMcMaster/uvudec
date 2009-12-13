@@ -44,8 +44,8 @@ class UVDRelocationFixup
 public:
 	UVDRelocationFixup();
 	//A symbol value and an offset to apply the patch (along with data size, if needed)
-	UVDRelocationFixup(UVDRelocatableElement *symbol, unsigned int offset, unsigned int size);
-	~UVDRelocationFixup();
+	UVDRelocationFixup(UVDRelocatableElement *symbol, uint32_t offset, uint32_t sizeBytes);
+	virtual ~UVDRelocationFixup();
 	
 	//Apply the patch to this data
 	//m_symbol should hold a valid value by this point (or be calculable by call)
@@ -53,13 +53,26 @@ public:
 	uv_err_t applyPatchCore(UVDData *data, bool useDefaultValue);
 	
 	//For current analysis where we do not know which function (or abstract block) we are apart of yet
-	static uv_err_t getUnknownSymbolRelocationFixup(UVDRelocationFixup **fixupOut, uint32_t offset, uint32_t size);
+	static uv_err_t getUnknownSymbolRelocationFixup(UVDRelocationFixup **fixupOut, uint32_t offsetBytes, uint32_t sizeBytes);
+	static uv_err_t getUnknownSymbolRelocationFixupByBits(UVDRelocationFixup **fixupOut, uint32_t offsetBytes, uint32_t sizeBits);
 	/*
 	A relocation fixup for the symbol given
 	Gives a fixup such that it will get the address value of the symbol and patch the offset + size as needed
 	Default system endianess is assumed
 	*/
-	static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offset, uint32_t size);
+	static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offsetBytes, uint32_t sizeBytes);
+	static uv_err_t getSymbolRelocationFixupByBits(UVDRelocationFixup **fixupOut, UVDBinarySymbol *binarySymbol, uint32_t offsetBytes, uint32_t sizeBits);
+		
+	//offset in bytes
+	virtual uv_err_t setOffset(uint32_t offset);
+	virtual uv_err_t getOffset(uint32_t *offset);
+	
+	uint32_t getSizeBits();
+	uint32_t getSizeBytes();
+	virtual uv_err_t getSizeBytes(uint32_t *bytes);
+	virtual uv_err_t setSizeBits(uint32_t bits);
+	virtual uv_err_t setSizeBytes(uint32_t bytes);
+	
 	
 public:
 	//The value we were waiting on
@@ -67,10 +80,13 @@ public:
 	UVDRelocatableElement *m_symbol;
 	//The position to apply the patch
 	//Relative to the data element passed in
-	unsigned int m_offset;
+	//In bytes
+	uint32_t m_offset;
+
+private:
 	//How many bytes to apply to, in bytes
 	//Some data may use 4 byte addressing, other spots 1, for example
-	unsigned int m_size;
+	uint32_t m_sizeBits;
 };
 
 /*
@@ -137,16 +153,22 @@ public:
 	//It will be freed at the destruction of this object
 	uv_err_t getDefaultRelocatableData(UVDData **data);
 	
+	//The data here will be freed when this object is freed
+	void setData(UVDData *data);
+	
 public:
-	//The temporary peice of data
-	//This will be compiled into a larger chunk
-	UVDData *m_data;
-	//Cache of the default (0'd) relocatable data
-	UVDData *m_defaultRelocatableData;
-
 	//Locations that require fixups
 	//Addresses specified are relative to m_data
 	std::set<UVDRelocationFixup *> m_fixups;
+
+	//The temporary peice of data
+	//This will be compiled into a larger chunk
+	UVDData *m_data;
+
+protected:
+	//Cache of the default (0'd) relocatable data
+	//Primary data is stored in m_data
+	UVDData *m_defaultRelocatableData;
 };
 
 /*
@@ -189,8 +211,9 @@ public:
 	*/
 	
 	//If this symbol has a name, get it
-	std::string getName();
-	void setName(const std::string &sName);
+	//virtual std::string getName();
+	virtual uv_err_t getName(std::string &s);
+	uv_err_t setName(const std::string &sName);
 	
 protected:
 	//To make solving endianess issues later easier
