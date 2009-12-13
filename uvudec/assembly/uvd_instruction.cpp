@@ -94,9 +94,9 @@ uv_err_t UVDInstructionShared::isImmediateOnlyFunction()
 }
 
 uv_err_t UVDInstructionShared::getImmediateOnlyFunctionAttributes(/*std::string &func,
-		std::string &identifier,*/ uint32_t *identifierSizeOut)
+		std::string &identifier,*/ uint32_t *identifierSizeBitsOut)
 {
-	int identifierSize = 0;
+	uint32_t identifierSizeBits = 0;
 	std::string func;
 	std::string identifier;
 			
@@ -114,23 +114,23 @@ uv_err_t UVDInstructionShared::getImmediateOnlyFunctionAttributes(/*std::string 
 	//u8_0
 	if( identifier.find("8") != std::string::npos )
 	{
-		identifierSize = 8;
+		identifierSizeBits = 8;
 	}
 	else if( identifier.find("16") != std::string::npos )
 	{
-		identifierSize = 16;
+		identifierSizeBits = 16;
 	}
 	else if( identifier.find("32") != std::string::npos )
 	{
-		identifierSize = 32;
+		identifierSizeBits = 32;
 	}
 	else
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
-	uv_assert_ret(identifierSizeOut);
-	*identifierSizeOut = identifierSize;
+	uv_assert_ret(identifierSizeBitsOut);
+	*identifierSizeBitsOut = identifierSizeBits;
 
 	return UV_ERR_OK;
 }

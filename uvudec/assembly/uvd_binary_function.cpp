@@ -52,7 +52,7 @@ void UVDBinaryFunctionInstance::setData(UVDData *data)
 	m_data = data;
 	if( m_relocatableData )
 	{
-		m_relocatableData->m_data = data;
+		m_relocatableData->setData(data);
 	}
 }
 
@@ -61,11 +61,98 @@ UVDData *UVDBinaryFunctionInstance::getData()
 	return m_data;
 }
 
+/*
+During the symbol mapping process, the symbol names remain the same, they are the PK link on both sides
+*/
+
+//
+static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFixup *analysisRelocation)
+{
+	//analysisRelocation param forms analysis place
+	//Offsets are assumed for now to be for the single symbol we have in the file that these apply to
+	//Analysis fixup value
+	UVDRelocatableElement *analysisSymbol = NULL;
+	//ELF fixup value
+	UVDElfSymbol *elfSymbol = NULL;
+	//ELF place to apply fixup
+	UVDElfRelocation *elfRelocation = NULL;
+
+	std::string symbolName;
+
+
+	//Setup related
+	
+	uv_assert_ret(elf);
+	uv_assert_ret(analysisRelocation);
+	
+	//Analysis symbol
+	analysisSymbol = analysisRelocation->m_symbol;
+	uv_assert_ret(analysisSymbol);
+
+	//Symbol name
+	uv_assert_err_ret(analysisSymbol->getName(symbolName));
+	uv_assert_ret(!symbolName.empty());
+	
+	//ELF symbol
+	uv_assert_err_ret(elf->getSymbol(symbolName, &elfSymbol));
+	uv_assert_ret(elfSymbol);
+
+	//ELF relocation
+	uv_assert_err_ret(elfSymbol->getRelocation(&elfRelocation));
+	uv_assert_ret(elfRelocation);
+
+	//Transfer the relocation
+	//Assume are relative to the symbol (assumed function) for now
+	
+	//Size
+	uv_assert_err_ret(elfRelocation->updateRelocationTypeByBits(analysisRelocation->getSizeBits()));
+	//Where
+	elfRelocation->setSectionOffset(analysisRelocation->m_offset);
+	//Note value is the external symbol value
+
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDBinaryFunctionInstance::toUVDElf(UVDElf **out)
 {
+	UVDElf *elf = NULL;
+	
 	uv_assert_ret(m_relocatableData);
-	uv_assert_ret(m_relocatableData->m_data);
-	return UV_DEBUG(UVDElf::getFromRelocatableData(m_relocatableData, m_symbolName, out));
+	//uv_assert_ret(m_relocatableData->m_data);
+	//Get a base representation
+	//printf("symbol: %s, symbol relocations: %d\n", m_symbolName.c_str(), m_relocatableData->m_fixups.size()); 
+	uv_assert_ret(!m_symbolName.empty());
+	uv_assert_err_ret(UVDElf::getFromRelocatableData(m_relocatableData, m_symbolName, &elf));
+
+	/*
+	Add in the relocations
+	For each relocation, register the symbol if it doesn't exist
+	Then, add it as an instance of relocation for that symbol
+	*/
+	uv_assert_ret(m_relocatableData);
+	for( std::set<UVDRelocationFixup *>::iterator iter = m_relocatableData->m_fixups.begin();
+			iter != m_relocatableData->m_fixups.end(); ++iter )
+	{
+		UVDRelocationFixup *fixup = *iter;
+		
+		uv_assert_ret(fixup);
+		uv_assert_ret(fixup->m_symbol);
+		/*
+		{
+			std::string name;
+			uv_assert_err_ret(fixup->m_symbol->getName(name));
+			printf("Fixup name: %s\n", name.c_str());
+			uv_assert_ret(!name.empty());
+		}
+		*/
+		uv_assert_err_ret(relocationFixupToElfRelocationFixup(elf, fixup));
+	}
+	
+	uv_assert_ret(out);
+	*out = elf;
+	
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinaryFunctionInstance::getFromUVDElf(const UVDElf *in, UVDBinaryFunctionInstance **out)
