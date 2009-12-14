@@ -168,39 +168,6 @@ public:
 };
 
 /*
-Section that holds actual symbol data
-*/
-class UVDElfSymbolSectionHeaderEntry : public UVDElfSectionHeaderEntry
-{
-public:
-	UVDElfSymbolSectionHeaderEntry();
-	~UVDElfSymbolSectionHeaderEntry();
-
-	uv_err_t addSymbol(UVDElfSymbol *symbol);
-	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
-	uv_err_t getSymbol(const std::string &sName, UVDElfSymbol **symbol);
-	
-public:
-	std::vector<UVDElfSymbol *> m_symbols;
-};
-
-/*
-Section that holds executable data
-*/
-class UVDElfTextSectionHeaderEntry : public UVDElfSectionHeaderEntry
-{
-public:
-	UVDElfTextSectionHeaderEntry();
-	~UVDElfTextSectionHeaderEntry();
-
-	//This is a compilation of all of the symbols
-	virtual uv_err_t getFileData(UVDData **data);
-	//virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize);
-
-public:
-};
-
-/*
 A global variable
 */
 class UVDElfVariable : public UVDElfSymbol

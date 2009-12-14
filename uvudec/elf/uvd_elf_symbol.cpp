@@ -111,6 +111,25 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSymbol(const std::string &sName, UVD
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDElfSymbolSectionHeaderEntry::updateData()
+{
+	/*
+	typedef struct {
+	Elf32_Word st_name;
+	Elf32_Addr st_value;
+	Elf32_Word st_size;
+	unsigned char st_info;
+	unsigned char st_other;
+	Elf32_Half st_shndx;
+	} Elf32_Sym;
+	*/
+	//Bad symbol table?
+	//uv_assert_ret(m_fileData); 
+	
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDElf::getSymbolStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut)
 {
 	UVDElfSectionHeaderEntry *sectionRaw = NULL;

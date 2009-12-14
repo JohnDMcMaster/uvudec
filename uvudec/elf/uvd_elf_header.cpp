@@ -160,17 +160,46 @@ void UVDElfHeaderEntry::setFileData(UVDData *data)
 	m_fileData = data;
 }
 
+uv_err_t UVDElfHeaderEntry::updateData()
+{
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDElfHeaderEntry::getFileData(UVDData **data)
 {
 	uv_assert_ret(data);
+	uv_assert_err_ret(updateData());
 	//Optional, no assert
 	*data = m_fileData;
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDElfHeaderEntry::getFileRelocatableData(UVDRelocatableData **supportingData)
+{
+	UVDData *data = NULL;
+
+	uv_assert_ret(supportingData);
+
+	//this will call updateData
+	if( UV_FAILED(getFileData(&data)) )
+	{
+		*supportingData = NULL;
+		return UV_ERR_OK;
+	}
+	m_fileRelocatableData.setData(data);
+	*supportingData = &m_fileRelocatableData;
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDElfProgramHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
 {
-	uv_assert_ret(m_fileData);
+	uv_assert_err_ret(updateData());
+	//Supporting data is optional
+	if( !m_fileData )
+	{
+		uv_assert_ret(sectionSize);
+		*sectionSize = 0;
+	}
 	return UV_DEBUG(m_fileData->size(sectionSize));
 }
 

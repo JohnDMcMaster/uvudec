@@ -134,9 +134,9 @@ uv_err_t UVDElf::constructProgramHeaderSectionBinary(UVDRelocationManager &elfRe
 {
 	//Raw data peices
 	UVDData *headerData = NULL;
-	UVDData *supportingData = NULL;
 	//Containers
 	UVDRelocatableData *headerRelocatable = NULL;
+	UVDRelocatableData *supportingRelocatable = NULL;
 	
 	printf_warn("XXX THIS CODE PROBABLY NEEDS FIXING TO MATCH SH\n");
 
@@ -151,22 +151,19 @@ uv_err_t UVDElf::constructProgramHeaderSectionBinary(UVDRelocationManager &elfRe
 	//Store the header data
 	elfRelocationManager.addRelocatableData(headerRelocatable);
 	//Store the supporting data, if it is needed
-	uv_assert_err_ret(entry->getFileData(&supportingData));
+	uv_assert_err_ret(entry->getFileRelocatableData(&supportingRelocatable));
+
 	/*
 	If there is supporting data, fill in the address
 	Otherwise, assume address was 0'd from the earlier read request
 	*/
-	if( supportingData )
+	if( supportingRelocatable )
 	{
 		//Create a relocation so it can be properly placed
 		UVDSelfLocatingRelocatableElement *offsetElement = NULL;
 		//We must wrap the data in this, but assume it requires no patchups for now
-		UVDRelocatableData *supportingRelocatable = NULL;
 		UVDRelocationFixup *offsetFixup = NULL;
 	
-		supportingRelocatable = new UVDRelocatableData(supportingData);
-		uv_assert_ret(supportingRelocatable);
-
 		//We want it to point to the supporting data
 		//And of course add the structure that will deteruvd_mine its position
 		offsetElement = new UVDSelfLocatingRelocatableElement(&elfRelocationManager, supportingRelocatable);
@@ -184,7 +181,7 @@ uv_err_t UVDElf::constructProgramHeaderSectionBinary(UVDRelocationManager &elfRe
 		
 		//size
 		uint32_t sectionSize = 0;
-		uv_assert_err_ret(supportingData->size(&sectionSize));
+		uv_assert_err_ret(entry->getSupportingDataSize(&sectionSize));
 		entry->m_programHeader.p_filesz = sectionSize;
 	}
 	return UV_ERR_OK;
