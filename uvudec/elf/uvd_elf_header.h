@@ -56,12 +56,15 @@ public:
 	virtual void setFileData(UVDData *data);
 	/*
 	Get the data we need to save
-	offset is the file offset it will start at
+	data will be free'd when this object is free'd
 	*/
 	virtual uv_err_t getFileData(UVDData **data);
+	virtual uv_err_t getFileRelocatableData(UVDRelocatableData **supportingData);
 	//virtual uv_err_t getFileData(UVDRelocatableDataMemory *data) = 0;
 	//virtual uv_err_t getFileData(UVDRelocatableDataMemory **data) = 0;
 	virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize) = 0;
+	//Update data so a standard above function can be used
+	virtual uv_err_t updateData();
 	
 	//Add a fixup location to the file data
 	//void addFileRelocation(UVDRelocatableData *relocation);
@@ -78,6 +81,8 @@ public:
 	//UVDData *m_headerData;
 	//Supporting data in the file, if present
 	UVDData *m_fileData;
+	//With fixups, if needed
+	UVDRelocatableData m_fileRelocatableData;
 	//Relocations to the file data
 	//std::vector<UVDRelocatableData *> m_fileDataRelocations;
 	//Needed to do string lookups
@@ -236,6 +241,43 @@ public:
 
 public:
 	std::vector<std::string> m_stringTable;
+};
+
+/*
+Section that holds actual symbol data
+*/
+class UVDElfSymbol;
+class UVDElfSymbolSectionHeaderEntry : public UVDElfSectionHeaderEntry
+{
+public:
+	UVDElfSymbolSectionHeaderEntry();
+	~UVDElfSymbolSectionHeaderEntry();
+
+	uv_err_t addSymbol(UVDElfSymbol *symbol);
+	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	uv_err_t getSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	
+	//The symbol table has string relocations, non-trivial to return
+	virtual uv_err_t updateData();
+	
+public:
+	std::vector<UVDElfSymbol *> m_symbols;
+};
+
+/*
+Section that holds executable data
+*/
+class UVDElfTextSectionHeaderEntry : public UVDElfSectionHeaderEntry
+{
+public:
+	UVDElfTextSectionHeaderEntry();
+	~UVDElfTextSectionHeaderEntry();
+
+	//This is a compilation of all of the symbols
+	virtual uv_err_t getFileData(UVDData **data);
+	//virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize);
+
+public:
 };
 
 #endif
