@@ -90,6 +90,12 @@ public:
 	int getRelocationType();
 	void setRelocationType(int type);
 
+ 	//Get the header entry with the fixups necessary to push it to the file
+ 	uv_err_t getHeaderEntryRelocatable(UVDRelocatableData **relocatableEntryRelocatable);
+
+	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
+	uv_err_t getElfSymbol(UVDElfSymbol **symbolOut);
+
 public:
 	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
 	//The symbol we will be relocating against
@@ -98,7 +104,9 @@ public:
 	//Switch to Elf32_Rela if needed
 	Elf32_Rel m_relocation;
 	//The symbol index for the relocation is dynamic and can only be figured out after symbols are placed
-	UVDRelocationFixup m_symbolIndexRelocation;
+	//UVDRelocationFixup m_symbolIndexRelocation;
+	//For the table entry
+	UVDRelocatableData m_headerEntryRelocatableData;
 };
 
 /*
@@ -149,6 +157,9 @@ public:
 	*/
 	void setVisibility(int visibility);
 	uv_err_t getVisibility(int *visibility);
+ 	
+ 	//Get the header entry with the fixups necessary to push it to the file
+ 	uv_err_t getHeaderEntryRelocatable(UVDRelocatableData **symbolEntryRelocatable);
  
  public:
  	//The symbol's (function's/variable's) name
@@ -161,10 +172,15 @@ public:
 	//If the symbol is not resolved, data will be NULL
 	//Relocatable form so we can do some util stuff like get zerod version
 	UVDRelocatableData m_relocatableData;
+	//For the header entry
+	UVDRelocatableData m_headerEntryRelocatableData;
 	//The ELF symbol structure
 	Elf32_Sym m_symbol;
 	//Relocations
 	//std::vector<UVDElfRelocation *> m_relocations;
+
+	//The section header this belongs to
+	UVDElfSymbolSectionHeaderEntry *m_sectionHeader;
 };
 
 /*
@@ -291,7 +307,7 @@ public:
 	*/
 	uv_err_t addSymbolString(const std::string &s, unsigned int *index = NULL);
 	uv_err_t getSymbolStringIndex(const std::string &s, unsigned int *index);
-	uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
+	uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable);
 	//Get the section header for .strtab
 	uv_err_t getSymbolStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut);
 

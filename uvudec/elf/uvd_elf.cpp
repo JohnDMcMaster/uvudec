@@ -158,13 +158,12 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 	
 	//Now add on our data itself as a symbol
 	UVDElfSymbol *symbol = NULL;
-	symbol = new UVDElfSymbol();
+	uv_assert_err_ret(getSymbol(rawDataSymbolName, &symbol));
 	uv_assert_ret(symbol);
-	symbol->setName(rawDataSymbolName);
 	//Get a copy of the symbol's data and save it
 	uv_assert_err_ret(relocatableData->getRelocatableData(&rawData));
 	uv_assert_ret(rawData);
-	symbol->setData(rawData);
+	uv_assert_err_ret(symbol->setData(rawData));
 	uv_assert_err_ret(addSymbol(symbol));
 	
 	return UV_DEBUG(UV_ERR_OK);
@@ -252,10 +251,9 @@ uv_err_t UVDElf::getSectionHeaderStringRelocatableElement(const std::string &s, 
 	return UV_DEBUG(getStringRelocatableElementCore(UVD_ELF_SECTION_SECTION_STRING_TABLE, s, relocatableOut, relocationManager));
 }
 
-uv_err_t UVDElf::getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatableOut,
-		UVDRelocationManager *relocationManager)
+uv_err_t UVDElf::getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatableOut)
 {
-	return UV_DEBUG(getStringRelocatableElementCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s, relocatableOut, relocationManager));
+	return UV_DEBUG(getStringRelocatableElementCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s, relocatableOut, NULL));
 }
 
 uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, const std::string &s,

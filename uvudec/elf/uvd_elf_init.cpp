@@ -39,6 +39,10 @@ uv_err_t UVDElf::getFromFile(const std::string &sFile, UVDElf **elfOut)
 	
 uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 {
+	//this code isn't activly used, likely broken
+
+	printf_warn("This code has not been tested in some time\n");
+
 	uv_assert_err_ret(UVDDataFile::getUVDDataFile(&m_data, sFile));
 	uv_assert_ret(m_data);
 
@@ -70,6 +74,7 @@ uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 
 		pSection = new UVDElfProgramHeaderEntry();
 		uv_assert_ret(pSection);
+		uv_assert_err_ret(pSection->init());
 		
 		//Create a reference to the data
 		UVDDataChunk *dataChunk = NULL;
@@ -94,6 +99,7 @@ uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 
 		pSection = new UVDElfSectionHeaderEntry();
 		uv_assert_ret(pSection);
+		uv_assert_err_ret(pSection->init());
 		
 		//Create a reference to the data
 		UVDDataChunk *dataChunk = NULL;
@@ -259,6 +265,7 @@ uv_err_t UVDElf::init()
 	//According to TIS, only SHT_NULL is defined, other fields are undefined
 	nullSection = new UVDElfSectionHeaderEntry();
 	uv_assert_ret(nullSection);
+	uv_assert_err_ret(nullSection->init());
 	nullSection->setType(SHT_NULL);
 	uv_assert_err_ret(addSectionHeaderSection(nullSection));
 
@@ -287,6 +294,8 @@ uv_err_t UVDElf::init()
 	//Add executable data section
 	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
 			&executableSection));
+	//Add .rel.text
+	uv_assert_err_ret(executableSection->useRelocatableSection());
 	uv_assert_err_ret(addSectionHeaderSection(executableSection));
 
 	return UV_ERR_OK;
