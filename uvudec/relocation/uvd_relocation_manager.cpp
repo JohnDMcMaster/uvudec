@@ -53,15 +53,17 @@ uv_err_t UVDRelocationManager::applyPatchCore(UVDData **dataOut, bool useDefault
 		//Update the encapsulated data to reflect the relocations
 		if( UV_FAILED(relocatableData->applyRelocationsCore(useDefaultValue)) )
 		{
+			/*
 			if( relocatableData->m_data )
 			{
 				printf_error("could not apply relocation %s\n", relocatableData->m_data->getSource().c_str());
 			}
+			*/
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		
 		//And rack up the raw data so it can be assembled
-		data = relocatableData->m_data;
+		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
 		uv_assert_ret(data);
 		dataVector.push_back(data);
 	}
