@@ -197,7 +197,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	std::string m_origin;
 	std::string m_notes;
 	*/
-	functionInstance->setData(dataChunk);
+	uv_assert_err_ret(functionInstance->setData(dataChunk));
 	//And register it to that particular function
 	functionShared->m_representations.push_back(functionInstance);
 	
