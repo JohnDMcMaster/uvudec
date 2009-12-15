@@ -29,7 +29,7 @@ uv_err_t UVDElf::constructElfHeaderBinary(UVDRelocationManager *elfRelocationMan
 	//This must be the actual data to get relocations correct,
 	//and is more efficient
 	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&elfHeaderData,
-			(char *)&m_elfHeader, sizeof(m_elfHeader)));
+			(char *)&m_elfHeader, sizeof(m_elfHeader), false));
 	uv_assert_ret(elfHeaderData);
 	elfHeaderRelocatable = new UVDRelocatableData(elfHeaderData);
 	uv_assert_ret(elfHeaderRelocatable);
@@ -199,8 +199,17 @@ uv_err_t UVDElf::constructSectionHeaderBinary(UVDRelocationManager &elfRelocatio
 	//ignore sh_link for now
 	for( std::vector<UVDElfSectionHeaderEntry *>::size_type i = 0; i < m_sectionHeaderEntries.size(); ++i )
 	{
-		uv_assert_err_ret(constructSectionHeaderSectionBinary(elfRelocationManager,
-				headerSupportingData, m_sectionHeaderEntries[i]));
+		UVDElfSectionHeaderEntry *sectionHeaderEntry = m_sectionHeaderEntries[i];
+		
+		uv_assert_ret(sectionHeaderEntry);
+		if( UV_FAILED(constructSectionHeaderSectionBinary(elfRelocationManager,
+				headerSupportingData, sectionHeaderEntry)) )
+		{
+			std::string name;
+			sectionHeaderEntry->getName(name);
+			printf_error("failed section: %s\n", name.c_str());
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
 	}
 	m_elfHeader.e_shnum = m_sectionHeaderEntries.size();
 
@@ -213,12 +222,12 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 {
 	//Raw data peices
 	UVDData *headerData = NULL;
-	UVDData *supportingData = NULL;
 	//Containers
 	UVDRelocatableData *headerRelocatable = NULL;
 	UVDRelocatableElement *nameRelocatable = NULL;
 	//UVDRelocatableData *linkRelocatable = NULL;
 	UVDRelocationFixup *nameFixup = NULL;
+	UVDRelocatableData *supportingRelocatable = NULL;
 	
 	uv_assert_ret(entry);
 
@@ -244,23 +253,28 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	//Store the header data
 	elfRelocationManager.addRelocatableData(headerRelocatable);
 	//Store the supporting data, if it is needed
-	uv_assert_err_ret(entry->getFileData(&supportingData));
+	uv_assert_err_ret(entry->getFileRelocatableData(&supportingRelocatable));
 	/*
 	If there is supporting data, fill in the address
 	Otherwise, assume address was 0'd from the earlier read request
 	*/
-	uv_assert_ret(entry->m_sName != ".text" || supportingData);
-	if( supportingData )
+	uv_assert_ret(entry->m_sName != ".text" || supportingRelocatable);
+
+	printf_debug("adding supporting data for section %s 0x%.8X\n", entry->m_sName.c_str(), (unsigned int)supportingRelocatable);
+	if( supportingRelocatable )
 	{
 		//We must wrap the data in this, but assume it requires no patchups for now
-		UVDRelocatableData *supportingRelocatable = NULL;
 		UVDRelocationFixup *offsetFixup = NULL;
 		UVDRelocatableElement *offsetRelocatableElement = NULL;
 		UVDRelocatableElement *sizeRelocatableElement = NULL;
 		UVDRelocationFixup *sizeFixup = NULL;
 	
-		supportingRelocatable = new UVDRelocatableData(supportingData);
-		uv_assert_ret(supportingRelocatable);
+		{
+			UVDData *data = NULL;
+			uv_assert_err_ret(supportingRelocatable->getRelocatableData(&data));
+			uv_assert_ret(data);
+		}
+	
 		//Add it in after we have placed headers to preserve table order
 		headerSupportingData.push_back(supportingRelocatable);
 		//printf("supporting data (relocatable = 0x%.8X) size: 0x%.8X\n", (unsigned int)supportingRelocatable, supportingData->size());
@@ -336,12 +350,17 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 		UVDRelocatableData *relocatableData = headerSupportingData[i];
 		uv_assert_ret(relocatableData);
 		elfRelocationManager.addRelocatableData(relocatableData);
+		printf_debug("adding supporting data 0x%.8X\n", (unsigned int)relocatableData);
 	}
 	//These have been processed
 	//headerSupportingData.clear();
 
 	//Compute the final object
-	uv_assert_err_ret(elfRelocationManager.applyPatch(dataOut));
+	if( UV_FAILED(elfRelocationManager.applyPatch(dataOut)) )
+	{
+		printf_error("Could not apply relocations for ELF object\n");
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
 	uv_assert_ret(*dataOut);
 
 	return UV_ERR_OK;

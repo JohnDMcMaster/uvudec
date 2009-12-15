@@ -23,8 +23,8 @@ UVDElfStringTableSectionHeaderEntry::~UVDElfStringTableSectionHeaderEntry()
 
 void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsigned int *index)
 {
-	int netIndex = 0;
-	for( unsigned int i = 0; i < m_stringTable.size(); ++i )
+	uint32_t netIndex = 0;
+	for( uint32_t i = 0; i < m_stringTable.size(); ++i )
 	{
 		const std::string &sCur = m_stringTable[i];
 		//Already in there?
@@ -47,8 +47,9 @@ void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsi
 	m_stringTable.push_back(sIn);
 }
 
-uv_err_t UVDElfStringTableSectionHeaderEntry::ensureCurrentStringTableData()
+uv_err_t UVDElfStringTableSectionHeaderEntry::updateDataCore()
 {
+
 	//If our data object didn't previously exist, create it
 	if( m_fileData == NULL )
 	{
@@ -60,7 +61,7 @@ uv_err_t UVDElfStringTableSectionHeaderEntry::ensureCurrentStringTableData()
 	//Is there a way we can check for dirty?
 	
 	//Check needed size
-	unsigned int dataSize = 0;
+	uint32_t dataSize = 0;
 	//First element should be empty (null) string
 	uv_assert_ret(m_stringTable.size() >= 1);
 	uv_assert_ret(m_stringTable[0].empty());
@@ -76,36 +77,23 @@ uv_err_t UVDElfStringTableSectionHeaderEntry::ensureCurrentStringTableData()
 	uv_assert_err_ret(fileData->realloc(dataSize));
 
 	//And copy strings in
-	unsigned int offset = 0;
+	uint32_t offset = 0;
 	for( std::vector<std::string>::iterator iter = m_stringTable.begin(); iter != m_stringTable.end(); ++iter )
 	{
 		std::string s = *iter;
 		//Include null space
-		unsigned int bufferSize = s.size() + 1;
+		uint32_t bufferSize = s.size() + 1;
 
 		uv_assert_err_ret(m_fileData->writeData(offset, s.c_str(), bufferSize));		
 		offset += bufferSize;
 	}
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfStringTableSectionHeaderEntry::getFileData(UVDData **dataOut)
-{
-	//Make sure our file data is current
-	uv_assert_err_ret(ensureCurrentStringTableData());
-	//String table file data is required
-	uv_assert_ret(m_fileData);
-
-	//Done, assign and return
-	uv_assert_ret(dataOut);
-	*dataOut = m_fileData;
+		
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDElfStringTableSectionHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
 {
-	uv_assert_err_ret(ensureCurrentStringTableData());
+	uv_assert_err_ret(updateData());
 	uv_assert_ret(m_fileData);
 	return UV_DEBUG(m_fileData->size(sectionSize));
 }
