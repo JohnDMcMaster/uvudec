@@ -47,13 +47,14 @@ uv_err_t UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(UVDBinaryFuncti
 	return UV_ERR_OK;
 }
 
-void UVDBinaryFunctionInstance::setData(UVDData *data)
+uv_err_t UVDBinaryFunctionInstance::setData(UVDData *data)
 {
 	m_data = data;
 	if( m_relocatableData )
 	{
-		m_relocatableData->setData(data);
+		uv_assert_err_ret(m_relocatableData->setData(data));
 	}
+	return UV_ERR_OK;
 }
 
 UVDData *UVDBinaryFunctionInstance::getData()

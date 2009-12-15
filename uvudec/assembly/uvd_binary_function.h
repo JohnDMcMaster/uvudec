@@ -107,7 +107,7 @@ public:
 	//It is callee responsibilty to free
 	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunctionInstance **out);
 
-	void setData(UVDData *data);
+	uv_err_t setData(UVDData *data);
 	UVDData *getData();
 	
 private:
