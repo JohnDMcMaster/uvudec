@@ -180,18 +180,18 @@ uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamic
 	uv_assert_ret(m_relocatableData || m_data);
 	std::vector<UVDRelocatableData *> &relocatableDataSet = m_manager->m_data;
 	
-	std::vector<UVDRelocatableData *>::iterator iter = relocatableDataSet.begin();
-	for( ; ; )
+	for( std::vector<UVDRelocatableData *>::size_type i = 0; ; )
 	{
 		UVDRelocatableData *relocatableData = NULL;
 		UVDData *data = NULL;
 
-		if( iter == relocatableDataSet.end() )
+		if( i >= relocatableDataSet.size() )
 		{
 			printf_error("Could not find needed relocatable value out of %d entries\n", relocatableDataSet.size());
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-		relocatableData = *iter;
+		relocatableData = relocatableDataSet[i];
+		printf_debug("try find needed relocatable value %d (0x%.8X) of %d entries\n", i + 1, (unsigned int)relocatableData, relocatableDataSet.size());
 		
 		uv_assert_ret(relocatableData);
 		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
@@ -205,7 +205,7 @@ uv_err_t UVDSelfLocatingRelocatableElement::getDynamicValue(char const **dynamic
 		}
 		
 		dataOffset += data->size();
-		++iter;
+		++i;
 	}
 
 	setDynamicValue(dataOffset + m_offset);

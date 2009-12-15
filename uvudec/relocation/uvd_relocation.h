@@ -89,6 +89,15 @@ private:
 	uint32_t m_sizeBits;
 };
 
+#if 0
+/*
+Uses bitmask to do partial fixup
+*/
+class UVDMaskedRelocationFixup
+{
+};
+#endif
+
 /*
 Applies to a single location rather than batch data processing schemes
 */
@@ -136,39 +145,79 @@ public:
 	size
 	*/
 	static uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **data);
-	~UVDRelocatableData();
+	virtual ~UVDRelocatableData();
 	
 	//Assume all symbolic values have been placed and now have symbols
 	uv_err_t applyRelocations();
-	uv_err_t applyRelocationsCore(bool useDefaultValue);
-	void addFixup(UVDRelocationFixup *);
+	virtual uv_err_t applyRelocationsCore(bool useDefaultValue);
+	virtual uv_err_t addFixup(UVDRelocationFixup *);
 	
 	//Get a raw copy of the data
 	//Relocatable elements will have the last appliex fixup value, if any
 	//It will be freed at the destruction of this object
-	uv_err_t getRelocatableData(UVDData **data);
+	virtual uv_err_t getRelocatableData(UVDData **data);
 
 	//Get a default representation of the relocatable data
 	//Fills in relocatable entries with 0's and returns
 	//It will be freed at the destruction of this object
-	uv_err_t getDefaultRelocatableData(UVDData **data);
+	virtual uv_err_t getDefaultRelocatableData(UVDData **data);
 	
 	//The data here will be freed when this object is freed
-	void setData(UVDData *data);
+	virtual uv_err_t setData(UVDData *data);
+	
+	/*
+	Empty is an unitialized object that has no data added to it
+	If a zero sized data is added, it is not empty, it is filled with a 0 sized element
+	*/
+	virtual uv_err_t isEmpty(uint32_t *isEmpty);
+
+protected:
+	//called before getData()
+	virtual uv_err_t updateData();
+	//called before getRelocatableData()
+	virtual uv_err_t updateDefaultRelocatableData();
 	
 public:
 	//Locations that require fixups
 	//Addresses specified are relative to m_data
 	std::set<UVDRelocationFixup *> m_fixups;
 
+
+protected:
 	//The temporary peice of data
 	//This will be compiled into a larger chunk
 	UVDData *m_data;
 
-protected:
 	//Cache of the default (0'd) relocatable data
 	//Primary data is stored in m_data
 	UVDData *m_defaultRelocatableData;
+};
+
+/*
+Contains a number of UVDRelocatableData
+*/
+class UVDMultiRelocatableData : public UVDRelocatableData
+{
+public:
+	UVDMultiRelocatableData();
+	~UVDMultiRelocatableData();
+
+	//All below implemented as error for now, otherwise would have to check for equal size and spread data across elements
+	uv_err_t setData(UVDData *data);
+	uv_err_t addFixup(UVDRelocationFixup *fixup);
+	
+	virtual uv_err_t isEmpty(uint32_t *isEmpty);
+
+protected:
+	//Iterate over all values and apply relocations
+	uv_err_t applyRelocationsCore(bool useDefaultValue);
+
+	virtual uv_err_t updateData();
+	virtual uv_err_t updateDefaultRelocatableData();
+
+public:
+	//Order is preserved
+	std::vector<UVDRelocatableData *> m_relocatableDatas;
 };
 
 /*
