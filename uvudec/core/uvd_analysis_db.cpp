@@ -184,7 +184,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 			uv_assert_err_ret(UVDDataFile::getUVDDataFile(&data, valueImpl));
 			dataChunk = new UVDDataChunk();
 			uv_assert_err_ret(dataChunk->init(data));
-			codeShared->setData(dataChunk);
+			uv_assert_err_ret(codeShared->setData(dataChunk));
 			
 			//Ignore valueSrc for now
 			
