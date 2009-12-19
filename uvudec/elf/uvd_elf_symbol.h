@@ -134,6 +134,8 @@ public:
 	UVDElfFunctionSymbol();
 	~UVDElfFunctionSymbol();
 
+	virtual uv_err_t updateForWrite();
+
 protected:
 	uv_err_t updateType();
 

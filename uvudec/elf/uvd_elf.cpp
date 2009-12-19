@@ -159,8 +159,10 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 		uv_assert_err_ret(symbol->addRelocation(elfRelocation));
 	}
 	
+printf("setting up defined sym\n");
 	//Now add on our data itself as a (defined) symbol
 	UVDElfSymbol *symbol = NULL;
+	//Note that if this was previously added (recursive call, etc), it should not be duplicated
 	uv_assert_err_ret(getFunctionSymbol(rawDataSymbolName, &symbol));
 	uv_assert_ret(symbol);
 printf("the defined symbol: 0x%.8X\n", (unsigned int)symbol);
@@ -168,7 +170,6 @@ printf("the defined symbol: 0x%.8X\n", (unsigned int)symbol);
 	uv_assert_err_ret(relocatableData->getRelocatableData(&rawData));
 	uv_assert_ret(rawData);
 	uv_assert_err_ret(symbol->setData(rawData));
-	uv_assert_err_ret(addSymbol(symbol));
 	
 	return UV_DEBUG(UV_ERR_OK);
 }
