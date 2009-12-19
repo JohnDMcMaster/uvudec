@@ -3,7 +3,13 @@ This is the bug tracking system
 Known issues
 
 TODO
+-After much R&D, I have concluded that the ELF construction method sucks
+	-UVDRelocation is overused
+	-The process would be much simpler to just have a "do update" function on all sections
+	-Following the do update, grab the section data
+	-Should be able to use the relocations for the legacy code, and then replcae one by one with simple updates
 -Improve complicated operand printing
+-Stop memory leaks: fill in destructors
 -Function call resolution in DB functions
 	Resolves relative call issues
 	Normalize values to make even hashes?
@@ -34,4 +40,5 @@ TODO
 	Ex: function may have a few bytes padding after RET for alignment on next function
 -Logic/flow analyzer
 	Find independance of variables
--Stop memory leaks: fill in destructors
+
+
