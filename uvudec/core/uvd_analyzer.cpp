@@ -502,12 +502,17 @@ uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos
 	if( UV_SUCCEEDED(instruction->m_shared->isImmediateOnlyFunction()) )
 	{
 		uint32_t relocatableDataSizeBits = 0;
-		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits));
+		uint32_t relocationPos = 0;
+		uint32_t immediateOffset = 0;
+
+		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits, &immediateOffset));
+
+		relocationPos = startPos + immediateOffset;
 
 		//We know the location of a call symbol relocation
 		//uv_assert_ret(m_symbolManager);
 		uv_assert_err_ret(m_symbolManager.addAbsoluteFunctionRelocationByBits(targetAddress,
-				startPos, relocatableDataSizeBits));
+				relocationPos, relocatableDataSizeBits));
 	}
 #endif
 
@@ -534,12 +539,17 @@ uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos
 	if( UV_SUCCEEDED(instruction->m_shared->isImmediateOnlyFunction()) )
 	{
 		uint32_t relocatableDataSizeBits = 0;
-		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits));
+		uint32_t relocationPos = 0;
+		uint32_t immediateOffset = 0;
+
+		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits, &immediateOffset));
+
+		relocationPos = startPos + immediateOffset;
 
 		//We know the location of a jump symbol relocation
 		//uv_assert_ret(m_symbolManager);
 		uv_assert_err_ret(m_symbolManager.addAbsoluteLabelRelocationByBits(targetAddress,
-				startPos, relocatableDataSizeBits));
+				relocationPos, relocatableDataSizeBits));
 	}
 #endif
 

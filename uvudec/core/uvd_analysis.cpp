@@ -248,6 +248,7 @@ uv_err_t UVD::analyzeFunction(UVDBinaryFunctionShared *functionShared)
 
 uv_err_t UVD::analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared)
 {
+	//FIXME: this code looks like it doesn't do anything
 	UVDData *data = NULL;
 
 	uv_assert_ret(binaryFunctionCodeShared);

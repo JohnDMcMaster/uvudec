@@ -85,11 +85,13 @@ Ex: 8051 MUL assumes that B and A will be multiplied, storing the result in A
 */
 class UVDConfigValue;
 class UVDOperandShared
-//UVDOperandShared
 {
 public:
 	UVDOperandShared();
 	static uv_err_t uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDOperandShared **op_shared_in);
+
+	//Returns error if it isn't an immediate
+	uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
 
 public:
 	/* Register, memory, immediate */
@@ -241,7 +243,7 @@ public:
 	uv_err_t isImmediateOnlyFunction();
 	//identifier size in bits
 	uv_err_t getImmediateOnlyFunctionAttributes(/*std::string &func,
-			std::string &identifier, */uint32_t *identifierSizeBitsOut);
+			std::string &identifier, */uint32_t *identifierSizeBitsOut, uint32_t *immediateOffsetOut);
 
 private:
 	uv_err_t isImmediateOnlyFunctionCore();
