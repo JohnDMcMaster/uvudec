@@ -94,9 +94,10 @@ uv_err_t UVDInstructionShared::isImmediateOnlyFunction()
 }
 
 uv_err_t UVDInstructionShared::getImmediateOnlyFunctionAttributes(/*std::string &func,
-		std::string &identifier,*/ uint32_t *identifierSizeBitsOut)
+		std::string &identifier,*/ uint32_t *identifierSizeBitsOut, uint32_t *immediateOffsetOut)
 {
 	uint32_t identifierSizeBits = 0;
+	uint32_t immediateOffset = 0;
 	std::string func;
 	std::string identifier;
 			
@@ -129,8 +130,14 @@ uv_err_t UVDInstructionShared::getImmediateOnlyFunctionAttributes(/*std::string 
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
+	//If we have a single immediate, its offset should be the size of the opcode
+	immediateOffset = m_opcode_length;
+	
 	uv_assert_ret(identifierSizeBitsOut);
 	*identifierSizeBitsOut = identifierSizeBits;
+	
+	uv_assert_ret(immediateOffsetOut);
+	*immediateOffsetOut = immediateOffset;
 
 	return UV_ERR_OK;
 }
