@@ -174,6 +174,7 @@ UVDMultiRelocatableData::~UVDMultiRelocatableData()
 uv_err_t UVDMultiRelocatableData::setData(UVDData *data)
 {
 	//Not needed/supported for now
+	printf_error("setData() not supported for UVDMultiRelocatableData\n");
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
@@ -188,7 +189,7 @@ uv_err_t UVDMultiRelocatableData::updateData()
 		UVDData *data = NULL;
 		
 		uv_assert_ret(relocatableData);
-		uv_assert_ret(relocatableData->getRelocatableData(&data));
+		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
 		datas.push_back(data);
 	}
 	
@@ -221,6 +222,7 @@ uv_err_t UVDMultiRelocatableData::updateDefaultRelocatableData()
 
 uv_err_t UVDMultiRelocatableData::addFixup(UVDRelocationFixup *)
 {
+	printf_error("addFixup() not supported for UVDMultiRelocatableData\n");
 	//Not needed/supported for now	
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
