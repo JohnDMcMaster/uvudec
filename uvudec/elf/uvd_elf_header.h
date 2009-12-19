@@ -72,6 +72,7 @@ public:
 	virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize) = 0;
 	//Update data so a standard above function can be used
 	virtual uv_err_t updateData();
+	virtual uv_err_t syncDataAfterUpdate();
 	
 	//Add a fixup location to the file data
 	//void addFileRelocation(UVDRelocatableData *relocation);
@@ -81,6 +82,8 @@ public:
 	shtType valid values: SHT_REL, SHT_RELA 
 	*/
 	//void addElfRelocation(Elf32_Rel rel, int shtType);
+	
+	virtual uv_err_t updateForWrite();
 	
 protected:
 	virtual uv_err_t updateDataCore();	
@@ -209,6 +212,8 @@ public:
 	//Make sure we have a relocatable section
 	//It will be named .rel.<section name>
 	virtual uv_err_t useRelocatableSection();
+	//null if its not a relocatable section
+	virtual uv_err_t getRelocatableSection(UVDElfRelocationSectionHeaderEntry **entry);
 	
 #if 0
 	uv_err_t getVirtualAddress(int *address);
@@ -227,6 +232,8 @@ public:
 	void setAligntment(int alignment);
 #endif
 
+	uv_err_t updateForWrite();
+
 public:
 	//Name of this section
 	std::string m_sName;
@@ -234,6 +241,8 @@ public:
 	Elf32_Shdr m_sectionHeader;
 	//If there is a .rel.<section name> section, pointer to it
 	UVDElfRelocationSectionHeaderEntry *m_relocationSectionHeader;
+	//sh_link target, if applicable
+	UVDElfSectionHeaderEntry *m_relevantSectionHeader;
 };
 
 /*
@@ -259,56 +268,6 @@ public:
 
 public:
 	std::vector<std::string> m_stringTable;
-};
-
-/*
-Section that holds actual symbol data
-*/
-class UVDElfSymbol;
-class UVDElfSymbolSectionHeaderEntry : public UVDElfSectionHeaderEntry
-{
-public:
-	UVDElfSymbolSectionHeaderEntry();
-	~UVDElfSymbolSectionHeaderEntry();
-
-	uv_err_t initRelocatableData();
-
-	uv_err_t addSymbol(UVDElfSymbol *symbol);
-	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
-	uv_err_t getSymbol(const std::string &sName, UVDElfSymbol **symbol);
-	
-	//Used during writting relocations to ELF file
-	uv_err_t getSymbolIndex(const UVDElfSymbol *symbool, uint32_t *index);
-	
-	//The symbol table has string relocations, non-trivial to return
-	virtual uv_err_t updateDataCore();
-
-	uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable);
-		
-public:
-	std::vector<UVDElfSymbol *> m_symbols;
-};
-
-/*
-A generic relocation section, not necessary for .text
-*/
-class UVDElfRelocation;
-class UVDElfRelocationSectionHeaderEntry : public UVDElfSectionHeaderEntry
-{
-public:
-	UVDElfRelocationSectionHeaderEntry();
-	~UVDElfRelocationSectionHeaderEntry();
-
-	virtual uv_err_t initRelocatableData();
-
-	//To compute the necessary Elf32_Rel table
-	virtual uv_err_t updateDataCore();
-
-public:
-	//The section we will apply ELF relocations to
-	//We will need to put its index in the link info in the header
-	UVDElfSectionHeaderEntry *m_targetSectionHeader;
-	std::vector<UVDElfRelocation *> m_relocations;
 };
 
 /*

@@ -258,9 +258,12 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	If there is supporting data, fill in the address
 	Otherwise, assume address was 0'd from the earlier read request
 	*/
+printf("considering adding supporting data for section %s 0x%.8X\n", entry->m_sName.c_str(), (unsigned int)supportingRelocatable);
 	uv_assert_ret(entry->m_sName != ".text" || supportingRelocatable);
+	uv_assert_ret(entry->m_sName != ".rel.text" || supportingRelocatable);
+	uv_assert_ret(entry->m_sName != ".symtab" || supportingRelocatable);
+	uv_assert_ret(entry->m_sName != ".strtab" || supportingRelocatable);
 
-	printf_debug("adding supporting data for section %s 0x%.8X\n", entry->m_sName.c_str(), (unsigned int)supportingRelocatable);
 	if( supportingRelocatable )
 	{
 		//We must wrap the data in this, but assume it requires no patchups for now
@@ -301,6 +304,44 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDElf::updateForWrite()
+{
+	uv_assert_err_ret(updateHeaderForWrite());
+	uv_assert_err_ret(updateProgramHeadersForWrite());
+	uv_assert_err_ret(updateSectionHeadersForWrite());	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::updateHeaderForWrite()
+{
+	m_elfHeader.e_phnum = m_programHeaderEntries.size();
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::updateProgramHeadersForWrite()
+{
+	for( std::vector<UVDElfProgramHeaderEntry *>::size_type i = 0; i < m_programHeaderEntries.size(); ++i )
+	{
+		UVDElfProgramHeaderEntry *entry = m_programHeaderEntries[i];
+		uv_assert_ret(entry);
+		uv_assert_err_ret(entry->updateForWrite());
+	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::updateSectionHeadersForWrite()
+{
+	for( std::vector<UVDElfSectionHeaderEntry *>::size_type i = 0; i < m_sectionHeaderEntries.size(); ++i )
+	{
+		UVDElfSectionHeaderEntry *entry = m_sectionHeaderEntries[i];
+		uv_assert_ret(entry);
+		uv_assert_err_ret(entry->updateForWrite());
+	}
+
+	return UV_ERR_OK;
+}
+
 /*
 Top level construction
 */
@@ -329,13 +370,15 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 	std::vector<UVDRelocatableData *> headerSupportingData;
 	
 	//Do we already have a data representation?
-	//Might be cached or previously loaded
+	//FIXME: might be cached or previously loaded, make sure cache updated correctly
 	uv_assert_ret(dataOut);
 	if( m_data )
 	{
 		*dataOut = m_data;
 		return UV_ERR_OK;
 	}
+	
+	uv_assert_err_ret(updateForWrite());
 
 	//Construct the header
 	uv_assert_err_ret(constructElfHeaderBinary(&elfRelocationManager));	
