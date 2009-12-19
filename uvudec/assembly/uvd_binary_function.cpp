@@ -95,7 +95,7 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 	uv_assert_ret(!symbolName.empty());
 	
 	//ELF symbol
-	uv_assert_err_ret(elf->getSymbol(symbolName, &elfSymbol));
+	uv_assert_err_ret(elf->getFunctionSymbol(symbolName, &elfSymbol));
 	uv_assert_ret(elfSymbol);
 
 	//ELF relocation

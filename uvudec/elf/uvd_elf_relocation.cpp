@@ -51,7 +51,7 @@ uv_err_t UVDElfRinfoElement::updateDynamicValue()
 	//uv_assert_ret(symbol);
 	uv_assert_err_ret(m_relocation->getElfSymbol(&symbol));
 
-	sectionHeader = symbol->m_sectionHeader;
+	sectionHeader = symbol->m_symbolSectionHeader;
 	uv_assert_ret(sectionHeader);
 
 	uv_assert_err_ret(sectionHeader->getSymbolIndex(symbol, &symbolIndex));
@@ -70,6 +70,7 @@ UVDElfRelocation
 UVDElfRelocation::UVDElfRelocation()
 {
 	memset(&m_relocation, 0, sizeof(m_relocation));
+	m_relocationHeader = NULL;
 }
 
 UVDElfRelocation::~UVDElfRelocation()
@@ -218,6 +219,157 @@ uv_err_t UVDElfRelocation::getHeaderEntryRelocatable(UVDRelocatableData **symbol
 	
 	uv_assert_ret(symbolEntryRelocatableOut);
 	*symbolEntryRelocatableOut = &m_headerEntryRelocatableData;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocation::updateForWrite()
+{
+	return UV_ERR_OK;
+}
+
+/*
+UVDElfRelocationSectionHeaderEntry
+*/
+
+UVDElfRelocationSectionHeaderEntry::UVDElfRelocationSectionHeaderEntry()
+{
+	m_targetSectionHeader = NULL;
+}
+
+UVDElfRelocationSectionHeaderEntry::~UVDElfRelocationSectionHeaderEntry()
+{
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::init()
+{
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::init());
+	
+	m_sectionHeader.sh_entsize = sizeof(Elf32_Rel);
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::initRelocatableData()
+{
+	//So that we can construct the relocatable table in relocatable units
+	m_fileRelocatableData = new UVDMultiRelocatableData();
+	uv_assert_ret(m_fileRelocatableData);
+
+	printf_debug("relocatable section file relocatable: 0x%.8X)\n", (unsigned int)m_fileRelocatableData);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::setSymbolSection(UVDElfSymbolSectionHeaderEntry *section)
+{
+	uv_assert_ret(section);
+	//This is described by sh_link
+	m_relevantSectionHeader = section;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::getSymbolSection(UVDElfSymbolSectionHeaderEntry **section)
+{
+	uv_assert_ret(section);
+	//This is described by sh_link
+	*section = dynamic_cast<UVDElfSymbolSectionHeaderEntry *>(m_relevantSectionHeader);
+	uv_assert_ret(*section);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::setRelocationSection(UVDElfSectionHeaderEntry *section)
+{
+	uv_assert_ret(section);
+	//This is described by sh_info
+	m_targetSectionHeader = section;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::getRelocationSection(UVDElfSectionHeaderEntry **section)
+{
+	uv_assert_ret(section);
+	//This is described by sh_info
+	*section = m_targetSectionHeader;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::updateDataCore()
+{
+	/*
+	Form the relocation table
+	Relocation order should not matter
+	*/
+	UVDMultiRelocatableData *relocatableData = NULL;
+	
+printf("relocation upate, entries: %d\n", m_relocations.size());
+
+	relocatableData = dynamic_cast<UVDMultiRelocatableData *>(m_fileRelocatableData);
+	uv_assert_ret(relocatableData);
+	
+	//We are rebuilding this table
+	relocatableData->m_relocatableDatas.clear();
+
+	for( std::vector<UVDElfRelocation *>::iterator iter = m_relocations.begin();
+			iter != m_relocations.end(); ++iter )
+	{
+		//Note they are of type UVDRelocationFixup
+		UVDElfRelocation *relocation = *iter;
+		UVDRelocatableData *relocatableEntryRelocatable = NULL;
+		
+		uv_assert_ret(relocation);
+ 		uv_assert_err_ret(relocation->getHeaderEntryRelocatable(&relocatableEntryRelocatable));
+		relocatableData->m_relocatableDatas.push_back(relocatableEntryRelocatable);
+	}
+	
+	uv_assert_err_ret(relocatableData->getRelocatableData(&m_fileData));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::syncDataAfterUpdate()
+{
+	//Data is auto syncd because of UVDMultiRelocatableData and cannot be set
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::addRelocation(UVDElfRelocation *relocation)
+{
+	//Make sure its knows this is its home
+	uv_assert_ret(relocation);
+	relocation->m_relocationHeader = this;
+
+	//And register it for output	
+	m_relocations.push_back(relocation);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfRelocationSectionHeaderEntry::updateForWrite()
+{
+	//note that sh_link (the symbol table section) should be upated here
+	uv_assert_ret(m_relevantSectionHeader);
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::updateForWrite());
+
+	//Update all of the relocations
+	for( std::vector<UVDElfRelocation *>::iterator iter = m_relocations.begin();
+			iter != m_relocations.end(); ++iter )
+	{
+		UVDElfRelocation *relocation = *iter;
+		
+		uv_assert_ret(relocation);
+		uv_assert_err_ret(relocation->updateForWrite());
+	}
+	
+	//We must set the index of the section we are relocating against (sh_info)
+	uv_assert_ret(m_targetSectionHeader);
+	{
+		uint32_t index = 0;
+		
+		//We must have the correct link if applicable
+		uv_assert_ret(m_elf);
+		uv_assert_err_ret(m_elf->getSectionHeaderIndex(m_targetSectionHeader, &index));
+		m_sectionHeader.sh_info = index;
+	}
+
 	
 	return UV_ERR_OK;
 }

@@ -279,6 +279,12 @@ uv_err_t UVDElf::init()
 	//Null string in string table must be first element
 	uv_assert_err_ret(addSectionHeaderString(""));
 
+	//Add executable data section
+	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
+			&executableSection));
+	uv_assert_ret(executableSection);
+	uv_assert_err_ret(addSectionHeaderSection(executableSection));
+
 	//Add symbol string table section
 	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
 			&symbolStringTableSection));
@@ -291,12 +297,9 @@ uv_err_t UVDElf::init()
 			&symbolTableSection));
 	uv_assert_err_ret(addSectionHeaderSection(symbolTableSection));
 
-	//Add executable data section
-	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
-			&executableSection));
 	//Add .rel.text
+	//Must be done after fundamental sections are in place
 	uv_assert_err_ret(executableSection->useRelocatableSection());
-	uv_assert_err_ret(addSectionHeaderSection(executableSection));
 
 	return UV_ERR_OK;
 }

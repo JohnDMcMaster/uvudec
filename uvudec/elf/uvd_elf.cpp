@@ -145,7 +145,7 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 		std::string symbolName;
 		uv_assert_err_ret(originalSymbol->getName(symbolName));
 		uv_assert_ret(!symbolName.empty());
-		uv_assert_err_ret(getSymbol(symbolName, &symbol));
+		uv_assert_err_ret(getFunctionSymbol(symbolName, &symbol));
 		uv_assert_ret(symbol);
 		
 		elfRelocation = new UVDElfRelocation();
@@ -154,12 +154,16 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 		elfRelocation->setSymbol(symbol);
 		//Convert UVD relocation to ELF relocation
 		uv_assert_err_ret(elfRelocation->setupRelocations(fixup));
+	
+		//And register it
+		uv_assert_err_ret(symbol->addRelocation(elfRelocation));
 	}
 	
-	//Now add on our data itself as a symbol
+	//Now add on our data itself as a (defined) symbol
 	UVDElfSymbol *symbol = NULL;
-	uv_assert_err_ret(getSymbol(rawDataSymbolName, &symbol));
+	uv_assert_err_ret(getFunctionSymbol(rawDataSymbolName, &symbol));
 	uv_assert_ret(symbol);
+printf("the defined symbol: 0x%.8X\n", (unsigned int)symbol);
 	//Get a copy of the symbol's data and save it
 	uv_assert_err_ret(relocatableData->getRelocatableData(&rawData));
 	uv_assert_ret(rawData);
@@ -187,13 +191,22 @@ uv_err_t UVDElf::findSymbol(const std::string &sName, UVDElfSymbol **symbol)
 	return UV_DEBUG(section->findSymbol(sName, symbol));	
 }
 
-uv_err_t UVDElf::getSymbol(const std::string &sName, UVDElfSymbol **symbolOut)
+uv_err_t UVDElf::getVariableSymbol(const std::string &name, UVDElfSymbol **symbolOut)
 {
 	UVDElfSymbolSectionHeaderEntry *section = NULL;
 	
 	uv_assert_err_ret(getSymbolTableSectionHeaderEntry(&section));
 	uv_assert_ret(section);
-	return UV_DEBUG(section->getSymbol(sName, symbolOut));	
+	return UV_DEBUG(section->getVariableSymbol(name, symbolOut));	
+}
+
+uv_err_t UVDElf::getFunctionSymbol(const std::string &name, UVDElfSymbol **symbolOut)
+{
+	UVDElfSymbolSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSymbolTableSectionHeaderEntry(&section));
+	uv_assert_ret(section);
+	return UV_DEBUG(section->getFunctionSymbol(name, symbolOut));	
 }
 
 uv_err_t UVDElf::getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeaderEntry **sectionOut)
@@ -334,8 +347,26 @@ uv_err_t UVDElf::addProgramHeaderSection(UVDElfProgramHeaderEntry *section)
 uv_err_t UVDElf::addSectionHeaderSection(UVDElfSectionHeaderEntry *section)
 {
 	uv_assert_ret(section);
+	section->m_elf = this;
 	m_sectionHeaderEntries.push_back(section);
 	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::getSectionHeaderIndex(const UVDElfSectionHeaderEntry *section, uint32_t *index)
+{
+	for( std::vector<UVDElfSectionHeaderEntry *>::size_type i = 0; i < m_sectionHeaderEntries.size(); ++i )
+	{
+		UVDElfSectionHeaderEntry *curSection = m_sectionHeaderEntries[i];
+
+		uv_assert_ret(curSection);
+		if( curSection == section )
+		{
+			uv_assert_ret(index);
+			*index = i;
+			return UV_ERR_OK;
+		}
+	}
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **sectionOut)
@@ -349,7 +380,7 @@ uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionH
 
 		uv_assert_ret(pCurSection);
 		pCurSection->getName(sCurName);
-		//printf_debug("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
+		//printf("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
 		//Found it?
 		if( sCurName == sName )
 		{
@@ -357,7 +388,8 @@ uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionH
 			return UV_ERR_OK;
 		}
 	}
-	
+
+	//printf_warn("Couldn't get section %s\n", sName.c_str());	
 	//Not a totally abnormal error, don't log
 	return UV_ERR_NOTFOUND;
 }
@@ -369,5 +401,20 @@ uv_err_t UVDElf::getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElf
 	uv_assert_ret(*sectionHeaderOut);
 	(*sectionHeaderOut)->m_elf = this;
 	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::getTextSectionHeaderEntry(UVDElfTextSectionHeaderEntry **sectionOut)
+{
+	UVDElfSectionHeaderEntry *sectionRaw = NULL;
+	UVDElfTextSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_EXECUTABLE, &sectionRaw));
+	uv_assert_ret(sectionRaw);
+	section = dynamic_cast<UVDElfTextSectionHeaderEntry *>(sectionRaw);
+	uv_assert_ret(section);
+
+	uv_assert_ret(sectionOut);
+	*sectionOut = section;
 	return UV_ERR_OK;
 }

@@ -15,6 +15,7 @@ FIXME: class is a mess, needs cleanup
 
 #include "uvd_data.h"
 #include "uvd_elf_header.h"
+#include "uvd_elf_symbol.h"
 #include "uvd_relocation.h"
 #include "uvd_types.h"
 #include <string>
@@ -38,181 +39,7 @@ public:
 	//The actual data
 	UVDData *m_data;
 	//Relocatable element so we can figure out where it was placed
-	UVDRelocatableElement *m_relocatable;	
-};
-
-/*
-A specialized fixup version for ELF files
-Ignores a lot of functionality of UVDRelocationFixup, so beware
-*/
-class UVDElfSymbol;
-class UVDElfRelocation : UVDRelocationFixup
-{
-public:
-	UVDElfRelocation();
-	~UVDElfRelocation();
-	
-	/*
-	FIXME: below seems wrong.  From TIS ELF specification (1-22):
-	r_offset
-	This member gives the location at which to apply the relocation action. For
-	a relocatable file, the value is the byte offset from the beginning of the
-	section to the storage unit affected by the relocation.
-
-	Reloctions are done on an absolute basis of the data in the file
-	If there was another chunk of data before this one, it must be accounted for
-	Essentially this makes a relocation on a relocation
-	For now, only a single symbol is stored in object files, making this factor 0 for now
-	*/
-	//uv_err_t getFileOffset(uint32_t *elfSymbolFileOffset);
-
-	//Set the value of r_offset
-	//These two sets are equivilent, eliminate setSectionOffset later
-	uv_err_t setSectionOffset(uint32_t sectionOffset);
-	uv_err_t getSectionOffset(uint32_t *sectionOffset);	
-	virtual uv_err_t setOffset(uint32_t offset);
-	virtual uv_err_t getOffset(uint32_t *offset);
-
-	uv_err_t updateRelocationTypeByBits(unsigned int nBits);
-	//raw index into the symbol table
-	//in practice might do this by a UVD relocation into m_relocation
-	uv_err_t updateSymbolIndex(unsigned int symbolIndex);
-
-	//Given a relocatable element, setup relocations on this object
-	uv_err_t setupRelocations(UVDRelocationFixup *originalFixup);
-
-	//What we preform the relocation on
-	void setSymbol(UVDElfSymbol *symbol);
-	
-	//Raw access, r_info is non-trivial to access
-	int getSymbolTableIndex();
-	void setSymbolTableIndex(int index);
-	int getRelocationType();
-	void setRelocationType(int type);
-
- 	//Get the header entry with the fixups necessary to push it to the file
- 	uv_err_t getHeaderEntryRelocatable(UVDRelocatableData **relocatableEntryRelocatable);
-
-	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
-	uv_err_t getElfSymbol(UVDElfSymbol **symbolOut);
-
-public:
-	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
-	//The symbol we will be relocating against
-	//UVDElfSymbol *m_symbol;
-	
-	//Switch to Elf32_Rela if needed
-	Elf32_Rel m_relocation;
-	//The symbol index for the relocation is dynamic and can only be figured out after symbols are placed
-	//UVDRelocationFixup m_symbolIndexRelocation;
-	//For the table entry
-	UVDRelocatableData m_headerEntryRelocatableData;
-};
-
-/*
-Some sort of globally visible symbol
-All symbols occur in a single table and each symbol has a reference to the relavent section
-There will be an assumption for now that since all relocations I want are in functions,
-all relocations will be done in symbols' data
-
-This is a hybrid between UVDRelocatableElement and UVDRelocatableData, 
-but don't like multiple inheritance
-UVDRelocatableData is instead put inside
-*/
-class UVDElfSymbol : public UVDRelocatableElement
-{
-public:
-	UVDElfSymbol();
-	~UVDElfSymbol();
-
-	//Superseeded by UVDRelocatableElement::getName(), setName()
-	//Set symbol name
-	//void setSymbolName(const std::string &sName);
-	//Get symbol name
-	//std::string getSymbolName();
-
-	//Symbol payload
-	uv_err_t getData(UVDData **data);
-	uv_err_t setData(UVDData *data);
-	
-	void addRelocation(UVDElfRelocation *relocation);
-	
-	//Get a template relocation value for this symbol
-	uv_err_t getRelocation(UVDElfRelocation **relocationOut);
-	
-	/*
-	From TIS ELF specification
-
-	STB_LOCAL Local symbols are not visible outside the object file containing their
-	definition. Local symbols of the same name may exist in multiple files
-	without interfering with each other.
-	STB_GLOBAL Global symbols are visible to all object files being combined. One file's
-	definition of a global symbol will satisfy another file's undefined reference
-	to the same global symbol.
-	STB_WEAK Weak symbols resemble global symbols, but their definitions have lower
-	precedence.
-	STB_LOPROC through Values in this inclusive range are reserved for processor-specific semantics.
-	STB_HIPROC
-	In each symbol table,
-	*/
-	void setVisibility(int visibility);
-	uv_err_t getVisibility(int *visibility);
- 	
- 	//Get the header entry with the fixups necessary to push it to the file
- 	uv_err_t getHeaderEntryRelocatable(UVDRelocatableData **symbolEntryRelocatable);
- 
- public:
- 	//The symbol's (function's/variable's) name
-
-
-public:
-	//The symbol's (function's/variable's) name
-	//std::string m_sName;
-	//The actual data this symbol represents, if its resolved
-	//If the symbol is not resolved, data will be NULL
-	//Relocatable form so we can do some util stuff like get zerod version
-	UVDRelocatableData m_relocatableData;
-	//For the header entry
-	UVDRelocatableData m_headerEntryRelocatableData;
-	//The ELF symbol structure
-	Elf32_Sym m_symbol;
-	//Relocations
-	//std::vector<UVDElfRelocation *> m_relocations;
-
-	//The section header this belongs to
-	UVDElfSymbolSectionHeaderEntry *m_sectionHeader;
-};
-
-/*
-A global variable
-*/
-class UVDElfVariable : public UVDElfSymbol
-{
-public:
-	UVDElfVariable();
-	~UVDElfVariable();
-
-public:
-	//Size in bits
-	int m_size;
-};
-
-/*
-A peice of binary data identified as a function
-For convienence only 
-*/
-class UVDElfFunction : public UVDElfSymbol
-{
-public:
-	UVDElfFunction();
-	~UVDElfFunction();
-
-public:
-	//Binary function data
-	UVDData *m_data;
-	//Position in the file written out, not in memory
-	//Note this is not used to relocate data during ELF file writting, but rather to generate relocation table
-	UVDRelocatableData *m_fileRelocatableData;
+	UVDRelocatableElement *m_relocatable;
 };
 
 /*
@@ -273,6 +100,7 @@ public:
 
 	uv_err_t addProgramHeaderSection(UVDElfProgramHeaderEntry *section);
 	uv_err_t addSectionHeaderSection(UVDElfSectionHeaderEntry *section);
+	uv_err_t getSectionHeaderIndex(const UVDElfSectionHeaderEntry *section, uint32_t *index);
 	
 	//WARNING: this is currently find, not get (ie won't create on not found)
 	uv_err_t getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **section);
@@ -315,19 +143,24 @@ public:
 	.symtab
 	Used for symbols
 	*/
-	//Get the table holding the actual symbols
+	//Get the default table holding the actual symbols
 	uv_err_t getSymbolTableSectionHeaderEntry(UVDElfSymbolSectionHeaderEntry **sectionOut);
+	uv_err_t setSymbolTableSectionHeaderEntry(UVDElfSymbolSectionHeaderEntry *section);
+	//There are multiple of these
+	//uv_err_t getRelocationSectionHeaderEntry(UVDElfRelocationSectionHeaderEntry **sectionOut);
 	//Higher level functions
 	//Some arbitrary symbol, it is not know what it represents
 	uv_err_t addSymbol(UVDElfSymbol *symbol);
 	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
-	uv_err_t getSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	uv_err_t getVariableSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	uv_err_t getFunctionSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	
 	/*
 	.text
 	Holds executable information
 	Stores the analyzed functions
 	*/
+	uv_err_t getTextSectionHeaderEntry(UVDElfTextSectionHeaderEntry **sectionHeaderOut);
 	
 	//Raw data adds
 	uv_err_t addSectionHeaderData(const std::string &sSection, UVDRelocatableData *relocatableData);
@@ -342,13 +175,21 @@ public:
 	//Program data
 	//Add arbitrary data to the text section
 	//uv_err_t addTextData(UVDElfVariable *variable);
-	uv_err_t addFunction(UVDElfFunction *function);
+	uv_err_t addFunction(UVDElfFunctionSymbol *function);
 	//Register a variable to current ELF file
-	uv_err_t addVariable(UVDElfVariable *variable);
+	uv_err_t addVariable(UVDElfVariableSymbol *variable);
 
 	void printDebug();
 
+	//If the section does not exist, it will be created
 	uv_err_t getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
+
+protected:
+	//Update all of the members so that it can be written to disk
+	uv_err_t updateForWrite();
+	uv_err_t updateHeaderForWrite();
+	uv_err_t updateProgramHeadersForWrite();
+	uv_err_t updateSectionHeadersForWrite();
 
 private:
 	//Elf header
