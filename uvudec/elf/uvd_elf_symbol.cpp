@@ -119,6 +119,57 @@ symbol @ index 0x000001C0
 #include <string>
 
 /*
+UVDElf related funcs
+*/
+
+uv_err_t UVDElf::getSymbolStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut)
+{
+	UVDElfSectionHeaderEntry *sectionRaw = NULL;
+	UVDElfStringTableSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, &sectionRaw));
+	uv_assert_ret(sectionRaw);
+	section = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionRaw);
+	uv_assert_ret(section);
+
+	uv_assert_ret(sectionOut);
+	*sectionOut = section;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::getSymbolTableSectionHeaderEntry(UVDElfSymbolSectionHeaderEntry **sectionOut)
+{
+	UVDElfSectionHeaderEntry *sectionRaw = NULL;
+	UVDElfSymbolSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SYMBOL_TABLE, &sectionRaw));
+	uv_assert_ret(sectionRaw);
+	section = dynamic_cast<UVDElfSymbolSectionHeaderEntry *>(sectionRaw);
+	uv_assert_ret(section);
+
+	uv_assert_ret(sectionOut);
+	*sectionOut = section;
+	return UV_ERR_OK;
+}
+
+/*
+uv_err_t UVDElf::getRelocationSectionHeaderEntry(UVDElfRelocationSectionHeaderEntry **sectionOut);	
+{
+	UVDElfSectionHeaderEntry *sectionRaw = NULL;
+	UVDElfRelocationSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SYMBOL_TABLE, &sectionRaw));
+	uv_assert_ret(sectionRaw);
+	section = dynamic_cast<UVDElfSymbolSectionHeaderEntry *>(sectionRaw);
+	uv_assert_ret(section);
+
+	uv_assert_ret(sectionOut);
+	*sectionOut = section;
+	return UV_ERR_OK;
+}
+*/
+
+/*
 UVDElfSymbol
 */
 
@@ -147,14 +198,45 @@ std::string UVDElfSymbol::getSymbolName()
 
 uv_err_t UVDElfSymbol::updateForWrite()
 {
+	/*
+	Update st_shndx if we linked to a section, or SHN_UNDEF otherwise
+	*/
+	if( m_relevantSectionHeader )
+	{
+		uint32_t index = 0;
+		UVDElf *elf = NULL;
+
+		uv_assert_ret(m_symbolSectionHeader);
+		elf = m_symbolSectionHeader->m_elf;
+		uv_assert_ret(elf);
+
+		//Specifies the section to link to
+		uv_assert_err_ret(elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
+		m_symbol.st_shndx = index;
+	}
+
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDElfSymbol::getData(UVDData **data)
 {
-	//uv_assert_ret(m_relocatableData);
-	//We usually want to return the relocated version
-	uv_assert_err_ret(m_relocatableData.getDefaultRelocatableData(data));
+	uint32_t isEmpty = 0;
+
+	//CHECKME: what if its a zero sized symbol?  Do those exist?	
+	uv_assert_err_ret(m_relocatableData.isEmpty(&isEmpty));
+
+	//Undefined symbols will not have associated data
+	if( isEmpty )
+	{
+		uv_assert_ret(data);
+		*data = NULL;
+	}
+	else
+	{
+		//...and it would be an error to get the default reocatable data if it didn't exist
+		//We usually want to return the relocated version
+		uv_assert_err_ret(m_relocatableData.getDefaultRelocatableData(data));
+	}
 	return UV_ERR_OK;
 }
 
@@ -234,6 +316,107 @@ printf("adding relocation 0x%.8X\n", (unsigned int)relocation);
 	return UV_ERR_OK;
 }
 
+
+uv_err_t UVDElfSymbol::getRelocation(UVDElfRelocation **relocationOut)
+{
+	UVDElfRelocation *relocation = NULL;
+	
+	relocation = new UVDElfRelocation();
+	uv_assert_ret(relocation);
+	
+	relocation->setSymbol(this);
+	
+	uv_assert_ret(relocationOut);
+	*relocationOut = relocation;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSymbol::init()
+{
+	//uv_assert_err_ret(initSymbolNameRelocation());
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSymbol::addSymbolNameRelocation()
+{
+	std::string name;
+	UVDRelocatableElement *relocatable = NULL;
+	UVDRelocationFixup *offsetFixup = NULL;
+
+	uv_assert_err_ret(getName(name));
+	//The value
+	uv_assert_ret(m_symbolSectionHeader);
+	uv_assert_err_ret(m_symbolSectionHeader->getSymbolStringRelocatableElement(name, &relocatable));
+	//Where
+	offsetFixup = new UVDRelocationFixup(relocatable,
+			OFFSET_OF(Elf32_Sym, st_name), sizeof(m_symbol.st_name));
+	uv_assert_ret(offsetFixup);
+	
+	m_headerEntryRelocatableData.addFixup(offsetFixup);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSymbol::getHeaderEntryRelocatable(UVDRelocatableData **symbolEntryRelocatableOut)
+{
+	//FIXME: make sure we only do this once
+	/*
+	typedef struct
+	{
+	  Elf32_Word	st_name;		// Symbol name (string tbl index)
+	  Elf32_Addr	st_value;		// Symbol value
+	  Elf32_Word	st_size;		// Symbol size
+	  unsigned char	st_info;		// Symbol type and binding
+	  unsigned char	st_other;		// Symbol visibility
+	  Elf32_Section	st_shndx;		// Section index
+	} Elf32_Sym;
+
+	Assume symbols are not defined
+	Thus, we don't know the value of:
+		st_value (applied during final linking)
+	*/
+	UVDDataMemory *headerDataMemory = NULL;
+	
+	uv_assert_err_ret(addSymbolNameRelocation());
+	
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&headerDataMemory,
+			(char *)&m_symbol, sizeof(Elf32_Sym), false));
+	uv_assert_ret(headerDataMemory);
+	uv_assert_err_ret(m_headerEntryRelocatableData.setData(headerDataMemory));
+
+	//Add relocations
+		
+	/*
+	st_value, (st_size?) is determined during linking
+	Since our program was already linked, we could bind st_value to the val it took during linking
+	Maybe add a switch for this?
+	*/
+	
+	//FIXME
+	//There will be some local non-function symbols later (jumps), but assume all global funcs for now
+	//These are now updated as needed
+	//m_symbol.st_info = ELF32_ST_INFO(STB_GLOBAL, STT_FUNC);
+	
+	//st_other is undefined according to TIS spec
+	
+	//Absolute symbol: defined in this file
+	//m_symbol.st_shndx = SHN_ABS;
+	
+	uv_assert_ret(symbolEntryRelocatableOut);
+	*symbolEntryRelocatableOut = &m_headerEntryRelocatableData;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSymbol::updateRelocations()
+{
+	//This is more of a construction thing, should it be called again here?
+	//Doesn't hurt (except minor speed), leave for now
+	uv_assert_err_ret(updateType());
+	return UV_ERR_OK;
+}
+
 /*
 UVDElfNullSymbol
 */
@@ -279,6 +462,139 @@ uv_err_t UVDElfNullSymbol::getUVDElfNullSymbol(UVDElfNullSymbol **symbolOut)
 
 uv_err_t UVDElfNullSymbol::updateType()
 {
+	return UV_ERR_OK;
+}
+
+/*
+UVDElfVariableSymbol
+*/
+
+UVDElfVariableSymbol::UVDElfVariableSymbol()
+{
+}
+
+UVDElfVariableSymbol::~UVDElfVariableSymbol()
+{
+}
+
+uv_err_t UVDElfVariableSymbol::updateType()
+{
+	UVDData *data = NULL;
+	
+	uv_assert_err_ret(getData(&data));
+
+	//Defined
+	if( data )
+	{
+		//something requiring storage (varaible, array, etc)
+		setType(STT_OBJECT);
+	}
+	//Undefined
+	else
+	{
+		setType(STT_NOTYPE);
+	}
+	return UV_ERR_OK;
+}
+
+/*
+UVDElfFunctionSymbol
+*/
+
+UVDElfFunctionSymbol::UVDElfFunctionSymbol()
+{
+}
+
+UVDElfFunctionSymbol::~UVDElfFunctionSymbol()
+{
+}
+
+uv_err_t UVDElfFunctionSymbol::updateType()
+{
+	//FIXME: updateType() is a legacy func, call full update
+printf("updating type on function symbol: 0x%.8X\n", (unsigned int)this);
+	return UV_DEBUG(updateForWrite());
+}
+
+uv_err_t UVDElfFunctionSymbol::updateForWrite()
+{
+	UVDData *data = NULL;
+
+printf("function symbol write update\n");
+
+	//FIXME: was there a good reason using this before?
+	//Causes errors if it doesn't exist becausing trying to apply relocations against non-existent data
+	uv_assert_err_ret(getData(&data));
+
+	//Defined
+	//This must be done before parent update to have the section defined so it can be st_shndx'd
+	if( data )
+	{
+		UVDElf *elf = NULL;
+		UVDElfTextSectionHeaderEntry *relevantSectionHeader = NULL;
+		
+		uv_assert_ret(m_symbolSectionHeader);
+		elf = m_symbolSectionHeader->m_elf;
+		uv_assert_ret(elf);
+		
+		//Function code
+		setType(STT_FUNC);
+		//Link it to the .text section
+		uv_assert_err_ret(elf->getTextSectionHeaderEntry(&relevantSectionHeader));
+		uv_assert_ret(relevantSectionHeader);
+		m_relevantSectionHeader = relevantSectionHeader;
+printf("linked to text section\n");
+	}
+	//Undefined
+	else
+	{
+		setType(STT_NOTYPE);
+		m_relevantSectionHeader = NULL;
+	}
+
+	uv_assert_err_ret(UVDElfSymbol::updateForWrite());
+
+	return UV_ERR_OK;
+}
+
+/*
+UVDElfSectionSymbol
+*/
+
+UVDElfSectionSymbol::UVDElfSectionSymbol()
+{
+}
+
+UVDElfSectionSymbol::~UVDElfSectionSymbol()
+{
+}
+
+uv_err_t UVDElfSectionSymbol::updateType()
+{
+	setType(STT_SECTION);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfSectionSymbol::updateForWrite()
+{
+printf("section symbol write update\n");
+
+	//We must update get the section index
+	//ELF32_ST_TYPE(ELF32_ST_BIND(m_symbol.st_info) == STT_SECTION
+	uint32_t index = 0;
+	UVDElf *elf = NULL;
+	
+	uv_assert_err_ret(UVDElfSymbol::updateForWrite());
+
+	uv_assert_ret(m_symbolSectionHeader);
+	elf = m_symbolSectionHeader->m_elf;
+	uv_assert_ret(elf);
+
+	//Must specify the section to link to
+	uv_assert_ret(m_relevantSectionHeader);
+	uv_assert_err_ret(elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
+	m_symbol.st_shndx = index;
+
 	return UV_ERR_OK;
 }
 
@@ -420,11 +736,14 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSectionSymbol(const std::string &sec
 
 uv_err_t UVDElfSymbolSectionHeaderEntry::getFunctionSymbol(const std::string &sName, UVDElfSymbol **symbolOut)
 {
+printf("Getting function symbol %s\n", sName.c_str());
 	//Return if it already exists
 	if( UV_SUCCEEDED(findSymbol(sName, symbolOut)) )
 	{
+printf("pre defined %s\n", sName.c_str());
 		return UV_ERR_OK;
 	}
+printf("NOT pre defined %s\n", sName.c_str());
 	
 	//Otherwise create it
 	UVDElfSymbol *symbol = NULL;
@@ -564,272 +883,4 @@ printf("symbol table update for write, entries: %d\n", m_symbols.size());
 	}
 	return UV_ERR_OK;
 }
-
-/*
-UVDElf related funcs
-*/
-
-uv_err_t UVDElf::getSymbolStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut)
-{
-	UVDElfSectionHeaderEntry *sectionRaw = NULL;
-	UVDElfStringTableSectionHeaderEntry *section = NULL;
 	
-	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, &sectionRaw));
-	uv_assert_ret(sectionRaw);
-	section = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionRaw);
-	uv_assert_ret(section);
-
-	uv_assert_ret(sectionOut);
-	*sectionOut = section;
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElf::getSymbolTableSectionHeaderEntry(UVDElfSymbolSectionHeaderEntry **sectionOut)
-{
-	UVDElfSectionHeaderEntry *sectionRaw = NULL;
-	UVDElfSymbolSectionHeaderEntry *section = NULL;
-	
-	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SYMBOL_TABLE, &sectionRaw));
-	uv_assert_ret(sectionRaw);
-	section = dynamic_cast<UVDElfSymbolSectionHeaderEntry *>(sectionRaw);
-	uv_assert_ret(section);
-
-	uv_assert_ret(sectionOut);
-	*sectionOut = section;
-	return UV_ERR_OK;
-}
-
-/*
-uv_err_t UVDElf::getRelocationSectionHeaderEntry(UVDElfRelocationSectionHeaderEntry **sectionOut);	
-{
-	UVDElfSectionHeaderEntry *sectionRaw = NULL;
-	UVDElfRelocationSectionHeaderEntry *section = NULL;
-	
-	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SYMBOL_TABLE, &sectionRaw));
-	uv_assert_ret(sectionRaw);
-	section = dynamic_cast<UVDElfSymbolSectionHeaderEntry *>(sectionRaw);
-	uv_assert_ret(section);
-
-	uv_assert_ret(sectionOut);
-	*sectionOut = section;
-	return UV_ERR_OK;
-}
-*/
-	
-uv_err_t UVDElfSymbol::getRelocation(UVDElfRelocation **relocationOut)
-{
-	UVDElfRelocation *relocation = NULL;
-	
-	relocation = new UVDElfRelocation();
-	uv_assert_ret(relocation);
-	
-	relocation->setSymbol(this);
-	
-	uv_assert_ret(relocationOut);
-	*relocationOut = relocation;
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfSymbol::init()
-{
-	//uv_assert_err_ret(initSymbolNameRelocation());
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfSymbol::addSymbolNameRelocation()
-{
-	std::string name;
-	UVDRelocatableElement *relocatable = NULL;
-	UVDRelocationFixup *offsetFixup = NULL;
-
-	uv_assert_err_ret(getName(name));
-	//The value
-	uv_assert_ret(m_symbolSectionHeader);
-	uv_assert_err_ret(m_symbolSectionHeader->getSymbolStringRelocatableElement(name, &relocatable));
-	//Where
-	offsetFixup = new UVDRelocationFixup(relocatable,
-			OFFSET_OF(Elf32_Sym, st_name), sizeof(m_symbol.st_name));
-	uv_assert_ret(offsetFixup);
-	
-	m_headerEntryRelocatableData.addFixup(offsetFixup);
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfSymbol::getHeaderEntryRelocatable(UVDRelocatableData **symbolEntryRelocatableOut)
-{
-	//FIXME: make sure we only do this once
-	/*
-	typedef struct
-	{
-	  Elf32_Word	st_name;		// Symbol name (string tbl index)
-	  Elf32_Addr	st_value;		// Symbol value
-	  Elf32_Word	st_size;		// Symbol size
-	  unsigned char	st_info;		// Symbol type and binding
-	  unsigned char	st_other;		// Symbol visibility
-	  Elf32_Section	st_shndx;		// Section index
-	} Elf32_Sym;
-
-	Assume symbols are not defined
-	Thus, we don't know the value of:
-		st_value (applied during final linking)
-	*/
-	UVDDataMemory *headerDataMemory = NULL;
-	
-	uv_assert_err_ret(addSymbolNameRelocation());
-	
-	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&headerDataMemory,
-			(char *)&m_symbol, sizeof(Elf32_Sym), false));
-	uv_assert_ret(headerDataMemory);
-	uv_assert_err_ret(m_headerEntryRelocatableData.setData(headerDataMemory));
-
-	//Add relocations
-		
-	/*
-	st_value, (st_size?) is determined during linking
-	Since our program was already linked, we could bind st_value to the val it took during linking
-	Maybe add a switch for this?
-	*/
-	
-	//FIXME
-	//There will be some local non-function symbols later (jumps), but assume all global funcs for now
-	//These are now updated as needed
-	//m_symbol.st_info = ELF32_ST_INFO(STB_GLOBAL, STT_FUNC);
-	
-	//st_other is undefined according to TIS spec
-	
-	//Absolute symbol: defined in this file
-	//m_symbol.st_shndx = SHN_ABS;
-	
-	uv_assert_ret(symbolEntryRelocatableOut);
-	*symbolEntryRelocatableOut = &m_headerEntryRelocatableData;
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfSymbol::updateRelocations()
-{
-	//This is more of a construction thing, should it be called again here?
-	//Doesn't hurt (except minor speed), leave for now
-	uv_assert_err_ret(updateType());
-	return UV_ERR_OK;
-}
-
-/*
-UVDElfVariableSymbol
-*/
-
-UVDElfVariableSymbol::UVDElfVariableSymbol()
-{
-}
-
-UVDElfVariableSymbol::~UVDElfVariableSymbol()
-{
-}
-
-uv_err_t UVDElfVariableSymbol::updateType()
-{
-	UVDData *data = NULL;
-	
-	uv_assert_err_ret(getData(&data));
-
-	//Defined
-	if( data )
-	{
-		//something requiring storage (varaible, array, etc)
-		setType(STT_OBJECT);
-	}
-	//Undefined
-	else
-	{
-		setType(STT_NOTYPE);
-	}
-	return UV_ERR_OK;
-}
-
-/*
-UVDElfFunctionSymbol
-*/
-
-UVDElfFunctionSymbol::UVDElfFunctionSymbol()
-{
-}
-
-UVDElfFunctionSymbol::~UVDElfFunctionSymbol()
-{
-}
-
-uv_err_t UVDElfFunctionSymbol::updateType()
-{
-	UVDData *data = NULL;
-	
-printf("updating type on function symbol: 0x%.8X\n", (unsigned int)this);
-
-	uv_assert_err_ret(getData(&data));
-
-	//Defined
-	if( data )
-	{
-		UVDElf *elf = NULL;
-		UVDElfTextSectionHeaderEntry *relevantSectionHeader = NULL;
-		
-		uv_assert_ret(m_symbolSectionHeader);
-		elf = m_symbolSectionHeader->m_elf;
-		uv_assert_ret(elf);
-		
-		//Function code
-		setType(STT_FUNC);
-		//Link it to the .text section
-		uv_assert_err_ret(elf->getTextSectionHeaderEntry(&relevantSectionHeader));
-		uv_assert_ret(relevantSectionHeader);
-		m_relevantSectionHeader = relevantSectionHeader;
-printf("linked to text section\n");
-	}
-	//Undefined
-	else
-	{
-		setType(STT_NOTYPE);
-		m_relevantSectionHeader = NULL;
-	}
-	return UV_ERR_OK;
-}
-
-/*
-UVDElfSectionSymbol
-*/
-
-UVDElfSectionSymbol::UVDElfSectionSymbol()
-{
-}
-
-UVDElfSectionSymbol::~UVDElfSectionSymbol()
-{
-}
-
-uv_err_t UVDElfSectionSymbol::updateType()
-{
-	setType(STT_SECTION);
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfSectionSymbol::updateForWrite()
-{
-printf("section symbol write update\n");
-
-	//We must update get the section index
-	//ELF32_ST_TYPE(ELF32_ST_BIND(m_symbol.st_info) == STT_SECTION
-	uint32_t index = 0;
-	UVDElf *elf = NULL;
-
-	uv_assert_ret(m_symbolSectionHeader);
-	elf = m_symbolSectionHeader->m_elf;
-	uv_assert_ret(elf);
-
-	//Must specify the section to link to
-	uv_assert_ret(m_relevantSectionHeader);
-	uv_assert_err_ret(elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
-	m_symbol.st_shndx = index;
-
-	return UV_ERR_OK;
-}
