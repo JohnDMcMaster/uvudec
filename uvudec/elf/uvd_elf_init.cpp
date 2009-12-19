@@ -272,6 +272,8 @@ uv_err_t UVDElf::init()
 	//Add section header string table section
 	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
 			&sectionStringTableSection));
+	uv_assert_ret(sectionStringTableSection);
+	uv_assert_err_ret(sectionStringTableSection->init());
 	uv_assert_err_ret(addSectionHeaderSection(sectionStringTableSection));
 	//Register the index (only SHT_NULL was before this)
 	//We could alternativly do this as a UVDRelocatable
@@ -283,11 +285,14 @@ uv_err_t UVDElf::init()
 	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
 			&executableSection));
 	uv_assert_ret(executableSection);
+	uv_assert_err_ret(executableSection->init());
 	uv_assert_err_ret(addSectionHeaderSection(executableSection));
 
 	//Add symbol string table section
 	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
 			&symbolStringTableSection));
+	uv_assert_ret(symbolStringTableSection);
+	uv_assert_err_ret(symbolStringTableSection->init());
 	uv_assert_err_ret(addSectionHeaderSection(symbolStringTableSection));
 	//Null string in string table must be first element
 	uv_assert_err_ret(addSymbolString(""));	
@@ -295,6 +300,9 @@ uv_err_t UVDElf::init()
 	//Add symbol table section
 	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_TABLE,
 			&symbolTableSection));
+	uv_assert_ret(symbolTableSection);
+	uv_assert_err_ret(symbolTableSection->init());
+	symbolTableSection->setLinkSection(symbolStringTableSection);
 	uv_assert_err_ret(addSectionHeaderSection(symbolTableSection));
 
 	//Add .rel.text

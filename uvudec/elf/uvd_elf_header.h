@@ -207,6 +207,10 @@ public:
 	virtual uv_err_t getHeaderData(UVDData **data);
 	virtual uv_err_t setHeaderData(const UVDData *data);
 
+	//The section that will calculate sh_link
+	uv_err_t getLinkSection(UVDElfSectionHeaderEntry **relevantSectionHeader);
+	void setLinkSection(UVDElfSectionHeaderEntry *relevantSectionHeader);
+
 	uv_err_t getSupportingDataSize(uint32_t *sectionSize);
 
 	//Make sure we have a relocatable section

@@ -333,6 +333,20 @@ uv_err_t UVDElfSectionHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
 	return UV_DEBUG(m_fileData->size(sectionSize));
 }
 
+uv_err_t UVDElfSectionHeaderEntry::getLinkSection(UVDElfSectionHeaderEntry **relevantSectionHeader)
+{
+	uv_assert_ret(relevantSectionHeader);
+	//This may be null
+	*relevantSectionHeader = m_relevantSectionHeader;
+	return UV_ERR_OK;
+}
+
+void UVDElfSectionHeaderEntry::setLinkSection(UVDElfSectionHeaderEntry *relevantSectionHeader)
+{
+	//This may be null
+	m_relevantSectionHeader = relevantSectionHeader;
+}
+
 #if 0
 uv_err_t UVDElfSectionHeaderEntry::getVirtualAddress(int *address)
 {
