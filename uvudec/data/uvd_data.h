@@ -124,7 +124,7 @@ public:
 	FILE *m_pFile;
 };
 
-class UVDCompressedDataFile : UVDDataFile
+class UVDCompressedDataFile : public UVDDataFile
 {
 public:
 };
