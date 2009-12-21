@@ -506,20 +506,20 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_usage(UVDInstructionShared *inst_shared
 		else if( parsed_type.m_operand_type == UV_DISASM_DATA_REG )
 		{
 			/* Mayber later some sort of Intel /r thing */
-			printf("No registers during usage\n");
+			printf_error("No registers during usage\n");
 			UV_ERR(rc);
 			goto error;
 		}
 		else if( parsed_type.m_operand_type == UV_DISASM_DATA_FUNC )
 		{
 			/* Likely this will involve a fork onto the linked list */
-			printf("Special modifier, not yet supported\n");
+			printf_error("Special modifier, not yet supported\n");
 			UV_ERR(rc);
 			goto error;
 		}
 		else
 		{
-			printf("Unknown operand type\n");
+			printf_error("Unknown operand type\n");
 			UV_ERR(rc);
 			goto error;
 		}

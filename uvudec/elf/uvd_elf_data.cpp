@@ -237,7 +237,7 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	headerRelocatable = new UVDRelocatableData(headerData);
 	uv_assert_ret(headerRelocatable);
 	
-	//printf("Constructing section %s\n", entry->m_sName.c_str());
+	//printf_debug("Constructing section %s\n", entry->m_sName.c_str());
 
 	//Section name
 	//Get a token to the location the data will eventually be fixed to
@@ -258,7 +258,7 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	If there is supporting data, fill in the address
 	Otherwise, assume address was 0'd from the earlier read request
 	*/
-printf("considering adding supporting data for section %s 0x%.8X\n", entry->m_sName.c_str(), (unsigned int)supportingRelocatable);
+	printf_debug("considering adding supporting data for section %s 0x%.8X\n", entry->m_sName.c_str(), (unsigned int)supportingRelocatable);
 	uv_assert_ret(entry->m_sName != ".text" || supportingRelocatable);
 	uv_assert_ret(entry->m_sName != ".rel.text" || supportingRelocatable);
 	uv_assert_ret(entry->m_sName != ".symtab" || supportingRelocatable);
@@ -280,7 +280,7 @@ printf("considering adding supporting data for section %s 0x%.8X\n", entry->m_sN
 	
 		//Add it in after we have placed headers to preserve table order
 		headerSupportingData.push_back(supportingRelocatable);
-		//printf("supporting data (relocatable = 0x%.8X) size: 0x%.8X\n", (unsigned int)supportingRelocatable, supportingData->size());
+		//printf_debug("supporting data (relocatable = 0x%.8X) size: 0x%.8X\n", (unsigned int)supportingRelocatable, supportingData->size());
 
 		//sh_offset
 		//We want it to point to the supporting data

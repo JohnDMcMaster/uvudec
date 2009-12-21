@@ -98,7 +98,7 @@ uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntryCore(const std::st
 {
 	UVDElfSectionHeaderEntry *sectionHeader = NULL;
 
-	//printf("creating section %s\n", sSection.c_str());
+	//printf_debug("creating section %s\n", sSection.c_str());
 	
 	//String table?
 	if( sSection == UVD_ELF_SECTION_SYMBOL_STRING_TABLE
@@ -142,7 +142,7 @@ uv_err_t UVDElfSectionHeaderEntry::updateForWrite()
 {
 	std::string name;
 	getName(name);
-	printf("Section header %s update for write, m_relevantSectionHeader: 0x%.8X\n", name.c_str(), (unsigned int)m_relevantSectionHeader);
+	printf_debug("Section header %s update for write, m_relevantSectionHeader: 0x%.8X\n", name.c_str(), (unsigned int)m_relevantSectionHeader);
 	if( m_relevantSectionHeader )
 	{
 		uint32_t index = 0;
@@ -238,7 +238,7 @@ uv_err_t UVDElfHeaderEntry::updateDataCore()
 
 uv_err_t UVDElfHeaderEntry::getFileData(UVDData **data)
 {
-printf("Getting file data\n");
+	printf_debug("Getting file data\n");
 	uv_assert_ret(data);
 	uv_assert_err_ret(updateData());
 	//Optional, no assert
@@ -250,7 +250,7 @@ uv_err_t UVDElfHeaderEntry::getFileRelocatableData(UVDRelocatableData **supporti
 {
 	UVDData *data = NULL;
 
-printf("Getting file relocatale data\n");
+	printf_debug("Getting file relocatale data\n");
 	uv_assert_ret(supportingData);
 
 	//this will call updateData
@@ -511,7 +511,7 @@ UVDElfTextSectionHeaderEntry::~UVDElfTextSectionHeaderEntry()
 
 uv_err_t UVDElfTextSectionHeaderEntry::updateDataCore()
 {
-printf(".text update core\n");
+	printf_debug(".text update core\n");
 	/*
 	Collect all of the symbols in relocatable (relocations 0'd form) and concatentate
 	*/
@@ -525,7 +525,7 @@ printf(".text update core\n");
 	NOTE: not all symbols are defined
 	If they aren't, they won't have a symbol->m_relocatableData.m_data
 	*/
-	//printf("num symbols: %d\n", symbolSection->m_symbols.size());	
+	//printf_debug("num symbols: %d\n", symbolSection->m_symbols.size());	
 	for( std::vector<UVDElfSymbol *>::iterator iter = symbolSection->m_symbols.begin();
 			iter != symbolSection->m_symbols.end(); ++iter )
 	{
@@ -546,7 +546,7 @@ printf(".text update core\n");
 		uv_assert_err_ret(relocatableData->getDefaultRelocatableData(&symbolData));
 		uv_assert_ret(symbolData);
 		
-		//printf("Symbol dtata 0x%.8X\n", (unsigned int)symbolData);
+		//printf_debug("Symbol dtata 0x%.8X\n", (unsigned int)symbolData);
 		dataVector.push_back(symbolData);
 	}
 
