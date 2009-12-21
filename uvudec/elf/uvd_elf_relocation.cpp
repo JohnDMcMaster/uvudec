@@ -301,7 +301,7 @@ uv_err_t UVDElfRelocationSectionHeaderEntry::updateDataCore()
 	*/
 	UVDMultiRelocatableData *relocatableData = NULL;
 	
-printf("relocation upate, entries: %d\n", m_relocations.size());
+	printf_debug("relocation upate, entries: %d\n", m_relocations.size());
 
 	relocatableData = dynamic_cast<UVDMultiRelocatableData *>(m_fileRelocatableData);
 	uv_assert_ret(relocatableData);

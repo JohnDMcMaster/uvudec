@@ -314,19 +314,19 @@ uv_err_t UVDElf::init()
 
 void UVDElf::printDebug()
 {
-	printf("\nELF debug dump\n");
+	printf_debug("\nELF debug dump\n");
 	for( unsigned int i = 0; i < m_sectionHeaderEntries.size(); ++i )
 	{
 		UVDElfSectionHeaderEntry *pCurSection = m_sectionHeaderEntries[i];
 		if( !pCurSection )
 		{
-			printf("Bad section at index %d\n", i);
+			printf_debug("Bad section at index %d\n", i);
 			continue;
 		}
 		
 		std::string sCurName;
 		pCurSection->getName(sCurName);
-		printf("Sections[%d]: <%s>\n", i, sCurName.c_str());
+		printf_debug("Sections[%d]: <%s>\n", i, sCurName.c_str());
 	}
-	printf("Dump completed\n");
+	printf_debug("Dump completed\n");
 }

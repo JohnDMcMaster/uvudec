@@ -159,13 +159,13 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 		uv_assert_err_ret(symbol->addRelocation(elfRelocation));
 	}
 	
-printf("setting up defined sym\n");
+	printf_debug("setting up defined sym\n");
 	//Now add on our data itself as a (defined) symbol
 	UVDElfSymbol *symbol = NULL;
 	//Note that if this was previously added (recursive call, etc), it should not be duplicated
 	uv_assert_err_ret(getFunctionSymbol(rawDataSymbolName, &symbol));
 	uv_assert_ret(symbol);
-printf("the defined symbol: 0x%.8X\n", (unsigned int)symbol);
+	printf_debug("the defined symbol: 0x%.8X\n", (unsigned int)symbol);
 	//Get a copy of the symbol's data and save it
 	uv_assert_err_ret(relocatableData->getRelocatableData(&rawData));
 	uv_assert_ret(rawData);
@@ -381,7 +381,7 @@ uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionH
 
 		uv_assert_ret(pCurSection);
 		pCurSection->getName(sCurName);
-		//printf("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
+		//printf_debug("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
 		//Found it?
 		if( sCurName == sName )
 		{

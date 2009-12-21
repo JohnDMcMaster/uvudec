@@ -246,7 +246,7 @@ uv_err_t UVDElfSymbol::setData(UVDData *data)
 	{
 		std::string sName;
 		getName(sName);
-		printf("Setting symbol(0x%.8X, %s) data to 0x%.8X\n", (unsigned int)this, sName.c_str(), (unsigned int)data);
+		printf_debug("Setting symbol(0x%.8X, %s) data to 0x%.8X\n", (unsigned int)this, sName.c_str(), (unsigned int)data);
 	}
 	*/
 	uv_assert_err_ret(m_relocatableData.setData(data));
@@ -273,7 +273,7 @@ uv_err_t UVDElfSymbol::setType(uint32_t type)
 
 uv_err_t UVDElfSymbol::addRelocation(UVDElfRelocation *relocation)
 {
-printf("adding relocation 0x%.8X\n", (unsigned int)relocation);
+	printf_debug("adding relocation 0x%.8X\n", (unsigned int)relocation);
 	uv_assert_ret(relocation);
 
 	//Assume all relocations are against .text for now
@@ -512,7 +512,7 @@ UVDElfFunctionSymbol::~UVDElfFunctionSymbol()
 uv_err_t UVDElfFunctionSymbol::updateType()
 {
 	//FIXME: updateType() is a legacy func, call full update
-printf("updating type on function symbol: 0x%.8X\n", (unsigned int)this);
+	printf_debug("updating type on function symbol: 0x%.8X\n", (unsigned int)this);
 	return UV_DEBUG(updateForWrite());
 }
 
@@ -520,7 +520,7 @@ uv_err_t UVDElfFunctionSymbol::updateForWrite()
 {
 	UVDData *data = NULL;
 
-printf("function symbol write update\n");
+	printf_debug("function symbol write update\n");
 
 	//FIXME: was there a good reason using this before?
 	//Causes errors if it doesn't exist becausing trying to apply relocations against non-existent data
@@ -543,7 +543,7 @@ printf("function symbol write update\n");
 		uv_assert_err_ret(elf->getTextSectionHeaderEntry(&relevantSectionHeader));
 		uv_assert_ret(relevantSectionHeader);
 		m_relevantSectionHeader = relevantSectionHeader;
-printf("linked to text section\n");
+		printf_debug("linked to text section\n");
 	}
 	//Undefined
 	else
@@ -577,7 +577,7 @@ uv_err_t UVDElfSectionSymbol::updateType()
 
 uv_err_t UVDElfSectionSymbol::updateForWrite()
 {
-printf("section symbol write update\n");
+	printf_debug("section symbol write update\n");
 
 	//We must update get the section index
 	//ELF32_ST_TYPE(ELF32_ST_BIND(m_symbol.st_info) == STT_SECTION
@@ -642,7 +642,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::initRelocatableData()
 	//So that we can construct the symbol table in relocatable units
 	m_fileRelocatableData = new UVDMultiRelocatableData();
 	uv_assert_ret(m_fileRelocatableData);
-printf("relocatable section file relocatable: 0x%.8X)\n", (unsigned int)m_fileRelocatableData);
+	printf_debug("relocatable section file relocatable: 0x%.8X)\n", (unsigned int)m_fileRelocatableData);
 	return UV_ERR_OK;
 }
 
@@ -736,14 +736,14 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSectionSymbol(const std::string &sec
 
 uv_err_t UVDElfSymbolSectionHeaderEntry::getFunctionSymbol(const std::string &sName, UVDElfSymbol **symbolOut)
 {
-printf("Getting function symbol %s\n", sName.c_str());
+	printf_debug("Getting function symbol %s\n", sName.c_str());
 	//Return if it already exists
 	if( UV_SUCCEEDED(findSymbol(sName, symbolOut)) )
 	{
-printf("pre defined %s\n", sName.c_str());
+		printf_debug("pre defined %s\n", sName.c_str());
 		return UV_ERR_OK;
 	}
-printf("NOT pre defined %s\n", sName.c_str());
+	printf_debug("NOT pre defined %s\n", sName.c_str());
 	
 	//Otherwise create it
 	UVDElfSymbol *symbol = NULL;
@@ -809,7 +809,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSymbolIndex(const UVDElfSymbol *symb
 
 uv_err_t UVDElfSymbolSectionHeaderEntry::updateDataCore()
 {
-printf(".symtab update core\n");
+	printf_debug(".symtab update core\n");
 	/*
 	.symtab
 	This is the symbol names along with basic attributes
@@ -836,7 +836,7 @@ printf(".symtab update core\n");
 	//We are rebuilding this table
 	relocatableData->m_relocatableDatas.clear();
 
-printf("Symbols: %d\n", m_symbols.size());
+	printf_debug("Symbols: %d\n", m_symbols.size());
 	//Don't use an iterator (that might put in undefined order)
 	//It must be well ordered since Elf32_Rel.r_info specifies a symbol table index
 	for( std::vector<UVDElfSymbol *>::size_type i = 0; i < m_symbols.size(); ++i )
@@ -872,7 +872,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::updateForWrite()
 {
 	uv_assert_err_ret(UVDElfSectionHeaderEntry::updateForWrite());
 
-printf("symbol table update for write, entries: %d\n", m_symbols.size());
+	printf_debug("symbol table update for write, entries: %d\n", m_symbols.size());
 	for( std::vector<UVDElfSymbol *>::iterator iter = m_symbols.begin();
 			iter != m_symbols.end(); ++iter )
 	{
