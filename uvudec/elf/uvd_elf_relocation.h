@@ -23,20 +23,6 @@ public:
 	UVDElfRelocation();
 	~UVDElfRelocation();
 	
-	/*
-	FIXME: below seems wrong.  From TIS ELF specification (1-22):
-	r_offset
-	This member gives the location at which to apply the relocation action. For
-	a relocatable file, the value is the byte offset from the beginning of the
-	section to the storage unit affected by the relocation.
-
-	Reloctions are done on an absolute basis of the data in the file
-	If there was another chunk of data before this one, it must be accounted for
-	Essentially this makes a relocation on a relocation
-	For now, only a single symbol is stored in object files, making this factor 0 for now
-	*/
-	//uv_err_t getFileOffset(uint32_t *elfSymbolFileOffset);
-
 	//Set the value of r_offset
 	//These two sets are equivilent, eliminate setSectionOffset later
 	uv_err_t setSectionOffset(uint32_t sectionOffset);
