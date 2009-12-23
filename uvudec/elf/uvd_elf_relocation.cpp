@@ -92,16 +92,6 @@ uv_err_t UVDElfRelocation::getElfSymbol(UVDElfSymbol **symbolOut)
 	return UV_ERR_OK;
 }
 
-/*
-uv_err_t UVDElfRelocation::getFileOffset(uint32_t *elfSymbolFileOffset)
-{
-	uv_assert_ret(elfSymbolFileOffset);
-	//See header note
-	*elfSymbolFileOffset = 0;
-	return UV_ERR_OK;
-}
-*/
-
 uv_err_t UVDElfRelocation::setSectionOffset(uint32_t sectionOffset)
 {
 	m_relocation.r_offset = sectionOffset;
