@@ -115,6 +115,37 @@ uv_err_t UVDElf::addRelocatableData(UVDRelocatableData *relocatableData,
 	return UV_DEBUG(addRelocatableDataCore(relocatableData, rawDataSymbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
 }
 
+uv_err_t UVDElf::addUVDRelocationFixup(UVDRelocationFixup *fixup)
+{
+	UVDRelocatableElement *originalSymbol = NULL;
+	//Fixup into the ELF file
+	//UVDSelfLocatingRelocatableElement *relocationElement = NULL;
+	UVDElfSymbol *symbol = NULL;
+	UVDElfRelocation *elfRelocation = NULL;
+	
+	uv_assert_ret(fixup);
+	originalSymbol = fixup->m_symbol;
+	uv_assert_ret(originalSymbol);
+	
+	std::string symbolName;
+	uv_assert_err_ret(originalSymbol->getName(symbolName));
+	uv_assert_ret(!symbolName.empty());
+	uv_assert_err_ret(getFunctionSymbol(symbolName, &symbol));
+	uv_assert_ret(symbol);
+	
+	elfRelocation = new UVDElfRelocation();
+	uv_assert_ret(elfRelocation);
+	//All relocations analyzed for now are just recorded as offset from function start
+	elfRelocation->setSymbol(symbol);
+	//Convert UVD relocation to ELF relocation
+	uv_assert_err_ret(elfRelocation->setupRelocations(fixup));
+
+	//And register it
+	uv_assert_err_ret(symbol->addRelocation(elfRelocation));
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 		const std::string &rawDataSymbolName,
 		const std::string &sDataSection, const std::string &sRelocationSection)
@@ -132,31 +163,8 @@ uv_err_t UVDElf::addRelocatableDataCore(UVDRelocatableData *relocatableData,
 			iter != relocatableData->m_fixups.end(); ++iter )
 	{
 		UVDRelocationFixup *fixup = *iter;
-		UVDRelocatableElement *originalSymbol = NULL;
-		//Fixup into the ELF file
-		//UVDSelfLocatingRelocatableElement *relocationElement = NULL;
-		UVDElfSymbol *symbol = NULL;
-		UVDElfRelocation *elfRelocation = NULL;
-		
 		uv_assert_ret(fixup);
-		originalSymbol = fixup->m_symbol;
-		uv_assert_ret(originalSymbol);
-		
-		std::string symbolName;
-		uv_assert_err_ret(originalSymbol->getName(symbolName));
-		uv_assert_ret(!symbolName.empty());
-		uv_assert_err_ret(getFunctionSymbol(symbolName, &symbol));
-		uv_assert_ret(symbol);
-		
-		elfRelocation = new UVDElfRelocation();
-		uv_assert_ret(elfRelocation);
-		//All relocations analyzed for now are just recorded as offset from function start
-		elfRelocation->setSymbol(symbol);
-		//Convert UVD relocation to ELF relocation
-		uv_assert_err_ret(elfRelocation->setupRelocations(fixup));
-	
-		//And register it
-		uv_assert_err_ret(symbol->addRelocation(elfRelocation));
+		uv_assert_err_ret(addUVDRelocationFixup(fixup));
 	}
 	
 	printf_debug("setting up defined sym\n");
