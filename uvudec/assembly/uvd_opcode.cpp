@@ -25,16 +25,6 @@ UVDOpcodeLookupTable::UVDOpcodeLookupTable()
 {
 	memset(m_lookupTable, 0, sizeof(m_lookupTable));
 	memset(m_lookupTable, 0, sizeof(m_lookupTableHits));
-	//m_interpreter = new UVDConfigExpressionInterpreter();
-	
-/*
-std::string sRes;
-uv_err_t res;
-res = m_interpreter->interpret(UVDConfigExpression("print 'Hello, world';"), sRes);
-
-printf("rc: %d, result: <%s>\n", res, sRes.c_str());
-exit(1);
-*/
 }
 
 /*
@@ -68,7 +58,7 @@ void UVDOpcodeLookupTable::usageStats(void)
 		}
 		else
 		{
-			printf("WARNING: opcode 0x%.2X is non-encoding\n", i);
+			printf_warn("opcode 0x%.2X is non-encoding\n", i);
 			++unused;
 		}
 	}
@@ -89,7 +79,7 @@ void UVDOpcodeLookupTable::usedStats(void)
 			sOp = m_lookupTable[i]->getHumanReadableUsage();
 		}
 		
-		printf("hits[0x%.2X] (%s): %d\n", i, sOp.c_str(), m_lookupTableHits[i]);
+		printf_debug("hits[0x%.2X] (%s): %d\n", i, sOp.c_str(), m_lookupTableHits[i]);
 		if( m_lookupTableHits[i] )
 		{
 			++used;
@@ -99,7 +89,7 @@ void UVDOpcodeLookupTable::usedStats(void)
 			++unused;
 		}
 	}
-	printf("Used opcodes: %d, unused opcodes: %d\n", used, unused);
+	printf_debug("Used opcodes: %d, unused opcodes: %d\n", used, unused);
 }
 
 uv_err_t UVDOperandShared::uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDOperandShared **op_shared_in)
@@ -218,13 +208,6 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_syntax_operand(UVDOperandShared **op_sh
 		UV_ERR(rc);
 		goto error;
 	}
-	/*
-	if( !cur )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	*/
 	
 	/* The bulk of the work is done here as data is identified */
 	printf_debug("Parse syntax operand, parsing type: %s\n", cur.c_str());
@@ -504,7 +487,7 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_usage(UVDInstructionShared *inst_shared
 			/* It is possible that DPTR may cause a few 16 bit immediates, but syntax does not yet support that */
 			if( op_shared->m_immediate_size != parsed_type.m_num_bits )
 			{
-				printf("USAGE/SYNTAX size mismatch\n");
+				printf_error("USAGE/SYNTAX size mismatch\n");
 				UV_ERR(rc);
 				goto error;
 			}
