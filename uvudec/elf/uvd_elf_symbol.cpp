@@ -114,6 +114,7 @@ symbol @ index 0x000001C0
 */
 
 #include "uvd_elf.h"
+#include "uvd_elf_relocation.h"
 #include "uvd_relocation.h"
 #include "uvd_util.h"
 #include <string>

@@ -10,8 +10,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 #include "uvd_data.h"
 #include "uvd_elf_header.h"
-#include "uvd_relocation.h"
 #include "uvd_types.h"
+#include "uvd_relocation.h"
 #include <elf.h>
 
 /*
@@ -224,119 +224,6 @@ public:
 	//Special symbols
 	UVDElfSymbol *m_fileNameSymbol;
 	//Do we need a symbol specifying the section symbols are in?
-};
-
-/*
-A specialized fixup version for ELF files
-Ignores a lot of functionality of UVDRelocationFixup, so beware
-*/
-class UVDElfRelocation : public UVDRelocationFixup
-{
-public:
-	UVDElfRelocation();
-	~UVDElfRelocation();
-	
-	/*
-	FIXME: below seems wrong.  From TIS ELF specification (1-22):
-	r_offset
-	This member gives the location at which to apply the relocation action. For
-	a relocatable file, the value is the byte offset from the beginning of the
-	section to the storage unit affected by the relocation.
-
-	Reloctions are done on an absolute basis of the data in the file
-	If there was another chunk of data before this one, it must be accounted for
-	Essentially this makes a relocation on a relocation
-	For now, only a single symbol is stored in object files, making this factor 0 for now
-	*/
-	//uv_err_t getFileOffset(uint32_t *elfSymbolFileOffset);
-
-	//Set the value of r_offset
-	//These two sets are equivilent, eliminate setSectionOffset later
-	uv_err_t setSectionOffset(uint32_t sectionOffset);
-	uv_err_t getSectionOffset(uint32_t *sectionOffset);	
-	virtual uv_err_t setOffset(uint32_t offset);
-	virtual uv_err_t getOffset(uint32_t *offset);
-
-	uv_err_t updateRelocationTypeByBits(unsigned int nBits);
-	//raw index into the symbol table
-	//in practice might do this by a UVD relocation into m_relocation
-	uv_err_t updateSymbolIndex(unsigned int symbolIndex);
-
-	//Given a relocatable element, setup relocations on this object
-	uv_err_t setupRelocations(UVDRelocationFixup *originalFixup);
-
-	//What we preform the relocation on
-	void setSymbol(UVDElfSymbol *symbol);
-	
-	//Raw access, r_info is non-trivial to access
-	int getSymbolTableIndex();
-	void setSymbolTableIndex(int index);
-	int getRelocationType();
-	void setRelocationType(int type);
-
- 	//Get the header entry with the fixups necessary to push it to the file
- 	uv_err_t getHeaderEntryRelocatable(UVDRelocatableData **relocatableEntryRelocatable);
-
-	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
-	uv_err_t getElfSymbol(UVDElfSymbol **symbolOut);
-
-	virtual uv_err_t updateForWrite();
-
-public:
-	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
-	//The symbol we will be relocating against
-	//UVDElfSymbol *m_symbol;
-	
-	//Switch to Elf32_Rela if needed
-	Elf32_Rel m_relocation;
-	//The symbol index for the relocation is dynamic and can only be figured out after symbols are placed
-	//UVDRelocationFixup m_symbolIndexRelocation;
-	//For the table entry
-	UVDRelocatableData m_headerEntryRelocatableData;
-
-	//the relocation table header
-	//m_relevantSectionHeader now must be of type UVDElfRelocationSectionHeaderEntry
-	UVDElfRelocationSectionHeaderEntry *m_relocationHeader;
-};
-
-/*
-A generic relocation section, not necessary for .text
-*/
-class UVDElfRelocationSectionHeaderEntry : public UVDElfSectionHeaderEntry
-{
-public:
-	UVDElfRelocationSectionHeaderEntry();
-	~UVDElfRelocationSectionHeaderEntry();
-	virtual uv_err_t init();
-
-	virtual uv_err_t initRelocatableData();
-
-	//To compute the necessary Elf32_Rel table
-	virtual uv_err_t updateDataCore();
-	virtual uv_err_t syncDataAfterUpdate();
-
-	uv_err_t addRelocation(UVDElfRelocation *relocation);
-
-	virtual uv_err_t updateForWrite();
-
-	//stored in sh_link
-	uv_err_t setSymbolSection(UVDElfSymbolSectionHeaderEntry *section);
-	uv_err_t getSymbolSection(UVDElfSymbolSectionHeaderEntry **section);
-	//stored in sh_link
-	uv_err_t setRelocationSection(UVDElfSectionHeaderEntry *section);
-	uv_err_t getRelocationSection(UVDElfSectionHeaderEntry **section);
-
-public:
-	//The section we will apply ELF relocations to
-	//We will need to put its index in the link info in the header
-	UVDElfSectionHeaderEntry *m_targetSectionHeader;
-
-	//All relocations are defined relative to a symbol table
-	//This is what should be in our relative table sh_link entry
-	//UVDElfSymbolSectionHeaderEntry *m_symbolSectionHeader;
-
-protected:
-	std::vector<UVDElfRelocation *> m_relocations;
 };
 
 #endif
