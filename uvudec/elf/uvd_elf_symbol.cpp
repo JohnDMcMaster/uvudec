@@ -322,7 +322,7 @@ uv_err_t UVDElfSymbol::getRelocation(UVDElfRelocation **relocationOut)
 {
 	UVDElfRelocation *relocation = NULL;
 	
-	relocation = new UVDElfRelocation();
+	relocation = new UVDElfSymbolRelocation();
 	uv_assert_ret(relocation);
 	
 	relocation->setSymbol(this);

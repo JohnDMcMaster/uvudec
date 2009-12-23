@@ -115,28 +115,6 @@ uv_err_t UVDElfRelocation::getOffset(uint32_t *offset)
 	return UV_DEBUG(getSectionOffset(offset));
 }
 
-uv_err_t UVDElfRelocation::updateRelocationTypeByBits(uint32_t nBits)
-{
-	uint32_t relocationType = 0;
-	switch( nBits )
-	{
-	case 8:
-		relocationType = R_386_8;
-		break;
-	case 16:
-		relocationType = R_386_16;
-		break;
-	case 32:
-		relocationType = R_386_32;
-		break;
-	default:
-		printf_error("Invalid number of bits: %d\n", nBits);
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	m_relocation.r_info = ELF32_R_INFO(ELF32_R_SYM(m_relocation.r_info), relocationType);
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDElfRelocation::updateSymbolIndex(uint32_t symbolIndex)
 {
 	/*
@@ -216,6 +194,75 @@ uv_err_t UVDElfRelocation::getHeaderEntryRelocatable(UVDRelocatableData **symbol
 
 uv_err_t UVDElfRelocation::updateForWrite()
 {
+	return UV_ERR_OK;
+}
+
+/*
+UVDElfSymbolRelocation
+*/
+
+UVDElfSymbolRelocation::UVDElfSymbolRelocation()
+{
+	m_offset = 0;
+}
+
+UVDElfSymbolRelocation::~UVDElfSymbolRelocation()
+{
+}
+
+uv_err_t UVDElfSymbolRelocation::updateRelocationTypeByBits(uint32_t nBits)
+{
+	uint32_t relocationType = 0;
+	switch( nBits )
+	{
+	case 8:
+		relocationType = R_386_8;
+		break;
+	case 16:
+		relocationType = R_386_16;
+		break;
+	case 32:
+		relocationType = R_386_32;
+		break;
+	default:
+		printf_error("Invalid number of bits: %d\n", nBits);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	m_relocation.r_info = ELF32_R_INFO(ELF32_R_SYM(m_relocation.r_info), relocationType);
+	return UV_ERR_OK;
+}
+
+/*
+UVDElfPCRelocation
+*/
+
+UVDElfPCRelocation::UVDElfPCRelocation()
+{
+}
+
+UVDElfPCRelocation::~UVDElfPCRelocation()
+{
+}
+
+uv_err_t UVDElfPCRelocation::updateRelocationTypeByBits(uint32_t nBits)
+{
+	uint32_t relocationType = 0;
+	switch( nBits )
+	{
+	case 8:
+		relocationType = R_386_PC8;
+		break;
+	case 16:
+		relocationType = R_386_PC16;
+		break;
+	case 32:
+		relocationType = R_386_PC32;
+		break;
+	default:
+		printf_error("Invalid number of bits: %d\n", nBits);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	m_relocation.r_info = ELF32_R_INFO(ELF32_R_SYM(m_relocation.r_info), relocationType);
 	return UV_ERR_OK;
 }
 
