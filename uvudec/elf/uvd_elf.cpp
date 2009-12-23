@@ -46,6 +46,7 @@ typedef struct
 #endif
 
 #include "uvd_elf.h"
+#include "uvd_elf_relocation.h"
 #include "uvd_data.h"
 #include "uvd_relocation.h"
 #include "uvd_types.h"
