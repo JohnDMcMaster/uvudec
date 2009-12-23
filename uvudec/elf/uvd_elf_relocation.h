@@ -30,7 +30,8 @@ public:
 	virtual uv_err_t setOffset(uint32_t offset);
 	virtual uv_err_t getOffset(uint32_t *offset);
 
-	uv_err_t updateRelocationTypeByBits(uint32_t nBits);
+	//Every relocation has a number of bits it should support it seems
+	virtual uv_err_t updateRelocationTypeByBits(uint32_t nBits) = 0;
 	//raw index into the symbol table
 	//in practice might do this by a UVD relocation into m_relocation
 	uv_err_t updateSymbolIndex(uint32_t symbolIndex);
@@ -70,6 +71,41 @@ public:
 	//the relocation table header
 	//m_relevantSectionHeader now must be of type UVDElfRelocationSectionHeaderEntry
 	UVDElfRelocationSectionHeaderEntry *m_relocationHeader;
+};
+
+/*
+An absolute relocation that should be satisfied based on a symbol
+*/
+class UVDElfSymbolRelocation : public UVDElfRelocation
+{
+public:
+	UVDElfSymbolRelocation();
+	~UVDElfSymbolRelocation();
+
+	virtual uv_err_t updateRelocationTypeByBits(uint32_t nBits);
+	
+public:
+};
+
+
+/*
+A relocation that should be satisfied on a fixed offset from the PC
+Typically used for relocating absolute jump labels
+*/
+class UVDElfPCRelocation : public UVDElfRelocation
+{
+public:
+	UVDElfPCRelocation();
+	~UVDElfPCRelocation();
+
+	virtual uv_err_t updateRelocationTypeByBits(uint32_t nBits);
+	
+public:
+	//Signed offset of where we should jump to
+	//Location is relative to the instruction after current? from relocatable data start/end?
+	//can't be instruction I would think since linker doesn't know much about instructions
+	//need to find out more info on how exactly TIS or GNU defines this
+	int32_t m_offset;
 };
 
 /*

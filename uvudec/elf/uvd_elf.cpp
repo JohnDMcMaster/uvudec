@@ -134,7 +134,7 @@ uv_err_t UVDElf::addUVDRelocationFixup(UVDRelocationFixup *fixup)
 	uv_assert_err_ret(getFunctionSymbol(symbolName, &symbol));
 	uv_assert_ret(symbol);
 	
-	elfRelocation = new UVDElfRelocation();
+	elfRelocation = new UVDElfSymbolRelocation();
 	uv_assert_ret(elfRelocation);
 	//All relocations analyzed for now are just recorded as offset from function start
 	elfRelocation->setSymbol(symbol);
