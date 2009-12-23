@@ -30,10 +30,10 @@ public:
 	virtual uv_err_t setOffset(uint32_t offset);
 	virtual uv_err_t getOffset(uint32_t *offset);
 
-	uv_err_t updateRelocationTypeByBits(unsigned int nBits);
+	uv_err_t updateRelocationTypeByBits(uint32_t nBits);
 	//raw index into the symbol table
 	//in practice might do this by a UVD relocation into m_relocation
-	uv_err_t updateSymbolIndex(unsigned int symbolIndex);
+	uv_err_t updateSymbolIndex(uint32_t symbolIndex);
 
 	//Given a relocatable element, setup relocations on this object
 	uv_err_t setupRelocations(UVDRelocationFixup *originalFixup);
