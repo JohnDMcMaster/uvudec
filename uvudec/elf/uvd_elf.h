@@ -87,6 +87,7 @@ public:
 	uv_err_t addRelocatableDataCore(UVDRelocatableData *relocatableData,
 			const std::string &rawDataSymbolName,
 			const std::string &sDataSection, const std::string &sRelocationSection);
+	uv_err_t addUVDRelocationFixup(UVDRelocationFixup *fixup);
 
 	//Set the architecture
 	//Should throw error on unknown architecture?
