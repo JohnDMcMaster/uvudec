@@ -117,7 +117,7 @@ uv_err_t UVDElfRelocation::getOffset(uint32_t *offset)
 
 uv_err_t UVDElfRelocation::updateRelocationTypeByBits(uint32_t nBits)
 {
-	unsigned int relocationType = 0;
+	uint32_t relocationType = 0;
 	switch( nBits )
 	{
 	case 8:
@@ -137,7 +137,7 @@ uv_err_t UVDElfRelocation::updateRelocationTypeByBits(uint32_t nBits)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDElfRelocation::updateSymbolIndex(unsigned int symbolIndex)
+uv_err_t UVDElfRelocation::updateSymbolIndex(uint32_t symbolIndex)
 {
 	/*
 	if( symbolIndex >= 0x1000000 )
