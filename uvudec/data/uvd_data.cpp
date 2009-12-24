@@ -1,10 +1,9 @@
 /*
-Universal Decompiler (uvudec)
+UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster
 JohnDMcMaster@gmail.com
-Licensed under the terms of the BSD license.  See LICENSE for details.
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
-
 
 #include <stdio.h>
 #include <stdlib.h>
