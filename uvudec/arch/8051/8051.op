@@ -10,6 +10,13 @@ ASM_IMM_PREFIX=#
 ASM_IMM_PREFIX_HEX=
 ASM_IMM_POSTFIX_HEX=
 
+# Code vectoring (interrupt jump locations)
+# Start, reset, I/O, etc
+.VEC
+NAME=START
+DESC=Hard power on execution address
+OFFSET=0x0000
+
 
 # These should represent addressing modes rather than the actual physical locations
 # That way, multiple addressing modes can map correctly to the same data
@@ -289,6 +296,7 @@ SIZE=0x08
 
 
 # Instruction prefixes
+# Should get moved into opcodes
 .PRE
 # 8051 does not support this
 

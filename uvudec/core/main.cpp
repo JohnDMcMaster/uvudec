@@ -232,6 +232,9 @@ static void usage(const char *program_name)
 	printf_help("--addr-label: label addresses for jumping\n");
 	printf_help("--analysis-only[=<bool>]: only do analysis, don't print data\n");
 	printf_help("--analysis-address=<address>: only output analysis data for specified address\n");
+	printf_help("--flow-analysis=<type>: how to trace jump, calls\n");
+	printf_help("\tlinear: start at beginning, read all instructions linearly, then find jump/calls (default)\n");
+	printf_help("\ttrace: start at all vectors, analyze all segments called/branched recursivly\n");
 	printf_help("--opcode-usage: opcode usage count table\n");
 	printf_help("--analysis-dir=<dir>: create skeleton data suitible for stored analysis\n");
 	printf_help("--input=<file name>: source for data\n");
@@ -474,6 +477,24 @@ int main(int argc, char **argv)
 			std::string sAnalysisAddress = cur_arg + sizeof("--analysis-address=") - 1;
 			int iAnalysisAddress = strtol(sAnalysisAddress.c_str(), NULL, 0);
 			config->m_analysisOutputAddresses.insert(iAnalysisAddress);
+		}
+		else if( strstr(cur_arg, "--flow-analysis=") == cur_arg )
+		{
+			std::string arg = cur_arg + sizeof("--flow-analysis=") - 1;
+			if( arg == "linear" )
+			{
+				config->m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__LINEAR;
+			}
+			else if( arg == "trace" )
+			{
+				config->m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__TRACE;
+			}
+			else
+			{
+				printf_error("unknown flow analysis type: %s\n", arg.c_str());
+				help(argv[0]);
+				goto error;
+			}
 		}
 		else if( strcmp(cur_arg, "--print-jumped-addresses") == 0 )
 		{

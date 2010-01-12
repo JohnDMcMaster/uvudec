@@ -14,6 +14,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <set>
 #include <string>
 #include <vector>
+#include "uvd_cpu.h"
 #include "uvd_error.h"
 #include "uvd_analyzer.h"
 #include "uvd_data.h"
@@ -209,6 +210,7 @@ public:
 	uv_err_t init_memory(UVDConfigSection *mem_section);
 	uv_err_t init_reg(UVDConfigSection *reg_section);
 	uv_err_t init_prefix(UVDConfigSection *pre_section);
+	uv_err_t init_vectors(UVDConfigSection *section);
 	
 
 	UVDIterator begin();
@@ -261,9 +263,17 @@ public:
 	uv_err_t analyzeFunction(UVDBinaryFunctionShared *functionShared);
 	uv_err_t analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared);
 
+protected:
+	//Vector at start, take each instruction, one at a time, then compute branches/calls
+	uv_err_t analyzeControlFlowLinear();
+	//Start at all (valid) vectors and find all branch points
+	uv_err_t analyzeControlFlowTrace();
+
 public:
 	//Source of data to disassemble
 	UVDData *m_data;
+	UVDCPU *m_CPU;
+	//TODO: move to UVDCPU
 	//Lookup table for opcodes
 	//This in theory could be shared between multiple engines for the same arch
 	//But not much of an issue since only one instance is expected per run

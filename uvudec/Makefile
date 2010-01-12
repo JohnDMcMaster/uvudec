@@ -134,6 +134,8 @@ CXX_SRCS = 	\
 			uvd_operator.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_function.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_symbol.cpp \
+			$(ASSEMBLY_DIR)/uvd_cpu.cpp \
+			$(ASSEMBLY_DIR)/uvd_cpu_vector.cpp \
 			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
 			$(ASSEMBLY_DIR)/uvd_opcode.cpp \
 			$(ASSEMBLY_DIR)/uvd_operand.cpp \

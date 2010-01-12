@@ -94,6 +94,18 @@ public:
 	std::string m_name;
 };
 
+#define UVD__FLOW_ANALYSIS__INVALID				0
+/*
+Default
+Iterate through each executable instruction one at a time
+*/
+#define UVD__FLOW_ANALYSIS__LINEAR				1
+/*
+Start at each vector and trace all possible branches
+May miss functions called through pointers
+*/
+#define UVD__FLOW_ANALYSIS__TRACE				2
+
 /*
 General configuration options
 Not related to formatting of a specific compiler (language)
@@ -110,6 +122,8 @@ public:
 	std::string m_analysisDir;
 	int m_analysisOnly;
 	int m_uselessASCIIArt;
+	//Which type of flow analysis to do
+	int m_flowAnalysisTechnique;
 	//If any are set, will only output analysis of symbols at the given addresses
 	std::set<int> m_analysisOutputAddresses; 
 	

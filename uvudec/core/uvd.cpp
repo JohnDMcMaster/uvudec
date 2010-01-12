@@ -498,6 +498,7 @@ UVD::UVD()
 	m_interpreter = NULL;
 	m_analyzer = NULL;
 	m_format = NULL;
+	m_CPU = NULL;
 }
 
 //Factory function for construction

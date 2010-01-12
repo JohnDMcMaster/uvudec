@@ -347,6 +347,22 @@ uv_err_t UVD::generateAnalysisDir()
 
 uv_err_t UVD::analyzeControlFlow()
 {
+	switch( m_config->m_flowAnalysisTechnique )
+	{
+	case UVD__FLOW_ANALYSIS__LINEAR:
+		uv_assert_err_ret(analyzeControlFlowLinear());
+		break;
+	case UVD__FLOW_ANALYSIS__TRACE:
+		uv_assert_err_ret(analyzeControlFlowTrace());
+		break;
+	default:
+		return UV_DEBUG(UV_ERR_GENERAL);
+	};
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::analyzeControlFlowLinear()
+{
 	UVDIterator iter;
 	int printPercentage = 1;
 	int printNext = printPercentage;
@@ -511,6 +527,11 @@ uv_err_t UVD::analyzeControlFlow()
 	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis time: %s\n", controlStructureAnalysisBenchmark.toString().c_str());
 
 	return UV_ERR_OK;
+}
+
+uv_err_t UVD::analyzeControlFlowTrace()
+{
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 uv_err_t UVD::analyzeConstData()
