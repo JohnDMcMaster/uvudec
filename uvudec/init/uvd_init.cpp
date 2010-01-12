@@ -31,6 +31,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_instruction.h"
 #include "uvd_register.h"
 #include "uvd_types.h"
+#include "uvd_cpu_vector.h"
 
 /*
 file: data file to target
@@ -81,9 +82,15 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 		
 	g_verbose = g_verbose_init;
 
+	m_CPU = new UVDCPU();
+	uv_assert_ret(m_CPU);
+	uv_assert_err_ret(m_CPU->init());
+
 	m_opcodeTable = new UVDOpcodeLookupTable();
 	//printf_debug("Initializing opcode table, address: 0x%.8X\n", (unsigned int)m_opcodeTable);
 	uv_assert(m_opcodeTable);
+	m_CPU->m_opcodeTable = m_opcodeTable;
+	
 	m_symMap = new UVDSymbolMap();
 	uv_assert(m_symMap);
 	uv_assert_err_ret(m_symMap->init());
@@ -137,6 +144,7 @@ uv_err_t UVD::init_config(const std::string &configFile)
 	UVDConfigSection *misc_section = NULL;
 	UVDConfigSection *reg_section = NULL;
 	UVDConfigSection *pre_section = NULL;
+	UVDConfigSection *vec_section = NULL;
 
 	UV_ENTER();
 
@@ -168,6 +176,10 @@ uv_err_t UVD::init_config(const std::string &configFile)
 		else if( sections[cur_section]->m_name == "PRE" )
 		{
 			pre_section = sections[cur_section];
+		}
+		else if( sections[cur_section]->m_name == "VEC" )
+		{
+			vec_section = sections[cur_section];
 		}
 		else
 		{
@@ -208,6 +220,12 @@ uv_err_t UVD::init_config(const std::string &configFile)
 		goto error;
 	}
 	
+	if( UV_FAILED(init_vectors(vec_section)) )
+	{
+		UV_ERR(rc);
+		goto error;
+	}
+
 	rc = UV_ERR_OK;
 
 error:
@@ -969,3 +987,102 @@ error:
 	return UV_DEBUG(rc);
 }
 
+uv_err_t UVD::init_vectors(UVDConfigSection *section)
+{
+	uv_err_t rc = UV_ERR_GENERAL;
+	std::vector< std::vector<std::string> > sectionParts;
+	
+	printf_debug("Initializing vectors data\n");
+	if( section == NULL )
+	{
+		printf_debug("Optional .VEC section not found\n");
+		rc = UV_ERR_OK;
+		goto error;
+	}
+
+	printf_debug("Processing lines...\n");
+	uv_assert_err_ret(splitConfigLinesVector(section->m_lines, "NAME=", sectionParts));
+	printf_debug("Sections: %d\n", sectionParts.size());
+	for( std::vector< std::vector<std::string> >::size_type sectionPartsIndex = 0; sectionPartsIndex < sectionParts.size(); ++sectionPartsIndex )
+	{
+		UVDCPUVector *vector = NULL;
+		std::vector<std::string> cur_section = sectionParts[sectionPartsIndex];	
+	
+		/* Its easier to parse some things before others */
+		std::string value_name;
+		std::string value_description;
+		std::string value_offset;
+		
+		/* Start by extracting key/value pairs */
+		for( std::vector<std::string>::size_type cur_line = 0; cur_line < cur_section.size(); ++cur_line )
+		{
+			uv_err_t rc_temp = UV_ERR_GENERAL;
+			std::string key;
+			std::string value;
+			std::string line = cur_section[cur_line];
+
+			printf_debug("Line: <%s>\n", line.c_str());
+			rc_temp = uvdParseLine(line, key, value);
+			uv_assert_err(rc_temp);
+			if( rc_temp == UV_ERR_BLANK )
+			{
+				continue;
+			}
+	
+			if( cur_line == 0 && key != "NAME" )
+			{
+				printf_debug("NAME must go first\n");
+				UV_ERR(rc);
+				goto error;
+			}
+			
+			if( key == "NAME" )
+			{
+				value_name = value;
+			}
+			else if( key == "DESC" )
+			{
+				value_description = value;
+			}
+			else if( key == "OFFSET" )
+			{
+				value_offset = value;
+			}
+			else
+			{
+				printf_debug("Invalid key\n");
+				UV_ERR(rc);
+				goto error;
+			}
+		}
+
+		/*
+		NAME=START
+		DESCRIPTION=Power on execution address
+		OFFSET=0x0000
+		*/
+
+		vector = new UVDCPUVector();
+		uv_assert_all(vector);
+
+		printf_debug("Allocated new memory, new: 0x%X\n", (unsigned int)vector);	
+		
+		printf_debug("std::string value_name = %s\n", value_offset.c_str());
+		printf_debug("std::string value_description = %s\n", value_description.c_str());
+		printf_debug("std::string value_offset = %s\n", value_offset.c_str());
+
+		printf_debug("Parsing register\n");
+		
+		vector->m_name = value_name;
+		vector->m_description = value_description;
+		vector->m_offset = strtol(value_offset.c_str(), NULL, 0);
+	
+		
+	}
+	
+	printf_debug("Vectors init OK\n");
+
+	rc = UV_ERR_OK;
+error:
+	return UV_DEBUG(rc);
+}
