@@ -1,0 +1,7 @@
+uvinj: library (DLL) injection interface
+Generates C++ interface suitable for DLL injection.
+Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>
+
+Takes in a file with a list of functions (and potenally variables) in order
+to use as the ordinals.  See example.
+

@@ -1,0 +1,7 @@
+DLL=somedll
+
+extern int g_extern_var;
+int MyFunction(const wchar_t *param, int a2, double a3);
+void OtherFunction(void);
+MyUnknownFunction
+
