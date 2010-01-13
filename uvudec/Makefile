@@ -129,7 +129,6 @@ endif
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			uvd_format.cpp \
 			$(ASSEMBLY_DIR)/uvd_address.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_function.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_symbol.cpp \
@@ -171,6 +170,7 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_lua.cpp \
 			$(INTERPRETER_DIR)/uvd_operator.cpp \
 			$(INTERPRETER_DIR)/uvd_python.cpp \
+			$(LANGUAGE_DIR)/uvd_format.cpp \
 			$(LANGUAGE_DIR)/uvd_language.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_element.cpp \
