@@ -129,9 +129,8 @@ endif
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			uvd_address.cpp \
 			uvd_format.cpp \
-			uvd_operator.cpp \
+			$(ASSEMBLY_DIR)/uvd_address.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_function.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_symbol.cpp \
 			$(ASSEMBLY_DIR)/uvd_cpu.cpp \
@@ -170,6 +169,7 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_javascript_spiderape.cpp \
 			$(INTERPRETER_DIR)/uvd_javascript_spidermonkey.cpp \
 			$(INTERPRETER_DIR)/uvd_lua.cpp \
+			$(INTERPRETER_DIR)/uvd_operator.cpp \
 			$(INTERPRETER_DIR)/uvd_python.cpp \
 			$(LANGUAGE_DIR)/uvd_language.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
