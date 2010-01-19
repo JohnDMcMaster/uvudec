@@ -196,8 +196,9 @@ It would be cool to set system preferences to compile this selectivly in program
 static void version(void)
 {
 	printf_help("uvudec version " UVUDEC_VER_STRING "\n");
-	printf_help("Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>\n");
+	printf_help("Copyright 2009 John McMaster\n");
 	printf_help("Portions copyright GNU (MD5 implementation)\n");
+	printf_help("JohnDMcMaster@gmail.com\n");
 }
 
 static void usage(const char *program_name)

@@ -482,11 +482,11 @@ uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targ
 uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
 {
 	std::string sAddr;
-	unsigned int targetAddress = 0;
+	uint32_t targetAddress = 0;
 
 	uv_assert_ret(attributes.find(SCRIPT_KEY_CALL) != attributes.end());
 	(*attributes.find(SCRIPT_KEY_CALL)).second.getString(sAddr);
-	targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
+	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
 	
 	uv_assert_err_ret(insertCallReference(targetAddress, startPos));
 	//uv_assert_err(insertReference(targetAddress, startPos, ));
@@ -524,11 +524,11 @@ uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos
 uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
 {
 	std::string sAddr;
-	unsigned int targetAddress = 0;
+	uint32_t targetAddress = 0;
 
 	uv_assert_ret(attributes.find(SCRIPT_KEY_JUMP) != attributes.end());
 	(*attributes.find(SCRIPT_KEY_JUMP)).second.getString(sAddr);
-	targetAddress = (unsigned int)strtol(sAddr.c_str(), NULL, 0);
+	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
 	
 	uv_assert_err_ret(insertJumpReference(targetAddress, startPos));
 	updateCache(startPos, attributes);

@@ -11,6 +11,14 @@ idea is to try to make new architectures easy to support.
 Generic compiler target support is under development.  Currently assemblers
 and compilers are isolated, but should soon be unified.
 
+Tools
+
+uvudec: main decompiler application
+uvcoff2pat
+uvomf2pat
+uvpat2sig
+uvinj.py
+uvclass.py
 
 
 FAQ
@@ -36,6 +44,16 @@ Q: Why are object libraries distributed as hashes rather than binaries?
 A: Mostly due to legal isues.  While SDCC libraries are likely to be freely
 distributable, I'm not sure on legalities of distributing reverse engineered
 binaries.
+
+Q: What is this project's relationship to Hex-Rays/IDA?
+A: None, the rays are UV and would erase my EPROM.
+However, both are designed to work with standard formats, so some files will
+be compatible.  At time of writting, mostly this is on TODO list.  List of
+related file types:
+-.map: used by Visual Studio (TODO)
+-.pat: IDA text files for function signatures, open format (TODO)
+-.sig: IDA fast function signatures, closed format, but stuff is known about
+ format (TODO)
 
 Q: What would really help this project?
 A: Embedded compilers (if its permissible to give it to me) and system images.
@@ -90,6 +108,7 @@ Using gcalctool:
 Q: Can it decompile programs written by Mel?
 A: Sorry, I'm not that 1337.
 
+
 Building
 
 You must select an embedded interpreter to use.  The simplest, but (currently)
@@ -125,4 +144,5 @@ writable in this form.
 Symbol names are generated as a combination of the original executable and the
 symbol's offset in the file.  Resolving into actual symbol names is not fully
 worked out yet.  Likely a symbol with known value will propagate into an
-unknown archive.
+unknown archive.  I would like compatibility with IDA .sig/.map files since IDA
+and a number of other applications already generate and parse these formats.

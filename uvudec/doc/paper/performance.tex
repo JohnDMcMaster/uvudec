@@ -1,0 +1,133 @@
+\section{Performance}
+A brief overview of the performance section.
+
+\subsection{Performance of the Transport Subsystem}
+\label{sec::performance::transport}
+% Written by Rob
+We received discouraging, but explainable, results in our scaling test.  For the
+brief overview, refer to figure \ref{fig::performance::transport::procs-time}.
+This graph represents a reduced search-space trial on 4, 8, 16, 32, 64, and 128
+processes respectively.
+
+\begin{figure}[htp]
+\begin{centering}
+\includegraphics[height=.25\textheight]{strong-scaling.png}
+\label{fig::performance::transport::procs-time}
+\end{centering}
+\end{figure}
+
+Up until 16 processors we see the run time decrease; after that point it grows
+to greater than that required for a sequential implementation.  There are two
+very compelling reasons as to why this phenomenon occurs.
+
+First and foremost, we noticed that our implementation was especially
+susceptible to OS jitter in our development environment.  Our results mirrored
+those shown in \cite{petrini}; that is, on a 4-way system, performance on up to
+3 cores showed no scaling issues.  Running on 4 cores showed the effects of OS
+jitter as detailed in \cite{petrini}.  We were able to offset these effects by
+tuning the ratio of generation and hashing to MPI overhead.
+
+When run on an MPI shared memory implementation, the vast majority of execution
+time of our program is spent in system calls.  To us this indicated that the
+ratio of hashing to communication was low.  Increasing the amount of messages
+generated and hashed before each MPI\_Allreduce managed to decrease the overhead
+of the system calls.  Increasing it too much had the opposite effect and all
+gains were lost.
+
+For our strong scaling trial we used the optimum ratio computed for three
+processors on a shared memory MPI implementation.  Resource limits on the CCNI
+prevented us from performing the same trial on 128 processors to determine the
+optimum ratio for that system.  We expect that doing so would allow us to
+significantly increase our performance for runs above 16 cores.
+
+\subsection{Performance of the Storage Subsystem}
+% Written by Alex
+\input{storage_model}
+
+\subsection{Performance of Mock Hashing}
+\label{sec::performance::mock}
+% Written by John
+
+The mock hashing was benchmarked so that it could be compared to DES speeds.
+On an IBM T60p laptop running 2.33 GHz Core2 CPU, over 280 million hashes per
+second were observed from
+a dummy hash algorithm.  This was done so that we would have data equivilent
+to what DES would give for testing, but allow tests to run at faster speeds,
+allowing us to predict if a DES attack was feasible by scaling the time 
+required.
+
+\subsection{Performance DES Hashing}
+\label{sec::performance::des}
+% Written by John
+
+The DES implementation we used is based on GNU Privary Gaurd (GnuPG).
+Several implemenations were tried, including custom ones.  However,
+this implmeenation was found to be the fastest and more portable.
+OpenSSL contained an x86 assembly implementation, but time did not
+permit extracing this for use in our implementation.  GnuPG was portable,
+easy to integrate, and easy to improve.
+
+The following describes the metrics of computing single DES hashes.
+In actual birthday attack analysis, we would be required to compute
+multiple DES hashes per message in order to form a hash.  Although
+no standardized method exists, it is common practice to run DES
+on a 64 bit block and then use the resultant data as a key to the
+next block.  This would mean that the DES hashing would be an order 
+of magnitude slower than the DES encryption.  However, we would
+only have to hash up to the section were the document was changed.
+This would mean that if we modified the last line of the document,
+it could still be very long and we would not incur any signifigant
+performance penalties. 
+
+A number of improvements have been made to the GnuPG implemenation.
+First, all error checking has been removed.  The code will no longer
+check for things like weak keys and bad pointers.  Next, all return
+values have been removed when uncessary.  A lot of this stems from the
+removal of the error checking which would usually be propogated as a
+return code.  A number of functions are now inlined.  This will eliminate
+several function calls per round.  However, the feature that sped hashing
+up the most was to turn variables passed in functions into global variables.
+The most important of these is the structure that contains the keys.
+This improvement alone raised hashing speeds by over three times.
+The initial implementation tests showed 1.3 million DES hashes per second.
+After tuning the algorithm, 4.9 million hashes per second were observed.
+
+The DES APIs exposed are independent of the underlying implementations.
+They were, however, optomized to work with the GnuPG implemtnation on
+a 64 bit machine.  Internally the generic DES code calls inlined
+implementation specific DES functions.  The fastest way to compute DES
+is to call a set key function and then the last key set is assumed for 
+later encrypt functions. However, tests showed little difference in performance
+between the 32 and 64 bit versions.  The 32 bit version ran at 4.9 million
+hashes per second on a 2.33 GHz Intel Core2.  The 64 bit version ran at
+5.3 million hashes per second on a 2.66GHz Intel Xeon system.  This
+difference in performance is about what could be expected for the 
+clock speed increase and does not show any improvement for using the 
+64 bit machine.  This is attributed to the GnuPG implementation being
+improved to use global char arrays such that passing parameters is no
+longer an issue.  Had char ararys been still passed instead of 64 bit
+integers, the 64 bit implemntations probably would have shown performance.
+
+There are several known fast hardware DES implementations.
+The Electronic Frontier Foundation DES Cracker was produced in 1998 by the
+Electronic Frontier Foundation to counter the government's claims about
+how prohivitivly expensive and slow an attack on DES would be\cite{eff}.
+The machine
+consists of 1,500 Depp Crack application specific integrated circuits (ASIC)
+attached to a personal computer.  The chips work by guessing at which keys are
+not correct and more or less performs a brute force search.  Their attack
+is slightly different as they are trying to find the key, and we have a known
+key and are trying to forge the data.  However, they are still very related
+and make a good comparison.  They had a peak rate of 88 billion hashes per 
+second.  They were successful in their project as they were able to solve 
+several RSA Security challenges.
+
+After the EFF DES Cracker, COPACOBANA (Cost-Optimized Paralell COde Breaker)
+was built using Xilinx Spartan FPGAs\cite{copacobana}.  
+It has comparable speed to the EFF cracker.
+Although it was designed for DES, it is highly reconfigurable, so could be
+used for a wide variety of parallel applications.  It has the key advantage
+that while the EFF machine was bulit for \$210,000 and additional machines
+could be produced for \$120,000, COPACOBANA can be built for \$5,000.
+This leads to a much higher scale of hardware attack. 
+

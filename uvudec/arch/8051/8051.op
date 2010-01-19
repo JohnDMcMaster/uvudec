@@ -10,12 +10,41 @@ ASM_IMM_PREFIX=#
 ASM_IMM_PREFIX_HEX=
 ASM_IMM_POSTFIX_HEX=
 
+
 # Code vectoring (interrupt jump locations)
 # Start, reset, I/O, etc
 .VEC
+
 NAME=START
 DESC=Hard power on execution address
 OFFSET=0x0000
+
+NAME=EXTERNAL0
+DESC=External 0
+OFFSET=0x0003
+
+NAME=TIMER0
+DESC=Timer 0
+OFFSET=0x000B
+
+NAME=EXTERNAL1
+DESC=External 1
+OFFSET=0x0013
+
+NAME=TIMER1
+DESC=Timer 1
+OFFSET=0x001B
+
+NAME=SERIAL0
+DESC=Serial
+OFFSET=0x0023
+
+# Other vectors are more or less optional
+# should probably trace "START" first and see if they are code, not vector
+# However, most compilers seems to skip the vector block even when not defined and zero,
+# so it might not be a big deal
+# in either case, will have to add some sort of detection for unused vectors
+# should expected a call or a jump, and likely not all 0xFF or 0x00 bytes
 
 
 # These should represent addressing modes rather than the actual physical locations

@@ -5,6 +5,12 @@ JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
+/*
+FIXME:
+This is probably the file most needing cleanup in the project
+Do something instead like create a list of optional and required members, with pointers if necessary for easy setup
+*/
+
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>

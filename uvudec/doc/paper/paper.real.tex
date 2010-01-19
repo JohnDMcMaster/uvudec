@@ -1,0 +1,32 @@
+ \documentclass[letterpaper,twocolumn]{article}
+\title{OMG! My birthday is the same as your birthday!}
+\author{Alex \\ John \\ Rob}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\pagestyle{headings}
+\begin{document}
+\maketitle
+\begin{abstract}
+% Written by John
+Presented is a distributed birthday attack engine targeted at DES.  
+Variations of the storage engine are discussed including memory and disk based options.  
+An MPI communication layer is used to distribute information between nodes used in the attack.  
+Several implemenations of DES are evaulated based and GnuPG was found to be the best suited implementation.
+Using an optimized version of GnuPG,we demonstrate the time required to perform an attack using this system.  
+We then compare these metrics with other related systems.
+Each part of the system is somewhat isolated from the others to facilitate with benchmarking 
+and other performance tuning.  Each part of the system is analyzed and overall performance
+bottlenecks are demonstrated
+Future work is then presented with how the system may be further improved.
+
+\end{abstract}
+
+\input{background}
+\input{implementation}
+\input{performance}
+\input{conclusions}
+
+\bibliographystyle{plain}
+\bibliography{paper}
+\end{document}

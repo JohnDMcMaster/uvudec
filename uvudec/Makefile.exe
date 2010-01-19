@@ -1,0 +1,46 @@
+# UVNet Universal Decompiler (uvudec)
+# Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+# Licensed under terms of the three clause BSD license, see LICENSE for details
+
+$(EXE_NAME): depend $(OBJS) 
+	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE_NAME)
+ifeq ($(USING_UPX),Y)
+	$(UPX) $(UVUDEC_EXE)
+endif
+
+ALL_TARGETS=$(EXE_NAME)
+
+ifeq ($(USING_STATIC),Y)
+$(shell rm -f libc.a)
+LIB_C_STATIC=$(shell $(CXX) -print-file-name=libc.a)
+# $(shell ln -s $(LIB_C_STATIC))
+
+$(shell rm -f libstdc++.a)
+LIB_STDCXX_STATIC=$(shell $(CXX) -print-file-name=libstdc++.a)
+# $(shell ln -s $(LIB_STDCXX_STATIC))
+
+$(shell rm -f libm.a)
+LIB_M_STATIC=$(shell $(CXX) -print-file-name=libm.a)
+# $(shell ln -s $(LIB_M_STATIC))
+
+LIBS += $(LIB_M_STATIC) $(LIB_STDCXX_STATIC) $(LIB_C_STATIC)
+LDFLAGS += -L. -static-libgcc -Wl,'-z nodefaultlib'
+else
+LIBS += -lstdc++
+endif
+
+# Need to make macro for this
+ifeq ($(USING_LIB_UVUDEC),Y)
+ifeq ($(USING_STATIC),Y)
+LIBS += $(LIB_UVUDEC_STATIC)
+else
+LIBS += -l$(LIB_UVUDEC_DYNAMIC_USED)
+endif
+endif
+
+INFO_TARGETS=infoExe
+infoExe:
+	@(echo "Exe info")
+	@(echo "EXE_NAME: $(EXE_NAME)")
+	@(echo "")
+

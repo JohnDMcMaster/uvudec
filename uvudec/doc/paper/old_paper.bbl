@@ -1,0 +1,33 @@
+\begin{thebibliography}{1}
+
+\bibitem{copacobana}
+M.~Schimmler C.~Paar.
+\newblock Copacobana - special-purpose hardware for code-breaking.
+\newblock \texttt{http://www.copacobana.org/}.
+
+\bibitem{eff}
+Electronic~Frontier Foundation.
+\newblock Frequently asked questions (faq) about the electronic frontier
+  foundation's des cracker machine.
+\newblock
+  \texttt{http://w2.eff.org/Privacy/Crypto/Crypto_misc/DESCracker/HTML/1998071%
+6_eff_des_faq.html}.
+
+\bibitem{petrini}
+Fabrizio Petrini, Darren~J. Kerbyson, and Scott Pakin.
+\newblock The case of the missing supercomputer performance: Achieving optimal
+  performance on the 8,192 processors of asci q.
+\newblock In {\em SC '03: Proceedings of the 2003 ACM/IEEE conference on
+  Supercomputing}, page~55, Washington, DC, USA, 2003. IEEE Computer Society.
+
+\bibitem{schneier}
+Bruce Schneier.
+\newblock {\em Applied Cryptography}.
+\newblock Pearson Prentice Hall, 2nd edition, 1996.
+
+\bibitem{stallings}
+William Stallings.
+\newblock {\em Cryptography and Network Security}.
+\newblock Pearson Prentice Hall, 4th edition, 2006.
+
+\end{thebibliography}
