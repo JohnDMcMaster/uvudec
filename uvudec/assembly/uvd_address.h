@@ -167,8 +167,8 @@ public:
 	/* Address space */
 	UVDMemoryShared *m_space;
 	/* Address */
-	unsigned int m_min_addr;
-	unsigned int m_max_addr;
+	uint32_t m_min_addr;
+	uint32_t m_max_addr;
 };
 
 /*

@@ -536,6 +536,13 @@ UVDIterator UVD::begin()
 	return iter;
 }
 
+UVDIterator UVD::begin(uint32_t offset)
+{
+	UVDIterator iter = UVDIterator(this, offset);
+	iter.m_data = m_data;
+	return iter;
+}
+
 UVDIterator UVD::begin(UVDData *data)
 {
 	UVDIterator iter = begin();

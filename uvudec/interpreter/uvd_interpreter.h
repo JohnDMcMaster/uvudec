@@ -1,12 +1,14 @@
 /*
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+UVNet Universal Decompiler (uvudec)
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #pragma once
 
 #include <string>
 #include "uvd_types.h"
+#include "uvd_interpreted_instruction.h"
 
 /*
 A compiled expression to be passed into an interpreter
@@ -73,6 +75,8 @@ public:
 	*/
 	virtual uv_err_t varientToScriptValue(UVDVarient varient, std::string &value);
 
-
-
+	//
+	uv_err_t extractCallOutput(UVDVariableMap &variableMap, UVDInterpretedCall *out);
+	//for unconditional and conditional branches/jumps
+	uv_err_t extractBranchOutput(UVDVariableMap &variableMap, UVDInterpretedBranch *out);
 };

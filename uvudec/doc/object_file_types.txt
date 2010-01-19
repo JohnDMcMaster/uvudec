@@ -1,0 +1,48 @@
+OMF (Object Module Format)
+	Compiled object code
+	Also used in output executables
+	Binary
+COFF (Common Object File Format)
+	Originally on UNIX systems
+	Now main form Windows uses
+	Binary
+	piklab: uses GPL source
+ELF (Executable and Linkable Format)
+	Binary
+a.out
+	Outdated format
+	Probably not needed to be supported
+	Binary
+Intel HEX
+	Used frequently on PIC MCU
+	ASCII
+	Big Endian
+Motorola S-record
+	Executables for Motorola processors
+	Used on several other variants
+		I ran into them first using PetaLinux
+	ASCII
+Bistream file
+	For programming (Xilinx?) FPGAs
+	Binary
+
+Possible libraries
+	piklab
+		GPL V2
+		Should try to make lib w/ their various formats
+		OMF and hex parsers
+		no S-record?
+		However, uses QT integration which annoyed me with the piclab project in the first place from user's perpsective, let alone dev
+		May still give guidance to parsing and port it
+	srecord
+		http://srecord.sourceforge.net
+		GPL V3
+		built libsrecord.a
+			wa who!
+			no dynamic, will "have" to be statically linked unless I want to make my own .so
+		looks like it might support a variety of formats
+		good prospect
+		C++ interface
+		Well documented
+		
+	

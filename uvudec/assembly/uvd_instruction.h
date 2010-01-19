@@ -332,10 +332,8 @@ public:
 
 public:
 
-/* Prints a text description of the given instruction to the buffer */
-//Whats the buffer size for if we pass that in?
-#define PRINT_DISASM_BUFFSZ				32
-	uv_err_t print_disasm(char *buff, unsigned int buffsz);
+	/* Prints a text description of the given instruction to the buffer */
+	uv_err_t print_disasm(char *buff, uint32_t buffsz);
 	uv_err_t print_disasm(std::string &s);
 	
 	/* Shared information for the primary instruction part such as a general description */
@@ -348,9 +346,9 @@ public:
 	std::vector<UVDOperand *> m_operands;	
 	
 	/* offset in the source file */
-	unsigned int m_offset;
+	uint32_t m_offset;
 	/* The raw instruction */
-	unsigned int m_inst_size;
+	uint32_t m_inst_size;
 	/* With prefixes and such, this can be much longer than just a plain opcode */
 	char m_inst[MAX_INST_SIZE];
 	

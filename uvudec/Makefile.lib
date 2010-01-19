@@ -1,0 +1,60 @@
+# UVNet Universal Decompiler (uvudec)
+# Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+# Licensed under terms of the three clause BSD license, see LICENSE for details
+
+AR = ar
+AR_FLAGS=-rcs
+LD=ld
+
+LIB_VER_MAJOR=$(UVUDEC_VER_MAJOR)
+LIB_VER_MINOR=$(UVUDEC_VER_MINOR)
+LIB_VER_PATCH=$(UVUDEC_VER_PATCH)
+
+LIB_DYNAMIC				= $(LIB_DIR)/$(LIB_NAME).so
+LIB_DYNAMIC_MAJOR 		= $(LIB_DYNAMIC).$(LIB_VER_MAJOR)
+LIB_DYNAMIC_MINOR		= $(LIB_DYNAMIC_MAJOR).$(LIB_VER_MINOR)
+LIB_DYNAMIC_PATCH		= $(LIB_DYNAMIC_MINOR).$(LIB_VER_PATCH)
+LIB_DYNAMIC_REAL		= $(LIB_DYNAMIC_PATCH)
+LIBS_DYNAMIC=$(LIB_DYNAMIC) $(LIB_DYNAMIC_MAJOR) $(LIB_DYNAMIC_MINOR) $(LIB_DYNAMIC_PATCH)
+
+LIB_STATIC				= $(LIB_DIR)/$(LIB_NAME).a
+
+LIB_NAMES=$(LIB_STATIC) $(LIBS_DYNAMIC)
+ALL_TARGETS=$(LIB_NAMES)
+
+dynamic: $(LIBS_DYNAMIC)
+	@(true)
+
+$(LIB_DYNAMIC): $(LIB_DYNAMIC_MAJOR)
+	ln -sf $(LIB_DYNAMIC_MAJOR) $(LIB_DYNAMIC)
+
+$(LIB_DYNAMIC_MAJOR): $(LIB_DYNAMIC_MINOR)
+	ln -sf $(LIB_DYNAMIC_MINOR) $(LIB_DYNAMIC_MAJOR)
+
+$(LIB_DYNAMIC_MINOR): $(LIB_DYNAMIC_PATCH)
+	ln -sf $(LIB_DYNAMIC_PATCH) $(LIB_DYNAMIC_MINOR)
+	
+# These are the same
+# $(LIB_DYNAMIC_PATCH): $(LIB_DYNAMIC_REAL)
+
+# ld   -lc  cfork_asm.o cfork_c.o  -o libcfork.so
+$(LIB_DYNAMIC_REAL): $(OBJS)
+	@(echo 'Creating dynamic lib...')
+	$(LD) -shared $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
+
+static: $(LIB_STATIC)
+	@(true)
+
+$(LIB_STATIC): $(OBJS) 
+	@(echo 'Creating static lib...')
+	$(AR) $(AR_FLAGS) $(LIB_STATIC) $(OBJS)
+
+INFO_TARGETS=infoLib
+infoLib:
+	@(echo "Lib info")
+	@(echo "LIB_STATIC: $(LIB_STATIC)")
+	@(echo "LIBS_DYNAMIC: $(LIBS_DYNAMIC)")
+	@(echo "LIB_NAME: $(LIB_NAME)")
+	@(echo "LIB_NAMES: $(LIB_NAMES)")
+	@(echo "")
+

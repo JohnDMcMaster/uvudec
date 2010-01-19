@@ -144,10 +144,10 @@ class UVDIterator
 {
 public:
 	//UVDIterator();
-	UVDIterator(UVD *disassembler = NULL, unsigned int position = g_addr_min, unsigned int index = 0);
-	uv_err_t init(UVD *disassembler, unsigned int position = g_addr_min, unsigned int index = 0);
+	UVDIterator(UVD *disassembler = NULL, uint32_t position = g_addr_min, uint32_t index = 0);
+	uv_err_t init(UVD *disassembler, uint32_t position = g_addr_min, uint32_t index = 0);
 
-	unsigned int getPosition();
+	uint32_t getPosition();
 
 	uv_err_t parseOperands(UVDInstruction *instruction);
 	UVDIterator operator++();
@@ -175,9 +175,9 @@ private:
 	//Object we are iterating on
 	UVD *m_uvd;
 	//Next position in file to check
-	unsigned int m_nextPosition;
+	uint32_t m_nextPosition;
 	//Next index to check on generated lines
-	unsigned int m_positionIndex;
+	uint32_t m_positionIndex;
 	//Lines to come from current index
 	std::vector<std::string> m_indexBuffer;
 	//Printed startup information yet?
@@ -214,6 +214,7 @@ public:
 	
 
 	UVDIterator begin();
+	UVDIterator begin(uint32_t offset);
 	UVDIterator begin(UVDData *data);
 	UVDIterator end();
 	UVDIterator end(UVDData *data);
@@ -268,6 +269,8 @@ protected:
 	uv_err_t analyzeControlFlowLinear();
 	//Start at all (valid) vectors and find all branch points
 	uv_err_t analyzeControlFlowTrace();
+
+	uv_err_t suspectValidInstruction(uint32_t address, int *isValid);
 
 public:
 	//Source of data to disassemble

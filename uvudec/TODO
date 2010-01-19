@@ -40,5 +40,132 @@ TODO
 	Ex: function may have a few bytes padding after RET for alignment on next function
 -Logic/flow analyzer
 	Find independance of variables
+-Look into Qemu deeper
+	Hardware (peripheral) desciption language
+	See if can make IR translator to take advantage of supported architectures
+-Third party decompilation
+	Plugin to make rec command line calls?
+		Closed source, might not be for best
+		x86
+		MIPS (R3000)
+		PowerPC
+		68K
+	.NET reflector?
+		Check licensing on this
+		Specialized decompilation
+	If you had hex-rays, you probably wouldn't bother with this
+		Until one day hopefully :)
+		Supports lots of archs, but which are supported well?
+-Write a OllyDbg plugin to import analysis data
+	Also, look at format IDA/WinICE uses for storing debugging information
+		Uses FLAIR format or something
+		flair38 use to be avail for free DL from Data Rescue, this version is widely around on the Internet still
+		uses .map file to tell what address is what label
+			these are used by VC6
+		also used to load comments
+		Using MapConv
+			To get the calls to load the symbol, load labels
+			To get comments at each func, load comments
+		ex
+			 Start         Length     Name                   Class
+			 0001:00000000 00009D16AH .text                  CODE
+			 0002:00000000 00002874AH .rdata                 DATA
+			 0003:00000000 0000083A4H .data                  DATA
+			 0004:00000000 000000330H .rsrc                  DATA
+
+
+			  Address         Publics by Value
+
+			 0001:00000000       std::char_traits<char>::assign(char &,char const &)
+			 0001:00000012       std::char_traits<char>::_Copy_s(char *,uint,char const *,uint)
+			 0001:0000002E       std::char_traits<char>::_Move_s(char *,uint,char const *,uint)
+			 ...
+			 0001:0009D142       sub_49E142
+			 0001:0009D14C       sub_49E14C
+			 0001:0009D156       loc_49E156
+			 0002:00000280       unk_49F280
+			 0002:000004B0       unk_49F4B0
+			 ...
+			 0003:0000839C       dword_4D039C
+			 0003:000083A0       unk_4D03A0
+
+			Program entry point at 0001:00071218
+	IDA
+		autoload.cfg file
+			Header
+				;
+				; This file contains names of type library files to load when corresponding
+				; signature file is loaded.
+				;
+				; The format is:
+				;
+				; <signature file name>           <til file name>
+				;
+				; If several til files are specified, they should be separated
+				; by commas.
+				;			
+			Text files
+			what are the type library files?  Those DLL thingies (.tlb)?
+		.sig file
+			Header
+				IDASGN
+			Binary files
+			Human readable strings, so prob not encrypted
+			Ollyplugin suppose to import these, see if can get source for plugin
+			.sig format
+			http://www.hex-rays.com/idapro/flirt.htm
+		.proc files
+			to support processors
+			appears to be actually DLLs or something similar
+			calls them IDP modules
+		.idc files
+			IDA C file
+			binary loaders
+			some sort of source code
+			compiled when IDA starts the exe
+		.cfg file
+			help to decide what processor to load
+		.ids file
+			?
+			Header
+				IDAIDS					
+			binary
+			idsnames
+				;
+				;       This file contains IDS file names for
+				;       modules with strange names, like "ld-linux.so.1"
+				;       Format is:
+				;         <module_name> <ids_name>  +/- <til_files>
+				;
+				;       If there is a '-' sign after the replacement name, then
+				;       imports by ordinals will not be used for the IDS file
+				;
+				;       If there are any til files, they will be loaded automatically
+				;       when the ids file gets loaded
+				;       The til files may have conditional expressions in the following form:
+				;
+				;               condition ? til-files : til-files;
+				;
+				;       which works like C ternary operator.
+				;       The conditional expressions may be nested.
+				;       2 condition types are supported:
+				;          name - will be checked against the current processor module name
+				;          number - will be checked against the bitness of the program
+				;                   2 bitnesses are supported: 32 and 64
+				;
+		.til file
+			Header
+				IDATIL
+			Binary
+			Architecture dependent
+		
+		they say cannot automatically generate recognition of main
+			my idea
+			automatically generate serveral C files with differing main, but only by the assignment of a variable/constant values
+			main will be the function with the differing constants
+			assumes the compiler will not do any weird optimizations due to the constant values
+				chose loarge arbitrary constants to stifle specific optimizations
+				ex: myVar = 0 can be XOR EAX, EAX, but myVar = 0x3422312 is hard to specialize
+			
 
 

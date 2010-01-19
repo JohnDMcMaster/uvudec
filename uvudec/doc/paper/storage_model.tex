@@ -1,0 +1,97 @@
+A tree-based structure was decided upon due to simplicity and the nature of the data.
+Given that hashes are randomly distributed an unoptimized tree should yield better than 
+average results regardless, reaching very close to log(n) memory access without amortization.
+The main downside is about 50\% overhead on top of the existing 16 bytes of data. An additional
+8 bytes are required, 4 bytes for the offset of each the left and right nodes in the tree
+based structure. The total file size for $2^{33}$ hashes grows from 128GB to 192GB.
+
+Before scaling naive implementations were built and tested. The first method uses
+standard POSIX file operations. Unfortunately this results in
+severely low throughput. A meager 10,000 hashes required upwards of 7s seconds
+for insertions. Colliding all of these hashes took less time with 2s. 
+
+\begin{figure} 
+        \caption{Tests performed on a core-2-duo}
+\begin{tabular}{lll}
+Number of Hashes    &    All New Hashes   &  All Colliding\\
+10000           &        7.334          &     2.307 \\
+20000           &       14.323          &     4.908\\
+30000           &       22.910 & \\
+40000           &       31.792 & \\
+\end{tabular}
+\end{figure}
+
+The moral of the story when doing file access is to not do file access. As seen in the
+figure, linearly longer time is required per 10000 hashes. Completely colliding collisions
+were not performed for 30000 and 40000 hashes. 
+
+The best case is to use more memory and cache data before doing writes. Since 64-bit linux
+machines were targeted, other POSIX features were available. And luckily,
+POSIX compliant operating systems provides mechanisms to already do all of this.
+Files can be directly mapped into memory using the mmap system call. Behind the
+scenes the operating system takes care of swapping pages of memory in and out
+from the disk to main memory, caching write-backs, and other possible optimizations.
+
+
+\begin{figure} 
+        \caption{File size = 48 MB  (2097152 hashes maximum capacity / file); tests run on 4-way AMD Opteron 848 using ext3}
+\begin{tabular}{lll}
+Number of Hashes &    All New Hashes    &    All Colliding\\
+1000000         &      2.782    &            2.185 \\
+2000000          &     4.749     &           3.275 \\
+2100000           &    4.872      &          \\
+2200000            &   39.553      &         \\
+\end{tabular}
+\end{figure}
+
+
+\begin{figure} 
+        \caption{File size = 960 MB  (4194304 hashes maximum capacity / file); tests run on 4-way AMD Opteron 848 using ext3}
+\begin{tabular}{lllll}
+Nodes &       2 & 4 & 6 & 8 \\
+1000000 &       1.359 & 1.806 & 2.606 & 3.228 \\
+2000000 &  3.099 & 3.916 & 5.557 & 7.315 \\
+4000000 &  7.142 & 10.052 & 13.651 & 16.251 \\
+8000000 &  16.443 & 19.484 & 30.689 & 35.662 \\
+10000000 & 22.064 & 24.725 & 39.787 & 47.716 \\ 
+20000000 & 50.498 & 52.026 & 90.325 & 105.694 \\
+40000000 & 125.898 & 143.518 & 245.808 & 277.117\\
+\end{tabular}
+\end{figure}
+
+The result was a 300-fold speed improvement from skipping file I/O except when absolutely
+necessary. 
+
+Storage is distributed by assigning a segment of the search space to each node. 
+Multiple files per node were briefly tested. It was discovered that switching between files
+severely damages performance. When the number of hashes grows to 220000, 
+a second file is mapped into into memory. The storage model plays hot potato with the first
+and second files, reloading 48 MB each time. This is unacceptable. 
+
+The conclusion is that each node should maintain only one file which can be mapped once at
+the program start and thereafter incur very little performance loss. The file size required
+per node is around 1GB. To show scaling, the multithreaded tests were performed using a file size of
+960MB which can store approximately 40,000,000 hashes. The results show that the tree-based
+structure works adequately with a large filesize and scales for each additional thread. The largest
+number of hashes stored was 160 Million which took 4.5 minutes and 7.15GB of data for a throughput
+of 27 MB/s. 
+
+\begin{figure} 
+        \caption{64 bit hash}
+\begin{tabular}{lll}
+Nodes    &       total hashes /node       &     total size /node \\ 
+16    &    $2^{29}$         &                 12   GB \\ 
+64    &    $2^{27}$         &                  3   GB \\
+128   &    $2^{26}$         &                 1.5  GB \\
+256   &    $2^{25}$         &                 0.75 GB \\
+\end{tabular}
+\end{figure}
+
+To successfully perform a collision attack on a 64-bit hash the current storage model requires 
+between 128 and 256 nodes with between 1-1.5 GB of memory per node.
+
+At the time of publishing the test was not be completed. The main conclusion from the performance
+tests of the storage model is that with enough nodes the collision is feasible. From a practical
+stand point, today standard hashes are 128-bits, and future cryptographic hashes are 256-bits minimum.
+Performing a birthday attack on a 128-bit hash is equivalent to searching the whole 64-bit space, 
+which can not be possible without massive memory improvements in computer architecture.

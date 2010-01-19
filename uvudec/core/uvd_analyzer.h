@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -203,6 +202,8 @@ public:
 
 	uv_err_t assignDefaultSymbolNames();
 	uv_err_t identifyKnownFunctions();
+
+	//static uv_err_t(UVDInstruction *instruction, const UVDVariableMap &attributes);
 
 private:
 	//Force a rebuild of the internal database

@@ -1,0 +1,23 @@
+ \documentclass[letterpaper,onecolumn]{article}
+\title{UVNet Universal Decompiler (uvudec)}
+\author{John McMaster}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{verbatim} 
+\pagestyle{headings}
+\begin{document}
+\maketitle
+\begin{abstract}
+Toolsuite for analysis of executable binaries.  There are several competitors to this project such as Hex-Rays/IDA and REC.
+Hex-Rays is very expensive and, being commercial software, does not allow strong collaborative development.
+REC (Reverse Engineering Compiler) supports several architectures and is of decent quality, but is closed source, so also does
+not allow collaborative development.
+\end{abstract}
+
+\input{uvudec_exe}
+\input{appendix}
+
+% \bibliographystyle{plain}
+% \bibliography{paper}
+\end{document}

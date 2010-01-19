@@ -347,6 +347,11 @@ uv_err_t UVD::generateAnalysisDir()
 
 uv_err_t UVD::analyzeControlFlow()
 {
+	UVDBenchmark controlStructureAnalysisBenchmark;
+
+	printf_debug_level(UVD_DEBUG_PASSES, "uvd: control flow analysis...\n");
+	controlStructureAnalysisBenchmark.start();
+
 	switch( m_config->m_flowAnalysisTechnique )
 	{
 	case UVD__FLOW_ANALYSIS__LINEAR:
@@ -358,6 +363,10 @@ uv_err_t UVD::analyzeControlFlow()
 	default:
 		return UV_DEBUG(UV_ERR_GENERAL);
 	};
+
+	controlStructureAnalysisBenchmark.stop();
+	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis time: %s\n", controlStructureAnalysisBenchmark.toString().c_str());
+
 	return UV_ERR_OK;
 }
 
@@ -366,10 +375,6 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	UVDIterator iter;
 	int printPercentage = 1;
 	int printNext = printPercentage;
-	UVDBenchmark controlStructureAnalysisBenchmark;
-
-	printf_debug_level(UVD_DEBUG_PASSES, "uvd: control flow analysis...\n");
-	controlStructureAnalysisBenchmark.start();
 
 	iter = begin();
 	for( ;; )
@@ -523,14 +528,177 @@ uv_err_t UVD::analyzeControlFlowLinear()
 			uv_assert_err_ret(m_analyzer->analyzeJump(&instruction, startPos, mapOut));
 		}
 	}
-	controlStructureAnalysisBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis time: %s\n", controlStructureAnalysisBenchmark.toString().c_str());
 
+	return UV_ERR_OK;
+}
+
+class UVDTracePoint
+{
+public:
+	//Location that generated the control flow, if applicable
+	//might only be used for debugging
+	uint32_t m_origin;
+};
+
+uv_err_t UVD::suspectValidInstruction(uint32_t address, int *isValid)
+{
+	/*	
+	FIXME: Should probably actually be in UVDOpcodeLookupTable
+	Oftentimes these will be 0xFF or 0x00 when unused
+	Also consider if address is in a string table or other blacklisted area
+	*/
+	uv_assert_ret(isValid);
+	
+	//FIXME: do check
+	*isValid = true;
+	
 	return UV_ERR_OK;
 }
 
 uv_err_t UVD::analyzeControlFlowTrace()
 {
+#if ANALYZE_CONTROL_FLOW
+	//For now only try to find where code is, so it doesn't matter how we arrived
+	std::set<uint32_t> openSet;
+	std::set<uint32_t> closedSet;
+	
+	//Probably need full ranges, do only start for now
+	std::set<uint32_t> calls;
+	std::set<uint32_t> jumps;
+	
+	uv_assert_ret(m_CPU);
+
+	//Another way to do with would be to do "START" and then all other vectors
+	for( std::vector<UVDCPUVector *>::iterator iter = m_CPU->m_vectors.begin(); iter != m_CPU->m_vectors.end(); ++iter )
+	{
+		UVDCPUVector *vector = *iter;
+		uint32_t offset = 0;
+		int isVectorValid = 0;
+		
+		uv_assert_ret(vector);
+		offset = vector->m_offset;
+		
+		uv_assert_err_ret(suspectValidInstruction(offset, &isVectorValid));
+		if( isVectorValid )
+		{
+			openSet.insert(offset);
+		}
+	}
+	
+	while( !openSet.empty() )
+	{
+		uint32_t nextStartAddress = *openSet.begin();
+		UVDIterator iter;
+
+		openSet.erase(openSet.begin());
+		closedSet.insert(nextStartAddress);
+	
+		//Keep going until we hit a branch point
+
+		uint32_t printPercentage = 1;
+		uint32_t printNext = printPercentage;
+
+		iter = begin(nextStartAddress);
+		for( ;; )
+		{
+			UVDInstruction instruction;
+			std::string action;
+			uint32_t startPos = iter.getPosition();
+			uint32_t endPos = 0;
+			
+			uint32_t curPercent = 100 * startPos / g_addr_max;
+			if( curPercent >= printNext )
+			{
+				printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
+				printNext += printPercentage;
+			}
+
+			printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
+
+			//If we aren't at end, there should be more data
+			uv_assert_err_ret(iter.nextInstruction(instruction));
+			if( iter == end() )
+			{
+				printf_debug("disassemble: end");
+				break;
+			}
+			endPos = iter.getPosition();
+			
+			action = instruction.m_shared->m_action;
+
+			printf_debug("Next instruction (start: 0x%.8X, end: 0x%.8X): %s\n", startPos, endPos, instruction.m_shared->m_memoric.c_str());
+
+			printf_debug("Action: %s, type: %d\n", action.c_str(), instruction.m_shared->m_inst_class);
+			//See if its a call instruction
+			if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_CALL )
+			{
+				UVDVariableMap environment;
+				UVDVariableMap mapOut;
+
+				uv_assert_err_ret(instruction.collectVariables(environment));
+							
+				/*
+				Add iterator specific environment
+				*/
+
+				//Register environment
+				//PC/IP is current instruction location
+				environment["PC"] = UVDVarient(endPos);
+
+				//About 0.03 sec per exec...need to speed it up
+				//Weird...cast didn't work to solve pointer incompatibility
+				uv_assert_ret(m_interpreter);
+				uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+				
+				uv_assert_err_ret(m_analyzer->analyzeCall(&instruction, startPos, mapOut));
+				
+				//Only analyze if not in closed set
+				if( closedSet.find(callTarget) == closedSet.end() )
+				{
+					openSet.insert(callTarget);
+				}
+			}
+			//Probably should have been "branch" class, but oh well
+			else if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
+			{
+				UVDVariableMap environment;
+				UVDVariableMap mapOut;
+
+				uv_assert_err_ret(instruction.collectVariables(environment));
+							
+				/*
+				Add iterator specific environment
+				*/
+
+				//Register environment
+				//PC/IP is current instruction location
+				environment["PC"] = UVDVarient(endPos);
+
+				//About 0.03 sec per exec...need to speed it up
+				//Weird...cast didn't work to solve pointer incompatibility
+				uv_assert_ret(m_interpreter);
+				uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+
+				uv_assert_err_ret(m_analyzer->analyzeJump(&instruction, startPos, mapOut));
+			
+				//any architectures that have multiple branch targets?
+				if( closedSet.find(branchTarget) == closedSet.end() )
+				{
+					openSet.insert(branchTarget);
+				}
+
+				if( unconditionalBranch )
+				{
+					break;
+				}
+			}
+		}
+
+
+			
+	}
+#endif
+	
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
