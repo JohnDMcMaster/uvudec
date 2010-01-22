@@ -15,6 +15,7 @@ $(UVUDEC_HELP): $(UVUDEC_EXE)
 	echo '\end{verbatim}' >>$(UVUDEC_HELP)
 
 $(OUTPUT_PDF): $(UVUDEC_HELP) *.tex
-	
-	echo |pdflatex --enable-pipes -halt-on-error uvudec.tex
+	echo |pdflatex uvudec.tex
+# bibtex uvudec
+#	echo |pdflatex uvudec.tex
 	mv uvudec.pdf $(OUTPUT_PDF)
