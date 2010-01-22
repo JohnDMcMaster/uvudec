@@ -4,7 +4,8 @@
 
 PHONY += uvudec coff2pat omf2pat elf2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore
 
-ALL_TARGETS=lib uvudec coff2pat omf2pat elf2pat pat2sig doc
+ALL_TARGETS=lib uvudec coff2pat omf2pat elf2pat pat2sig
+# ALL_TARGETS += doc
 CLEAN_DEPS=cleanSub
 
 include Makefile.mk
