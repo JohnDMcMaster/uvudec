@@ -9,5 +9,3 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 #include "uvd.h"
 
-//TODO: this is a hack, needs to be fixed
-extern UVD *g_uvd;
