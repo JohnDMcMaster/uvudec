@@ -15,6 +15,15 @@ endif
 default: all
 	@(true)
 
+# FIXME: how do I do an "or"
+COMPILING_CODE=
+ifdef EXE_NAME
+COMPILING_CODE=Y
+endif
+ifdef LIB_NAME
+COMPILING_CODE=Y
+endif
+
 # System defaults
 include $(ROOT_DIR)/Makefile.defaults
 # Optional "./configure" result
@@ -34,6 +43,7 @@ INIT_DIR=$(ROOT_DIR)/init
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
 LANGUAGE_DIR=$(ROOT_DIR)/language
 RELOCATION_DIR=$(ROOT_DIR)/relocation
+TESTING_DIR=$(ROOT_DIR)/testing
 UTIL_DIR=$(ROOT_DIR)/util
 
 # version stuff
@@ -48,7 +58,7 @@ UVUDEC_VER_FLAGS=-DUVUDEC_VER_MAJOR=$(UVUDEC_VER_MAJOR) -DUVUDEC_VER_MINOR=$(UVU
 PACKAGE=uvudec
 
 # hmm include are kinda weird, all projects use <dir_name>/<file_name>.h, but we include all invidual dirs
-INCLUDES += -I. -I$(ROOT_DIR) 
+INCLUDES += -I. -I$(ROOT_DIR)
 #for curDir in $(SOURCE_DIRS); do \
 #INCLUDES += " -I$${curDir}" ;\
 #done;
@@ -61,7 +71,7 @@ FLAGS_SHARED = -c $(WARNING_FLAGS) $(INCLUDES) $(DEBUG_FLAGS) $(UVUDEC_VER_FLAGS
 CCFLAGS = $(FLAGS_SHARED)
 CXXFLAGS = $(FLAGS_SHARED)
 
-#LDFLAGS=
+LDFLAGS += -L$(LIB_DIR) -L.
 
 FLAGS_SHARED += -DDEFAULT_DECOMPILE_FILE=$(DEFAULT_DECOMPILE_FILE)
 
@@ -69,7 +79,9 @@ FLAGS_SHARED += -DDEFAULT_DECOMPILE_FILE=$(DEFAULT_DECOMPILE_FILE)
 LIB_UVUDEC=libuvudec
 # Full name of the version we are using (will link against)
 #LIB_UVUDEC_FULL=libuvudec
-LIB_UVUDEC_DYNAMIC_USED=$(LIB_DIR)/$(LIB_UVUDEC).so.$(UVUDEC_VER_MAJOR).$(UVUDEC_VER_MINOR)
+# Leave out the patch, gives us a binary compatible version
+#LIB_UVUDEC_DYNAMIC_USED=$(LIB_DIR)/$(LIB_UVUDEC).so.$(UVUDEC_VER_MAJOR).$(UVUDEC_VER_MINOR)
+LIB_UVUDEC_DYNAMIC_USED=uvudec
 LIB_UVUDEC_STATIC=$(LIB_DIR)/$(LIB_UVUDEC).a
 
 # Experimental way to speed up printing
@@ -83,7 +95,11 @@ FLAGS_SHARED += -DUSING_LUA
 LUA_INCLUDE=$(LUA_DIR)/src
 LUA_LIB_STATIC=$(LUA_DIR)/src/liblua.a
 INCLUDES += -I$(LUA_INCLUDE)
+ifeq ($(USING_STATIC),Y)
 LIBS += $(LUA_LIB_STATIC)
+else
+LIBS += -llua
+endif
 endif
 
 # Python stuff
@@ -114,13 +130,36 @@ SPIDERAPE_STATIC=$(SPIDERAPE_DIR)/src/ape/libSpiderApe.a
 JS_STATIC=$(SPIDERAPE_DIR)/src/js/Linux_All_DBG.OBJ/libjs.a
 ifeq ($(USING_SPIDERAPE),Y)
 FLAGS_SHARED += -DUSING_SPIDERAPE
-INCLUDES += -I$(SPIDERAPE_DIR)/include -I$(SPIDERAPE_DIR)/src/js -I$(SPIDERAPE_DIR)/src/ape 
+INCLUDES += -I$(SPIDERAPE_DIR)/include -I$(SPIDERAPE_DIR)/src/js -I$(SPIDERAPE_DIR)/src/ape
+ifeq ($(USING_STATIC),Y)
 LIBS += $(SPIDERAPE_STATIC) $(JS_STATIC)
+else
+LIBS += -lSpiderApe -ljs
+LDFLAGS += -L$(SPIDERAPE_DIR)/src/ape -L$(SPIDERAPE_DIR)/src/js/Linux_All_DBG.OBJ
+endif
 # FIXME: this breaks static linkage
 # fixed: disable plugins
 # LIBS +=  -lltdl
 endif
-		
+
+# General libc stuff
+ifeq ($(USING_STATIC),Y)
+
+# We only include libs in the final exe for static buids usually
+LIBS +=
+# And since we don't link until final exe, don't set any LDFLAGS
+LDFLAGS +=
+
+else
+
+# We must incrementally link as we go along
+LIBS += -lc -lm
+#LIBS += -lstdc++ -lgcc
+LDFLAGS +=
+
+endif
+
+
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 UVUDEC_EXE = $(BIN_DIR)/uvudec
 COFF2PAT_EXE = $(BIN_DIR)/uvcoff2pat
@@ -128,6 +167,7 @@ OMF2PAT_EXE = $(BIN_DIR)/uvomf2pat
 ELF2PAT_EXE = $(BIN_DIR)/uvelf2pat
 PAT2SIG_EXE = $(BIN_DIR)/uvpat2sig
 EXES= $(UVUDEC_EXE) $(COFF2PAT_EXE) $(OMF2PAT_EXE) $(ELF2PAT_EXE) $(PAT2SIG_EXE)
+TESTING_EXE = $(BIN_DIR)/uvtest
 
 ifdef EXE_NAME
 include $(ROOT_DIR)/Makefile.exe
@@ -163,6 +203,7 @@ CLEAN_DEPS+=cleanLocal
 clean: $(CLEAN_DEPS)
 	@(true)
 
+ifdef COMPILING_CODE
 MAKEFILE_DEPEND=Makefile.depend
 $(shell touch $(MAKEFILE_DEPEND))
 include $(MAKEFILE_DEPEND)
@@ -171,8 +212,10 @@ include $(MAKEFILE_DEPEND)
 # Ignore cannot find stdio.h stuff
 depend:
 	@($(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null)
+#	$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null
 # Remove annoying backup
 	@($(RM) $(MAKEFILE_DEPEND).bak)
+endif
 
 PHONY += all .c.o .cpp.o clean dist depend info cleanLocal
 
