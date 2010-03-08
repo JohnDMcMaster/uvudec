@@ -29,7 +29,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define __stringify_1(x)	#x
 #define __stringify(x)		__stringify_1(x)
 
-#define UVUDEC_VER_STRING 		__stringify(UVUDEC_VER_MAJOR) "." __stringify(UVUDEC_VER_MINOR) "." __stringify(UVUDEC_VER_PATCH) "." __stringify(UVUDEC_VER_BUILD)
+#define UVUDEC_VER_STRING 		__stringify(UVUDEC_VER_MAJOR) "." __stringify(UVUDEC_VER_MINOR) "." __stringify(UVUDEC_VER_PATCH)
 
 /* Used for opcode processing funcs */
 //static uvd_func opcode_map[256];
@@ -58,13 +58,6 @@ Note that every func can be, in theory, written in a different language
 /*
 Options
 */
-
-/*
-If set, output should be capitalized
-This is a pretty trivial option, originally was for something that probably
-wasn't well enough thought out and should be eliminated
-*/
-extern int g_caps;
 
 uv_err_t uvd_init_equiv_mem(void);
 
@@ -109,7 +102,7 @@ Maybe try to identify them and filter them out
 //Ex: ASCII Adjust after Addition (AAA)
 #define UV_DISASM_SUBACTION_NO_MEMORIC			0x0040
 //Use memorics, default 1
-extern int g_memoric;
+//extern int g_memoric;
 
 /*
 Language specific options
@@ -144,8 +137,13 @@ class UVDIterator
 {
 public:
 	//UVDIterator();
-	UVDIterator(UVD *disassembler = NULL, uint32_t position = g_addr_min, uint32_t index = 0);
-	uv_err_t init(UVD *disassembler, uint32_t position = g_addr_min, uint32_t index = 0);
+	//UVDIterator(UVD *disassembler = NULL, uint32_t position = g_addr_min, uint32_t index = 0);
+	UVDIterator(UVD *disassembler = NULL);
+	UVDIterator(UVD *disassembler, uint32_t position, uint32_t index = 0);
+	//uv_err_t init(UVD *disassembler, uint32_t position = g_addr_min, uint32_t index = 0);
+	uv_err_t init(UVD *disassembler, uint32_t position, uint32_t index);
+	uv_err_t deinit();
+	~UVDIterator();
 
 	uint32_t getPosition();
 
@@ -193,6 +191,7 @@ class UVD
 {
 public:
 	UVD();
+	~UVD();
 	
 	//Factory function for construction
 	static uv_err_t getUVD(UVD **uvdIn, UVDData *data);
@@ -212,6 +211,7 @@ public:
 	uv_err_t init_prefix(UVDConfigSection *pre_section);
 	uv_err_t init_vectors(UVDConfigSection *section);
 	
+	uv_err_t deinit();
 
 	UVDIterator begin();
 	UVDIterator begin(uint32_t offset);
@@ -223,9 +223,9 @@ public:
 	uv_err_t decompile(std::string file, int destinationLanguage, std::string &output);
 	uv_err_t decompilePrint(std::string &output);
 	
-	std::string analyzedSymbolName(uint32_t functionAddress);
+	std::string analyzedSymbolName(uint32_t functionAddress, int symbolType = UVD__SYMBOL_TYPE__FUNCTION);
 	//This should get moved to util
-	std::string analyzedSymbolName(std::string dataSource, uint32_t functionAddress);
+	std::string analyzedSymbolName(std::string dataSource, uint32_t functionAddress, int type = UVD__SYMBOL_TYPE__FUNCTION);
 	
 	//Given a function location, do analysis on the section to do actual decompiling
 	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction);
@@ -252,7 +252,7 @@ public:
 	//Convert a block (should be UVDDataChunk?) suspected to be a function to a skeleton analyzed function structure
 	uv_err_t blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionIn);
 	
-	uv_err_t changeConfig(UVDConfig *config);
+	//uv_err_t changeConfig(UVDConfig *config);
 	
 	/*
 	Convert an instruction to a disassembled string list using the policy of this disassembler object
@@ -264,6 +264,8 @@ public:
 	uv_err_t analyzeFunction(UVDBinaryFunctionShared *functionShared);
 	uv_err_t analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared);
 
+	UVDData *getData();
+
 protected:
 	//Vector at start, take each instruction, one at a time, then compute branches/calls
 	uv_err_t analyzeControlFlowLinear();
@@ -273,9 +275,7 @@ protected:
 	uv_err_t suspectValidInstruction(uint32_t address, int *isValid);
 
 public:
-	//Source of data to disassemble
-	UVDData *m_data;
-	UVDCPU *m_CPU;
+	//UVDCPU *m_CPU;
 	//TODO: move to UVDCPU
 	//Lookup table for opcodes
 	//This in theory could be shared between multiple engines for the same arch
@@ -308,16 +308,14 @@ public:
 	UVDConfig *m_config;
 	//How to print data
 	UVDFormat *m_format;
+
+protected:
+	//Source of data to disassemble
+	UVDData *m_data;
 };
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* ifdef __cplusplus */
-
-#ifdef __cplusplus
-}
-#endif /* ifdef __cplusplus */
+//TODO: this is a hack, needs to be fixed
+extern UVD *g_uvd;
 
 #endif // ifdef UV_DISASM_H
 
