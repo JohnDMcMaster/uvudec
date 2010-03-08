@@ -12,19 +12,6 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 #define DEBUG_BREAK()			do { printf("DEBUG BREAK (%s:%d)\n", __FILE__, __LINE__); exit(1); } while ( 0 )
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* ifdef __cplusplus */
-
-extern int g_verbose_init;
-extern int g_verbose_analysis;
-extern int g_verbose_processing;
-extern int g_verbose_printing;
-extern int g_verbose;
-extern FILE *g_pDebugFile;
-extern FILE *g_pOutputFile;
-
 
 //Don't print anything
 #define UVD_DEBUG_NONE			0
@@ -36,9 +23,14 @@ extern FILE *g_pOutputFile;
 #define UVD_DEBUG_SUMMARY		3
 //Debug messages from each section
 #define UVD_DEBUG_VERBOSE		4
-extern int g_verbose_level;
+//extern int g_verbose_level;
 
 const char *get_last_func();
+
+/*
+It would be cool to set system preferences to compile this selectivly in programs
+*/
+#define printf_help(format, ...) fprintf(stdout, format, ## __VA_ARGS__)
 
 //#define printf_warn printf_debug
 //Or should this be treated as a level 1 error?
@@ -93,9 +85,8 @@ void uv_enter(const char *file, int line, const char *func);
 
 #endif /* ifndef NDEBUG */
 
-#ifdef __cplusplus
-}
-#endif /* ifdef __cplusplus */
+uv_err_t UVDDebugInit();
+uv_err_t UVDDebugDeinit();
 
 #endif /* ifndef UV_DEBUG_H */
 
