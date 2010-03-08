@@ -13,6 +13,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <vector>
 #include "uvd_instruction.h"
 #include "interpreter/uvd_interpreter.h"
+#include "uvd_arg.h"
 
 //Resultant address from a call routine
 #define SCRIPT_KEY_CALL				"CALL_ADDRESS"
@@ -114,11 +115,37 @@ class UVDConfig
 {
 public:
 	UVDConfig();
+	~UVDConfig();
+	
+	uv_err_t init();
+	uv_err_t deinit();
 	
 	static uv_err_t uvd_read_sections(const std::string &config_file, UVDConfigSection ***sections_in, unsigned int *n_sections_in);
 	static uv_err_t readSections(const std::string config_file, std::vector<UVDConfigSection> sectionsIn);
 
+	/*
+	Parse info from main to setup our configuration
+	*/
+	uv_err_t parseMain(int argc, char **argv); 
+	uv_err_t parseMain(int argc, char **argv, char **envp); 
+
+protected:
+	// ~/.uvudec file
+	//Should be called before parseMain()...move this into init()
+	uv_err_t parseUserConfig();
+
+	/*
+	Called from parseMain() to process config specific options
+	*/
+	uv_err_t processParseMain();
+
 public:
+	//if availible
+	//used to print program name for usage
+	int m_argc;
+	char **m_argv;
+	std::vector<std::string> m_args; 
+
 	std::string m_analysisDir;
 	int m_analysisOnly;
 	int m_uselessASCIIArt;
@@ -127,10 +154,110 @@ public:
 	//If any are set, will only output analysis of symbols at the given addresses
 	std::set<int> m_analysisOutputAddresses; 
 	
-	std::vector<std::string> m_args; 
 	//Default interpreter to use for script files
 	int m_configInterpreterLanguage;
 	
+	//Configuration option parsing
+	//Could bet set from command line, interactive shell, or a file
+	std::vector<UVDArgConfig *> m_configArgs;
+	
+	std::string m_sDebugFile;
+	//FILE *m_pDebugFile;
+	
+	//g_addr_min, g_addr_max
+	uint32_t m_addressMin;
+	uint32_t m_addressMax;
+
+	//Callbacks
+	//Prefix the version print information
+	uv_thunk_t versionPrintPrefixThunk;
+	//After the usage call, meant for misc notes
+	uv_thunk_t usagePrintPostfixThunk;
+	
+	//g_print_used
+	int m_printUsed;
+	//g_jumped_sources
+	int m_jumpedSources;
+	//g_called_sources
+	int m_calledSources;
+	//g_addr_comment
+	int m_addressComment;
+	//g_addr_label
+	int m_addressLabel;
+
+	//TODO: re-impliment this as flags
+	//g_verbose
+	int m_verbose;
+	//g_verbose_level
+	int m_verbose_level;
+	//g_verbose_init
+	int m_verbose_init;
+	//g_verbose_processing
+	int m_verbose_processing;
+	//g_verbose_analysis
+	int m_verbose_analysis;
+	//g_verbose_printing
+	int m_verbose_printing;
+
+
+	//uvd_format.h
+	
+	//unsigned int g_addr_min;
+	unsigned int m_addr_min;
+	//unsigned int g_addr_max;
+	unsigned int m_addr_max;
+	//int g_called_sources;
+	int m_called_sources;
+	//int g_called_count;
+	int m_called_count;
+	//int g_jumped_sources;
+	int m_jumped_sources;
+	//int g_jumped_count;
+	int m_jumped_count;
+	//int g_addr_comment;
+	int m_addr_comment;
+	//int g_addr_label;
+	int m_addr_label;
+	//How many hex digits to put on addresses 
+	//unsigned int g_hex_addr_print_width;
+	unsigned int m_hex_addr_print_width;
+	//std::string g_mcu_name;
+	std::string m_mcu_name;
+	//std::string g_mcu_desc;
+	std::string m_mcu_desc;
+	//std::string g_asm_imm_prefix;
+	std::string m_asm_imm_prefix;
+	//std::string g_asm_imm_prefix_hex;
+	std::string m_asm_imm_prefix_hex;
+	//std::string g_asm_imm_postfix_hex;
+	std::string m_asm_imm_postfix_hex;
+	//std::string g_asm_imm_suffix;
+	std::string m_asm_imm_suffix;
+	/*
+	If set, output should be capitalized
+	This is a pretty trivial option, originally was for something that probably
+	wasn't well enough thought out and should be eliminated
+	*/
+	//int g_caps;
+	int m_caps;
+	//int g_binary;
+	int m_binary;
+	//int g_memoric;
+	int m_memoric;
+	//int g_asm_instruction_info;
+	int m_asm_instruction_info;
+	//int g_print_used;
+	int m_print_used;
+	//int g_print_string_table;
+	int m_print_string_table;
+	//Internal ID used to represent blocks.  Intended for debugging
+	//int g_print_block_id;
+	int m_print_block_id;
+	//int g_print_header;
+	int m_print_header;
+	//nothing (Intel), $ (MIPS) and % (gcc) are common
+	//char g_reg_prefix[8]
+	std::string m_reg_prefix;
 };
 
 //Default configuration options

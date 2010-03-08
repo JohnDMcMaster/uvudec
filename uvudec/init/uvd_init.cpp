@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -68,7 +67,7 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	
 	UV_ENTER();
 	
-	printf_debug_level(UVD_DEBUG_PASSES, "Initializing engine...\n");
+	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
 	UVDBenchmark engineInitBenchmark;
 	engineInitBenchmark.start();
 
@@ -85,17 +84,21 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	default:
 		configFile = "arch/8051/8051.op";
 	};
+	
+	uv_assert_ret(m_config);
 		
-	g_verbose = g_verbose_init;
+	m_config->m_verbose = m_config->m_verbose_init;
 
+	/*
 	m_CPU = new UVDCPU();
 	uv_assert_ret(m_CPU);
 	uv_assert_err_ret(m_CPU->init());
+	*/
 
 	m_opcodeTable = new UVDOpcodeLookupTable();
 	//printf_debug("Initializing opcode table, address: 0x%.8X\n", (unsigned int)m_opcodeTable);
 	uv_assert(m_opcodeTable);
-	m_CPU->m_opcodeTable = m_opcodeTable;
+	//m_CPU->m_opcodeTable = m_opcodeTable;
 	
 	m_symMap = new UVDSymbolMap();
 	uv_assert(m_symMap);
@@ -107,8 +110,9 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	uv_assert(m_analyzer);
 	m_analyzer->m_uvd = this;
 	uv_assert_err_ret(m_analyzer->init());
-	m_config = new UVDConfig();
-	uv_assert(m_config);
+	//Default to our global config, which should have already been initialized since its program dependent
+	m_config = g_config;
+	uv_assert_ret(m_config);
 	m_format = new UVDFormat();
 	uv_assert(m_format);
 
@@ -126,7 +130,7 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	printFormatting();
 	printf_debug("UVD: init OK!\n\n\n");
 
-	g_verbose = g_verbose_processing;
+	m_config->m_verbose = m_config->m_verbose_processing;
 	
 	engineInitBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "engine init time: %s\n", engineInitBenchmark.toString().c_str());
@@ -272,6 +276,7 @@ uv_err_t UVD::init_misc(UVDConfigSection *misc_section)
 		goto error;
 	}
 
+	uv_assert_ret(m_config);
 
 	//lines = misc_section->m_lines;
 	//n_lines = misc_section->m_n_lines;
@@ -339,38 +344,14 @@ uv_err_t UVD::init_misc(UVDConfigSection *misc_section)
 		UV_ERR(rc);
 		goto error;
 	}
-	g_mcu_name = value_name;
+	m_config->m_mcu_name = value_name;
 	
 	//MCU desc is optional
-	if( value_desc.empty() && g_format_debug )
-	{
-		value_desc = "<NONE>";
-	}
-	g_mcu_desc = value_desc;
-	
-	if( value_prefix.empty() && g_format_debug )
-	{
-		value_prefix = "<NONE>";
-	}
-	g_asm_imm_prefix = value_prefix;
-	
-	if( value_prefix_hex.empty() && g_format_debug )
-	{
-		value_prefix_hex = "<NONE>";
-	}
-	g_asm_imm_prefix_hex = value_prefix_hex;
-
-	if( value_postfix_hex.empty() && g_format_debug )
-	{
-		value_postfix_hex = "<NONE>";
-	}
-	g_asm_imm_postfix_hex = value_postfix_hex;
-
-	if( value_suffix.empty() && g_format_debug )
-	{
-		value_suffix = "<NONE>";
-	}
-	g_asm_imm_suffix = value_suffix;
+	m_config->m_mcu_desc = value_desc;
+	m_config->m_asm_imm_prefix = value_prefix;
+	m_config->m_asm_imm_prefix_hex = value_prefix_hex;
+	m_config->m_asm_imm_postfix_hex = value_postfix_hex;
+	m_config->m_asm_imm_suffix = value_suffix;
 
 	printf_debug("Misc init OK\n");
 
@@ -1082,8 +1063,6 @@ uv_err_t UVD::init_vectors(UVDConfigSection *section)
 		vector->m_name = value_name;
 		vector->m_description = value_description;
 		vector->m_offset = strtol(value_offset.c_str(), NULL, 0);
-	
-		
 	}
 	
 	printf_debug("Vectors init OK\n");
