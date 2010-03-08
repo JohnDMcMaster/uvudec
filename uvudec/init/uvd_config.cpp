@@ -1,13 +1,14 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "interpreter/uvd_python.h"
+#include "uvd_arg_util.h"
 #include "uvd_config.h"
 #include "uvd_language.h"
+#include "uvd_log.h"
 #include "uvd_opcode.h"
 #include "uvd_util.h"
 #include <string>
@@ -186,6 +187,18 @@ error:
 
 UVDConfig::UVDConfig()
 {
+	m_argc = 0;
+	m_argv = NULL;
+
+	versionPrintPrefixThunk = NULL;
+	usagePrintPostfixThunk = NULL;
+
+	m_sDebugFile = UVD_OPTION_FILE_STDOUT;
+	//m_pDebugFile = NULL;
+
+	m_addressMin = 0;
+	m_addressMax = 0;
+
 	//Don't default to an unsupported language	
 #if defined(USING_JAVASCRIPT)
 	//Default: javascript has the highest preformance
@@ -202,6 +215,43 @@ UVDConfig::UVDConfig()
 	m_analysisOnly = false;
 	m_uselessASCIIArt = false;
 	m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__LINEAR;
+
+	m_printUsed = false;
+	m_jumpedSources = false;
+	m_calledSources = false;
+	m_addressComment = false;
+	m_addressLabel = false;
+
+	m_verbose = false;
+	m_verbose_level = UVD_DEBUG_NONE;
+	m_verbose_init = false;
+	m_verbose_processing = false;
+	m_verbose_analysis = false;
+	m_verbose_printing = false;
+
+
+	m_addr_min = 0;
+	m_addr_max = 0;
+	m_called_sources = false;
+	m_called_count = true;
+	m_jumped_sources = false;
+	m_jumped_count = true;
+	m_addr_comment = false;
+	m_addr_label = false;
+	m_hex_addr_print_width = 4;
+	m_caps = false;
+	m_binary = false;
+	m_memoric = false;
+	m_asm_instruction_info = false;
+	m_print_used = false;
+	m_print_string_table = false;
+	m_print_block_id = false;
+	m_print_header = false;
+}
+
+UVDConfig::~UVDConfig()
+{
+	deinit();
 }
 
 uv_err_t UVDConfig::readSections(const std::string config_file, std::vector<UVDConfigSection> sectionsIn)
@@ -335,4 +385,69 @@ uv_err_t UVDConfig::uvd_read_sections(const std::string &config_file, UVDConfigS
 
 error:
 	return UV_DEBUG(rc);
+}
+
+uv_err_t UVDConfig::parseMain(int argc, char **argv)
+{
+	return UV_DEBUG(parseMain(argc, argv, NULL));
+}
+
+uv_err_t UVDConfig::parseMain(int argc, char **argv, char **envp)
+{
+	uv_err_t processRc = UV_ERR_GENERAL;
+
+	m_argc = argc;
+	m_argv = argv;
+	
+	m_args = charPtrArrayToVector(m_argv, m_argc);
+
+	//Parse the data
+	processRc = UVDArgConfig::process(m_configArgs, m_args);
+	uv_assert_err_ret(processRc);
+	if( processRc == UV_ERR_DONE )
+	{
+		return processRc;
+	}
+
+	//And then initialize as needed
+	uv_assert_err_ret(processParseMain());
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::parseUserConfig()
+{
+	//TODO: add support using libconfig
+	return UV_ERR_OK;
+}
+
+//disasm->m_noncodingAddresses = g_noncodingAddresses;
+//std::vector<UVDMemoryLocation> g_noncodingAddresses;
+
+uv_err_t UVDConfig::processParseMain()
+{
+	//g_noncodingAddresses.push_back(UVDMemoryLocation(exclusion_addr_min, exclusion_addr_max));
+	//Make sure we are logging to correct target now that we have parsed args
+	uv_assert_err_ret(uv_log_init(m_sDebugFile.c_str()));
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::init()
+{
+	//Load user defined defaults
+	uv_assert_err_ret(parseUserConfig());
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::deinit()
+{
+	for( std::vector<UVDArgConfig *>::iterator iter = m_configArgs.begin(); iter != m_configArgs.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_configArgs.clear();
+	
+	return UV_ERR_OK;
 }
