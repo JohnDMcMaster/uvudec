@@ -13,13 +13,7 @@ Define UV_LOG_DISABLED to disable logging on preprocessor level
 #include "uvd_error.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* ifdef __cplusplus */
-
 typedef uint32_t uv_log_level;
-
 
 
 //Debug message, does not indicate anything is wrong
@@ -46,7 +40,7 @@ typedef uint32_t uv_log_level;
 #ifdef UV_LOG_DISABLED
 
 #define uv_log(level, message, file, line, func)		UV_ERR_OK
-#define uv_log_set_file(log_file)						UV_ERR_OK
+#define UVDLogSetFile(logFile)							UV_ERR_OK
 #define uv_log_get_file(log_file)						UV_ERR_OK
 #define uv_log_init(log_file)							UV_ERR_OK
 #define uv_log_deinit()									UV_ERR_OK
@@ -54,7 +48,7 @@ typedef uint32_t uv_log_level;
 #else //ifdef UV_LOG_DISABLED
 
 uv_err_t uv_log(uv_log_level level, const char *message, const char *file, int line, const char *func);
-uv_err_t uv_log_set_file(const char *log_file);
+uv_err_t UVDLogSetFile(const std::string &logFile);
 uv_err_t uv_log_get_file(uv_const_char_ptr *log_file);
 
 //If NULL, will assume default log file
@@ -64,9 +58,7 @@ uv_err_t uv_log_deinit(void);
 
 #endif //ifdef UV_LOG_DISABLED
 
-#ifdef __cplusplus
-}
-#endif /* ifdef __cplusplus */
+extern FILE *g_log_handle;
 
 #endif //ifndef UV_LOG_H
 

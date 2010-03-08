@@ -1,26 +1,66 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "uvd_types.h"
+#include "uvd_config.h"
 #include "uvd_debug.h"
-#include "uvd_error.h"
+#include "uvd_log.h"
+#include <signal.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-int g_verbose = FALSE;
-const char *g_last_func = NULL;
-int g_verbose_init = FALSE;
-int g_verbose_processing = FALSE;
-int g_verbose_analysis = FALSE;
-int g_verbose_printing = FALSE;
-int g_verbose_level = UVD_DEBUG_NONE;
-FILE *g_pDebugFile = stdout;
-FILE *g_pOutputFile = stdout;
+static const char *g_last_func = NULL;
+
+void uvd_signal_handler(int sig)
+{
+	const char *sig_str = "UNKNOWN";
+	switch( sig )
+	{
+	case SIGSEGV:
+		sig_str = "SIGSEGV";
+		break;
+	case SIGFPE:
+		sig_str = "SIGFPE";
+		break;
+	}
+	
+	printf("\n\nSEVERE ERROR\n");
+	/*
+	i before e, except after c... 
+	...and you'll never be right, no matter what you say!
+	*/
+	printf("Received signal: %s\n", sig_str);
+	//exit() is not a "safe" function.  See man signal
+	_exit(1);
+}
+
+void printf_debug_level(int level, const char *format, ...)
+{
+	//Keep logging before g_config initialized
+	if( !g_log_handle )
+	{
+		printf_warn("ignoring log due to missing log FILE *\n");
+		return;
+	}
+	if( !g_config )
+	{
+		printf_warn("doing early log before config init\n");
+	}
+	//Is logging disabledor are we at too high of a level
+	else if( !g_config->m_verbose || level > g_config->m_verbose_level )
+	{
+		return;
+	}
+
+	va_list ap;
+	
+	va_start(ap, format);
+	vfprintf(g_log_handle, format, ap);
+	fflush(g_log_handle);
+	va_end(ap);
+}
 
 void uv_enter(const char *file, int line, const char *func)
 {
@@ -33,15 +73,14 @@ const char *get_last_func()
 	return g_last_func;
 }
 
-void printf_debug_level(int level, const char *format, ...)
+uv_err_t UVDDebugInit()
 {
-	if( g_verbose && level <= g_verbose_level )
-	{
-		va_list ap;
-		
-		va_start(ap, format);
-		vfprintf(g_pDebugFile, format, ap);
-		fflush(stdout);
-		va_end(ap);
-	}
+	signal(SIGSEGV, uvd_signal_handler);
+	signal(SIGFPE, uvd_signal_handler);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDDebugDeinit()
+{
+	return UV_ERR_OK;
 }
