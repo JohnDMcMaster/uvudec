@@ -23,6 +23,8 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &space, UVDAnalyzedMemoryLocations::iterator &iter, uint32_t types, bool curAddressLegal)
 {
 	uint32_t superblockMaxAddress = 0;
+	
+	uv_assert_ret(g_config);
 
 	uv_assert_ret(superblock);
 	uv_assert_err_ret(superblock->getMaxAddress(superblockMaxAddress));
@@ -55,9 +57,9 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 			iter = space.end();
 			break;
 		}
-		if( referencedMemory->m_min_addr > g_addr_max )
+		if( referencedMemory->m_min_addr > g_config->m_addr_max )
 		{
-			printf_debug("Limit reached: referencedMemory->m_min_addr (0x%.8X) > g_addr_max (0x%.8X)\n", referencedMemory->m_min_addr, g_addr_max);
+			printf_debug("Limit reached: referencedMemory->m_min_addr (0x%.8X) > m_addr_max (0x%.8X)\n", referencedMemory->m_min_addr, g_config->m_addr_max);
 			iter = space.end();
 			break;
 		}
@@ -102,6 +104,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 
 	UVDAnalysisDBArchive *curDb = NULL;
 	
+	uv_assert_ret(m_config);
 
 	printf_debug("\n");
 	printf_debug("\n");
@@ -173,9 +176,9 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		}
 		
 		//Truncate to end of analyzed region if necessary
-		if( functionBlockEnd > g_addr_max )
+		if( functionBlockEnd > m_config->m_addr_max )
 		{
-			functionBlockEnd = g_addr_max;
+			functionBlockEnd = m_config->m_addr_max;
 		}
 		
 		/*
@@ -268,9 +271,10 @@ uv_err_t UVD::constructBlocks()
 	UVDBenchmark blockAnalysisBenchmark;
 	blockAnalysisBenchmark.start();
 
+	uv_assert_ret(m_config);
 	
 	//Highest level block: entire program
-	uv_assert_err(constructBlock(g_addr_min, g_addr_max, &superblock));
+	uv_assert_err(constructBlock(m_config->m_addr_min, m_config->m_addr_max, &superblock));
 	m_analyzer->m_block = superblock;
 
 	//Find functions, add them as sub blocks
@@ -373,8 +377,10 @@ uv_err_t UVD::analyzeControlFlow()
 uv_err_t UVD::analyzeControlFlowLinear()
 {
 	UVDIterator iter;
-	int printPercentage = 1;
-	int printNext = printPercentage;
+	uint32_t printPercentage = 1;
+	uint32_t printNext = printPercentage;
+
+	uv_assert_ret(m_config);
 
 	iter = begin();
 	for( ;; )
@@ -384,11 +390,14 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		uint32_t startPos = iter.getPosition();
 		uint32_t endPos = 0;
 		
-		int curPercent = 100 * startPos / g_addr_max;
-		if( curPercent >= printNext )
+		if( m_config->m_addr_max )
 		{
-			printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
-			printNext += printPercentage;
+			uint32_t curPercent = 100 * startPos / m_config->m_addr_max;
+			if( curPercent >= printNext )
+			{
+				printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
+				printNext += printPercentage;
+			}
 		}
 
 		printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
@@ -567,6 +576,7 @@ uv_err_t UVD::analyzeControlFlowTrace()
 	std::set<uint32_t> jumps;
 	
 	uv_assert_ret(m_CPU);
+	uv_assert_ret(m_config);
 
 	//Another way to do with would be to do "START" and then all other vectors
 	for( std::vector<UVDCPUVector *>::iterator iter = m_CPU->m_vectors.begin(); iter != m_CPU->m_vectors.end(); ++iter )
@@ -606,11 +616,14 @@ uv_err_t UVD::analyzeControlFlowTrace()
 			uint32_t startPos = iter.getPosition();
 			uint32_t endPos = 0;
 			
-			uint32_t curPercent = 100 * startPos / g_addr_max;
-			if( curPercent >= printNext )
+			if( m_config->m_addr_max )
 			{
-				printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
-				printNext += printPercentage;
+				uint32_t curPercent = 100 * startPos / m_config->m_addr_max;
+				if( curPercent >= printNext )
+				{
+					printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
+					printNext += printPercentage;
+				}
 			}
 
 			printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
@@ -711,9 +724,13 @@ uv_err_t UVD::analyzeConstData()
 uv_err_t UVD::analyze()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	int verbose_pre = g_verbose;
+	int verbose_pre = 0;
 	
-	g_verbose = g_verbose_analysis;
+	uv_assert_ret(m_config);
+	
+	verbose_pre = m_config->m_verbose;
+	
+	m_config->m_verbose = m_config->m_verbose_analysis;
 	
 	//Set a default compiler to generate code for
 	//How this is set will probably change drastically in the future
@@ -733,6 +750,6 @@ uv_err_t UVD::analyze()
 	rc = UV_ERR_OK;
 	
 error:
-	g_verbose = verbose_pre;
+	m_config->m_verbose = verbose_pre;
 	return UV_DEBUG(rc);
 }
