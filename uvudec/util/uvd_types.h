@@ -33,6 +33,9 @@ Eventually a C interface will be exposed again with at least basic capabilities
 
 typedef int32_t uv_err_t;
 
+//A function with appropriete return type that takes no args
+typedef uv_err_t (*uv_thunk_t)();
+
 /*
 Instruction classes
 The way these are used is still being developed
