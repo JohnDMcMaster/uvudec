@@ -1,7 +1,9 @@
 #include <string>
 #include "uvd_format.h"
+#include "uvd_config.h"
 #include "uvd_types.h"
 
+#if 0
 unsigned int g_addr_min = 0;
 //int g_addr_max = 0;
 unsigned int g_addr_max = 0;
@@ -17,13 +19,6 @@ int g_jumped_sources = false;
 int g_jumped_count = true;
 int g_print_string_table = false;
 int g_print_header = false;
-
-/*
-Internal use only, do not use outside library (at least not safely!)
-Should probably make this some more internal header eventually
-*/
-//This should be initialized during usage, and so not here
-char g_uvd_ret_buff[UV_DISASM_RET_BUFF_SIZE];
 
 /* nothing (Intel), $ (MIPS) and % (gcc) are common */
 char reg_prefix[8] = "";
@@ -43,6 +38,7 @@ struct uvd_mem_tag_t *g_memory_tags = NULL;
 int g_memoric = 0;
 int g_asm_instruction_info = 0;
 int g_print_block_id = TRUE;
+#endif
 
 UVDFormat::UVDFormat()
 {
@@ -61,6 +57,7 @@ void UVDFormat::printFormatting()
 
 void printFormatting()
 {
+#if 0
 	printf_debug("******\n");
 
 	printf_debug("***\n");
@@ -86,6 +83,7 @@ void printFormatting()
 	printf_debug("g_asm_imm_postfix_hex: %s\n", g_asm_imm_postfix_hex.c_str());
 	printf_debug("g_asm_imm_suffix: %s\n", g_asm_imm_suffix.c_str());
 	printf_debug("reg_prefix: %s\n", reg_prefix);
+#endif
 }
 
 std::string UVDFormat::formatAddress(uint32_t address)
@@ -93,7 +91,12 @@ std::string UVDFormat::formatAddress(uint32_t address)
 	char formatter[32];
 	char buff[32];
 	
-	snprintf(formatter, 32, "0x%%.%dX", g_hex_addr_print_width);
+	if( !g_config )
+	{
+		return "";
+	}
+	
+	snprintf(formatter, 32, "0x%%.%dX", g_config->m_hex_addr_print_width);
 	snprintf(buff, 32, formatter, address);
 
 	return std::string(buff);
@@ -103,7 +106,12 @@ std::string UVDFormat::formatRegister(const std::string &reg)
 {
 	char buff[32];
 	
-	snprintf(buff, 32, "%s%s", reg_prefix, reg.c_str());
+	if( !g_config )
+	{
+		return "";
+	}
+	
+	snprintf(buff, 32, "%s%s", g_config->m_reg_prefix.c_str(), reg.c_str());
 
 	return std::string(buff);
 }
