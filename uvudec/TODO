@@ -19,8 +19,14 @@ TODO
 	Will allow perfect decompilation of known coderee
 	In progress...connected.
 -Support more architectures
--Support config pre-processor
-	Allows inheritance of processor families
+-Config improvements
+	Can any of this use libconfig?
+		http://www.hyperrealm.com/libconfig/
+	Processor
+		-Support config pre-processor
+		-Allows inheritance of processor families
+	Arguments
+		-Create property based config
 -Parse while loops
 -Parse for loops
 -Parse if/else
@@ -43,6 +49,7 @@ TODO
 -Look into Qemu deeper
 	Hardware (peripheral) desciption language
 	See if can make IR translator to take advantage of supported architectures
+	clang, LVM
 -Third party decompilation
 	Plugin to make rec command line calls?
 		Closed source, might not be for best
