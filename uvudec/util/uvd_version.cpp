@@ -1,5 +1,6 @@
-#include "uvd_version.h"
+#include "uvd.h"
 #include "uvd_util.h"
+#include "uvd_version.h"
 #include <vector>
 
 UVDVersion::UVDVersion()
@@ -95,4 +96,9 @@ UVDSupportedVersion::UVDSupportedVersion(UVDVersion min, UVDVersion max)
 {
 	m_min = min;
 	m_max = max;
+}
+
+const char *UVDGetVersion()
+{
+	return UVUDEC_VER_STRING;
 }

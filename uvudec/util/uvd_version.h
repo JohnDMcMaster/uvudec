@@ -42,4 +42,9 @@ public:
 	UVDVersion m_max;
 };
 
+/*
+To verify we have linked to a good library version if we are using dlsym() style loading
+*/
+const char *UVDGetVersion();
+
 typedef std::vector<UVDSupportedVersion> UVDSupportedVersions;
