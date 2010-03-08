@@ -34,7 +34,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_language.h"
+#include "uvd_log.h"
 #include "uvd_types.h"
+
+UVD *g_uvd = NULL;
 
 /*
 TODO: there was a paradigm shift between how to analyze functions
@@ -121,17 +124,39 @@ static std::string mangleFileToSymbol(const std::string &sIn)
 	return sBasename;
 }
 
-std::string UVD::analyzedSymbolName(uint32_t functionAddress)
+std::string UVD::analyzedSymbolName(uint32_t symbolAddress, int symbolType)
 {
 	if( m_data )
 	{
 		std::string dataSource = uv_basename(m_data->getSource());
-		return analyzedSymbolName(dataSource, functionAddress);
+		return analyzedSymbolName(dataSource, symbolAddress, symbolType);
 	}
 	return "";
 }
 
-std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t functionAddress)
+/*
+For generating unknown symbol stuff
+*/
+static const char *getSymbolTypeNamePrefix(int symbolType)
+{
+	switch( symbolType )
+	{
+	case UVD__SYMBOL_TYPE__UNKNOWN:
+		return "unknown";
+	case UVD__SYMBOL_TYPE__FUNCTION:
+		return "sub";
+	case UVD__SYMBOL_TYPE__LABEL:
+		return "lab";
+	case UVD__SYMBOL_TYPE__ROM:
+		return "const";
+	case UVD__SYMBOL_TYPE__VARIABLE:
+		return "var";
+	default:
+		return "error";
+	}
+}
+
+std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t symbolAddress, int symbolType)
 {
 	/*
 	Might be nice to add on something about these being unknown symbol rather than known
@@ -139,11 +164,14 @@ std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t functionAdd
 	uvd_unknown__candela_rev_3__3242
 	*/
 	char buff[512];
+	const char *typePrefix = getSymbolTypeNamePrefix(symbolType);
+	//make this optional?
+	const char *uvudecPrefix = "uvudec__";
 
 	//file + address
 	//Do mangling to make sure we don't have dots and such
 	std::string mangeledDataSource = mangleFileToSymbol(dataSource);
-	snprintf(buff, 512, "uvudec__%s__%.4X", mangeledDataSource.c_str(), functionAddress);
+	snprintf(buff, 512, "%s%s__%s_%.4X", uvudecPrefix, mangeledDataSource.c_str(), typePrefix, symbolAddress);
 	return std::string(buff);
 }
 
@@ -335,13 +363,14 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 	UVDDataChunk *dataChunk = NULL;
 	//uint32_t dataSize = 0;
 	
+	uv_assert_ret(m_config);
 	uv_assert_ret(blockOut);
 	
 	printf_debug("Constructing block 0x%.8X:0x%.8X\n", minAddr, maxAddr);
 	uv_assert_ret(m_data);
 
 	uv_assert_ret(minAddr <= maxAddr);
-	uv_assert_ret(maxAddr <= g_addr_max);
+	uv_assert_ret(maxAddr <= m_config->m_addr_max);
 	//dataSize = maxAddr - minAddr;
 
 	block = new UVDAnalyzedBlock();
@@ -490,6 +519,38 @@ error:
 }
 
 
+uv_err_t UVDInit()
+{
+	//Initially we log to console until a "real" log is setup which may be an actual file
+	//we don't know actual file because we haven't parsed args yet
+	uv_assert_err_ret(uv_log_init("/dev/stdout"));
+	uv_assert_err_ret(UVDDebugInit());
+	uv_assert_err_ret(UVDInitConfig());
+	printf_debug_level(UVD_DEBUG_PASSES, "UVDInit(): done\n");
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDDeinit()
+{
+	if( g_uvd )
+	{
+		delete g_uvd;
+		g_uvd = NULL;
+	}
+
+	//This won't get deleted by prev if it was global instance
+	if( g_config )
+	{
+		delete g_config;
+		g_config = NULL;
+	}
+
+	uv_assert_err_ret(UVDDebugDeinit());
+	uv_assert_err_ret(uv_log_deinit());
+
+	return UV_ERR_OK;
+}
+
 UVD::UVD()
 {
 	m_data = NULL;
@@ -498,25 +559,107 @@ UVD::UVD()
 	m_interpreter = NULL;
 	m_analyzer = NULL;
 	m_format = NULL;
-	m_CPU = NULL;
+	//m_CPU = NULL;
+	m_config = NULL;
+	m_symMap = NULL;
+}
+
+UVD::~UVD()
+{
+	deinit();
+}
+
+uv_err_t UVD::deinit()
+{
+	//m_data deallocated by UVD engine caller
+	
+	/*
+	if( m_CPU )
+	{
+		delete m_CPU;
+		m_CPU = NULL;
+	}
+	*/
+	if( m_opcodeTable )
+	{
+		delete m_opcodeTable;
+		m_opcodeTable = NULL;
+	}
+	if( m_symMap )
+	{
+		delete m_symMap;
+		m_symMap = NULL;
+	}
+	if( m_interpreter )
+	{
+		delete m_interpreter;
+		m_interpreter = NULL;
+	}
+	if( m_analyzer )
+	{
+		delete m_analyzer;
+		m_analyzer = NULL;
+	}
+	if( m_format )
+	{
+		delete m_format;
+		m_format = NULL;
+	}
+
+	//std::map<std::string, UVDRegisterShared *> m_registers;
+	for( std::map<std::string, UVDRegisterShared *>::iterator iter = m_registers.begin(); iter != m_registers.end(); ++iter )
+	{
+		UVDRegisterShared *regShared = (*iter).second;
+
+		if( !regShared )
+		{
+			printf_warn("bad regShared entry\n");
+		}
+		else
+		{
+			delete regShared;
+		}
+	}
+	m_registers.clear();
+	
+	if( m_config != g_config )
+	{
+		delete m_config;
+		m_config = NULL;
+	}
+	
+	return UV_ERR_OK;
 }
 
 //Factory function for construction
 uv_err_t UVD::getUVD(UVD **uvdIn, UVDData *data)
 {
 	UVD *uvd = NULL;
-		
-	uvd = new UVD();
-	if( !uvd )
-	{
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	if( UV_FAILED(uvd->init(data)) )
-	{
-		delete uvd;
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
 	
+	if( g_uvd )
+	{
+		uvd = g_uvd;	
+	}
+	else
+	{
+		uvd = new UVD();
+		if( !uvd )
+		{
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		
+		uv_assert_ret(g_config);
+		uvd->m_config = g_config;
+		
+		if( UV_FAILED(uvd->init(data)) )
+		{
+			delete uvd;
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		
+		g_uvd = uvd;
+	}
+
 	uv_assert_ret(uvdIn);
 	*uvdIn = uvd;
 	return UV_ERR_OK;
@@ -626,6 +769,8 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 		goto error;		
 	}
 	*/
+printf("m_data: 0x%.8X\n", (unsigned int)m_data);
+	uv_assert_ret(m_data);
 	dat_sz = m_data->size();
 	
 	//Trivial case: nothing to analyze
@@ -634,10 +779,12 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 		return UV_ERR_OK;
 	}
 	
+	uv_assert_ret(m_config);
+	
 	//If unspecified, default to full range
-	if( g_addr_max == 0 )
+	if( m_config->m_addr_max == 0 )
 	{
-		g_addr_max = dat_sz - 1;
+		m_config->m_addr_max = dat_sz - 1;
 	}
 	printf_debug("Raw data size: 0x%x (%d)\n", dat_sz, dat_sz);
 
@@ -667,6 +814,8 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	int printPercentage = 1;
 	int printNext = printPercentage;
 
+	uv_assert_ret(m_config);
+
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: printing...\n");
 	UVDBenchmark decompilePrintBenchmark;
 	decompilePrintBenchmark.start();
@@ -688,7 +837,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 		printf_debug("\n\n\n");
 		printf_debug("Iteration loop iteration\n");
 
-		int curPercent = 100 * startPos / g_addr_max;
+		int curPercent = 100 * startPos / m_config->m_addr_max;
 		if( curPercent >= printNext )
 		{
 			uint64_t delta = getTimingMicroseconds() - decompilePrintBenchmark.getStart();
@@ -724,7 +873,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	outputRope.clear();
 #endif //USING_ROPE
 	
-	if( g_print_used )
+	if( m_config->m_print_used )
 	{
 		m_opcodeTable->usedStats();
 	}
@@ -735,6 +884,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVD::changeConfig(UVDConfig *config)
 {
 	if( m_config )
@@ -743,4 +893,10 @@ uv_err_t UVD::changeConfig(UVDConfig *config)
 	}
 	m_config = config;
 	return UV_ERR_OK;
+}
+*/
+
+UVDData *UVD::getData()
+{
+	return m_data;
 }
