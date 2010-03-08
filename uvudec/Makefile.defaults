@@ -40,3 +40,10 @@ endif
 # File to work on if no arguments are given
 # Default is no default
 DEFAULT_DECOMPILE_FILE='""'
+
+USING_UVUDEC=Y
+USING_AR2PAT=Y
+USING_COFF2PAT=Y
+USING_OMF2PAT=Y
+USING_ELF2PAT=Y
+USING_PAT2SIG=Y

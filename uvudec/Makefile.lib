@@ -3,7 +3,6 @@
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
 AR = ar
-AR_FLAGS=-rcs
 LD=ld
 
 LIB_VER_MAJOR=$(UVUDEC_VER_MAJOR)
@@ -22,6 +21,23 @@ LIB_STATIC				= $(LIB_DIR)/$(LIB_NAME).a
 LIB_NAMES=$(LIB_STATIC) $(LIBS_DYNAMIC)
 ALL_TARGETS=$(LIB_NAMES)
 
+AR_FLAGS=-rcs
+
+
+ifeq ($(USING_STATIC),Y)
+
+# We use ar to build static libs, so no LIBS/LDFLAGS needed since linking is never done
+LIBS +=
+LDFLAGS +=
+
+else
+
+LIBS +=
+LDFLAGS += -shared -L/usr/lib
+
+endif
+
+
 dynamic: $(LIBS_DYNAMIC)
 	@(true)
 
@@ -38,14 +54,15 @@ $(LIB_DYNAMIC_MINOR): $(LIB_DYNAMIC_PATCH)
 # $(LIB_DYNAMIC_PATCH): $(LIB_DYNAMIC_REAL)
 
 # ld   -lc  cfork_asm.o cfork_c.o  -o libcfork.so
-$(LIB_DYNAMIC_REAL): $(OBJS)
+$(LIB_DYNAMIC_REAL): depend $(OBJS)
 	@(echo 'Creating dynamic lib...')
-	$(LD) -shared $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
+#	$(LD) -shared $(LIBS) $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
+	$(CC) -shared $(LIBS) $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
 
 static: $(LIB_STATIC)
 	@(true)
 
-$(LIB_STATIC): $(OBJS) 
+$(LIB_STATIC): depend $(OBJS) 
 	@(echo 'Creating static lib...')
 	$(AR) $(AR_FLAGS) $(LIB_STATIC) $(OBJS)
 
@@ -57,4 +74,3 @@ infoLib:
 	@(echo "LIB_NAME: $(LIB_NAME)")
 	@(echo "LIB_NAMES: $(LIB_NAMES)")
 	@(echo "")
-

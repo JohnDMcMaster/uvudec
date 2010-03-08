@@ -2,11 +2,33 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-PHONY += uvudec coff2pat omf2pat elf2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore
+PHONY += uvudec coff2pat omf2pat elf2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore test
 
-ALL_TARGETS=lib uvudec coff2pat omf2pat elf2pat pat2sig
+ALL_TARGETS=lib
 # ALL_TARGETS += doc
 CLEAN_DEPS=cleanSub
+
+include Makefile.configure
+
+ifeq ($(USING_UVUDEC),Y)
+ALL_TARGETS += uvudec
+endif
+
+ifeq ($(USING_COFF2PAT),Y)
+ALL_TARGETS += coff2pat
+endif
+
+ifeq ($(USING_OMF2PAT),Y)
+ALL_TARGETS += omf2pat
+endif
+
+ifeq ($(USING_ELF2PAT),Y)
+ALL_TARGETS += elf2pat
+endif
+
+ifeq ($(USING_PAT2SIG),Y)
+ALL_TARGETS += pat2sig
+endif
 
 include Makefile.mk
 
@@ -23,23 +45,44 @@ MAN_DIR=$(PREFIX)/man/man$(MAN_SECTION)
 
 PACKAGE=uvudec
 
-uvudec:
+ifeq ($(USING_UVUDEC),Y)
+uvudec: lib
 	cd core && $(MAKE)
+endif
 
+ifeq ($(USING_AR2PAT),Y)
 ar2pat:
 	cd ar2pat && $(MAKE)
+endif
 
+ifeq ($(USING_COFF2PAT),Y)
 coff2pat:
 	cd coff2pat && $(MAKE)
+endif
 
+ifeq ($(USING_OMF2PAT),Y)
 omf2pat:
 	cd omf2pat && $(MAKE)
+endif
 
+ifeq ($(USING_ELF2PAT),Y)
 elf2pat:
 	cd elf2pat && $(MAKE)
+endif
 
+ifeq ($(USING_PAT2SIG),Y)
 pat2sig:
 	cd pat2sig && $(MAKE)
+endif
+
+dynamic:
+	$(MAKE) all USING_STATIC=N
+
+static:
+	$(MAKE) all USING_STATIC=Y
+
+test:
+	cd testing && $(MAKE)
 
 lib:
 	cd libuvudec && $(MAKE)
