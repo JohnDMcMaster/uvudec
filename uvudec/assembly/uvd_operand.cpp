@@ -56,7 +56,7 @@ uv_err_t UVDOperand::parseOperand(uint32_t &nextPosition)
 	uv_assert_ret(inst);
 	uvd = inst->m_uvd;
 	uv_assert_ret(uvd);
-	data = uvd->m_data;
+	data = uvd->getData();
 	uv_assert_ret(data);
 
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -277,6 +277,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 
 	uv_assert(buff);
 	uv_assert(m_shared);
+	uv_assert_ret(g_config);
 
 	/*
 	//To look for operand corruption
@@ -388,9 +389,9 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 		}
 		snprintf(format_string, 32, "%%s%%s%s%%s%%s", int_formatter);
 		
-		printf_debug("Print string: %s, pre: <%s>, post: <%s>\n", format_string, g_asm_imm_prefix.c_str(), g_asm_imm_suffix.c_str());
+		printf_debug("Print string: %s, pre: <%s>, post: <%s>\n", format_string, g_config->m_asm_imm_prefix.c_str(), g_config->m_asm_imm_suffix.c_str());
 		
-		pos += snprintf(buff, buffsz, format_string, g_asm_imm_prefix.c_str(), g_asm_imm_prefix_hex.c_str(), print_int, g_asm_imm_postfix_hex.c_str(), g_asm_imm_suffix.c_str());
+		pos += snprintf(buff, buffsz, format_string, g_config->m_asm_imm_prefix.c_str(), g_config->m_asm_imm_prefix_hex.c_str(), print_int, g_config->m_asm_imm_postfix_hex.c_str(), g_config->m_asm_imm_suffix.c_str());
 		break;
 	}
 	case UV_DISASM_DATA_FUNC:
@@ -404,6 +405,8 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 		printf_debug("Print func, args: %d, func: %s\n", m_func->m_args.size(), functionName.c_str());
 		
 		//FIXME: global UVD ref
+		uv_assert_ret(g_uvd);
+		uv_assert_ret(g_uvd->m_symMap);
 		if( UV_SUCCEEDED(g_uvd->m_symMap->getSym(functionName, &sym_value)) )
 		{
 			printf_debug("Got sym\n");
@@ -481,8 +484,8 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 						printf_debug("format string: %s\n", format_string);
 						
 						uv_assert(pos < buffsz);
-						printf_debug("imm prefix hex: <%s>, ui32: %d, %X\n", g_asm_imm_prefix_hex.c_str(), mem_arg->m_ui32, mem_arg->m_ui32);
-						pos += snprintf(buff + pos, buffsz - pos, format_string, g_asm_imm_prefix_hex.c_str(), mem_arg->m_ui32);
+						printf_debug("imm prefix hex: <%s>, ui32: %d, %X\n", g_config->m_asm_imm_prefix_hex.c_str(), mem_arg->m_ui32, mem_arg->m_ui32);
+						pos += snprintf(buff + pos, buffsz - pos, format_string, g_config->m_asm_imm_prefix_hex.c_str(), mem_arg->m_ui32);
 						uv_assert(pos < buffsz);
 
 						/*
