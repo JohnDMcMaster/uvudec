@@ -36,6 +36,8 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
 			$(HASH_DIR)/uvd_md5_GNU.cpp \
+			$(INIT_DIR)/uvd_arg.cpp \
+			$(INIT_DIR)/uvd_arg_util.cpp \
 			$(INIT_DIR)/uvd_config.cpp \
 			$(INIT_DIR)/uvd_config_interpreter.cpp \
 			$(INIT_DIR)/uvd_init.cpp \
