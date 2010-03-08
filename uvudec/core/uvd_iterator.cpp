@@ -40,9 +40,22 @@ UVDIterator::UVDIterator()
 }
 */
 
+UVDIterator::UVDIterator(UVD *disassembler)
+{
+	if( g_config )
+	{
+		UV_DEBUG(init(disassembler, g_config->m_addr_min, 0));
+	}
+}
+
 UVDIterator::UVDIterator(UVD *disassembler, unsigned int position, unsigned int index)
 {
-	UV_ERR(init(disassembler, position, index));
+	UV_DEBUG(init(disassembler, position, index));
+}
+
+UVDIterator::~UVDIterator()
+{
+	UV_DEBUG(deinit());
 }
 
 uv_err_t UVDIterator::init(UVD *disassembler, unsigned int position, unsigned int index)
@@ -52,6 +65,13 @@ uv_err_t UVDIterator::init(UVD *disassembler, unsigned int position, unsigned in
 	m_nextPosition = position;
 	m_positionIndex = index;
 	m_printedInformation = false;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::deinit()
+{
+	m_data = NULL;
+	m_uvd = NULL;
 	return UV_ERR_OK;
 }
 
@@ -73,6 +93,8 @@ uv_err_t UVDIterator::next()
 	
 	UV_ENTER();
 		
+	uv_assert_ret(g_config);
+	
 	if( *this == m_uvd->end() )
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
@@ -94,7 +116,7 @@ uv_err_t UVDIterator::next()
 	
 	//Global debug sort of cutoff
 	//Force to end
-	if( m_nextPosition > g_addr_max )
+	if( m_nextPosition > g_config->m_addr_max )
 	{
 		*this = m_uvd->end();
 		return UV_ERR_DONE;
@@ -186,7 +208,7 @@ uv_err_t UVDIterator::initialPrint()
 	uv_assert_ret(m_uvd);
 	analyzer = m_uvd->m_analyzer;
 	
-	if( g_print_header )
+	if( config->m_print_header )
 	{
 		std::string line;
 		
@@ -211,10 +233,12 @@ uv_err_t UVDIterator::initialPrint()
 	}
 
 	//String table
-	if( g_print_string_table )
+	if( config->m_print_string_table )
 	{
 		snprintf(szBuff, 256, "# String table:");
 		m_indexBuffer.push_back(szBuff);
+
+		uv_assert_ret(m_data);
 
 		for( UVDAnalyzedMemorySpace::iterator iter = analyzer->m_stringAddresses.begin(); iter != analyzer->m_stringAddresses.end(); ++iter )
 		{
@@ -223,7 +247,7 @@ uv_err_t UVDIterator::initialPrint()
 			std::vector<std::string> lines;
 			
 			//Read a string
-			m_uvd->m_data->read(mem->m_min_addr, sData, mem->m_max_addr - mem->m_min_addr);
+			m_data->read(mem->m_min_addr, sData, mem->m_max_addr - mem->m_min_addr);
 	
 			
 			lines = split(sData, '\n', true);
@@ -279,6 +303,7 @@ uv_err_t UVDIterator::nextCore()
 	format = uvd->m_format;
 	uv_assert_ret(format);
 
+	uv_assert_ret(g_config);
 	
 	UV_ENTER();
 	m_indexBuffer.clear();
@@ -307,7 +332,7 @@ uv_err_t UVDIterator::nextCore()
 	
 	otherBenchmark.start();
 	
-	if( g_addr_label )
+	if( g_config->m_addr_label )
 	{
 		char buff[256];
 		
@@ -319,7 +344,7 @@ uv_err_t UVDIterator::nextCore()
 		m_indexBuffer.insert(m_indexBuffer.end(), buff);
 	}
 
-	if( g_addr_comment )
+	if( g_config->m_addr_comment )
 	{
 		char buff[256];
 		
@@ -329,7 +354,7 @@ uv_err_t UVDIterator::nextCore()
 		m_indexBuffer.insert(m_indexBuffer.end(), buff);
 	}
 	
-	if( g_called_sources )
+	if( g_config->m_called_sources )
 	{
 		uv_assert_err_ret(analyzer->getCalledAddresses(calledAddresses));
 		if( calledAddresses.find(startPosition) != calledAddresses.end() )
@@ -355,21 +380,21 @@ uv_err_t UVDIterator::nextCore()
 			m_indexBuffer.insert(m_indexBuffer.end(), buff);
 
 			//Print number of callees?
-			if( g_called_count )
+			if( g_config->m_called_count )
 			{
 				snprintf(buff, 256, "# References: %d", memLoc->getReferenceCount());
 				m_indexBuffer.push_back(buff);
 			}
 
 			//Print callees?
-			if( g_called_sources )
+			if( g_config->m_called_sources )
 			{
 				uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_CALL_DEST));
 			}
 		}
 	}
 	
-	if( g_jumped_sources )
+	if( g_config->m_jumped_sources )
 	{
 		uv_assert_err_ret(analyzer->getJumpedAddresses(jumpedAddresses));
 		//Can be an entry and continue point
@@ -384,14 +409,14 @@ uv_err_t UVDIterator::nextCore()
 			m_indexBuffer.push_back(buff);
 
 			//Print number of references?
-			if( g_jumped_count )
+			if( g_config->m_jumped_count )
 			{
 				snprintf(buff, 256, "# References: %d", memLoc->getReferenceCount());
 				m_indexBuffer.push_back(buff);
 			}
 
 			//Print sources?
-			if( g_jumped_sources )
+			if( g_config->m_jumped_sources )
 			{
 				uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_JUMP_DEST));
 			}
@@ -448,7 +473,7 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	uv_assert_ret(uvd);
 	uv_assert(data);
 	
-	if( m_nextPosition > g_addr_max )
+	if( m_nextPosition > g_config->m_addr_max )
 	{
 		*this = m_uvd->end();
 		return UV_ERR_DONE;
