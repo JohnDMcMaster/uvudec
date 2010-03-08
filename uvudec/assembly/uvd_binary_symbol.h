@@ -14,6 +14,13 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <string>
 #include <vector>
 
+//should use RTTI for this instead?
+#define UVD__SYMBOL_TYPE__UNKNOWN			0
+#define UVD__SYMBOL_TYPE__FUNCTION			1
+#define UVD__SYMBOL_TYPE__LABEL				2
+#define UVD__SYMBOL_TYPE__ROM				3
+#define UVD__SYMBOL_TYPE__VARIABLE			4
+
 /*
 A symbol as if found in an object file, not necessarily ELF format
 A format easily workable in memory

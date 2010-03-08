@@ -204,6 +204,9 @@ uv_err_t UVDInstruction::print_disasm(char *buff, unsigned int buffsz)
 	uv_err_t rc = UV_ERR_GENERAL;
 	unsigned int pos = 0;
 	std::string operand_pad = "";
+	UVDConfig *config = g_config;
+	
+	uv_assert_ret(config);
 	
 	UV_ENTER();
 
@@ -215,7 +218,7 @@ uv_err_t UVDInstruction::print_disasm(char *buff, unsigned int buffsz)
 	{
 		operand_pad = " ";
 	}
-	if( g_verbose )
+	if( config->m_verbose )
 	{
 		printf_debug("offset: 0x%.4X\n", m_offset);
 	}
@@ -233,7 +236,7 @@ uv_err_t UVDInstruction::print_disasm(char *buff, unsigned int buffsz)
 
 	printf_debug("beginning print\n");
 	
-	if( g_asm_instruction_info )
+	if( config->m_asm_instruction_info )
 	{
 		pos = snprintf(buff, buffsz, "%s (0x%.2X/%s)%s", m_shared->m_memoric.c_str(), ((unsigned int)m_inst[0]) & 0xFF, m_shared->m_desc.c_str(), operand_pad.c_str());
 	}
@@ -319,7 +322,8 @@ uv_err_t UVDInstruction::parseOperands(uint32_t &nextPosition, std::vector<UVDOp
 	UV_ENTER();
 	
 	UVDData *data = NULL;;
-	data = m_uvd->m_data;
+	uv_assert_ret(m_uvd);
+	data = m_uvd->getData();
 	uv_assert_ret(data);
 	
 	//uv_assert(instruction);
