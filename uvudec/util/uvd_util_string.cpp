@@ -239,11 +239,16 @@ char *cap_fixup(char *str)
 	
 	UV_ENTER();
 
+	if( !g_config )
+	{
+		return NULL;
+	}
+
 	if( !str )
 	{
 		return str;
 	}
-	if( g_caps )
+	if( g_config->m_caps )
 	{
 		while( *ptr )
 		{
