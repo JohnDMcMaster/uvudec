@@ -239,10 +239,11 @@ uv_err_t UVD::init_config(const std::string &configFile)
 	rc = UV_ERR_OK;
 
 error:
-	delete op_section;
-	delete mem_section;
-	delete misc_section;
-	delete reg_section;	
+	for( unsigned int i = 0; i < n_sections; ++i )
+	{
+		delete sections[i];
+	}
+	free(sections);
 	
 	return UV_DEBUG(rc);
 }
@@ -977,6 +978,8 @@ error:
 uv_err_t UVD::init_vectors(UVDConfigSection *section)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
+
+#if USING_VECTORS
 	std::vector< std::vector<std::string> > sectionParts;
 	
 	printf_debug("Initializing vectors data\n");
@@ -1063,11 +1066,14 @@ uv_err_t UVD::init_vectors(UVDConfigSection *section)
 		vector->m_name = value_name;
 		vector->m_description = value_description;
 		vector->m_offset = strtol(value_offset.c_str(), NULL, 0);
+		
+		m_CPU->m_vectors.push_back(vector);
 	}
+#endif	
 	
 	printf_debug("Vectors init OK\n");
 
 	rc = UV_ERR_OK;
-error:
+//error:
 	return UV_DEBUG(rc);
 }

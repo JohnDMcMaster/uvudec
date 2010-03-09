@@ -1,9 +1,10 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
+
+#if USING_VECTORS
 
 #ifndef UVD_CPU_VECTOR_H
 #define UVD_CPU_VECTOR_H
@@ -28,5 +29,7 @@ public:
 	uint32_t m_offset;
 	//TODO: add something about conditions for vectoring?
 };
+
+#endif
 
 #endif

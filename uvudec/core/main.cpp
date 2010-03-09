@@ -72,11 +72,9 @@ uv_err_t disassemble(std::string file)
 	uv_assert_all(disasm);
 	uv_assert_all(g_uvd);
 
-/*	
 printf("Debug break\n");
 rc = UV_ERR_OK;
 goto error;
-*/
 
 	//Get string output
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");

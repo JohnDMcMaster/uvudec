@@ -76,6 +76,7 @@ public:
 	
 public:
 	//Other address space
+	//These are not owned by this object, only mapped
 	UVDMemoryShared *m_dst_shared;
 	UVDMemoryShared *m_src_shared;
 	
@@ -95,6 +96,9 @@ class UVDMemoryShared
 {
 public:
 	UVDMemoryShared();
+	~UVDMemoryShared();
+	uv_err_t deinit();
+	
 	uv_err_t setEquivMemName(uint32_t addr, const std::string &name);
 	uv_err_t getEquivMemName(uint32_t addr, std::string &name);
 	

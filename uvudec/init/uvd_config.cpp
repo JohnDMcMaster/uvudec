@@ -22,6 +22,10 @@ UVDConfigSection::UVDConfigSection()
 	m_line = 0;
 }
 
+UVDConfigSection::~UVDConfigSection()
+{
+}
+
 UVDConfigValue::UVDConfigValue()
 {
 	m_operand_type = 0;
