@@ -31,6 +31,22 @@ UVDAnalyzedMemoryLocation::UVDAnalyzedMemoryLocation(unsigned int min_addr, unsi
 {
 }
 
+UVDAnalyzedMemoryLocation::~UVDAnalyzedMemoryLocation()
+{
+	deinit();
+}
+
+uv_err_t UVDAnalyzedMemoryLocation::deinit()
+{
+	for( UVDAnalyzedMemoryLocationReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
+	{
+		delete (*iter).second;
+	}
+	m_references.clear();
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDAnalyzedMemoryLocation::insertReference(uint32_t from, uint32_t type)
 {
 	/*

@@ -64,6 +64,8 @@ public:
 	UVDAnalyzedMemoryLocation(unsigned int min_addr, unsigned int max_addr,
 			UVDMemoryShared *space = NULL);
 	//UVDAnalyzedMemoryLocation(uint32_t referenceCount);
+	~UVDAnalyzedMemoryLocation();
+	uv_err_t deinit();
 
 	uv_err_t insertReference(uint32_t from, uint32_t type);
 	uint32_t getReferenceCount();
