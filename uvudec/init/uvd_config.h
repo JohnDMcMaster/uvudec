@@ -86,6 +86,9 @@ public:
 	*/
 	static uv_err_t parseType(const std::string &in_real, UVDConfigValue *out);
 
+private:
+	static uv_err_t parseTypeNumber(const std::string &in, UVDConfigValue *out);
+
 public:
 	/*
 	One of:
