@@ -21,12 +21,32 @@ UVDBinarySymbol::UVDBinarySymbol()
 
 UVDBinarySymbol::~UVDBinarySymbol()
 {
+	deinit();
 }
 
 uv_err_t UVDBinarySymbol::init()
 {
 	m_relocatableData = new UVDRelocatableData();
 	uv_assert_ret(m_relocatableData);
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbol::deinit()
+{
+	delete m_relocatableData;
+	m_relocatableData = NULL;
+	
+	//This should be a mapped type and not be the actual data
+	//Its deletion should not cause issues
+	delete m_data;
+	m_data = NULL;
+	
+	for( std::set<UVDRelocationFixup *>::iterator iter = m_symbolUsageLocations.begin(); iter != m_symbolUsageLocations.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_symbolUsageLocations.clear();
 	
 	return UV_ERR_OK;
 }

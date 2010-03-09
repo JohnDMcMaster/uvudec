@@ -181,15 +181,20 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 {
 	UVDBinaryFunction *function = NULL;
 	UVDBinaryFunctionShared *functionShared = NULL;
-	UVDDataChunk *dataChunk = NULL;
+	//Since ownership will be xferred to object, we need to map it twice
+	UVDDataChunk *functionDataChunk = NULL;
+	UVDDataChunk *functionInstanceDataChunk = NULL;
 	UVDBinaryFunctionInstance *functionInstance = NULL;
 
 	uv_assert_ret(functionBlock);
 	uv_assert_ret(functionIn);
 	
-	uv_assert_err_ret(functionBlock->getDataChunk(&dataChunk));
-	uv_assert_ret(dataChunk);
-	uv_assert_ret(dataChunk->m_data);
+	uv_assert_err_ret(functionBlock->getDataChunk(&functionDataChunk));
+	uv_assert_err_ret(functionBlock->getDataChunk(&functionInstanceDataChunk));
+	uv_assert_ret(functionDataChunk);
+	uv_assert_ret(functionInstanceDataChunk);
+	uv_assert_ret(functionDataChunk->m_data);
+	uv_assert_ret(functionInstanceDataChunk->m_data);
 
 	function = new UVDBinaryFunction();
 	uv_assert_ret(function);
@@ -225,14 +230,14 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	std::string m_origin;
 	std::string m_notes;
 	*/
-	uv_assert_err_ret(functionInstance->setData(dataChunk));
+	uv_assert_err_ret(functionInstance->setData(functionInstanceDataChunk));
 	//And register it to that particular function
 	functionShared->m_representations.push_back(functionInstance);
 	
 	function->m_shared = functionShared;
 	function->m_uvd = this;
 	//Is this needed?
-	function->m_data = dataChunk;
+	function->m_data = functionDataChunk;
 	
 	*functionIn = function;
 

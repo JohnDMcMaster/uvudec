@@ -38,6 +38,7 @@ public:
 	void setSymbolName(const std::string &name);
 	uv_err_t getSymbolName(std::string &name);
 	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 	
 	//FIXME: this is analysis specific...should it be here?
 	//If this is a symbol in our currently analyzed data, the address it presides at 
@@ -78,8 +79,17 @@ public:
 public:
 	//The symbol's (function's/variable's) name
 	std::string m_symbolName;
-	//The actual data this symbol represents, if its resolved
-	//If the symbol is not resolved, data will be NULL
+	/*
+	The actual data this symbol represents, if its resolved
+	If the symbol is not resolved, data will be NULL
+	Used mostly by subclasses
+	We must be the owner of this
+	This should be a form such that it will remain valid until de-init
+		Gives several options
+		Use a file mapped entry and read the data as needed from disk
+		Use a mapped UVDData that assumes target data will remain valid until prog close
+		May consider a ref count for UVDData to make some of this easier
+	*/
 	UVDData *m_data;
 
 	//The relocations contained within this symbol
