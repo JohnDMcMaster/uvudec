@@ -32,6 +32,7 @@ public:
 	UVDSymbol();
 	~UVDSymbol();
 	uv_err_t init();
+	uv_err_t deinit();
 
 	std::string toString();
 	

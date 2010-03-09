@@ -12,10 +12,32 @@ UVDSymbol::UVDSymbol()
 {
 	m_type = UVD_SYMBOL_UNKNOWN;
 	m_mem = NULL;
+	m_operator = NULL;
+}
+
+UVDSymbol::~UVDSymbol()
+{
+	deinit();
 }
 
 uv_err_t UVDSymbol::init()
 {
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDSymbol::deinit()
+{
+	switch( m_type )
+	{
+	case UVD_SYMBOL_MEM:
+		delete m_mem;
+		m_mem = NULL;
+	case UVD_SYMBOL_OPERATOR:
+		delete m_operator;
+		m_operator = NULL;
+	};
+	m_type = UVD_SYMBOL_UNKNOWN;
+
 	return UV_ERR_OK;
 }
 
@@ -90,6 +112,11 @@ UVDSymbolMap::UVDSymbolMap()
 
 UVDSymbolMap::~UVDSymbolMap()
 {
+	for( SymbolMapMap::iterator iter = m_map.begin(); iter != m_map.end(); ++iter )
+	{
+		delete (*iter).second;
+	}
+	m_map.clear();
 }
 
 uv_err_t UVDSymbolMap::init()
