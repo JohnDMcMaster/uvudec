@@ -311,6 +311,7 @@ uv_err_t uvd_parse_func(const char *text, char **name, char **content)
 	loc = strstr(copy, "(");
 	if( !loc )
 	{
+		free(copy);
 		return UV_ERR_GENERAL;
 	}
 	loc[0] = 0;
