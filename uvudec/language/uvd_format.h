@@ -24,8 +24,10 @@ class UVDFormat
 {
 public:
 	UVDFormat();
+	~UVDFormat();
 	
 	uv_err_t init();
+	uv_err_t deinit();
 	
 	std::string formatAddress(uint32_t address);
 	std::string formatRegister(const std::string &reg);
@@ -34,6 +36,7 @@ public:
 
 public:
 	//Output data has to be formatted to a given compiler
+	//This is owned by this object
 	UVDCompiler *m_compiler;
 };
 
