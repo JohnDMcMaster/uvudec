@@ -32,6 +32,11 @@ class UVDParsedFunction
 //struct uv_disasm_parsed_func_t
 {
 public:
+	UVDParsedFunction();
+	~UVDParsedFunction();
+	uv_err_t deinit();
+	
+public:
 	std::vector<UVDConfigValue *> m_args;
 };
 
@@ -72,6 +77,9 @@ class UVDConfigValue
 {
 public:
 	UVDConfigValue();
+	~UVDConfigValue();
+	uv_err_t deinit();
+
 	/*
 	a UVDConfigValue is a raw structural form of the text
 	It does bulk parsing work shared by both usage and syntax

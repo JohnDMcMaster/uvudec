@@ -31,6 +31,23 @@ UVDConfigValue::UVDConfigValue()
 	m_operand_type = 0;
 	m_num_bits = 0;
 	m_value = 0;
+	m_func = NULL;
+}
+
+UVDConfigValue::~UVDConfigValue()
+{
+	deinit();
+}
+
+uv_err_t UVDConfigValue::deinit()
+{
+	switch( m_operand_type )
+	{
+	case UV_DISASM_DATA_FUNC:
+		delete m_func;
+		m_func = NULL;
+	}
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *out)
@@ -452,6 +469,26 @@ uv_err_t UVDConfig::deinit()
 		delete *iter;
 	}
 	m_configArgs.clear();
+	
+	return UV_ERR_OK;
+}
+
+UVDParsedFunction::UVDParsedFunction()
+{
+}
+
+UVDParsedFunction::~UVDParsedFunction()
+{
+	deinit();
+}
+
+uv_err_t UVDParsedFunction::deinit()
+{
+	for( std::vector<UVDConfigValue *>::iterator iter = m_args.begin(); iter != m_args.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_args.clear();
 	
 	return UV_ERR_OK;
 }
