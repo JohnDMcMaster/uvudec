@@ -151,9 +151,6 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 	else if( strstr(in.c_str(), "(") )
 	{
 		UVDParsedFunction *func = NULL;
-		unsigned int n_func_args = 0;
-		unsigned int func_args_index = 0;
-		char **func_args = NULL;
 		std::string sArgs;
 		std::string sFunc;
 	
@@ -178,16 +175,10 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 		}
 		out->m_func = func;
 
-		func_args = uv_split_core(sArgs.c_str(), ',', &n_func_args, TRUE);
-		if( !func_args )
+		std::vector<std::string> funcArgs = split(sArgs, ',', true);
+		for( std::vector<std::string>::iterator iter = funcArgs.begin(); iter != funcArgs.end(); ++iter )
 		{
-			UV_ERR(rc);
-			goto error;
-		}
-							
-		for( func_args_index = 0; func_args_index < n_func_args; ++func_args_index )
-		{
-			std::string cur = func_args[func_args_index];
+			std::string cur = *iter;
 			UVDConfigValue *parsed_type = NULL;
 			
 			printf_debug("Current argument: %s\n", cur.c_str()); fflush(stdout);
