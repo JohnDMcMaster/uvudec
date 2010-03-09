@@ -78,10 +78,12 @@ public:
 	//uint32_t m_referenceCount;
 };
 
-class UVDAnalyzedCodeShared
+class UVDAnalyzedCode
 {
 public:
-	UVDAnalyzedCodeShared();
+	UVDAnalyzedCode();
+	~UVDAnalyzedCode();
+	uv_err_t deinit();
 
 public:
 	//Language: C, C++, assembly, etc.  Assume C by default since overwhelmingly popular on embedded
@@ -89,15 +91,6 @@ public:
 
 	//A copy of the code
 	UVDDataChunk *m_dataChunk;
-};
-
-class UVDAnalyzedCode
-{
-public:
-	UVDAnalyzedCode();
-
-public:
-	UVDAnalyzedCodeShared *m_shared;
 };
 
 /*
@@ -128,10 +121,15 @@ public:
 	std::vector<UVDAnalyzedBlock *> m_blocks;
 };
 
-class UVDAnalyzedFunctionShared
+//No inherent reason why same function can't be at multiple locations, 
+//other reasons why this may happen
+//Can store analysis in the archive file is main reason, however
+class UVDAnalyzedFunction
 {
 public:
-	UVDAnalyzedFunctionShared();
+	UVDAnalyzedFunction();
+	~UVDAnalyzedFunction();
+	uv_err_t deinit();
 
 public:
 	//Name of the function
@@ -140,21 +138,8 @@ public:
 	std::string m_sSyntax;
 	//Calling convention.  Architecture specific
 	unsigned int m_callingConvention;
-	//Shared code
-	UVDAnalyzedCodeShared *m_code;
-};
-
-//No inherent reason why same function can't be at multiple locations, 
-//other reasons why this may happen
-//Can store analysis in the archive file is main reason, however
-class UVDAnalyzedFunction
-{
-public:
-	UVDAnalyzedFunction();
-
-public:
+	//We own this
 	UVDAnalyzedCode *m_code;
-	UVDAnalyzedFunctionShared *m_shared;
 };
 
 //Map between an address and information regarding it

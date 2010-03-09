@@ -115,15 +115,10 @@ UVDAnalyzedBlock::UVDAnalyzedBlock()
 uv_err_t UVDAnalyzedBlock::getDataChunk(UVDDataChunk **dataChunkIn)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	UVDAnalyzedCodeShared *codeShared = NULL;
 	UVDDataChunk *dataChunk = NULL;
 	
 	uv_assert(m_code);
-	
-	codeShared = m_code->m_shared;
-	uv_assert(codeShared);
-	
-	dataChunk = codeShared->m_dataChunk;
+	dataChunk = m_code->m_dataChunk;
 	uv_assert(dataChunk);
 	
 	uv_assert(dataChunkIn);
@@ -183,27 +178,42 @@ error:
 	return UV_DEBUG(rc);
 }
 
-UVDAnalyzedCodeShared::UVDAnalyzedCodeShared()
+UVDAnalyzedCode::UVDAnalyzedCode()
 {
 	m_language = 0;
 	m_dataChunk = NULL;
 }
 
-UVDAnalyzedCode::UVDAnalyzedCode()
+UVDAnalyzedCode::~UVDAnalyzedCode()
 {
-	m_shared = NULL;
+	deinit();
+}
+
+uv_err_t UVDAnalyzedCode::deinit()
+{
+	delete m_dataChunk;
+	m_dataChunk = NULL;
+
+	return UV_ERR_OK;
 }
 
 UVDAnalyzedFunction::UVDAnalyzedFunction()
 {
 	m_code = NULL;
-	m_shared = NULL;
+	m_callingConvention = 0;
 }
 
-UVDAnalyzedFunctionShared::UVDAnalyzedFunctionShared()
+UVDAnalyzedFunction::~UVDAnalyzedFunction()
 {
-	m_callingConvention = 0;
+	deinit();
+}
+
+uv_err_t UVDAnalyzedFunction::deinit()
+{
+	delete m_code;
 	m_code = NULL;
+	
+	return UV_ERR_OK;
 }
 
 UVDAnalyzer::UVDAnalyzer()
