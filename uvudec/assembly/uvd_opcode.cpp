@@ -800,17 +800,12 @@ error:
 
 uv_err_t UVDOpcodeLookupTable::deinit(void)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
-	int i = 0;
-
-	UV_ENTER();
-	for( i = 0; i < sizeof(m_lookupTable) / sizeof(m_lookupTable[0]); ++i )
+	for( unsigned i = 0; i < sizeof(m_lookupTable) / sizeof(m_lookupTable[0]); ++i )
 	{
 		delete m_lookupTable[i];
 		m_lookupTable[i] = NULL; 
 	}
-	rc = UV_ERR_OK;
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDOpcodeLookupTable::getElement(unsigned int index, UVDOpcodeLookupElement **element)
