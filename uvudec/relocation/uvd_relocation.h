@@ -105,6 +105,9 @@ class UVDSimpleRelocationFixup
 {
 public:
 	UVDSimpleRelocationFixup();
+	~UVDSimpleRelocationFixup();
+	uv_err_t deinit();
+	
 	//Creates a simplified version of a previously created fixup 
 	//This may be removed, it seems below was real intention
 	//uv_err_t getUVDSimpleRelocationFixup(UVDSimpleRelocationFixup **simpleFixupOut, UVDRelocationFixup *fixup,
@@ -113,7 +116,6 @@ public:
 	static uv_err_t getUVDSimpleRelocationFixup(
 			UVDSimpleRelocationFixup **simpleFixupOut, UVDRelocatableElement *relocatableElement,
 			char *data, int size);
-	~UVDSimpleRelocationFixup();
 	
 	//The simply "everything was already setup before" function
 	uv_err_t applyPatch();
@@ -121,8 +123,10 @@ public:
 public:
 	//Calculates where to apply value
 	//The calculation will occur internally as part of a UVDRelocatableElement
+	//We own this
 	UVDRelocationFixup *m_relocationFixup;
 	//The target
+	//We do not own this
 	UVDData *m_data;
 };
 
