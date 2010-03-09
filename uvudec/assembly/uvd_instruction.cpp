@@ -31,6 +31,21 @@ UVDInstructionShared::UVDInstructionShared()
 	m_isImmediateOnlyFunction = UV_ERR_GENERAL;
 }
 
+UVDInstructionShared::~UVDInstructionShared()
+{
+	deinit();
+}
+
+uv_err_t UVDInstructionShared::deinit()
+{
+	for( std::vector<UVDOperandShared *>::iterator iter = m_operands.begin(); iter != m_operands.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_operands.clear();
+	return UV_ERR_OK;
+}
+
 std::string UVDInstructionShared::getHumanReadableUsage()
 {
 	std::string sRet;
@@ -179,6 +194,23 @@ UVDInstruction::UVDInstruction()
 	m_inst_size = 0;
 	m_uvd = NULL;
 	memset(m_inst, 0, sizeof(m_inst));
+}
+
+UVDInstruction::~UVDInstruction()
+{
+	deinit();
+}
+
+uv_err_t UVDInstruction::deinit()
+{
+	//m_shared is not owned by this as there can be n to 1, as is obviously not m_uvd
+	for( std::vector<UVDOperand *>::iterator iter = m_operands.begin(); iter != m_operands.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_operands.clear();
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDInstruction::print_disasm(std::string &s)
