@@ -50,6 +50,10 @@ class UVDOperandShared;
 class UVDFunctionShared
 //struct uv_disasm_func_shared_t
 {
+	UVDFunctionShared();
+	~UVDFunctionShared();
+	uv_err_t deinit();
+
 public:
 	std::vector<UVDOperandShared *> m_args;
 };
@@ -58,6 +62,11 @@ class UVDOperand;
 class UVDFunction
 //struct uv_disasm_func_t
 {
+public:
+	UVDFunction();
+	~UVDFunction();
+	uv_err_t deinit();
+
 public:
 	std::vector<UVDOperand *> m_args;
 };
@@ -88,6 +97,9 @@ class UVDOperandShared
 {
 public:
 	UVDOperandShared();
+	~UVDOperandShared();
+	uv_err_t deinit();
+
 	static uv_err_t uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDOperandShared **op_shared_in);
 
 	//Returns error if it isn't an immediate
