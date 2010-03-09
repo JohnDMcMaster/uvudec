@@ -60,6 +60,7 @@ uv_err_t UVDRelocatableData::deinit()
 	{
 		delete *iter;
 	}
+	m_fixups.clear();
 
 	delete m_data;
 	m_data = NULL;

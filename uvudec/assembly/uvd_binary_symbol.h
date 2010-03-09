@@ -200,6 +200,7 @@ class UVDBinarySymbolManager
 public:
 	UVDBinarySymbolManager();
 	~UVDBinarySymbolManager();
+	uv_err_t deinit();
 
 	uv_err_t findSymbolByAddress(uint32_t address, UVDBinarySymbol **symbol);
 
@@ -235,9 +236,11 @@ private:
 public:
 	//Symbol names must be unique
 	//Needed to convert addresses to symbol names
+	//Not owned by this
 	UVDAnalyzer *m_analyzer;
 
 private:
+	//These represent same object with different mappings, they are owned by this
 	std::map<std::string, UVDBinarySymbol *> m_symbols;
 	std::map<uint32_t, UVDBinarySymbol *> m_symbolsByAddress;
 };

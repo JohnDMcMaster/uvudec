@@ -294,6 +294,12 @@ uv_err_t UVDAnalyzer::deinit()
 	}
 	m_functions.clear();
 
+	for( UVDAnalyzedMemorySpace::iterator iter = m_referencedAddresses.begin(); iter != m_referencedAddresses.end(); ++iter )
+	{
+		delete (*iter).second;
+	}
+	m_referencedAddresses.clear();
+
 	m_uvd = NULL;
 
 	return UV_ERR_OK;
