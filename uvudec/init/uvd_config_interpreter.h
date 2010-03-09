@@ -23,6 +23,7 @@ class UVDConfigExpression
 public:
 	UVDConfigExpression();
 	virtual ~UVDConfigExpression();
+	uv_err_t deinit();
 	//UVDConfigExpression(std::string &sExp);
 	/*
 	Translate a config expression into a form suitible for internal use
@@ -46,6 +47,7 @@ public:
 	virtual ~UVDConfigExpressionInterpreter();
 
 	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 
 	//Compile an expression.  Can make repeated use faster.
 	virtual uv_err_t compile(const std::string &sExp, UVDConfigExpression *result);
