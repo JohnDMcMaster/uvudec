@@ -79,6 +79,23 @@ UVDMemoryShared::UVDMemoryShared()
 	m_word_alignment = 0;
 }
 
+UVDMemoryShared::~UVDMemoryShared()
+{
+	deinit();
+}
+
+uv_err_t UVDMemoryShared::deinit()
+{
+	m_synonyms.clear();
+	for( std::vector<UVDMemorySharedMapper *>::iterator iter = m_mappers.begin(); iter != m_mappers.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_mappers.clear();
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDMemoryShared::setEquivMemName(uint32_t addr, const std::string &name)
 {
 	printf_debug("setEquivMemName: %s(0x%.8X) = %s\n", m_name.c_str(), addr, name.c_str());

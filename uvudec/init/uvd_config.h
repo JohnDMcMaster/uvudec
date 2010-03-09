@@ -40,6 +40,7 @@ class UVDConfigSection
 {
 public:
 	UVDConfigSection();
+	~UVDConfigSection();
 
 public:
 	std::string m_name;

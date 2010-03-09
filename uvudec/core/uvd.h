@@ -275,7 +275,9 @@ protected:
 	uv_err_t suspectValidInstruction(uint32_t address, int *isValid);
 
 public:
-	//UVDCPU *m_CPU;
+#ifdef USING_VECTORS
+	UVDCPU *m_CPU;
+#endif
 	//TODO: move to UVDCPU
 	//Lookup table for opcodes
 	//This in theory could be shared between multiple engines for the same arch

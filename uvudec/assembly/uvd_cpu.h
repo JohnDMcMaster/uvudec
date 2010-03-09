@@ -5,6 +5,7 @@ JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
+#if USING_VECTORS
 #ifndef UVD_CPU_H
 #define UVD_CPU_H
 
@@ -27,5 +28,7 @@ public:
 	//Where code may jump due to interrupts
 	std::vector<UVDCPUVector *> m_vectors;
 };
+
+#endif
 
 #endif
