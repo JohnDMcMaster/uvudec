@@ -104,6 +104,8 @@ class UVDAnalyzedBlock
 {
 public:
 	UVDAnalyzedBlock();
+	~UVDAnalyzedBlock();
+	uv_err_t deinit();
 	
 	//Get the actual code representation of this block
 	uv_err_t getDataChunk(UVDDataChunk **dataChunk);
@@ -116,6 +118,7 @@ public:
 	//Both of following can be set
 	//m_code should always indicate the range and subblocks, if present, also indicated
 	//If it contains code
+	//We own this
 	UVDAnalyzedCode *m_code;
 	//If it contains blocks, usually should be more than one
 	std::vector<UVDAnalyzedBlock *> m_blocks;
