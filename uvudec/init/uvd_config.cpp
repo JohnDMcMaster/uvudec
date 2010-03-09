@@ -368,9 +368,6 @@ uv_err_t UVDConfig::uvd_read_sections(const std::string &config_file, UVDConfigS
 			cur_section->m_name = lines[start_index] + 1;
 			printf_debug("Reading section: %s\n", cur_section->m_name.c_str());
 			printf_debug("Start: %d, end: %d\n", start_index, i);
-			//Free section name
-			free(lines[start_index]);
-			lines[start_index] = NULL;
 			++start_index;
 			/* i is one greater than the range we want */
 			/*
@@ -388,9 +385,8 @@ uv_err_t UVDConfig::uvd_read_sections(const std::string &config_file, UVDConfigS
 			for( unsigned int j = 0; j < nLines; ++j )
 			//while( start_index < i )
 			{
-				cur_section->m_lines.push_back(lines[start_index]);
-				free(lines[start_index]);
-				lines[start_index] = NULL;
+				std::string s = lines[start_index];
+				cur_section->m_lines.push_back(s);
 				++start_index;
 			}
 			start_index = i;
@@ -405,6 +401,12 @@ uv_err_t UVDConfig::uvd_read_sections(const std::string &config_file, UVDConfigS
 	rc = UV_ERR_OK;
 
 error:
+	for( unsigned int i = 0; i < n_lines; ++i )
+	{
+		free(lines[i]);
+	}
+	free(lines);
+
 	return UV_DEBUG(rc);
 }
 
