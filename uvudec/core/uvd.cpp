@@ -49,28 +49,26 @@ Each of these accomplish essentially same thing, but different way
 uv_err_t UVD::analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	UVDAnalyzedFunctionShared *funcShared = NULL;
-	UVDAnalyzedCodeShared *codeShared = NULL;
+	UVDAnalyzedCode *analyzedCode = NULL;
 	UVDDataChunk *dataChunk = NULL;
 	
 	uv_assert(memLoc);
 	
-	funcShared = new UVDAnalyzedFunctionShared();
-	analyzedFunction.m_shared = funcShared;
+	//analyzedFunction = new UVDAnalyzedFunction();
 	
-	codeShared = new UVDAnalyzedCodeShared();
-	funcShared->m_code = codeShared;
+	analyzedCode = new UVDAnalyzedCode();
+	analyzedFunction.m_code = analyzedCode;
 	
 	dataChunk = new UVDDataChunk();
-	codeShared->m_dataChunk = dataChunk;
 	if( UV_FAILED(dataChunk->init(m_data, memLoc->m_min_addr, memLoc->m_max_addr)) )
 	{
 		UV_DEBUG(rc);
 		goto error;
 	}
+	analyzedCode->m_dataChunk = dataChunk;
 	
 	//Ready, perform analysis
-	if( UV_FAILED(analyzeCode(*codeShared)) )
+	if( UV_FAILED(analyzeCode(*analyzedCode)) )
 	{
 		UV_DEBUG(rc);
 		goto error;
@@ -244,7 +242,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::analyzeCode(UVDAnalyzedCodeShared &UVDAnalyzedCodeShared)
+uv_err_t UVD::analyzeCode(UVDAnalyzedCode &analyzedCode)
 {
 	return UV_ERR_OK;
 }
@@ -365,7 +363,6 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 {
 	UVDAnalyzedBlock *block = NULL;
 	UVDAnalyzedCode *analyzedCode = NULL;
-	UVDAnalyzedCodeShared *analyzedCodeShared = NULL;
 	UVDDataChunk *dataChunk = NULL;
 	//uint32_t dataSize = 0;
 	
@@ -386,16 +383,12 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 	uv_assert_ret(analyzedCode);
 	block->m_code = analyzedCode;
 
-	analyzedCodeShared = new UVDAnalyzedCodeShared();
-	uv_assert_ret(analyzedCodeShared);
-	analyzedCode->m_shared = analyzedCodeShared;
-
 	dataChunk = new UVDDataChunk();
 	uv_assert_ret(dataChunk);
 	uv_assert_ret(m_data);
 	uv_assert_err_ret(dataChunk->init(m_data, minAddr, maxAddr));
 	uv_assert_ret(dataChunk->m_data);
-	analyzedCodeShared->m_dataChunk = dataChunk;
+	analyzedCode->m_dataChunk = dataChunk;
 
 	*blockOut = block;
 

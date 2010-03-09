@@ -362,16 +362,14 @@ uv_err_t UVDIterator::nextCore()
 			char buff[256];
 			std::string sNameBlock;
 			UVDAnalyzedFunction analyzedFunction;
-			UVDAnalyzedFunctionShared *analyzedFunctionShared = NULL;
 			UVDAnalyzedMemoryLocation *memLoc = (*(calledAddresses.find(startPosition))).second;
 			
 			uv_assert_err_ret(m_uvd->analyzeNewFunction(memLoc, analyzedFunction));
 
-			analyzedFunctionShared = analyzedFunction.m_shared;
 			//empty name indicates no data
-			if( !analyzedFunctionShared->m_sName.empty() )
+			if( !analyzedFunction.m_sName.empty() )
 			{
-				sNameBlock = analyzedFunctionShared->m_sName + "(args?) ";
+				sNameBlock = analyzedFunction.m_sName + "(args?) ";
 			}
 			
 			m_indexBuffer.insert(m_indexBuffer.end(), "\n");

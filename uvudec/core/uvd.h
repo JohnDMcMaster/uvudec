@@ -234,7 +234,7 @@ public:
 	//uv_err_t analyzeCode(UVDAnalyzedMemoryLocation memLoc, UVDAnalyzedCode &analyzedCode);
 	//Core code analysis function
 	//Structure should be pre-set with data before entry
-	uv_err_t analyzeCode(UVDAnalyzedCodeShared &UVDAnalyzedCodeShared);
+	uv_err_t analyzeCode(UVDAnalyzedCode &UVDAnalyzedCode);
 	uv_err_t analyzeConstData();
 	uv_err_t analyzeStrings();
 	uv_err_t constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut);
