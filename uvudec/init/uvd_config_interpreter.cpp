@@ -210,6 +210,12 @@ uv_err_t UVDConfigExpressionInterpreter::compile(const std::string &sExp, UVDCon
 	
 	*result = UVDConfigExpression();
 	result->m_configExpressionInterpreter = this;
+	//Free old if present
+	if( result->m_interpreterExpression )
+	{
+		delete result->m_interpreterExpression;
+		result->m_interpreterExpression = NULL;
+	}
 	m_interpreter->getInterpreterExpression(&result->m_interpreterExpression);
 	uv_assert_ret(result->m_interpreterExpression);
 

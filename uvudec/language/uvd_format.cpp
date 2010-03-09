@@ -45,8 +45,21 @@ UVDFormat::UVDFormat()
 	m_compiler = NULL;
 }
 
+UVDFormat::~UVDFormat()
+{
+	deinit();
+}
+
 uv_err_t UVDFormat::init()
 {
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFormat::deinit()
+{
+	delete m_compiler;
+	m_compiler = NULL;
+	
 	return UV_ERR_OK;
 }
 
