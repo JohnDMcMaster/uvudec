@@ -217,6 +217,11 @@ UVDAnalyzer::UVDAnalyzer()
 	m_symbolManager.m_analyzer = this;
 }
 
+UVDAnalyzer::~UVDAnalyzer()
+{
+	deinit();
+}
+
 uv_err_t UVDAnalyzer::init()
 {
 #if USING_PREVIOUS_ANALYSIS
@@ -231,6 +236,30 @@ uv_err_t UVDAnalyzer::init()
 	//uv_assert_err_ret(m_curDb->init());
 	
 	//Should add to DB concentrator?  Prob not as it might create loops or other anomalies
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::deinit()
+{
+	delete m_block;
+	m_block = NULL;
+
+#if USING_PREVIOUS_ANALYSIS
+	delete m_db;
+	m_db = NULL;
+#endif
+
+	delete m_curDb;
+	m_curDb = NULL;
+	
+	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_functions.clear();
+
+	m_uvd = NULL;
 
 	return UV_ERR_OK;
 }

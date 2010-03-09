@@ -167,7 +167,9 @@ class UVDAnalyzer
 {
 public:
 	UVDAnalyzer();
+	~UVDAnalyzer();
 	uv_err_t init();
+	uv_err_t deinit();
 
 	uv_err_t insertReference(uint32_t targetAddress, uint32_t from, uint32_t type);
 	//For destinations, not sources
