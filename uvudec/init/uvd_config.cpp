@@ -409,6 +409,8 @@ uv_err_t UVDConfig::uvd_read_sections(const std::string &config_file, UVDConfigS
 	rc = UV_ERR_OK;
 
 error:
+	free(config_file_data);
+
 	for( unsigned int i = 0; i < n_lines; ++i )
 	{
 		free(lines[i]);
