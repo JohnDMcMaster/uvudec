@@ -26,6 +26,11 @@ UVDOpcodeLookupTable::UVDOpcodeLookupTable()
 	memset(m_lookupTable, 0, sizeof(m_lookupTableHits));
 }
 
+UVDOpcodeLookupTable::~UVDOpcodeLookupTable()
+{
+	deinit();
+}
+
 /*
 Register a lookup for opcode to return newElement
 
@@ -799,7 +804,7 @@ uv_err_t UVDOpcodeLookupTable::deinit(void)
 	int i = 0;
 
 	UV_ENTER();
-	for( i = 0; i < 256; ++i )
+	for( i = 0; i < sizeof(m_lookupTable) / sizeof(m_lookupTable[0]); ++i )
 	{
 		delete m_lookupTable[i];
 		m_lookupTable[i] = NULL; 
