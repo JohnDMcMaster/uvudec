@@ -573,40 +573,21 @@ uv_err_t UVD::deinit()
 {
 	//m_data deallocated by UVD engine caller
 	
-	/*
-	if( m_CPU )
-	{
-		delete m_CPU;
-		m_CPU = NULL;
-	}
-	*/
-	if( m_opcodeTable )
-	{
-		delete m_opcodeTable;
-		m_opcodeTable = NULL;
-	}
-	if( m_symMap )
-	{
-		delete m_symMap;
-		m_symMap = NULL;
-	}
-	if( m_interpreter )
-	{
-		delete m_interpreter;
-		m_interpreter = NULL;
-	}
-	if( m_analyzer )
-	{
-		delete m_analyzer;
-		m_analyzer = NULL;
-	}
-	if( m_format )
-	{
-		delete m_format;
-		m_format = NULL;
-	}
+	delete m_opcodeTable;
+	m_opcodeTable = NULL;
 
-	//std::map<std::string, UVDRegisterShared *> m_registers;
+	delete m_symMap;
+	m_symMap = NULL;
+
+	delete m_interpreter;
+	m_interpreter = NULL;
+
+	delete m_analyzer;
+	m_analyzer = NULL;
+
+	delete m_format;
+	m_format = NULL;
+
 	for( std::map<std::string, UVDRegisterShared *>::iterator iter = m_registers.begin(); iter != m_registers.end(); ++iter )
 	{
 		UVDRegisterShared *regShared = (*iter).second;
