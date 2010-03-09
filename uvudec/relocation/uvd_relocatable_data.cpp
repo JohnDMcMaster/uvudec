@@ -46,6 +46,28 @@ UVDRelocatableData::UVDRelocatableData()
 UVDRelocatableData::UVDRelocatableData(UVDData *data)
 {
 	m_data = data;
+	m_defaultRelocatableData = NULL;
+}
+
+UVDRelocatableData::~UVDRelocatableData()
+{
+	deinit();
+}
+
+uv_err_t UVDRelocatableData::deinit()
+{
+	for( std::set<UVDRelocationFixup *>::iterator iter = m_fixups.begin(); iter != m_fixups.end(); ++iter )
+	{
+		delete *iter;
+	}
+
+	delete m_data;
+	m_data = NULL;
+	
+	delete m_defaultRelocatableData;
+	m_defaultRelocatableData = NULL;
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDRelocatableData::getUVDRelocatableDataPlaceholder(UVDRelocatableData **dataOut)
@@ -59,10 +81,6 @@ uv_err_t UVDRelocatableData::getUVDRelocatableDataPlaceholder(UVDRelocatableData
 	*dataOut = data;
 
 	return UV_ERR_OK;
-}
-
-UVDRelocatableData::~UVDRelocatableData()
-{
 }
 
 uv_err_t UVDRelocatableData::isEmpty(uint32_t *isEmpty)
