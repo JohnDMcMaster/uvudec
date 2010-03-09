@@ -19,6 +19,15 @@ UVDConfigExpression::UVDConfigExpression()
 
 UVDConfigExpression::~UVDConfigExpression()
 {
+	deinit();
+}
+
+uv_err_t UVDConfigExpression::deinit()
+{
+	delete m_interpreterExpression;
+	m_interpreterExpression = NULL;
+
+	return UV_ERR_OK;
 }
 
 /*
@@ -165,10 +174,21 @@ UVDConfigExpressionInterpreter::UVDConfigExpressionInterpreter(UVD *uvd)
 
 UVDConfigExpressionInterpreter::~UVDConfigExpressionInterpreter()
 {
+	deinit();
 }
 
 uv_err_t UVDConfigExpressionInterpreter::init()
 {
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfigExpressionInterpreter::deinit()
+{
+	delete m_interpreter;
+	m_interpreter = NULL;
+	
+	m_interpretCache.clear();
+	
 	return UV_ERR_OK;
 }
 
