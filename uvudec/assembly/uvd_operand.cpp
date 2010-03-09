@@ -38,6 +38,25 @@ UVDOperandShared::UVDOperandShared()
 	m_type_specific = NULL;
 }
 
+UVDOperandShared::~UVDOperandShared()
+{
+	deinit();
+}
+
+uv_err_t UVDOperandShared::deinit()
+{
+	switch( m_type )
+	{
+	case UV_DISASM_DATA_FUNC:
+		delete m_func;
+		m_func = NULL;
+		break;
+	}
+	m_type = UV_DISASM_DATA_UNKNOWN;
+	
+	return UV_ERR_OK;
+}
+
 UVDOperand::UVDOperand()
 {
 	m_instruction = NULL;
@@ -718,5 +737,45 @@ uv_err_t UVDOperand::getI32Representation(int32_t &i)
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
+	return UV_ERR_OK;
+}
+
+UVDFunctionShared::UVDFunctionShared()
+{
+}
+
+UVDFunctionShared::~UVDFunctionShared()
+{
+	deinit();
+}
+
+uv_err_t UVDFunctionShared::deinit()
+{
+	for( std::vector<UVDOperandShared *>::iterator iter = m_args.begin(); iter != m_args.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_args.clear();
+
+	return UV_ERR_OK;
+}
+
+UVDFunction::UVDFunction()
+{
+}
+
+UVDFunction::~UVDFunction()
+{
+	deinit();
+}
+
+uv_err_t UVDFunction::deinit()
+{
+	for( std::vector<UVDOperand *>::iterator iter = m_args.begin(); iter != m_args.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_args.clear();
+
 	return UV_ERR_OK;
 }
