@@ -178,6 +178,7 @@ public:
 	uv_err_t getAnalyzedProgramDB(UVDAnalysisDBArchive **db);
 	//Register a newly analyzed function
 	//Will reflect the analyzedProgramDB to reflect the newly found function instance
+	//Note that the function's shared data will be from current analysis and must be free'd here
 	uv_err_t loadFunction(UVDBinaryFunction *function);
 
 	//To fetch the original data

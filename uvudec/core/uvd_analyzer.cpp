@@ -283,7 +283,14 @@ uv_err_t UVDAnalyzer::deinit()
 	
 	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
 	{
-		delete *iter;
+		UVDBinaryFunction *binaryFunction = *iter;
+		
+		uv_assert_ret(binaryFunction);
+		//This is only stored here since its from current analysis and not in a central DB
+		delete binaryFunction->m_shared;
+		binaryFunction->m_shared = NULL;
+		
+		delete binaryFunction;
 	}
 	m_functions.clear();
 
