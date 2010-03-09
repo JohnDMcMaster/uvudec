@@ -50,6 +50,7 @@ class UVDOperandShared;
 class UVDFunctionShared
 //struct uv_disasm_func_shared_t
 {
+public:
 	UVDFunctionShared();
 	~UVDFunctionShared();
 	uv_err_t deinit();

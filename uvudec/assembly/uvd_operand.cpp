@@ -52,7 +52,7 @@ uv_err_t UVDOperandShared::deinit()
 		m_func = NULL;
 		break;
 	}
-	m_type = UV_DISASM_DATA_UNKNOWN;
+	m_type = UV_DISASM_DATA_NONE;
 	
 	return UV_ERR_OK;
 }
