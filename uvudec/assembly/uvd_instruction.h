@@ -233,6 +233,8 @@ class UVDInstructionShared
 {
 public:
 	UVDInstructionShared();
+	~UVDInstructionShared();
+	uv_err_t deinit();
 
 	//Like would be in developer manual
 	std::string getHumanReadableUsage();
@@ -325,6 +327,8 @@ class UVDInstruction
 {
 public:
 	UVDInstruction();
+	~UVDInstruction();
+	uv_err_t deinit();
 
 	uv_err_t collectVariables(UVDVariableMap &environment);
 
