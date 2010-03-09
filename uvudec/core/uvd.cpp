@@ -231,6 +231,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	
 	function->m_shared = functionShared;
 	function->m_uvd = this;
+	//Is this needed?
 	function->m_data = dataChunk;
 	
 	*functionIn = function;
@@ -750,7 +751,6 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 		goto error;		
 	}
 	*/
-printf("m_data: 0x%.8X\n", (unsigned int)m_data);
 	uv_assert_ret(m_data);
 	dat_sz = m_data->size();
 	
