@@ -78,6 +78,8 @@ std::vector<std::string> charPtrArrayToVector(char **argv, int argc);
 //{
 #endif /* ifdef __cplusplus */
 
+//Should mark these deprecated in favor of the C++ versions
+//they tend to be in old C code causing mem leaks
 char **uv_split_lines(const char *str, unsigned int *n_ret);
 char **uv_split(const char *str, char delim);
 char **uv_split_core(const char *str, char delim, unsigned int *n_ret, int ret_blanks);
