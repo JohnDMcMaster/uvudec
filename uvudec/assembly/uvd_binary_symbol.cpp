@@ -328,6 +328,19 @@ UVDBinarySymbolManager::UVDBinarySymbolManager()
 
 UVDBinarySymbolManager::~UVDBinarySymbolManager()
 {
+	deinit();
+}
+
+uv_err_t UVDBinarySymbolManager::deinit()
+{
+	for( std::map<std::string, UVDBinarySymbol *>::iterator iter = m_symbols.begin(); iter != m_symbols.end(); ++iter )
+	{
+		delete (*iter).second;
+	}
+	m_symbols.clear();
+	m_symbolsByAddress.clear();
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinarySymbolManager::findSymbol(std::string &name, UVDBinarySymbol **symbolIn)
