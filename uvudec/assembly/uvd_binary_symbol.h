@@ -30,6 +30,8 @@ class UVDBinarySymbol
 public:
 	UVDBinarySymbol();
 	virtual ~UVDBinarySymbol();
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 
 	/*
 	UVDRelocatableElement also has a name, this has caused some conflicts
@@ -37,8 +39,6 @@ public:
 	*/ 
 	void setSymbolName(const std::string &name);
 	uv_err_t getSymbolName(std::string &name);
-	virtual uv_err_t init();
-	virtual uv_err_t deinit();
 	
 	//FIXME: this is analysis specific...should it be here?
 	//If this is a symbol in our currently analyzed data, the address it presides at 

@@ -137,6 +137,9 @@ class UVDRelocatableData
 public:
 	UVDRelocatableData();
 	UVDRelocatableData(UVDData *data);
+	virtual ~UVDRelocatableData();
+	uv_err_t deinit();
+
 	/*
 	For table structures, sometimes a placeholder is needed at the beginning
 	of the table to reference instead of the first element, which can be more
@@ -145,7 +148,6 @@ public:
 	size
 	*/
 	static uv_err_t getUVDRelocatableDataPlaceholder(UVDRelocatableData **data);
-	virtual ~UVDRelocatableData();
 	
 	//Assume all symbolic values have been placed and now have symbols
 	uv_err_t applyRelocations();
@@ -180,16 +182,18 @@ protected:
 public:
 	//Locations that require fixups
 	//Addresses specified are relative to m_data
+	//We own these
 	std::set<UVDRelocationFixup *> m_fixups;
-
 
 protected:
 	//The temporary peice of data
 	//This will be compiled into a larger chunk
+	//We own this
 	UVDData *m_data;
 
 	//Cache of the default (0'd) relocatable data
 	//Primary data is stored in m_data
+	//We own this
 	UVDData *m_defaultRelocatableData;
 };
 
