@@ -517,6 +517,11 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_usage(UVDInstructionShared *inst_shared
 	rc = UV_ERR_OK;
 
 error:
+	for( unsigned int i = 0; i < n_usage_parts; ++i )
+	{
+		free(usage_parts[i]);
+	}
+	free(usage_parts);
 	return UV_DEBUG(rc);
 }
 
