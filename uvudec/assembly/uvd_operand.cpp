@@ -64,6 +64,26 @@ UVDOperand::UVDOperand()
 	m_extra = NULL;	
 }
 
+UVDOperand::~UVDOperand()
+{
+	deinit();
+}
+
+uv_err_t UVDOperand::deinit()
+{
+	if( m_shared )
+	{
+		switch( m_shared->m_type )
+		{
+		case UV_DISASM_DATA_FUNC:
+			delete m_func;
+			m_func = NULL;
+			break;
+		}
+	}
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDOperand::parseOperand(uint32_t &nextPosition)
 {
 	UVDInstruction *inst = NULL;
