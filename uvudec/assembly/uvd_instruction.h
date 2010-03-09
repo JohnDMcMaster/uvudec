@@ -142,6 +142,8 @@ class UVDOperand
 {
 public:
 	UVDOperand();
+	~UVDOperand();
+	uv_err_t deinit();
 
 	uv_err_t parseOperand(uint32_t &nextPosition);
 
@@ -175,13 +177,13 @@ public:
 	
 	/* Type, name, etc */
 	UVDOperandShared *m_shared;
-	//The instruction this operand belongs to
+	//The instruction this operand belongs to, we do not own it, it owns us
 	UVDInstruction *m_instruction;
 	
 private:
 	/* 
 	Additional information for this operand, such as a value larger than simple field supports 
-	Interpretation is operand specific
+	Interpretation is operand specific and determined by m_shared
 	
 	REG: std::string  to register name
 	IMMEDIATE: larger than sizeof(value): pointer to raw byte stream
@@ -203,14 +205,6 @@ private:
 		uint32_t m_ui32;
 		int32_t m_i32;
 	};
-	
-	
-	/*
-	Next operand 
-	This should probably be double linked
-	*/
-	//UVDOperand *m_next;
-
 };
 
 //Reserved for use with instruction prefixes
