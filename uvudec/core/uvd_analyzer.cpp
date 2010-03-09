@@ -112,6 +112,24 @@ UVDAnalyzedBlock::UVDAnalyzedBlock()
 	m_code = NULL;
 }
 
+UVDAnalyzedBlock::~UVDAnalyzedBlock()
+{
+	deinit();
+}
+
+uv_err_t UVDAnalyzedBlock::deinit()
+{
+	delete m_code;
+	m_code = NULL;
+	
+	for( std::vector<UVDAnalyzedBlock *>::iterator iter = m_blocks.begin(); iter != m_blocks.end(); ++iter )
+	{
+		delete *iter;
+	}
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDAnalyzedBlock::getDataChunk(UVDDataChunk **dataChunkIn)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
