@@ -50,6 +50,61 @@ uv_err_t UVDConfigValue::deinit()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDConfigValue::parseTypeNumber(const std::string &in, UVDConfigValue *out)
+{
+	unsigned int n_operand_parts = 0;
+	char **operand_parts = NULL;
+	uv_err_t rc = UV_ERR_GENERAL;
+	
+	if( in[0] == 's' )
+	{
+		out->m_operand_type = UV_DISASM_DATA_IMMS;
+	}
+	else if( in[0] == 'u' )
+	{
+		out->m_operand_type = UV_DISASM_DATA_IMMU;
+	}
+	else
+	{
+		printf("Unrecognized operand: %s, expected u or s, got %c\n", in.c_str(), in[0]);
+		UV_ERR(rc);
+		goto error;
+	}
+	
+	/* [u or i]_[size in bits] */
+	operand_parts = uv_split_core(in.c_str(), '_', &n_operand_parts, TRUE);
+	if( !operand_parts )
+	{
+		UV_ERR(rc);
+		goto error;
+	}
+	if( n_operand_parts < 2 )
+	{
+		UV_ERR(rc);
+		goto error;
+	}
+	/* Skip over the sign letter */
+	out->m_num_bits = atoi(operand_parts[0] + 1);
+	if( out->m_num_bits % 8 != 0 || out->m_num_bits > 1000 )
+	{
+		printf_debug("Invalid operand size: %d\n", out->m_num_bits);
+		UV_ERR(rc);
+		goto error;
+	}
+	printf_debug("Operand data size: %d\n", out->m_num_bits);
+
+	rc = UV_ERR_OK;	
+	
+error:
+	for( unsigned int i = 0; i < n_operand_parts; ++i )
+	{
+		free(operand_parts[i]);
+	}
+	free(operand_parts);
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *out)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -76,45 +131,7 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 	}
 	else if( in[0] == 'u' || in[0] == 's' )
 	{
-		unsigned int n_operand_parts = 0;
-		char **operand_parts = NULL;
-		
-		if( in[0] == 's' )
-		{
-			out->m_operand_type = UV_DISASM_DATA_IMMS;
-		}
-		else if( in[0] == 'u' )
-		{
-			out->m_operand_type = UV_DISASM_DATA_IMMU;
-		}
-		else
-		{
-			printf("Unrecognized operand: %s, expected u or s, got %c\n", in.c_str(), in[0]);
-			UV_ERR(rc);
-			goto error;
-		}
-		
-		/* [u or i]_[size in bits] */
-		operand_parts = uv_split_core(in.c_str(), '_', &n_operand_parts, TRUE);
-		if( !operand_parts )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		if( n_operand_parts < 2 )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		/* Skip over the sign letter */
-		out->m_num_bits = atoi(operand_parts[0] + 1);
-		if( out->m_num_bits % 8 != 0 || out->m_num_bits > 1000 )
-		{
-			printf_debug("Invalid operand size: %d\n", out->m_num_bits);
-			UV_ERR(rc);
-			goto error;
-		}
-		printf_debug("Operand data size: %d\n", out->m_num_bits);
+		uv_assert_err_ret(parseTypeNumber(in, out));
 	}
 	/* Legal start are 0x for hex, 0 for octal, and 0-9 for dec, all which fall under 0-9 */
 	else if( isdigit(in[0]) )
