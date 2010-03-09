@@ -90,6 +90,7 @@ class UVDOpcodeLookupTable
 {
 public:
 	UVDOpcodeLookupTable();
+	~UVDOpcodeLookupTable();
 	
 	/*
 	Register a lookup for opcode to return newElement
