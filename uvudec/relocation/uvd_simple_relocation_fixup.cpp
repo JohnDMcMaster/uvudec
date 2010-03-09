@@ -13,6 +13,19 @@ UVDSimpleRelocationFixup::UVDSimpleRelocationFixup()
 	m_data = NULL;
 }
 
+UVDSimpleRelocationFixup::~UVDSimpleRelocationFixup()
+{
+	deinit();
+}
+
+uv_err_t UVDSimpleRelocationFixup::deinit()
+{
+	delete m_relocationFixup;
+	m_relocationFixup = NULL;
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(
 		UVDSimpleRelocationFixup **simpleFixupOut, UVDRelocatableElement *relocatableElement,
 		char *data, int size)
@@ -40,10 +53,6 @@ uv_err_t UVDSimpleRelocationFixup::getUVDSimpleRelocationFixup(
 	uv_assert_ret(simpleFixupOut);
 	*simpleFixupOut = simpleFixup;
 	return UV_ERR_OK;
-}
-
-UVDSimpleRelocationFixup::~UVDSimpleRelocationFixup()
-{
 }
 
 uv_err_t UVDSimpleRelocationFixup::applyPatch()
