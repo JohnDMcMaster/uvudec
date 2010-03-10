@@ -238,3 +238,24 @@ uint32_t UVDDataChunk::size() const
 {
 	return m_bufferSize;
 }
+
+uv_err_t UVDDataChunk::deepCopy(UVDData **out)
+{
+#ifdef UGLY_READ_HACK
+#error unsupported
+#endif
+
+	UVDDataChunk *ret = NULL;
+
+	ret = new UVDDataChunk();
+	uv_assert_ret(ret);
+	
+	//By the very nature of this, we should just be able to do a shallow copy
+	//..unless you did the UGLY_READ_HACK which should be fully removed anyway
+	*ret = *this;
+
+	uv_assert_ret(out);
+	*out = ret;
+	
+	return UV_ERR_OK;
+}

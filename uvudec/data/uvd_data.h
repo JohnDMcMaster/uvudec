@@ -68,6 +68,9 @@ public:
 	static void incrementReferences(UVDData *data);
 	static void decreaseReferences(UVDData *data);
 
+	//Copy as appropriete to maintain own object that can be deleted
+	virtual uv_err_t deepCopy(UVDData **out);
+
 private:
 	//NOTE: this is not currently implemented, but may be in the future
 	//When created, this should be 1
@@ -98,6 +101,8 @@ public:
 
 	//Always an error for nonzero inputs
 	uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
+
+	virtual uv_err_t deepCopy(UVDData **out);
 };
 
 /*
@@ -157,6 +162,8 @@ public:
 	uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
 	uint32_t size() const;
 	
+	uv_err_t deepCopy(UVDData **out);
+
 public:
 	char *m_buffer;
 	unsigned int m_bufferSize;
@@ -197,6 +204,8 @@ public:
 	uint32_t size() const;
 
 	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+
+	uv_err_t deepCopy(UVDData **out);
 
 private:
 	//Internal function to get a reference to the data buffer

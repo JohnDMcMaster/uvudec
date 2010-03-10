@@ -173,7 +173,10 @@ uv_err_t UVDRelocatableData::updateDefaultRelocatableData()
 
 uv_err_t UVDRelocatableData::setData(UVDData *data)
 {
-	//FIXME: should we delete old data here?
+	/*
+	Since we should own this data object, we need to delete old if present and make a deep copy
+	*/
+	delete m_data;
 	m_data = data;
 	return UV_ERR_OK;
 }

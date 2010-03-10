@@ -235,3 +235,9 @@ uv_err_t UVDData::saveToFile(const std::string &file) const
 	free(buffer);
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDData::deepCopy(UVDData **out)
+{
+	//Base class should prob be pure virtual anyway and seems like an error to try this on it
+	return UV_DEBUG(UV_ERR_GENERAL);
+}
