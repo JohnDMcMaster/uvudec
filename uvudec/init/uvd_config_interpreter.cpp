@@ -264,17 +264,16 @@ uv_err_t UVDConfigExpressionInterpreter::interpretKeyed(const UVDConfigExpressio
 
 uv_err_t UVDConfigExpressionInterpreter::interpretKeyed(const std::string &sExpression, const UVDVariableMap &environment, UVDVariableMap &result)
 {
-	static UVDConfigExpression *configExpression = NULL;
-	if( !configExpression )
-	{
-		uv_assert_err_ret(getConfigExpression(&configExpression));
-	}
+	UVDConfigExpression *configExpression = NULL;
+	uv_assert_err_ret(getConfigExpression(&configExpression));
 	uv_assert_ret(configExpression);
 
-	//UVDConfigExpression configExpression;
-
 	uv_assert_err_ret(configExpression->compile(sExpression));
-	return UV_DEBUG(interpretKeyed(configExpression, environment, result));
+	uv_assert_err_ret(interpretKeyed(configExpression, environment, result));
+	
+	delete configExpression;
+	
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDConfigExpressionInterpreter::interpretKeyed(const UVDConfigExpression *exp, const UVDVariableMap &environment, UVDVariableMap &result)
