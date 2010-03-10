@@ -140,7 +140,8 @@ class UVDRelocatableData
 {
 public:
 	UVDRelocatableData();
-	UVDRelocatableData(UVDData *data);
+	//Doing deep copy now makes this memory unsafish
+	//UVDRelocatableData(UVDData *data);
 	virtual ~UVDRelocatableData();
 	uv_err_t deinit();
 
@@ -171,6 +172,8 @@ public:
 	//The data here will be freed when this object is freed
 	//FIXME: does not do a deep copy, but should and have transferData for non-copy
 	virtual uv_err_t setData(UVDData *data);
+	//Same as above, but not copied
+	virtual uv_err_t transferData(UVDData *data);
 	
 	/*
 	Empty is an unitialized object that has no data added to it

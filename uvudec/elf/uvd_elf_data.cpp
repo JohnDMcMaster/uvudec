@@ -31,8 +31,9 @@ uv_err_t UVDElf::constructElfHeaderBinary(UVDRelocationManager *elfRelocationMan
 	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&elfHeaderData,
 			(char *)&m_elfHeader, sizeof(m_elfHeader), false));
 	uv_assert_ret(elfHeaderData);
-	elfHeaderRelocatable = new UVDRelocatableData(elfHeaderData);
+	elfHeaderRelocatable = new UVDRelocatableData();
 	uv_assert_ret(elfHeaderRelocatable);
+	uv_assert_err_ret(elfHeaderRelocatable->transferData(elfHeaderData));
 	elfRelocationManager->addRelocatableData(elfHeaderRelocatable);
 
 	//To compute e_phoff
@@ -145,8 +146,9 @@ uv_err_t UVDElf::constructProgramHeaderSectionBinary(UVDRelocationManager &elfRe
 	//Allocate memory for the program header	
 	entry->getHeaderData(&headerData);
 	uv_assert_ret(headerData);
-	headerRelocatable = new UVDRelocatableData(headerData);
+	headerRelocatable = new UVDRelocatableData();
 	uv_assert_ret(headerRelocatable);
+	uv_assert_err_ret(headerRelocatable->transferData(headerData));
 	
 	//Store the header data
 	elfRelocationManager.addRelocatableData(headerRelocatable);
@@ -234,8 +236,9 @@ uv_err_t UVDElf::constructSectionHeaderSectionBinary(UVDRelocationManager &elfRe
 	//Allocate memory for the section header	
 	entry->getHeaderData(&headerData);
 	uv_assert_ret(headerData);
-	headerRelocatable = new UVDRelocatableData(headerData);
+	headerRelocatable = new UVDRelocatableData();
 	uv_assert_ret(headerRelocatable);
+	uv_assert_err_ret(headerRelocatable->transferData(headerData));
 	
 	//printf_debug("Constructing section %s\n", entry->m_sName.c_str());
 
