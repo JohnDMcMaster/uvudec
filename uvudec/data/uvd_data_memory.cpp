@@ -33,6 +33,7 @@ UVDDataMemory::UVDDataMemory(unsigned int bufferSize)
 	//Poison it
 	memset(m_buffer, 0xCD, bufferSize);
 #endif //NDEBUG
+	m_freeAtDestruction = true;
 }
 
 UVDDataMemory::UVDDataMemory()
@@ -159,4 +160,24 @@ int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSi
 	
 	memcpy(buffer, m_buffer, bufferSize);
 	return bufferSize;
+}
+
+uv_err_t UVDDataMemory::deepCopy(UVDData **out)
+{
+	UVDDataMemory *ret = NULL;
+	
+	ret = new UVDDataMemory();
+	uv_assert_ret(ret);
+
+	ret->m_buffer = (char *)malloc(m_bufferSize);
+	uv_assert_ret(ret->m_buffer);
+	ret->m_bufferSize = m_bufferSize;
+	
+	//We allocated this, must free it
+	ret->m_freeAtDestruction = true;
+
+	uv_assert_ret(out);
+	*out = ret;
+	
+	return UV_ERR_OK;
 }

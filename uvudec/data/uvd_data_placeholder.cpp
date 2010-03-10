@@ -48,3 +48,16 @@ uv_err_t UVDDataPlaceholder::writeData(unsigned int offset, const char *buffer, 
 	}
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
+
+uv_err_t UVDDataPlaceholder::deepCopy(UVDData **out)
+{
+	UVDDataPlaceholder *ret = NULL;
+	
+	ret = new UVDDataPlaceholder();
+	uv_assert_ret(ret);
+
+	uv_assert_ret(out);
+	*out = ret;
+	
+	return UV_ERR_OK;
+}
