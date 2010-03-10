@@ -91,7 +91,7 @@ public:
 	//Language: C, C++, assembly, etc.  Assume C by default since overwhelmingly popular on embedded
 	unsigned int m_language;
 
-	//A copy of the code
+	//A copy of the code, we own it
 	UVDDataChunk *m_dataChunk;
 };
 

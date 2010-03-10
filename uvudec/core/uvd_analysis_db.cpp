@@ -180,11 +180,15 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 			uv_assert_ret(codeShared);
 			
 			UVDData *data = NULL;
-			UVDDataChunk *dataChunk = NULL;
 			uv_assert_err_ret(UVDDataFile::getUVDDataFile(&data, valueImpl));
+			/*
+			//This looks unecessary and would also leak memory
+			UVDDataChunk *dataChunk = NULL;
 			dataChunk = new UVDDataChunk();
 			uv_assert_err_ret(dataChunk->init(data));
-			uv_assert_err_ret(codeShared->setData(dataChunk));
+			uv_assert_err_ret(codeShared->transferData(dataChunk));
+			*/
+			uv_assert_err_ret(codeShared->transferData(data));
 			
 			//Ignore valueSrc for now
 			
