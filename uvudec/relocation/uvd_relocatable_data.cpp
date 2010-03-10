@@ -43,11 +43,13 @@ UVDRelocatableData::UVDRelocatableData()
 	m_defaultRelocatableData = NULL;
 }
 
+/*
 UVDRelocatableData::UVDRelocatableData(UVDData *data)
 {
 	m_data = data;
 	m_defaultRelocatableData = NULL;
 }
+*/
 
 UVDRelocatableData::~UVDRelocatableData()
 {
@@ -176,6 +178,25 @@ uv_err_t UVDRelocatableData::setData(UVDData *data)
 	/*
 	Since we should own this data object, we need to delete old if present and make a deep copy
 	*/
+#if 0
+	delete m_data;
+	
+	if( data )
+	{
+		uv_assert_err_ret(data->deepCopy(&m_data));
+	}
+	else
+	{
+		m_data = NULL;
+	}
+#else
+	m_data = data;
+#endif
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableData::transferData(UVDData *data)
+{
 	delete m_data;
 	m_data = data;
 	return UV_ERR_OK;
