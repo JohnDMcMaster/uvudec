@@ -25,12 +25,18 @@ UVDBinaryFunctionInstance::UVDBinaryFunctionInstance()
 
 UVDBinaryFunctionInstance::~UVDBinaryFunctionInstance()
 {
+	deinit();
 }
 
 uv_err_t UVDBinaryFunctionInstance::init()
 {
 	uv_assert_err_ret(UVDBinarySymbol::init());
 	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinaryFunctionInstance::deinit()
+{
 	return UV_ERR_OK;
 }
 
@@ -250,6 +256,22 @@ UVDBinaryFunctionShared
 
 UVDBinaryFunctionShared::UVDBinaryFunctionShared()
 {
+}
+
+UVDBinaryFunctionShared::~UVDBinaryFunctionShared()
+{
+	deinit();
+}
+
+uv_err_t UVDBinaryFunctionShared::deinit()
+{
+	for( std::vector<UVDBinaryFunctionInstance *>::iterator iter = m_representations.begin(); iter != m_representations.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_representations.clear();
+	
+	return UV_ERR_OK;
 }
 
 /*

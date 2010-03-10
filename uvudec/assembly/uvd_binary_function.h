@@ -88,6 +88,7 @@ public:
 	UVDBinaryFunctionInstance();
 	virtual ~UVDBinaryFunctionInstance();
 	uv_err_t init();
+	uv_err_t deinit();
 	static uv_err_t getUVDBinaryFunctionInstance(UVDBinaryFunctionInstance **out);
 	
 	//Gets default hash
@@ -165,6 +166,8 @@ class UVDBinaryFunctionShared
 {
 public:
 	UVDBinaryFunctionShared();
+	~UVDBinaryFunctionShared();
+	uv_err_t deinit();
 
 public:
 	//The real name as called in a program

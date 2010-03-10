@@ -34,13 +34,27 @@ uv_err_t UVDBinarySymbol::init()
 
 uv_err_t UVDBinarySymbol::deinit()
 {
-	delete m_relocatableData;
-	m_relocatableData = NULL;
-	
+	//FIXME: should probably move to storing these as two instances in the long run
+	//If we shared the data, don't double free it
+	if( m_relocatableData )
+	{
+		UVDData *relocatableDataData = NULL;
+		uv_assert_err_ret(m_relocatableData->getRelocatableData(&relocatableDataData));
+		uv_assert_ret(relocatableDataData);
+		
+		if( relocatableDataData == m_data )
+		{
+			printf_deprecated("m_data in m_relocatableData must be unique, will cause crashes in future releases\n");
+			m_data = NULL;
+		}
+		delete m_relocatableData;
+		m_relocatableData = NULL;
+	}
+
 	//This should be a mapped type and not be the actual data
 	//Its deletion should not cause issues
 	delete m_data;
-	m_data = NULL;
+	m_data = NULL;	
 	
 	for( std::set<UVDRelocationFixup *>::iterator iter = m_symbolUsageLocations.begin(); iter != m_symbolUsageLocations.end(); ++iter )
 	{

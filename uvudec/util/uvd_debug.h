@@ -22,7 +22,9 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 //Main sections being executed
 #define UVD_DEBUG_SUMMARY		3
 //Debug messages from each section
-#define UVD_DEBUG_VERBOSE		4
+#define UVD_DEBUG_DEPRECATED	4
+//Debug messages from each section
+#define UVD_DEBUG_VERBOSE		5
 //extern int g_verbose_level;
 
 const char *get_last_func();
@@ -36,6 +38,7 @@ It would be cool to set system preferences to compile this selectivly in program
 //Or should this be treated as a level 1 error?
 #define printf_warn(format, ...) printf("WARNING: " format, ## __VA_ARGS__)
 #define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
+#define printf_deprecated(format, ...) printf_debug_level(UVD_DEBUG_DEPRECATED, format, ## __VA_ARGS__)
 
 /*
 uv_assert is only enabled during debugging.
