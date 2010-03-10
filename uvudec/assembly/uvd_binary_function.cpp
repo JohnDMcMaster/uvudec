@@ -308,6 +308,14 @@ UVDBinaryFunction::UVDBinaryFunction()
 
 UVDBinaryFunction::~UVDBinaryFunction()
 {
+	deinit();
+}
+
+uv_err_t UVDBinaryFunction::deinit()
+{
+	delete m_data;
+	m_data = NULL;
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinaryFunction::getMin(uint32_t *out)
