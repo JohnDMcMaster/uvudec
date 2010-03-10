@@ -56,6 +56,7 @@ UVDRelocatableData::~UVDRelocatableData()
 
 uv_err_t UVDRelocatableData::deinit()
 {
+return UV_ERR_OK;
 	for( std::set<UVDRelocationFixup *>::iterator iter = m_fixups.begin(); iter != m_fixups.end(); ++iter )
 	{
 		delete *iter;
@@ -135,13 +136,11 @@ uv_err_t UVDRelocatableData::getRelocatableData(UVDData **data)
 uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
 {
 	uv_assert_ret(data);
-	if( m_defaultRelocatableData )
+
+	if( !m_defaultRelocatableData )
 	{
-		*data = m_defaultRelocatableData;
-		return UV_ERR_OK;
+		uv_assert_err_ret(updateDefaultRelocatableData());
 	}
-	
-	uv_assert_err_ret(updateDefaultRelocatableData());
 	uv_assert_ret(m_defaultRelocatableData);
 	*data = m_defaultRelocatableData;
 	return UV_ERR_OK;
@@ -174,6 +173,7 @@ uv_err_t UVDRelocatableData::updateDefaultRelocatableData()
 
 uv_err_t UVDRelocatableData::setData(UVDData *data)
 {
+	//FIXME: should we delete old data here?
 	m_data = data;
 	return UV_ERR_OK;
 }

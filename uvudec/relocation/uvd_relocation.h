@@ -169,6 +169,7 @@ public:
 	virtual uv_err_t getDefaultRelocatableData(UVDData **data);
 	
 	//The data here will be freed when this object is freed
+	//FIXME: does not do a deep copy, but should and have transferData for non-copy
 	virtual uv_err_t setData(UVDData *data);
 	
 	/*
