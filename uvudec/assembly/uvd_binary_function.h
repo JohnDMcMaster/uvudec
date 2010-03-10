@@ -108,7 +108,9 @@ public:
 	//It is callee responsibilty to free
 	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunctionInstance **out);
 
+	//Add setData() in a sec
 	uv_err_t setData(UVDData *data);
+	uv_err_t transferData(UVDData *data);
 	UVDData *getData();
 	
 private:
@@ -118,11 +120,13 @@ private:
 	uv_err_t computeRelocatableHash();
 		
 public:
-	//Giving code for Language, compiler needed (used) to produce binary 
+	//Giving code for Language, compiler needed (used) to produce binary
+	//Prob shouldn't be owner...but are we?
 	UVDCompiler *m_compiler;
 	//Version ranges that will produce this
 	UVDSupportedVersions m_versions;
 	//Project specific options needed to generate code (ex: -O3)
+	//Prob shouldn't be owner...but are we?
 	UVDCompilerOptions *m_compilerOptions;
 private:
 	//Binary version stored in DB

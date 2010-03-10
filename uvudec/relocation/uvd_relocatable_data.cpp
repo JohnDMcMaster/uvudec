@@ -178,8 +178,10 @@ uv_err_t UVDRelocatableData::setData(UVDData *data)
 	/*
 	Since we should own this data object, we need to delete old if present and make a deep copy
 	*/
-#if 0
 	delete m_data;
+	//This is invalidated and will have to be regen
+	delete m_defaultRelocatableData;
+	m_defaultRelocatableData = NULL;
 	
 	if( data )
 	{
@@ -189,9 +191,7 @@ uv_err_t UVDRelocatableData::setData(UVDData *data)
 	{
 		m_data = NULL;
 	}
-#else
-	m_data = data;
-#endif
+
 	return UV_ERR_OK;
 }
 

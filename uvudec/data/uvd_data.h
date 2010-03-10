@@ -216,6 +216,8 @@ private:
 #endif //UGLY_READ_HACK
 
 public:
+	//We do NOT own this data as the whole point of this class was to map onto external data
+	//At best it would just be a placeholder
 	UVDData *m_data;
 	unsigned int m_offset;
 	unsigned int m_bufferSize;

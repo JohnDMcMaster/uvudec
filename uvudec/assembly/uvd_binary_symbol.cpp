@@ -28,7 +28,7 @@ uv_err_t UVDBinarySymbol::init()
 {
 	m_relocatableData = new UVDRelocatableData();
 	uv_assert_ret(m_relocatableData);
-	
+
 	return UV_ERR_OK;
 }
 
@@ -41,12 +41,13 @@ uv_err_t UVDBinarySymbol::deinit()
 		UVDData *relocatableDataData = NULL;
 		uv_assert_err_ret(m_relocatableData->getRelocatableData(&relocatableDataData));
 		uv_assert_ret(relocatableDataData);
-		
+
 		if( relocatableDataData == m_data )
 		{
 			printf_deprecated("m_data in m_relocatableData must be unique, will cause crashes in future releases\n");
 			m_data = NULL;
 		}
+		//***Not causing mem issues, still present when removed
 		delete m_relocatableData;
 		m_relocatableData = NULL;
 	}
@@ -54,14 +55,14 @@ uv_err_t UVDBinarySymbol::deinit()
 	//This should be a mapped type and not be the actual data
 	//Its deletion should not cause issues
 	delete m_data;
-	m_data = NULL;	
-	
+	m_data = NULL;
+
 	for( std::set<UVDRelocationFixup *>::iterator iter = m_symbolUsageLocations.begin(); iter != m_symbolUsageLocations.end(); ++iter )
 	{
 		delete *iter;
 	}
 	m_symbolUsageLocations.clear();
-	
+
 	return UV_ERR_OK;
 }
 
@@ -79,7 +80,7 @@ uv_err_t UVDBinarySymbol::getSymbolName(std::string &name)
 uv_err_t UVDBinarySymbol::addRelativeRelocation(uint32_t relocatableDataOffset, uint32_t relocatableDataSize)
 {
 	UVDRelocationFixup *fixup = NULL;
-	
+
 	//static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offset, uint32_t size);
 	//We do not know the symbol it is assicated with yet, these will be collected and fixed in collectRelocations()
 	uv_assert_err_ret(UVDRelocationFixup::getUnknownSymbolRelocationFixup(&fixup, relocatableDataOffset, relocatableDataSize));
@@ -93,7 +94,7 @@ uv_err_t UVDBinarySymbol::addAbsoluteRelocation(uint32_t relocatableDataOffset, 
 {
 	uint32_t symbolStart = 0;
 	uint32_t relativeOffset = 0;
-	
+
 	uv_assert_err_ret(getSymbolAddress(&symbolStart));
 
 	if( relocatableDataOffset < symbolStart )
@@ -102,7 +103,7 @@ uv_err_t UVDBinarySymbol::addAbsoluteRelocation(uint32_t relocatableDataOffset, 
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	relativeOffset = relocatableDataOffset - symbolStart;
-	
+
 	return UV_DEBUG(addRelativeRelocation(relativeOffset, relocatableDataSize));
 }
 
@@ -114,13 +115,13 @@ uv_err_t UVDBinarySymbol::addSymbolUse(uint32_t relocatableDataOffsetBytes, uint
 uv_err_t UVDBinarySymbol::addSymbolUseByBits(uint32_t relocatableDataOffsetBytes, uint32_t relocatableDataSizeBits)
 {
 	UVDRelocationFixup *fixup = NULL;
-	
+
 	//static uv_err_t getSymbolRelocationFixup(UVDRelocationFixup **fixupOut, UVDBinarySymbol *symbol, uint32_t offset, uint32_t size);
 	//We do not know the symbol it is assicated with yet, these will be collected and fixed in collectRelocations()
 	//uv_assert_err_ret(UVDRelocationFixup::getUnknownSymbolRelocationFixup(&fixup, relocatableDataOffset, relocatableDataSize));
 	//CHECKME: this seems like it was actually obviously this symbol, not unknown
 	uv_assert_err_ret(UVDRelocationFixup::getSymbolRelocationFixupByBits(&fixup, this, relocatableDataOffsetBytes, relocatableDataSizeBits));
-	
+
 	uv_assert_ret(fixup);
 	//Asserts added to track down issue early
 	uv_assert_ret(fixup->m_symbol);
@@ -173,7 +174,7 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 
 	Must find the relocations contained in the input symbol:
 	std::set<UVDRelocationFixup *> m_symbolUsageLocations;
-	
+
 	And move them to the set of relocations in the this symbol:
 	UVDRelocatableData *m_relocatableData;
 	*/
@@ -183,13 +184,13 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 
 	uv_assert_ret(m_relocatableData);
 	uv_assert_ret(otherSymbol);
-	
+
 	uv_assert_err_ret(getSymbolAddress(&symbolStart));
 	uv_assert_err_ret(getSymbolSize(&symbolSize));
 	symbolEnd = symbolStart + symbolSize;
-	
+
 	uv_assert_ret(m_relocatableData);
-	
+
 	//Loop through all of the locations otherSymbol was used, seeing if any of them were inside of the this symbol
 	for( std::set<UVDRelocationFixup *>::iterator iter = otherSymbol->m_symbolUsageLocations.begin();
 			iter != otherSymbol->m_symbolUsageLocations.end(); ++iter )
@@ -197,7 +198,7 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 		UVDRelocationFixup *curFixup = *iter;
 		uint32_t curFixupStart = 0;
 		uint32_t curFixupEnd = 0;
-		
+
 		uv_assert_ret(curFixup);
 		curFixupStart = curFixup->m_offset;
 		curFixupEnd = curFixup->m_offset + curFixup->getSizeBytes();
@@ -206,13 +207,13 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 		//It has instead been decided this will be solved by setting all relevent symbols after this analysis pass
 		//This will become an issue later because ELF writting uses the relocations directly
 		//uv_assert_ret(!curFixup->m_symbol->getName().empty());
-		
+
 		//Does the relocation apply within this symbol?
 		if( curFixupStart >= symbolStart && curFixupEnd <= symbolEnd )
 		{
 			//We must subtract out the offset of this symbol
 			UVDRelocationFixup *scaledFixup = NULL;
-			
+
 			scaledFixup = new UVDRelocationFixup();
 			uv_assert_ret(scaledFixup);
 			//Copy old
@@ -222,11 +223,11 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 			m_relocatableData->addFixup(scaledFixup);
 		}
 	}
-	
+
 	/*
 	FIXME: does this still need to be done?
 	reason may actually just be more due to seperated analysis objects that need merging
-	
+
 	Register the fixups to being to this symbol
 	This is due to during analysis not knowing where functions are until after the first pass is complete
 	Ex: 
@@ -263,7 +264,7 @@ uv_err_t UVDAnalyzedBinarySymbol::getBestUVDBinarySymbol(UVDBinarySymbol **symbo
 	{
 		symbol = new UVDBinaryFunctionInstance();
 		uv_assert_ret(symbol);
-		
+
 		*symbol = *(UVDBinarySymbol *)this;
 	}
 	else if( !m_labelHits.empty()
@@ -271,24 +272,24 @@ uv_err_t UVDAnalyzedBinarySymbol::getBestUVDBinarySymbol(UVDBinarySymbol **symbo
 	{
 		symbol = new UVDLabelBinarySymbol();
 		uv_assert_ret(symbol);
-		
+
 		*symbol = *(UVDBinarySymbol *)this;
 	}
 	else if( !m_labelHits.empty() )
 	{
 		symbol = new UVDVariableBinarySymbol();
 		uv_assert_ret(symbol);
-		
+
 		*symbol = *(UVDBinarySymbol *)this;
 	}
 	else
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	
+
 	uv_assert_ret(symbolOut);
 	*symbolOut = symbol;
-	
+
 	return UV_ERR_OK;
 }
 
@@ -361,20 +362,20 @@ uv_err_t UVDBinarySymbolManager::findSymbol(std::string &name, UVDBinarySymbol *
 {
 	std::map<std::string, UVDBinarySymbol *>::iterator iter = m_symbols.find(name);
 	UVDBinarySymbol *symbol = NULL;
-	
+
 	if( iter == m_symbols.end() )
 	{
 		uv_assert_ret(symbolIn);
 		*symbolIn = NULL;
 		return UV_ERR_NOTFOUND;
 	}
-	
+
 	symbol = (*iter).second;
 	uv_assert_ret(symbol);
-	
+
 	uv_assert_ret(symbolIn);
 	*symbolIn = symbol;
-	
+
 	return UV_ERR_OK;
 }
 
@@ -383,7 +384,7 @@ uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(std::string &name, UVDAnalyz
 	UVDBinarySymbol *symbolRaw = NULL;
 	UVDAnalyzedBinarySymbol *symbol = NULL;
 	uv_err_t rc = UV_ERR_GENERAL;
-	
+
 	//Don't print for errors
 	rc = findSymbol(name, &symbolRaw);
 	if( UV_FAILED(rc) )
@@ -393,7 +394,7 @@ uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(std::string &name, UVDAnalyz
 
 	symbol = dynamic_cast<UVDAnalyzedBinarySymbol *>(symbolRaw);
 	uv_assert_ret(symbol);
-	
+
 	uv_assert_ret(symbolOut);
 	*symbolOut = symbol;
 
@@ -418,9 +419,9 @@ uv_err_t UVDBinarySymbolManager::collectRelocations(UVDBinaryFunction *function)
 {
 	uint32_t functionAddress = 0;
 	UVDBinaryFunctionInstance *functionInstance = NULL;
-	
+
 	uv_assert_ret(function);
-	
+
 	functionInstance = function->getFunctionInstance();
 	uv_assert_ret(functionInstance);
 
@@ -438,7 +439,7 @@ uv_err_t UVDBinarySymbolManager::collectRelocations(UVDBinaryFunction *function)
 		uint32_t curSymbolAddress = 0;
 
 		uv_assert_err_ret(binarySymbol->getSymbolAddress(&curSymbolAddress));
-		
+
 		//Is this the matching symbol we are looking for?
 		if( functionAddress == curSymbolAddress )
 		{
@@ -449,14 +450,14 @@ uv_err_t UVDBinarySymbolManager::collectRelocations(UVDBinaryFunction *function)
 		}
 		*/
 	}
-	
+
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinarySymbolManager::doCollectRelocations(UVDBinaryFunction *function, UVDBinarySymbol *analysisSymbol)
 {
 	UVDBinaryFunctionInstance *functionInstance = NULL;
-		
+
 	functionInstance = function->getFunctionInstance();
 	uv_assert_ret(functionInstance);
 
@@ -516,7 +517,7 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t fu
 	uv_assert_ret(symbol);
 	symbol->registerLabelUsage(functionAddress);
 	uv_assert_err_ret(symbol->addSymbolUseByBits(relocatableDataOffset, relocatableDataSizeBits));
-	
+
 	return UV_ERR_OK;
 }
 
@@ -566,22 +567,22 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocationByBits(uint32_t label
 		}
 	}
 	*/
-	
+
 	uv_assert_ret(symbol);
 	symbol->registerLabelUsage(labelAddress);
 	uv_assert_err_ret(symbol->addSymbolUseByBits(relocatableDataOffset, relocatableDataSizeBits));
-	
+
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinarySymbolManager::findSymbolByAddress(uint32_t address, UVDBinarySymbol **symbolOut)
 {
 	std::map<uint32_t, UVDBinarySymbol *>::iterator iter = m_symbolsByAddress.find(address);
-	
+
 	uv_assert_ret(iter != m_symbolsByAddress.end());
 	uv_assert_ret(symbolOut);
 	*symbolOut = (*iter).second;
-	
+
 	return UV_ERR_OK; 
 }
 
@@ -624,7 +625,7 @@ uv_err_t UVDBinarySymbolElement::getName(std::string &s)
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	
+
 	return UV_ERR_OK;
 }
 

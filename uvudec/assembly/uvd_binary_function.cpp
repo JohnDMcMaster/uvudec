@@ -56,11 +56,30 @@ uv_err_t UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(UVDBinaryFuncti
 
 uv_err_t UVDBinaryFunctionInstance::setData(UVDData *data)
 {
-	m_data = data;
+	delete m_data;
+	uv_assert_ret(data);
+	uv_assert_err_ret(data->deepCopy(&m_data));
+
 	if( m_relocatableData )
 	{
+		//Does deep copy
 		uv_assert_err_ret(m_relocatableData->setData(data));
 	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinaryFunctionInstance::transferData(UVDData *data)
+{
+	delete m_data;
+	m_data = data;
+
+	if( m_relocatableData )
+	{
+		//Does deep copy
+		uv_assert_err_ret(m_relocatableData->setData(data));
+	}
+
 	return UV_ERR_OK;
 }
 
