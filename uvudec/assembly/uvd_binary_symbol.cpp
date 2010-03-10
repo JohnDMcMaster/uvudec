@@ -254,6 +254,9 @@ UVDAnalyzedBinarySymbol::~UVDAnalyzedBinarySymbol()
 
 uv_err_t UVDAnalyzedBinarySymbol::getBestUVDBinarySymbol(UVDBinarySymbol **symbolOut)
 {
+	/*
+	CHECKME: review this code, it does weird copy stuff
+	*/
 	UVDBinarySymbol *symbol = NULL;
 
 	//Highest priority to funcs due to dual use on labels which are less important
