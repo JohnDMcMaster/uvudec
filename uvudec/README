@@ -17,11 +17,11 @@ and compilers are isolated, but should soon be unified.
 Tools
 
 uvudec: main decompiler application
-uvcoff2pat
-uvomf2pat
-uvpat2sig
-uvinj.py
-uvclass.py
+uvcoff2pat: COFF to IDA .pat file
+uvomf2pat: OMF to IDA .pat file
+uvpat2sig: IDA .pat to IDA .sig file
+uvinj.py: create a C/C++ DLL injection template
+uvclass.py: create a C++ virtual class template
 
 
 FAQ
@@ -29,6 +29,14 @@ FAQ
 Q: How do I add support for a new processor?
 A: Look at the 8051 example.  Please send in a file you created if you found
 it remotely useful for some architecture!
+
+Q: Any other open source tools to create pat files?
+A: rpat, see http://www.woodmann.net/fravia/rpat-en.html  In particular, this
+tool is based on GNU binutils / BFD support instead of using proc config
+files.  I might like to add this in the future as its a good idea for strong
+support for stock archs.  I haven't been able to get in contact with guy,
+maybe should post on rceforum or something if hes still around...maybe Ilfak
+killed him after his comments.
 
 Q: But I need feature X for the new processor?
 A: Some features are known to be lacking that will hopefully be supported
@@ -39,7 +47,7 @@ Q: Is a GUI planned?
 A: Eventually.  Probably Python based.
 
 Q: Can I use this is a library for application X?
-A: WIth minor modifications you probably could.  That was the original intent
+A: With minor modifications you probably could.  That was the original intent
 and I have tried to keep it with relativly clean external interfaces to allow
 for that.  I can provide a C interface if desirable.
 

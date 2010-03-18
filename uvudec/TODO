@@ -174,5 +174,6 @@ TODO
 				chose loarge arbitrary constants to stifle specific optimizations
 				ex: myVar = 0 can be XOR EAX, EAX, but myVar = 0x3422312 is hard to specialize
 			
-
-
+-Look at SDCC peephole optimizer
+	Scripting of optimizations
+	May be able to provide a compatible reverse form?
