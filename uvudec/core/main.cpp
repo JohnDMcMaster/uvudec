@@ -2,6 +2,8 @@
 UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
+
+uvudec entry point
 */
 
 #include <stdlib.h>
@@ -39,12 +41,12 @@ static FILE *g_pOutputFile = NULL;
 
 uv_err_t versionPrintPrefixThunk();
 
-const char *GetVersion()
+static const char *GetVersion()
 {
 	return UVUDEC_VER_STRING;
 }
 
-uv_err_t disassemble(std::string file)
+static uv_err_t disassemble(std::string file)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string output;
