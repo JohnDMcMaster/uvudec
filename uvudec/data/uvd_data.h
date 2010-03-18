@@ -27,12 +27,13 @@ public:
 	
 	//Read all of the data
 	virtual uv_err_t readData(char **buffer) const;	
-	virtual uv_err_t readData(unsigned int offset, char **buffer) const;	
+	virtual uv_err_t readData(unsigned int offset, char **buffer) const;
 	virtual uv_err_t readData(unsigned int offset, char **buffer, unsigned int bufferSize) const;	
 	virtual uv_err_t readData(unsigned int offset, std::string &s, unsigned int readSize) const;	
 	//Core readData() implementation: child classes should implement this
 	//By default, this calls read()
 	virtual uv_err_t readData(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+	virtual uv_err_t readData(uint32_t offset, char *c) const;	
 	
 	//WARNING: next 2 read implementations will rely on each other, you must implement at least one
 	//Somewhat dangerous for new classes...maybe should do something different
