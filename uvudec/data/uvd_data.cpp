@@ -80,6 +80,17 @@ uv_err_t UVDData::readData(unsigned int offset, std::string &s, unsigned int rea
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDData::readData(uint32_t offset, char *c) const
+{
+	int val = read(offset);
+	
+	uv_assert_ret(val >= 0);
+	uv_assert_ret(c);
+	*c = val;
+	
+	return UV_ERR_OK;
+}
+
 int UVDData::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
 	unsigned int end = offset + bufferSize;
