@@ -69,11 +69,33 @@ uv_err_t UVDBinarySymbol::deinit()
 void UVDBinarySymbol::setSymbolName(const std::string &name)
 {
 	m_symbolName = name;
+	if( m_symbolNames.find(name) == m_symbolNames.end() )
+	{
+		m_symbolNames.insert(name);
+	}
+}
+
+void UVDBinarySymbol::addSymbolName(const std::string &name)
+{
+	if( m_symbolName.empty() )
+	{
+		m_symbolName = name;
+	}
+	if( m_symbolNames.find(name) == m_symbolNames.end() )
+	{
+		m_symbolNames.insert(name);
+	}
 }
 
 uv_err_t UVDBinarySymbol::getSymbolName(std::string &name)
 {
 	name = m_symbolName;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbol::getSymbolNames(std::set<std::string> &names)
+{
+	names = m_symbolNames;
 	return UV_ERR_OK;
 }
 
@@ -407,10 +429,17 @@ uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(std::string &name, UVDAnalyz
 uv_err_t UVDBinarySymbolManager::addSymbol(UVDBinarySymbol *symbol)
 {
 	uint32_t symbolAddress = 0;
+	std::set<std::string> names;
 
 	uv_assert_ret(symbol);
-	uv_assert_ret(!symbol->m_symbolName.empty());
-	m_symbols[symbol->m_symbolName] = symbol;
+	uv_assert_err_ret(symbol->getSymbolNames(names));
+	uv_assert_ret(!names.empty());
+	for( std::set<std::string>::iterator iter = names.begin(); iter != names.end(); ++iter )
+	{
+		std::string name = *iter;
+		uv_assert_ret(!name.empty());
+		m_symbols[name] = symbol;
+	}
 
 	uv_assert_err_ret(symbol->getSymbolAddress(&symbolAddress));
 	m_symbolsByAddress[symbolAddress] = symbol;

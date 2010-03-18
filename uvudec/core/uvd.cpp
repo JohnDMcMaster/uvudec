@@ -219,7 +219,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uv_assert_ret(functionInstance);
 	functionInstance->m_symbolAddress = UVDRelocatableElement(minAddress);
 	//Only specific instances get symbol designations
-	functionInstance->m_symbolName = analyzedSymbolName(minAddress);
+	functionInstance->setSymbolName(analyzedSymbolName(minAddress));
 	
 	/*
 	Skip for now:

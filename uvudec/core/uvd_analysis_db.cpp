@@ -236,8 +236,10 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	uv_assert_ret(data);
 		
 	std::string sOutputFilePrefix;
-	//snprintf(buff, sizeof(buff), "%s/%s", outputDir.c_str(), functionInstance->m_symbolName.c_str());
-	sOutputFilePrefix = functionInstance->m_symbolName;
+	std::string symbolName;
+	uv_assert_err_ret(functionInstance->getSymbolName(symbolName));
+	//snprintf(buff, sizeof(buff), "%s/%s", outputDir.c_str(), symbolName.c_str());
+	sOutputFilePrefix = symbolName;
 	
 	if( g_writeRawBinary )
 	{
@@ -263,7 +265,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	
 		//TODO: add config for relocations
 		std::string binRelocatableConfigFile;
-		snprintf(buff, 256, "%s/%s_%d_relocatable.cfg", outputDir.c_str(), functionInstance->m_symbolName.c_str(), functionIndex);
+		snprintf(buff, 256, "%s/%s_%d_relocatable.cfg", outputDir.c_str(), symbolName.c_str(), functionIndex);
 		binRelocatableConfigFile = buff;
 		config += "BINARY_RELOCATABLE_CONFIG=" + binRelocatableConfigFile + "\n";
 		//Get relocations here and save file...

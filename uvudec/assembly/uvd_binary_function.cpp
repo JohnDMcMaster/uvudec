@@ -144,13 +144,15 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 uv_err_t UVDBinaryFunctionInstance::toUVDElf(UVDElf **out)
 {
 	UVDElf *elf = NULL;
+	std::string symbolName;
 	
 	uv_assert_ret(m_relocatableData);
 	//uv_assert_ret(m_relocatableData->m_data);
 	//Get a base representation
-	//printf("symbol: %s, symbol relocations: %d\n", m_symbolName.c_str(), m_relocatableData->m_fixups.size()); 
-	uv_assert_ret(!m_symbolName.empty());
-	uv_assert_err_ret(UVDElf::getFromRelocatableData(m_relocatableData, m_symbolName, &elf));
+	//printf("symbol: %s, symbol relocations: %d\n", name.c_str(), m_relocatableData->m_fixups.size()); 
+	uv_assert_ret(getSymbolName(symbolName));
+	uv_assert_ret(!symbolName.empty());
+	uv_assert_err_ret(UVDElf::getFromRelocatableData(m_relocatableData, symbolName, &elf));
 
 	/*
 	Add in the relocations

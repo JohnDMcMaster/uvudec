@@ -24,6 +24,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 /*
 A symbol as if found in an object file, not necessarily ELF format
 A format easily workable in memory
+Refers to the actual data, as we can have multile names representing same symbol
+	May be represented as seperate symbols if more appropriete, symantecs not yet worked out
 */
 class UVDBinarySymbol
 {
@@ -35,10 +37,21 @@ public:
 
 	/*
 	UVDRelocatableElement also has a name, this has caused some conflicts
-	
+		CHECKME: wasn't this forced to use the symbol val
+	Return the primary name associated with the symbol
+	At least be consistent if there are multiple
+	Typically only one nam
+	FLIRT stuff indicated some modules may export the same symbol under multiple names
+	Seems reasonable enough
+	If there are no symbol names defines, name will be returned empty and getSymbolName() will not return an error
 	*/ 
+	//This will set the first symbol name to this, or add one if it doesn't exist
+	//For compatibility and ease of use of code that expects to work only with a primary symbol name
 	void setSymbolName(const std::string &name);
+	//If does not exist, add as a new symbol name
+	void addSymbolName(const std::string &name);
 	uv_err_t getSymbolName(std::string &name);
+	uv_err_t getSymbolNames(std::set<std::string> &names);	
 	
 	//FIXME: this is analysis specific...should it be here?
 	//If this is a symbol in our currently analyzed data, the address it presides at 
@@ -77,8 +90,6 @@ public:
 	uv_err_t addRelocations(const UVDBinarySymbol *otherSymbol);
 
 public:
-	//The symbol's (function's/variable's) name
-	std::string m_symbolName;
 	/*
 	The actual data this symbol represents, if its resolved
 	If the symbol is not resolved, data will be NULL
@@ -105,6 +116,12 @@ public:
 	UVDRelocatableElement m_symbolAddress;
 	//Computed through m_data
 	//UVDRelocatableElement m_symbolSize;	
+
+private:
+	//The symbol's (function's/variable's) primary name
+	//If set, should be contained in the symbolNames set
+	std::string m_symbolName;
+	std::set<std::string> m_symbolNames;
 };
 
 /*
@@ -221,7 +238,7 @@ public:
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes);
 	uv_err_t addAbsoluteFunctionRelocationByBits(uint32_t functionAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits);
-	//ie from a goto
+	//ie from a jump/goto
 	uv_err_t addAbsoluteLabelRelocation(uint32_t labelAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes);
 	uv_err_t addAbsoluteLabelRelocationByBits(uint32_t labelAddress,
