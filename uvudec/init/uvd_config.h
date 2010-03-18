@@ -5,7 +5,8 @@ JohnDMcMaster@gmail.com
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#pragma once
+#ifndef UVD_CONFIG
+#define UVD_CONFIG
 
 #include <map>
 #include <set>
@@ -14,6 +15,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_instruction.h"
 #include "interpreter/uvd_interpreter.h"
 #include "uvd_arg.h"
+#include "uvd_config_flirt.h"
 
 //Resultant address from a call routine
 #define SCRIPT_KEY_CALL				"CALL_ADDRESS"
@@ -152,6 +154,8 @@ protected:
 	uv_err_t processParseMain();
 
 public:
+	//TODO: move these into a general config structure?
+
 	//if availible
 	//used to print program name for usage
 	int m_argc;
@@ -270,7 +274,12 @@ public:
 	//nothing (Intel), $ (MIPS) and % (gcc) are common
 	//char g_reg_prefix[8]
 	std::string m_reg_prefix;
+	
+	//FLIRT related options (flirt.*)
+	UVDConfigFLIRT m_flirt;
 };
 
 //Default configuration options
 extern UVDConfig *g_config;
+
+#endif
