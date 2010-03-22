@@ -1,4 +1,5 @@
 This is the bug tracking system
+Should move bulk of this to github wiki
 
 Known issues
 
@@ -46,23 +47,101 @@ TODO
 	Ex: function may have a few bytes padding after RET for alignment on next function
 -Logic/flow analyzer
 	Find independance of variables
--Look into Qemu deeper
-	Hardware (peripheral) desciption language
-	See if can make IR translator to take advantage of supported architectures
-	clang, LVM
--Third party decompilation
-	Plugin to make rec command line calls?
-		Closed source, might not be for best
-		x86
-		MIPS (R3000)
-		PowerPC
-		68K
-	.NET reflector?
-		Check licensing on this
-		Specialized decompilation
-	If you had hex-rays, you probably wouldn't bother with this
-		Until one day hopefully :)
-		Supports lots of archs, but which are supported well?
+Research: other projects
+	-BFD
+		http://sourceware.org/binutils/
+		GPL
+			Could not distributed binaries linked with it
+		Migrate ELF support to use libbfd
+			Project mutated from uvelf which was a learning project
+			Probably should use libbfd as much as possible
+		Adds support for a number of binary formats
+	-s-record
+		http://srecord.sourceforge.net/
+		GPL
+		Has a library that can read lots of embeded formats
+		Contacted author, after some time responded saying would add support soon or something
+		Might fork project and dev as needed
+		He isn't putting code into SVN!  Just uses sourceforge to post builds it seems
+			Admittedly I do something similar with github
+			I should fix the github issue rather than hacking around it
+			I do provide a link to the real repo though
+	-Look into Qemu deeper
+		http://wiki.qemu.org/Main_Page
+		GPL
+			With other components...
+		Hardware (peripheral) desciption language
+		See if can make IR translator to take advantage of supported architectures
+	-clang, LVM
+		http://llvm.org/
+		License: University of Illinois/NCSA
+			Ug uh um I'll have to read it
+			But looks like BSD
+		Nifty instruction translation stuff
+	-Look at Bastard deeper
+		http://bastard.sourceforge.net/
+		Seems to be mostly i386 targetted?
+		Its on the back burner and is said to likely be going through major rewrites
+		Does in fact provide a stand alone libdisassembly though
+		Saw at least one other project that uses this engine, might be helpful
+	-ciasdis
+		x86 only (+ some alpha support)
+		has some interesting disassembly engine properties
+	-Valgrind
+		http://valgrind.org/
+		I use this for checking for mem leaks/errors
+		Also has pretty nifty memory analysis engine
+		Can leverge this?  
+		Supposedly can writey our own allocators, might allow easy
+	-OllyDbg
+		http://www.ollydbg.de/
+		Free as in beer
+		Windows x86 only
+		Tool works nicely, probably has some features might want to support
+	-SUIF
+		http://suif.stanford.edu/
+		Has some compiler research stuff targetted towards generic compiling
+		May give ideas how to write IR to support many archs
+	-Third party decompilation
+		Might be able to combine analysis or selectivly decompile as tools do it best?
+		Reverse Engneering Compiler (REC)
+			http://www.backerstreet.com/rec/rec.htm
+			Free as in beer, not as in speech
+			Plugin to make REC command line calls?
+			x86
+			MIPS (R3000)
+			PowerPC
+			68K
+		.NET reflector?
+			http://www.red-gate.com/products/reflector/
+			Commercial, but free as in beer version availible
+			Specialized decompilation?
+			In any case, requires visual studio
+			Might still be a good research topic
+				Has anti-decompile license clause...ironic
+		IDA/Hex-rays
+			http://www.hex-rays.com/
+			Commercial
+			If you had hex-rays, you probably wouldn't bother with this
+			Until one day hopefully :)
+			Supports lots of archs, but which are supported well?
+		-binstat
+			http://rpisec.net/projects/show/rcosbinstat
+			Alex's project
+		-BitBlaze
+			http://bitblaze.cs.berkeley.edu/
+			Has various libs (from Berk as well) might be able to use
+			Has some bells and whistels on the website
+			***This should be looked at
+			vine
+				Static analysis
+				GPL
+			TEMU
+				Dynamic analysis
+				Prob GPL
+			Rudder
+				Online dynamic symbol analysis
+				No public release?
 -Write a OllyDbg plugin to import analysis data
 	Also, look at format IDA/WinICE uses for storing debugging information
 		Uses FLAIR format or something
