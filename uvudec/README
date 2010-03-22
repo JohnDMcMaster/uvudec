@@ -5,6 +5,9 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 Thanks to Sean O'Sullivan and RCOS for helping fund the development of the
 FLIRT/FLAIR compatibility!
+Go Moorthy!  (http://www.cs.rpi.edu/~moorthy/)
+
+Thanks to Rob Escriva / RPISec for project hosting!
 
 This application is primarily targetted at embedded platforms.  These typically
 have relativly simple instruction sets that can be easily represented by a
