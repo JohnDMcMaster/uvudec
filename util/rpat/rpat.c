@@ -1,14 +1,23 @@
 /*
-Since I don't have the right to distribute this file This is suppose to be for internal use only due to legal
-reasons :( Copyrightish 2010 John McMaster <JohnDMcMaster@gmail.com>
+Red Plait`s pattern maker
+Copyrightish 2010 John McMaster <JohnDMcMaster@gmail.com>
 
-Fixups: - Corrected headers - Added Makefile A pain to link... - struct sec -> struct bfd_section
-http://sourceware.org/ml/binutils/2003-10/msg00500.html - _raw_size
-http://sourceware.org/ml/binutils/2003-10/msg00562.html Instead of Use (read) sec->_raw_size bfd_section_size (abfd, 
-sec) (or in relaxing targets and just when referring to original size:) bfd_unaltered_section_size (abfd, sec)
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
 
-- true C does not have true, used C++ instead 
-- don't use anything in the $(BINUTILS_DIR)/include
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, 51 Franklin Street - Fifth Floor, Boston,
+MA 02110-1301, USA.
+
+Original copyright below
 */
 
 /*
@@ -19,6 +28,16 @@ sec) (or in relaxing targets and just when referring to original size:) bfd_unal
  * Ilfuck - greedy pig 
  *      (C) I am
  */
+
+/*
+Fixups: - Corrected headers - Added Makefile A pain to link... - struct sec -> struct bfd_section
+http://sourceware.org/ml/binutils/2003-10/msg00500.html - _raw_size
+http://sourceware.org/ml/binutils/2003-10/msg00562.html Instead of Use (read) sec->_raw_size bfd_section_size (abfd, 
+sec) (or in relaxing targets and just when referring to original size:) bfd_unaltered_section_size (abfd, sec)
+
+- true C does not have true, used C++ instead 
+- don't use anything in the $(BINUTILS_DIR)/include
+*/
 
 #include <bfd.h>
 // We shouldn't tbe using bucomm
