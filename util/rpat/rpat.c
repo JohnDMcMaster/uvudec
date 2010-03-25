@@ -842,10 +842,12 @@ void displayTargets()
 {
 	const char **targetList;
 	
+	printf_help("Supported formats:");
 	for( targetList = bfd_target_list(); *targetList; ++targetList )
 	{
-		printf_help(" - %s\n", *targetList);				
+		printf_help(" %s", *targetList);				
 	}
+	printf_help("\n");
 }
 
 void usage()
@@ -860,7 +862,6 @@ void usage()
 	printf_help("\t-v Verbose mode (useful for developers only)\n");
 	printf_help("\t-z Skip zeroes\n");
 	printf_help("Version: %s\n", version);
-	printf_help("Supported formats:\n");
 	displayTargets();
 	exit(3);
 }
