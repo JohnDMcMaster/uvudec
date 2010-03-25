@@ -1,6 +1,6 @@
 # Makefile for Red Plait's rpat
 # Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-# Licensed under terms of the GPL, see LICENSE for details
+# Licensed under terms of the GPL, see COPYING for details
 
 USING_LIBBFD_UNINSTALLED=Y
 USING_STATIC=Y
