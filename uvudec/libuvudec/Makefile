@@ -34,7 +34,17 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_relocation.cpp \
 			$(ELF_DIR)/uvd_elf_string_table.cpp \
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
+			$(FLIRT_DIR)/uvd_bfd_library.cpp \
 			$(FLIRT_DIR)/uvd_config_flirt.cpp \
+			$(FLIRT_DIR)/uvd_elf_library.cpp \
+			$(FLIRT_DIR)/uvd_flirt_args.cpp \
+			$(FLIRT_DIR)/uvd_flirt.cpp \
+			$(FLIRT_DIR)/uvd_flirt_pattern.cpp \
+			$(FLIRT_DIR)/uvd_flirt_pattern_bfd.cpp \
+			$(FLIRT_DIR)/uvd_flirt_pattern_uvd.cpp \
+			$(FLIRT_DIR)/uvd_flirt_signature.cpp \
+			$(FLIRT_DIR)/uvd_library.cpp \
+			$(HASH_DIR)/uvd_crc.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
 			$(HASH_DIR)/uvd_md5_GNU.cpp \
 			$(INIT_DIR)/uvd_arg.cpp \
