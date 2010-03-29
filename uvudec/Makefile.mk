@@ -103,6 +103,10 @@ LIBS += -llua
 endif
 endif
 
+ifeq ($(USING_LIBBFD),Y)
+USING_LIBZ=Y
+endif
+
 # Python stuff
 # This may get more complicated if I can get the APIs working better
 ifeq ($(USING_PYTHON),Y)
@@ -143,6 +147,48 @@ endif
 # LIBS +=  -lltdl
 endif
 
+
+ifeq ($(USING_LIBBFD),Y)
+FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD
+
+
+ifeq ($(USING_STATIC),Y)
+ifeq ($(USING_LIBBFD_UNINSTALLED),Y)
+LIBBFD_STATIC_LIB=$(BINUTILS_DIR)/bfd/libbfd.a
+LIBOPCODES_STATIC_LIB=$(BINUTILS_DIR)/opcodes/libopcodes.a
+LIBIBERTY_STATIC_LIB=$(BINUTILS_DIR)/libiberty/libiberty.a
+INCLUDES+=-I$(BINUTILS_DIR)/bfd
+else
+LIBBFD_STATIC_LIB=libbfd.a
+LIBOPCODES_STATIC_LIB=libopcodes.a
+LIBIBERTY_STATIC_LIB=libiberty.a
+endif
+LIBS+=$(LIBBFD_STATIC_LIB) $(LIBOPCODES_STATIC_LIB) $(LIBIBERTY_STATIC_LIB)
+
+# Dynamic
+else
+
+# Otherwise use system provided (doesn't build until install)
+LIBS += -lbfd -lopcodes -liberty
+
+endif
+
+
+endif
+
+
+LIBZ_STATIC=/usr/lib/libz.a
+
+ifeq ($(USING_LIBZ),Y)
+ifeq ($(USING_STATIC),Y)
+LIBS += $(LIBZ_STATIC)
+else
+LIBS += -lz
+endif
+endif
+
+
+
 # General libc stuff
 ifeq ($(USING_STATIC),Y)
 
@@ -164,6 +210,7 @@ endif
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 UVUDEC_EXE = $(BIN_DIR)/uvudec
 COFF2PAT_EXE = $(BIN_DIR)/uvcoff2pat
+OBJ2PAT_EXE = $(BIN_DIR)/uvobj2pat
 OMF2PAT_EXE = $(BIN_DIR)/uvomf2pat
 ELF2PAT_EXE = $(BIN_DIR)/uvelf2pat
 PAT2SIG_EXE = $(BIN_DIR)/uvpat2sig

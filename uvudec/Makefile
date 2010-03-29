@@ -2,7 +2,7 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-PHONY += uvudec coff2pat omf2pat elf2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore test
+PHONY += uvudec coff2pat omf2pat elf2pat obj2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore test
 
 ALL_TARGETS=lib
 # ALL_TARGETS += doc
@@ -24,6 +24,10 @@ endif
 
 ifeq ($(USING_ELF2PAT),Y)
 ALL_TARGETS += elf2pat
+endif
+
+ifeq ($(USING_OBJ2PAT),Y)
+ALL_TARGETS += obj2pat
 endif
 
 ifeq ($(USING_PAT2SIG),Y)
@@ -68,6 +72,11 @@ endif
 ifeq ($(USING_ELF2PAT),Y)
 elf2pat:
 	cd elf2pat && $(MAKE)
+endif
+
+ifeq ($(USING_OBJ2PAT),Y)
+obj2pat:
+	cd obj2pat && $(MAKE)
 endif
 
 ifeq ($(USING_PAT2SIG),Y)
