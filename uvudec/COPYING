@@ -3,7 +3,7 @@ Copyright (c) 2008, John McMaster
 All rights reserved unless otherwise noted.
 
 
-MD5 copyright (I am unsure if I can include this in here even in source form
+MD5 copyright e this in here even in source form
 and might like to remove it):
 Declaration of functions and data types used for MD5 sum computing
 library functions.
@@ -11,11 +11,21 @@ Copyright (C) 1995-1997,1999,2000,2001,2004,2005
     Free Software Foundation, Inc.
 This file is part of the GNU C Library.
 
-libtar (coming soon):
-3 clause BSD
+Spidermonkey
+Mozilla Public License...based off of Spiderape
 
-libzip2 (coming soon):
-4 clause BSD
+libbfd
+I think this is version LGPL V3
+
+zlib (dependency of libbfd)
+3 clause BSD 
+
+rpat based code
+rpat is based on objdump, which is GPL V3+
+
+libsrecord (future integration)
+GPL V3
+See if can convince to at least release V3 or later
 
 
 Full license (uvudec):
