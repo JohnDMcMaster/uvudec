@@ -2,7 +2,7 @@
 # Basically so I can set defaults in my main file and still be sane not having
 # to ./configure for every small change I make
 
-MAKEDEPEND=makedepend
+MAKEDEPEND=
 CC = gcc
 CXX = g++
 CP = cp
@@ -15,7 +15,7 @@ PERL = perl
 UPX = upx
 
 # Fully static build?
-USING_STATIC=N
+USING_STATIC=Y
 
 USING_ROPE=N
 
