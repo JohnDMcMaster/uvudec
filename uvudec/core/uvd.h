@@ -1,12 +1,15 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#ifndef UV_DISASM_H
-#define UV_DISASM_H
+/*
+TODO: move analysis specific stuff to UVDTarget or UVDAnalysis or something
+*/
+
+#ifndef UVD_H
+#define UVD_H
 
 #include <stdint.h>
 #include <map>
@@ -187,6 +190,7 @@ private:
 UV Decompiler engine
 Primary end user object
 */
+class UVDFLIRT;
 class UVD
 {
 public:
@@ -195,6 +199,8 @@ public:
 	
 	//Factory function for construction
 	static uv_err_t getUVD(UVD **uvdIn, UVDData *data);
+	//Without a specific assembly implementation loaded
+	static uv_err_t getUVD(UVD **uvdIn);
 
 	/*
 	file: data file to target
@@ -311,6 +317,8 @@ public:
 	//How to print data
 	UVDFormat *m_format;
 
+	UVDFLIRT *m_flirt;
+
 protected:
 	//Source of data to disassemble
 	UVDData *m_data;
@@ -319,5 +327,5 @@ protected:
 //TODO: this is a hack, needs to be fixed
 extern UVD *g_uvd;
 
-#endif // ifdef UV_DISASM_H
+#endif
 

@@ -30,6 +30,11 @@ public:
 	std::string m_patternFileNewline;
 	//UVD_PROP_FLIRT_RELOCATION_NEARFAR
 	uint32_t m_relocateNearFar;
+
+	//Files we want to parse in
+	std::vector<std::string> m_targetFiles;
+	//File to write to
+	std::string m_outputFile;
 };
 
 #endif
