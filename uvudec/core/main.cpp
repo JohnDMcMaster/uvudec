@@ -229,11 +229,11 @@ error:
 
 int main(int argc, char **argv)
 {
-	printf("main: enter\n");
+	printf_debug("main: enter\n");
 
 	//Simple translation to keep most stuff in the framework
 	uv_err_t rc = uvmain(argc, argv);
-	printf("main: exit\n");
+	printf_debug("main: exit\n");
 	if( UV_FAILED(rc) )
 	{
 		return 1;
