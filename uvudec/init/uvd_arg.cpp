@@ -227,7 +227,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		UVDHelp();
 		return UV_ERR_DONE;
 	}
-	else if( argConfig->m_propertyForm == "action.version" )
+	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_VERSION )
 	{
 		version();
 		return UV_ERR_DONE;
@@ -489,10 +489,9 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			config->m_addressLabel = argToBool(firstArg);
 		}
 	}
-	//Unknown
+	//Unknown.  This is an error because this callback should have never been called
 	else
 	{
-		//return UV_DEBUG(argParserDefault(argConfig, argumentArguments));
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
