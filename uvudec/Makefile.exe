@@ -2,7 +2,8 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-$(EXE_NAME): depend $(OBJS) 
+$(EXE_NAME): depend $(OBJS)
+	mkdir -p $(BIN_DIR)
 	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE_NAME)
 ifeq ($(USING_UPX),Y)
 	$(UPX) $(UVUDEC_EXE)
