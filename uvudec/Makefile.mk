@@ -256,6 +256,7 @@ MAKEFILE_DEPEND=Makefile.depend
 $(shell touch $(MAKEFILE_DEPEND))
 include $(MAKEFILE_DEPEND)
 
+ifdef MAKEDEPEND
 # Silicenced because they started to take up a lot of screen during each build
 # Ignore cannot find stdio.h stuff
 depend:
@@ -263,6 +264,7 @@ depend:
 #	$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null
 # Remove annoying backup
 	@($(RM) $(MAKEFILE_DEPEND).bak)
+endif
 endif
 
 PHONY += all .c.o .cpp.o clean dist depend info cleanLocal
