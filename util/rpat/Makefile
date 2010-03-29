@@ -13,8 +13,8 @@ BINUTILS_DIR=/home/mcmaster/document/build/GNU/binutils/binutils-2.19.1
 LIBBFD_STATIC_LIB=$(BINUTILS_DIR)/bfd/libbfd.a
 LIBOPCODES_STATIC_LIB=$(BINUTILS_DIR)/opcodes/libopcodes.a
 LIBIBERTY_STATIC_LIB=$(BINUTILS_DIR)/libiberty/libiberty.a
-# Contains "libbfd.h"
-INCLUDES+=-I$(BINUTILS_DIR)/binutils
+# Contains "bfd.h"
+INCLUDES+=-I$(BINUTILS_DIR)/bfd
 # You shouldn't use this, for libbfd internal use only
 # However, if you are desperate, it does have extra stuff, such as demangling
 # INCLUDES+=-I$(BINUTILS_DIR)/include
@@ -41,3 +41,7 @@ all:
 	gcc rpat.c $(CFLAGS) $(INCLUDES) $(LIBS) -o rpat
 # For testing
 	gcc -c rpat.c $(CFLAGS) $(INCLUDES) -o main.o
+
+clean:
+	rm -f *.o rpat *~
+
