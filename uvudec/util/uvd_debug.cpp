@@ -38,27 +38,26 @@ void uvd_signal_handler(int sig)
 
 void printf_debug_level(int level, const char *format, ...)
 {
-	//Keep logging before g_config initialized
-	if( !g_log_handle )
-	{
-		printf_warn("ignoring log due to missing log FILE *\n");
-		return;
-	}
-	if( !g_config )
-	{
-		printf_warn("doing early log before config init\n");
-	}
-	//Is logging disabledor are we at too high of a level
-	else if( !g_config->m_verbose || level > g_config->m_verbose_level )
-	{
-		return;
-	}
-
+	FILE *logHandle = g_log_handle;
 	va_list ap;
+
+	//Keep logging before g_config initialized
+	if( !logHandle )
+	{
+		logHandle = stdout;
+	}
+	if( g_config )
+	{
+		//Is logging disabledor are we at too high of a level
+		if( !g_config->m_verbose || level > g_config->m_verbose_level )
+		{
+			return;
+		}
+	}
 	
 	va_start(ap, format);
-	vfprintf(g_log_handle, format, ap);
-	fflush(g_log_handle);
+	vfprintf(logHandle, format, ap);
+	fflush(logHandle);
 	va_end(ap);
 }
 
