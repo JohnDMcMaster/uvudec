@@ -65,8 +65,6 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	m_architecture = architecture;
 	std::string configFile;
 	
-	UV_ENTER();
-	
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
 	UVDBenchmark engineInitBenchmark;
 	engineInitBenchmark.start();
