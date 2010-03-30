@@ -73,13 +73,13 @@ uv_assert_err is always enabled
 /* I don't check rc on printf anyway, fix later if needed */
 //#define printf_debug(format, ...) if( g_verbose ) { printf(format, ## __VA_ARGS__); }
 #define printf_debug(format, ...) printf_debug_level(UVD_DEBUG_VERBOSE, format, ## __VA_ARGS__)
-void printf_debug_level(int level, const char *format, ...);
+void printf_debug_level(uint32_t level, const char *format, ...);
 
 #define uv_assert(x) if( !(x) ) { UV_ERR(rc); goto error; }
 #define uv_assert_ret(x) if( !(x) ) { return UV_ERR(UV_ERR_GENERAL); }
 
-uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, int line, const char *func);
-void uv_enter(const char *file, int line, const char *func);
+uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const char *func);
+void uv_enter(const char *file, uint32_t line, const char *func);
 
 #define UV_DEBUG(x) uv_err_ret_handler(x, __FILE__, __LINE__, __FUNCTION__)
 #define UV_ENTER() uv_enter(__FILE__, __LINE__, __FUNCTION__)

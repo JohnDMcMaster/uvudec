@@ -2,9 +2,9 @@
 #include "uvd_log.h"
 #include <stdio.h>
 
-uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, int line, const char *func)
+uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const char *func)
 {
-	const int buff_size = 1024;
+	const uint32_t buff_size = 1024;
 	char buff[buff_size];
 	if( UV_FAILED(rc) )
 	{

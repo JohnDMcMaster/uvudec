@@ -13,7 +13,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 
 static const char *g_last_func = NULL;
 
-void uvd_signal_handler(int sig)
+static void uvd_signal_handler(int sig)
 {
 	const char *sig_str = "UNKNOWN";
 	switch( sig )
@@ -36,10 +36,12 @@ void uvd_signal_handler(int sig)
 	_exit(1);
 }
 
-void printf_debug_level(int level, const char *format, ...)
+void printf_debug_level(uint32_t level, const char *format, ...)
 {
 	FILE *logHandle = g_log_handle;
 	va_list ap;
+	uint32_t verbose = 0;
+	uint32_t set_level = 0;
 
 	//Keep logging before g_config initialized
 	if( !logHandle )
@@ -48,11 +50,19 @@ void printf_debug_level(int level, const char *format, ...)
 	}
 	if( g_config )
 	{
-		//Is logging disabledor are we at too high of a level
-		if( !g_config->m_verbose || level > g_config->m_verbose_level )
-		{
-			return;
-		}
+		verbose = g_config->m_verbose;
+		set_level = g_config->m_verbose_level;
+	}
+	else
+	{
+		verbose = 0;
+		set_level = 0;
+	}
+	
+	//Is logging disabledor are we at too high of a level
+	if( !verbose || level > set_level )
+	{
+		return;
 	}
 	
 	va_start(ap, format);
@@ -61,7 +71,7 @@ void printf_debug_level(int level, const char *format, ...)
 	va_end(ap);
 }
 
-void uv_enter(const char *file, int line, const char *func)
+void uv_enter(const char *file, uint32_t line, const char *func)
 {
 	printf_debug_level(UVD_DEBUG_VERBOSE, "ENTER: %s:%d::%s\n", file, line, func);
 	g_last_func = func;
