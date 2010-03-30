@@ -40,6 +40,8 @@ endif
 # File to work on if no arguments are given
 # Default is no default
 DEFAULT_DECOMPILE_FILE='""'
+DEFAULT_CPU_DIR='"../arch"'
+DEFAULT_CPU_FILE=$(DEFAULT_CPU_DIR)'"/8051/8051.op"'
 
 USING_UVUDEC=Y
 USING_AR2PAT=Y

@@ -69,18 +69,11 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	UVDBenchmark engineInitBenchmark;
 	engineInitBenchmark.start();
 
-	/*
-	++init_count;
-	if( init_count > 1 )
-	{
-		*((unsigned int *)0) = 0;
-	}
-	*/
-		
+	//In theory if not specified, should search dir
 	switch( architecture )
 	{
 	default:
-		configFile = "arch/8051/8051.op";
+		configFile = DEFAULT_CPU_FILE;
 	};
 	
 	uv_assert_ret(m_config);
@@ -142,7 +135,6 @@ error:
 uv_err_t UVD::init_config(const std::string &configFile)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	const std::string config_file = "arch/8051/8051.op";
 	UVDConfigSection **sections = NULL;
 	unsigned int n_sections = 0;
 	unsigned int cur_section = 0;
@@ -157,8 +149,9 @@ uv_err_t UVD::init_config(const std::string &configFile)
 	UV_ENTER();
 
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(UVDConfig::uvd_read_sections(config_file, &sections, &n_sections)) )
+	if( UV_FAILED(UVDConfig::uvd_read_sections(configFile, &sections, &n_sections)) )
 	{
+		printf_error("Could not read config file: %s\n", configFile.c_str());
 		UV_ERR(rc);
 		goto error;
 	}
