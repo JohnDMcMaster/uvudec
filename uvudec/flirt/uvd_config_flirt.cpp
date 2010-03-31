@@ -13,6 +13,8 @@ UVDConfigFLIRT::UVDConfigFLIRT()
 	m_signatureLengthMax = UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT;
 	m_patternFileNewline = UVD_PROP_FLIRT_PAT_NEWLINE_DEFAULT;
 	m_relocateNearFar = UVD_PROP_FLIRT_RELOCATION_NEARFAR_DEFAULT;
+	
+	m_outputFile = "/dev/stdout";
 }
 
 UVDConfigFLIRT::~UVDConfigFLIRT()
