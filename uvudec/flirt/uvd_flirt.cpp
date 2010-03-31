@@ -83,7 +83,6 @@ uv_err_t UVDFLIRT::objs2pat(const std::vector<std::string> &inputFiles, std::str
 
 uv_err_t UVDFLIRT::getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generatorOut)
 {
-printf("num generators %d\n", m_patternGenerators.size());
 	//Iterate over all generators until one claims support
 	//We might want to add priorities here later
 	for( std::vector<UVDFLIRTPatternGenerator *>::iterator iter = m_patternGenerators.begin();
