@@ -12,8 +12,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH_DEFAULT		4
 
 #define UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH				"flirt.signature.length.max"
-//In bytes
-#define UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT		32
+//In bytes.  This is FLAIR note, I don't actually know why yet.  Suspect it has to do with .pat format
+#define UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT		0x8000
 
 //Output newline type, val cr, lf, or crlf
 //IDA uses crlf it seems (at least on Windows)
