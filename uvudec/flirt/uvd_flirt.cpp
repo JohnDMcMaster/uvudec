@@ -71,6 +71,7 @@ uv_err_t UVDFLIRT::objs2pat(const std::vector<std::string> &inputFiles, std::str
 		
 		//Find a capable analyzer
 		uv_assert_err_ret(getPatternGenerator(file, &generator));
+		uv_assert_ret(generator);
 		//And get the pat entries
 		uv_assert_err_ret(generator->saveToString(file, lastOutput, (iter + 1) == inputFiles.end()));
 		
@@ -80,18 +81,20 @@ uv_err_t UVDFLIRT::objs2pat(const std::vector<std::string> &inputFiles, std::str
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRT::getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generator)
+uv_err_t UVDFLIRT::getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generatorOut)
 {
 printf("num generators %d\n", m_patternGenerators.size());
 	//Iterate over all generators until one claims support
 	//We might want to add priorities here later
 	for( std::vector<UVDFLIRTPatternGenerator *>::iterator iter = m_patternGenerators.begin();
 			iter != m_patternGenerators.end(); ++iter )
-		{
-			UVDFLIRTPatternGenerator *generator = *iter;
+	{
+		UVDFLIRTPatternGenerator *generator = *iter;
 		
+		uv_assert_ret(generator);
 		if( UV_SUCCEEDED(generator->canGenerate(file)) )
 		{
+			*generatorOut = generator;
 			return UV_ERR_OK;
 		}
 	}
