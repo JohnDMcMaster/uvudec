@@ -1,0 +1,1 @@
+This ripper was made using a Cygnal C8051F020-TB board because it was laying around.  Originally was hard wired to breadboard, eventually made ZIF socket based adapter for 27C series.
