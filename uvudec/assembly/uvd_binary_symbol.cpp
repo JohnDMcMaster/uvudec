@@ -40,9 +40,8 @@ uv_err_t UVDBinarySymbol::deinit()
 	{
 		UVDData *relocatableDataData = NULL;
 		uv_assert_err_ret(m_relocatableData->getRelocatableData(&relocatableDataData));
-		uv_assert_ret(relocatableDataData);
 
-		if( relocatableDataData == m_data )
+		if( relocatableDataData && relocatableDataData == m_data )
 		{
 			printf_deprecated("m_data in m_relocatableData must be unique, will cause crashes in future releases\n");
 			m_data = NULL;
