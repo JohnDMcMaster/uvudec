@@ -332,7 +332,7 @@ uv_err_t UVDIterator::nextCore()
 	
 	otherBenchmark.start();
 	
-	if( g_config->m_addr_label )
+	if( g_config->m_addressLabel )
 	{
 		char buff[256];
 		
@@ -344,7 +344,7 @@ uv_err_t UVDIterator::nextCore()
 		m_indexBuffer.insert(m_indexBuffer.end(), buff);
 	}
 
-	if( g_config->m_addr_comment )
+	if( g_config->m_addressComment )
 	{
 		char buff[256];
 		
@@ -354,7 +354,7 @@ uv_err_t UVDIterator::nextCore()
 		m_indexBuffer.insert(m_indexBuffer.end(), buff);
 	}
 	
-	if( g_config->m_called_sources )
+	if( g_config->m_calledSources )
 	{
 		uv_assert_err_ret(analyzer->getCalledAddresses(calledAddresses));
 		if( calledAddresses.find(startPosition) != calledAddresses.end() )
@@ -378,21 +378,21 @@ uv_err_t UVDIterator::nextCore()
 			m_indexBuffer.insert(m_indexBuffer.end(), buff);
 
 			//Print number of callees?
-			if( g_config->m_called_count )
+			if( g_config->m_calledCount )
 			{
 				snprintf(buff, 256, "# References: %d", memLoc->getReferenceCount());
 				m_indexBuffer.push_back(buff);
 			}
 
 			//Print callees?
-			if( g_config->m_called_sources )
+			if( g_config->m_calledSources )
 			{
 				uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_CALL_DEST));
 			}
 		}
 	}
 	
-	if( g_config->m_jumped_sources )
+	if( g_config->m_jumpedSources )
 	{
 		uv_assert_err_ret(analyzer->getJumpedAddresses(jumpedAddresses));
 		//Can be an entry and continue point
@@ -407,14 +407,14 @@ uv_err_t UVDIterator::nextCore()
 			m_indexBuffer.push_back(buff);
 
 			//Print number of references?
-			if( g_config->m_jumped_count )
+			if( g_config->m_jumpedCount )
 			{
 				snprintf(buff, 256, "# References: %d", memLoc->getReferenceCount());
 				m_indexBuffer.push_back(buff);
 			}
 
 			//Print sources?
-			if( g_config->m_jumped_sources )
+			if( g_config->m_jumpedSources )
 			{
 				uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_JUMP_DEST));
 			}

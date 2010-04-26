@@ -194,8 +194,10 @@ public:
 	int m_printUsed;
 	//g_jumped_sources
 	int m_jumpedSources;
+	int m_jumpedCount;
 	//g_called_sources
 	int m_calledSources;
+	int m_calledCount;
 	//g_addr_comment
 	int m_addressComment;
 	//g_addr_label
@@ -222,18 +224,6 @@ public:
 	unsigned int m_addr_min;
 	//unsigned int g_addr_max;
 	unsigned int m_addr_max;
-	//int g_called_sources;
-	int m_called_sources;
-	//int g_called_count;
-	int m_called_count;
-	//int g_jumped_sources;
-	int m_jumped_sources;
-	//int g_jumped_count;
-	int m_jumped_count;
-	//int g_addr_comment;
-	int m_addr_comment;
-	//int g_addr_label;
-	int m_addr_label;
 	//How many hex digits to put on addresses 
 	//unsigned int g_hex_addr_print_width;
 	unsigned int m_hex_addr_print_width;
