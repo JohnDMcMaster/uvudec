@@ -16,10 +16,13 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 {
 	CPPUNIT_TEST_SUITE(UVDUnitTest);
 	CPPUNIT_TEST(versionTest);
+	CPPUNIT_TEST(defaultDecompileFileTest);
 	CPPUNIT_TEST(initDeinitTest);
 	CPPUNIT_TEST(versionArgTest);
 	CPPUNIT_TEST(helpArgTest);
 	CPPUNIT_TEST(engineInitTest);
+	CPPUNIT_TEST(analysisDirTest);
+	CPPUNIT_TEST(disassembleTest);
 	CPPUNIT_TEST_SUITE_END();
 
 	public:
@@ -32,6 +35,11 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 		They should be equal
 		*/
 		void versionTest(void);
+		/*
+		Make sure that our default decompile file is accessible
+		It is required for engine initialization
+		*/
+		void defaultDecompileFileTest(void);
 		/*
 		Early initialization
 		Logging, argument parsing structures
@@ -50,6 +58,14 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 		Perform a full engine init, but don't do any analysis
 		*/
 		void engineInitTest(void);
+		/*
+		Generate analysis output such as object files
+		*/
+		void analysisDirTest(void);
+		/*
+		Disassemble the default binary
+		*/
+		void disassembleTest(void);
 
 	private:
 };
