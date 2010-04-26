@@ -50,7 +50,7 @@ static uv_err_t disassemble(std::string file)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string output;
-	UVD *disasm = NULL;
+	UVD *uvd = NULL;
 	UVDData *data = NULL;
 
 	printf_debug_level(UVD_DEBUG_PASSES, "main: initializing data streams\n");
@@ -66,17 +66,17 @@ static uv_err_t disassemble(std::string file)
 	
 	//Create a disassembler engine active on that input
 	printf_debug_level(UVD_DEBUG_SUMMARY, "disassemble: initializing engine...\n");
-	if( UV_FAILED(UVD::getUVD(&disasm, data)) )
+	if( UV_FAILED(UVD::getUVD(&uvd, data)) )
 	{
 		printf_error("Failed to initialize engine\n");
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	uv_assert_all(disasm);
+	uv_assert_all(uvd);
 	uv_assert_all(g_uvd);
 
 	//Get string output
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");
-	rc = disasm->disassemble(file, output);
+	rc = uvd->disassemble(output);
 	if( UV_FAILED(rc) )
 	{
 		printf_error("Failed to disassemble!\n");
@@ -91,10 +91,7 @@ static uv_err_t disassemble(std::string file)
 	rc = UV_ERR_OK;
 	
 error:
-	if( data )
-	{
-		delete data;
-	}
+	delete data;
 	return rc;
 }
 
