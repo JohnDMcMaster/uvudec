@@ -22,4 +22,4 @@ USING_LIB_UVUDEC=Y
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk
 
-LDFLAGS += -lcppunit -ldl
+LIBS += -lcppunit -ldl
