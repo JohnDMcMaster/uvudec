@@ -247,7 +247,9 @@ UVDConfig::UVDConfig()
 
 	m_printUsed = false;
 	m_jumpedSources = false;
+	m_jumpedCount = 0;
 	m_calledSources = false;
+	m_calledCount = 0;
 	m_addressComment = false;
 	m_addressLabel = false;
 
@@ -261,12 +263,6 @@ UVDConfig::UVDConfig()
 
 	m_addr_min = 0;
 	m_addr_max = 0;
-	m_called_sources = false;
-	m_called_count = true;
-	m_jumped_sources = false;
-	m_jumped_count = true;
-	m_addr_comment = false;
-	m_addr_label = false;
 	m_hex_addr_print_width = 4;
 	m_caps = false;
 	m_binary = false;
