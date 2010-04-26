@@ -726,12 +726,42 @@ uv_err_t UVD::stringListAppend(UVDInstruction *inst, std::vector<std::string> &l
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVD::disassemble(std::string file, std::string &output)
+uv_err_t UVD::createAnalysisDir(const std::string &file, const std::string &outputDir)
 {
-	return UV_DEBUG(decompile(file, UVD_LANGUAGE_ASSEMBLY, output));
+	std::string oldDir;
+	
+	oldDir = m_config->m_analysisDir;
+	m_config->m_analysisDir = outputDir;
+	uv_assert_err_ret(createAnalysisDir());
+	m_config->m_analysisDir = oldDir;
+
+	return UV_ERR_OK;
 }
 
-uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &output)
+uv_err_t UVD::createAnalysisDir()
+{
+	uint32_t oldAnalysisOnly = 0;
+	//Due to decompile hack
+	std::string discard;
+	
+	uv_assert_ret(m_config);
+	oldAnalysisOnly = m_config->m_analysisOnly;
+	m_config->m_analysisOnly = 1;
+	//Sorta hackish, do some cleanup later
+	//Lang is relativly unimportant, assembly indicates don't do any high level analysis
+	//(although it is ignored for now anyway)
+	uv_assert_err_ret(decompile(UVD_LANGUAGE_ASSEMBLY, discard));
+	m_config->m_analysisOnly = oldAnalysisOnly;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::disassemble(std::string &output)
+{
+	return UV_DEBUG(decompile(UVD_LANGUAGE_ASSEMBLY, output));
+}
+
+uv_err_t UVD::decompile(int destinationLanguage, std::string &output)
 {
 	//uint8_t *dat = NULL;	
 	unsigned int dat_sz = 0;
@@ -743,15 +773,6 @@ uv_err_t UVD::decompile(std::string file, int destinationLanguage, std::string &
 	UVDBenchmark decompileBenchmark;
 	decompileBenchmark.start();
 	
-	/*
-	printf_debug("Reading program data...\n");
-	if( UV_FAILED(read_file(file.c_str(), &dat, &dat_sz)) )
-	{
-		printf("Couldn't read file: %s\n", file.c_str());
-		UV_ERR(rc);
-		goto error;		
-	}
-	*/
 	uv_assert_ret(m_data);
 	dat_sz = m_data->size();
 	

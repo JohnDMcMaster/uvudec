@@ -4,10 +4,6 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-/*
-TODO: move analysis specific stuff to UVDTarget or UVDAnalysis or something
-*/
-
 #ifndef UVD_H
 #define UVD_H
 
@@ -170,6 +166,7 @@ protected:
 public:
 	//Source of data to disassemble
 	//Usually equal to m_uvd.m_data, but may be a smaller segment for finer analysis
+	//We do NOT own this, it must be deleted by the user
 	UVDData *m_data;
 
 private:	
@@ -219,15 +216,35 @@ public:
 	
 	uv_err_t deinit();
 
+	/*
+	Iterator functions
+	*/
 	UVDIterator begin();
 	UVDIterator begin(uint32_t offset);
 	UVDIterator begin(UVDData *data);
 	UVDIterator end();
 	UVDIterator end(UVDData *data);
 
-	uv_err_t disassemble(std::string file, std::string &output);
-	uv_err_t decompile(std::string file, int destinationLanguage, std::string &output);
-	uv_err_t decompilePrint(std::string &output);
+	/*
+	High level generation functions
+	*/
+	/*
+	Object files and such
+	for now, outputDir is ignored and controlled through config
+	*/
+	uv_err_t createAnalysisDir(const std::string &file, const std::string &outputDir);
+	//Use config options
+	uv_err_t createAnalysisDir();
+	/*
+	Disassemble binary file to output string
+	*/
+	uv_err_t disassemble(std::string &output);
+	/*
+	Given file, generate best representation possible in specified langauge to output file
+	Using what created the engine init
+	*/
+	uv_err_t decompile(int destinationLanguage, std::string &output);
+	
 	
 	std::string analyzedSymbolName(uint32_t functionAddress, int symbolType = UVD__SYMBOL_TYPE__FUNCTION);
 	//This should get moved to util
@@ -270,9 +287,15 @@ public:
 	uv_err_t analyzeFunction(UVDBinaryFunctionShared *functionShared);
 	uv_err_t analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared);
 
+	//Change data to correspond to given file
+	//uv_err_t setFile(const std::string &file);	
+	//uv_err_t setData(UVData *data);
 	UVDData *getData();
 
 protected:
+	//If not doing analysis only, prints the decompile results
+	uv_err_t decompilePrint(std::string &output);
+
 	//Vector at start, take each instruction, one at a time, then compute branches/calls
 	uv_err_t analyzeControlFlowLinear();
 	//Start at all (valid) vectors and find all branch points
