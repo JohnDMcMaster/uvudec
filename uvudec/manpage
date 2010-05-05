@@ -1,0 +1,31 @@
+.TH uvudec "1" "January 2009" "uvudec UVUDEC_VER" "User Commands"
+
+.SH NAME
+uvudec \- decompile firmware images
+
+.SH SYNOPSIS
+Usage: ./uvudec <options>
+
+.SH DESCRIPTION
+Decompile embedded system images.
+
+.SH EXAMPLES
+.TP
+uvudec --input=router.bin
+Rip apart router image, trying to automatically guess architecture.
+Note that this may be slow and if architecture is known, it should be
+given for faster and more accurate decompiles.
+
+.SH AUTHOR
+Written by John McMaster.
+
+.SH "REPORTING BUGS"
+Report bugs to <JohnDMcMaster@gmail.com>.
+
+.SH COPYRIGHT
+Copyright \(co 2008 John McMaster
+.br
+See 'COPYING' for details
+.SH "SEE ALSO"
+uvelf
+
