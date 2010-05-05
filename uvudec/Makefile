@@ -110,6 +110,40 @@ cleanSubCore:
 	if [ -f $(CLEAN_DIR)/Makefile ]; then cd $(CLEAN_DIR) && $(MAKE) clean; fi
 	@(true)
 
+
+MAN_SECTION=1
+MAN_RAW=manpage
+MAN_PAGE=uvudec
+MAN_UNCOMPRESSED=$(MAN_PAGE).$(MAN_SECTION)
+MAN=$(MAN_UNCOMPRESSED).gz
+MAN_DIR=$(PREFIX)/usr/share/man/man$(MAN_SECTION)
+man:
+	$(CP) $(MAN_RAW) $(MAN_UNCOMPRESSED)
+	$(RM) $(MAN)
+	$(PERL) -pi -e "s/UVUDEC_VER/$(UVUDEC_VER)/" $(MAN_UNCOMPRESSED)
+	$(GZIP) $(MAN_UNCOMPRESSED)
+
+INSTALL_DIR=$(INSTALL_DIR_BASE)/$(UVUDEC_VER)
+INSTALL_DIR_CUR=$(INSTALL_DIR_BASE)/current
+
+install: man
+# Might be upgrading
+	echo rm -rf $(INSTALL_DIR)
+	echo mkdir $(INSTALL_DIR)
+	echo cp -r arch bin $(INSTALL_DIR)/
+# Make a generic link for convenience if we were using suffixes
+ifeq ($(EXE_BUILD_SUFFIX),Y)
+# Arbitrarily favor static exe's if both specified
+ifeq ($(USING_STATIC),Y)
+	echo ln -sf $(INSTALL_DIR/bin/uvudec $(INSTALL_DIR/bin/uvudec.static
+else
+	echo ln -sf $(INSTALL_DIR/bin/uvudec $(INSTALL_DIR/bin/uvudec.dynamic
+endif
+endif
+	echo $(INSTALL) $(MAN) $(MAN_DIR)	
+# Redirect current version link
+	echo ln -sf $(INSTALL_DIR) $(INSTALL_DIR_CUR)
+
 installer:
 	@(echo 'Oh noes!')
 	@(echo 'Ce n"est supported pas!' 
