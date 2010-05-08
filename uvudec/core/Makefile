@@ -2,11 +2,7 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-ifeq ($(USING_STATIC),Y)
-EXE_NAME=$(UVUDEC_EXE).static
-else
-EXE_NAME=$(UVUDEC_EXE).dynamic
-endif
+EXE_NAME=$(UVUDEC_EXE)
 
 CC_SRCS =   \
 

@@ -24,7 +24,7 @@ ALL_TARGETS=$(LIB_NAMES)
 AR_FLAGS=-rcs
 
 
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 
 # We use ar to build static libs, so no LIBS/LDFLAGS needed since linking is never done
 LIBS +=
@@ -57,7 +57,7 @@ $(LIB_DYNAMIC_MINOR): $(LIB_DYNAMIC_PATCH)
 $(LIB_DYNAMIC_REAL): depend $(OBJS)
 	@(echo 'Creating dynamic lib...')
 	mkdir -p $(LIB_DIR)
-	$(CC) -shared $(LIBS) $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
+	$(CC) -shared $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
 
 static: $(LIB_STATIC)
 	@(true)

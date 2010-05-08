@@ -85,10 +85,10 @@ pat2sig:
 endif
 
 dynamic:
-	$(MAKE) all USING_STATIC=N
+	$(MAKE) all LINKAGE=dynamic
 
 static:
-	$(MAKE) all USING_STATIC=Y
+	$(MAKE) all LINKAGE=static
 
 test:
 	cd testing && $(MAKE)
@@ -124,25 +124,29 @@ man:
 	$(GZIP) $(MAN_UNCOMPRESSED)
 
 INSTALL_DIR=$(INSTALL_DIR_BASE)/$(UVUDEC_VER)
-INSTALL_DIR_CUR=$(INSTALL_DIR_BASE)/current
 
 install: man
 # Might be upgrading
-	echo rm -rf $(INSTALL_DIR)
-	echo mkdir $(INSTALL_DIR)
-	echo cp -r arch bin $(INSTALL_DIR)/
+	rm -rf $(INSTALL_DIR)
+	mkdir -p $(INSTALL_DIR)
+	cp -r arch bin $(INSTALL_DIR)
 # Make a generic link for convenience if we were using suffixes
 ifeq ($(EXE_BUILD_SUFFIX),Y)
 # Arbitrarily favor static exe's if both specified
 ifeq ($(USING_STATIC),Y)
-	echo ln -sf $(INSTALL_DIR/bin/uvudec $(INSTALL_DIR/bin/uvudec.static
+#	ln -sf $(INSTALL_DIR)/bin/uvudec $(INSTALL_DIR)/bin/uvudec.static
 else
-	echo ln -sf $(INSTALL_DIR/bin/uvudec $(INSTALL_DIR/bin/uvudec.dynamic
+#	ln -sf $(INSTALL_DIR)/bin/uvudec $(INSTALL_DIR)/bin/uvudec.dynamic
 endif
 endif
-	echo $(INSTALL) $(MAN) $(MAN_DIR)	
+	$(INSTALL) $(MAN) $(MAN_DIR)
 # Redirect current version link
-	echo ln -sf $(INSTALL_DIR) $(INSTALL_DIR_CUR)
+# ick ln has weird behavior...or is it just me
+# -f option is useless or unrelaible anyway
+# if file to create link to exists as a directory and file to create link at exists
+# the link is instead placed into the target directory
+# so, we must remove the old link first and -f doesn't help
+	cd $(INSTALL_DIR_BASE) && rm -f current && ln -sf $(UVUDEC_VER) current
 
 installer:
 	@(echo 'Oh noes!')

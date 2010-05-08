@@ -2,6 +2,10 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
+# LINKAGE: set to either dynamic or static for our current target
+# USING_DYNAMIC: if we configured to support building dynamic exe
+# USING_STATIC: if we configured to support building static exe
+
 ifeq ($(INCLUDE_LEVEL),)
 INCLUDE_LEVEL=.
 else
@@ -96,7 +100,7 @@ FLAGS_SHARED += -DUSING_LUA
 LUA_INCLUDE=$(LUA_DIR)/src
 LUA_LIB_STATIC=$(LUA_DIR)/src/liblua.a
 INCLUDES += -I$(LUA_INCLUDE)
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 LIBS += $(LUA_LIB_STATIC)
 else
 LIBS += -llua
@@ -136,7 +140,7 @@ JS_STATIC=$(SPIDERAPE_DIR)/src/js/Linux_All_DBG.OBJ/libjs.a
 ifeq ($(USING_SPIDERAPE),Y)
 FLAGS_SHARED += -DUSING_SPIDERAPE
 INCLUDES += -I$(SPIDERAPE_DIR)/include -I$(SPIDERAPE_DIR)/src/js -I$(SPIDERAPE_DIR)/src/ape
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 LIBS += $(SPIDERAPE_STATIC) $(JS_STATIC)
 else
 LIBS += -lSpiderApe -ljs
@@ -152,16 +156,16 @@ ifeq ($(USING_LIBBFD),Y)
 FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD
 
 
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 ifeq ($(USING_LIBBFD_UNINSTALLED),Y)
 LIBBFD_STATIC_LIB=$(BINUTILS_DIR)/bfd/libbfd.a
 LIBOPCODES_STATIC_LIB=$(BINUTILS_DIR)/opcodes/libopcodes.a
 LIBIBERTY_STATIC_LIB=$(BINUTILS_DIR)/libiberty/libiberty.a
 INCLUDES+=-I$(BINUTILS_DIR)/bfd
 else
-LIBBFD_STATIC_LIB=libbfd.a
-LIBOPCODES_STATIC_LIB=libopcodes.a
-LIBIBERTY_STATIC_LIB=libiberty.a
+LIBBFD_STATIC_LIB=-lbfd
+LIBOPCODES_STATIC_LIB=-lopcodes
+LIBIBERTY_STATIC_LIB=-liberty
 endif
 LIBS+=$(LIBBFD_STATIC_LIB) $(LIBOPCODES_STATIC_LIB) $(LIBIBERTY_STATIC_LIB)
 
@@ -180,7 +184,7 @@ endif
 LIBZ_STATIC=/usr/lib/libz.a
 
 ifeq ($(USING_LIBZ),Y)
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 LIBS += $(LIBZ_STATIC)
 else
 LIBS += -lz
@@ -190,7 +194,7 @@ endif
 
 
 # General libc stuff
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 
 # We only include libs in the final exe for static buids usually
 LIBS +=
@@ -274,7 +278,9 @@ PHONY += all .c.o .cpp.o clean dist depend info cleanLocal
 info: $(INFO_TARGETS)
 	@(echo "Shared info")
 	@(echo "USING_UPX: $(USING_UPX)")
+	@(echo "LINKAGE: $(LINKAGE)")
 	@(echo "USING_STATIC: $(USING_STATIC)")
+	@(echo "USING_DYNAMIC: $(USING_DYNAMIC)")
 	@(echo "USING_PYTHON: $(USING_PYTHON)")
 	@(echo "USING_LUA: $(USING_LUA)")
 	@(echo "USING_JAVASCRIPT: $(USING_JAVASCRIPT)")
