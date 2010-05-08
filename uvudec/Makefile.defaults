@@ -16,8 +16,18 @@ UPX = upx
 
 # Fully static build?
 USING_STATIC=Y
+USING_DYNAMIC=N
+# Reccomend to set to Y is using both static and dynamic, otherwise they will overwrite each other
+EXE_BUILD_SUFFIX=N
 
 USING_ROPE=N
+
+PREFIX=
+INSTALL_DIR_BASE=$(PREFIX)/opt/uvudec
+# Instead of using the INSTALL_DIR_BASE, find the location of the executed program and use ../arch, ../sig and such
+# Allows easy deployment of compiled application and then simply sym linked to
+# Must preserve the same dir struct though that a /opt style installation would have provided
+INSTALLED_FILES_RELATIVE=N
 
 #Scripting support
 ifeq ($(shell which python |fgrep '/'),)
@@ -40,7 +50,9 @@ endif
 # File to work on if no arguments are given
 # Default is no default
 DEFAULT_DECOMPILE_FILE='""'
-DEFAULT_CPU_DIR='"../arch"'
+# TODO: make relative path here is to the installed exe location
+# INSTALL_DIR will get resolved later
+DEFAULT_CPU_DIR='"$(INSTALL_DIR)/arch"'
 DEFAULT_CPU_FILE=$(DEFAULT_CPU_DIR)'"/8051/8051.op"'
 
 USING_UVUDEC=Y

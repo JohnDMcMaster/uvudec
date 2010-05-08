@@ -2,16 +2,26 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-$(EXE_NAME): depend $(OBJS)
+ifeq ($(EXE_BUILD_SUFFIX),Y)
+ifeq ($(LINKAGE),static)
+EXE_NAME_FULL=$(EXE_NAME).static
+else
+EXE_NAME_FULL=$(EXE_NAME).dynamic
+endif
+else
+EXE_NAME_FULL=$(EXE_NAME)
+endif
+
+$(EXE_NAME_FULL): depend $(OBJS)
 	mkdir -p $(BIN_DIR)
-	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE_NAME)
+	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE_NAME_FULL)
 ifeq ($(USING_UPX),Y)
 	$(UPX) $(UVUDEC_EXE)
 endif
 
-ALL_TARGETS=$(EXE_NAME)
+ALL_TARGETS=$(EXE_NAME_FULL)
 
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 
 LIB_C_STATIC=$(shell $(CXX) -print-file-name=libc.a)
 LIB_STDCXX_STATIC=$(shell $(CXX) -print-file-name=libstdc++.a)
@@ -29,7 +39,7 @@ endif
 
 # Need to make macro for this
 ifeq ($(USING_LIB_UVUDEC),Y)
-ifeq ($(USING_STATIC),Y)
+ifeq ($(LINKAGE),static)
 LIBS += $(LIB_UVUDEC_STATIC)
 else
 LIBS += -l$(LIB_UVUDEC_DYNAMIC_USED)
@@ -39,6 +49,6 @@ endif
 INFO_TARGETS=infoExe
 infoExe:
 	@(echo "Exe info")
-	@(echo "EXE_NAME: $(EXE_NAME)")
+	@(echo "EXE_NAME_FULL: $(EXE_NAME_FULL)")
 	@(echo "")
 
