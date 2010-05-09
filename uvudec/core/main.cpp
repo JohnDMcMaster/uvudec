@@ -134,6 +134,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 uv_err_t initProgConfig()
 {
+	uv_assert_ret(g_config);
+	
 	//Arguments
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_FILE, 0, "output", "output program (default: stdout)", 1, argParser, false));

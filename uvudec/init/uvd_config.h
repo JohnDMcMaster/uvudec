@@ -162,6 +162,11 @@ public:
 	char **m_argv;
 	std::vector<std::string> m_args; 
 
+	//Canonical name where our install was to
+	std::string m_installDir;
+	//Canonical name where the arch files are stored
+	std::string m_archDir;
+
 	std::string m_analysisDir;
 	int m_analysisOnly;
 	int m_uselessASCIIArt;

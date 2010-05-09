@@ -21,6 +21,132 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_error.h"
 #include "uvd.h"
 #include <linux/limits.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+uv_err_t getProgramName(std::string &programName)
+{
+	//read /proc/$PID/exe
+	char buff[512];
+	int curPid = 0;
+	
+	curPid = getpid();
+	uv_assert_ret(curPid > 0);
+	snprintf(buff, sizeof(buff), "/proc/%d/exe", curPid);
+	uv_assert_err_ret(resolveSymbolicLink(buff, programName));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t isSymbolicLink(const std::string &sFile, uint32_t *isLink)
+{
+	struct stat statStruct;
+
+	uv_assert_ret(lstat(sFile.c_str(), &statStruct) == 0);	
+	if( (S_IFLNK & statStruct.st_mode) == S_IFLNK )
+	{
+		*isLink = true;
+	}
+	else
+	{
+		*isLink = false;
+	}
+	return UV_ERR_OK;;
+}
+
+uv_err_t collapsePath(const std::string &relativePath, std::string &pathRet)
+{
+	//Originial path parts
+	std::vector<std::string> parts = split(relativePath, '/', false);
+	//Reassembled path parts, we must buffer so we can pop off as ..'s cancel out dirs
+	std::vector<std::string> vecBuffer;
+	for( std::string::size_type i = 0; i < parts.size(); ++i )
+	{
+		//Ignore current directory in canonical paths
+		if( parts[i] == "." )
+		{
+			//Skip...
+		}
+		//Pop off dis if availible
+		else if( parts[i] == ".." )
+		{
+			if( !vecBuffer.empty() )
+			{
+				vecBuffer.pop_back();
+			}
+		}
+		//Some regular path
+		else
+		{
+			vecBuffer.push_back(parts[i]);
+		}
+	}
+	
+	//Reconstruct the remaining path now
+	pathRet = "";
+	//split would have removed this
+	if( relativePath[0] == '/' )
+	{
+		pathRet = "/";
+	}
+	for( std::vector<std::string>::size_type i = 0; i < vecBuffer.size(); ++i )
+	{
+		pathRet += vecBuffer[i];
+		if( i < vecBuffer.size() - 1 )
+		{
+			pathRet += "/";
+		} 
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t resolveSymbolicLink(const std::string &fileIn, std::string &ret)
+{
+	//In case link is circular or similar
+	uint32_t linkCount = 0;
+	const uint32_t linkCountMax = 16;
+	//We need this to resolve symbolic links
+	std::string last = ret;
+	
+	//Track what our most resolved link to date is
+	ret = fileIn;
+		
+	for( ;; )
+	{
+		uint32_t isLink = 0;
+		char szBuff[256];
+		uint32_t readlinkRc = 0;
+		
+		++linkCount;
+		uv_assert_ret(linkCount <= linkCountMax);
+		
+		uv_assert_err_ret(isSymbolicLink(ret, &isLink));
+		//No link -> done
+		if( !isLink )
+		{
+			return UV_ERR_OK;
+		}
+
+		readlinkRc = readlink(ret.c_str(), szBuff, sizeof(szBuff));
+		uv_assert_ret(readlinkRc >= 0);
+		//readlink doesn't null terminate
+		ret = std::string(szBuff, readlinkRc);
+		
+		//Make it canonical if not so already
+		if( ret[0] != '/' )
+		{
+			std::string retSimplified;
+			
+			//Since we required canonical, get absolute dir from our link location
+			ret = uv_dirname(last) + "/" + ret;
+			uv_assert_err_ret(collapsePath(ret, retSimplified));
+			//Done, should have a simplified relative path
+			ret = retSimplified;
+		}
+		last = ret;
+	}
+}
 
 std::string uv_basename(const std::string &file)
 {
@@ -39,7 +165,7 @@ std::string uv_dirname(const std::string &file)
 	{
 		return file;
 	}
-	return file.substr(0, pos - 1);
+	return file.substr(0, pos);
 }
 
 uv_err_t isRegularFile(const std::string &file)
