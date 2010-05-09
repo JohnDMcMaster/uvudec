@@ -7,6 +7,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_arg.h"
 #include "uvd_arg_property.h"
 #include "uvd_arg_util.h"
+#include "uvd_ascii_art.h"
 #include "uvd_config.h"
 #include "uvd_language.h"
 #include "uvd_types.h"
@@ -153,6 +154,7 @@ uv_err_t initSharedConfig()
 	//Actions
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", 0, argParser, false));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", 0, argParser, false));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ACTION_USELESS_ASCII_ART, 0, "print-useless-ascii-art", "print nifty ASCII art", 1, argParser, true));
 	
 	//Debug
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true));
@@ -247,6 +249,10 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		version();
 		return UV_ERR_DONE;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_USELESS_ASCII_ART )
+	{
+		printf("Have too much time on our hands do we?\n%s\n\n", getRandomUVNetASCIIArt().c_str());
 	}
 	/*
 	Debug

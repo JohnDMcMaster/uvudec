@@ -10,6 +10,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 //Action
 #define UVD_PROP_ACTION_HELP					"action.help"
 #define UVD_PROP_ACTION_VERSION					"action.version"
+#define UVD_PROP_ACTION_USELESS_ASCII_ART		"action.print_ascii_art"
 //Debug
 #define UVD_PROP_DEBUG_LEVEL					"debug.level"
 #define UVD_PROP_DEBUG_INIT						"debug.init"
