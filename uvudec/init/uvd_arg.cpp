@@ -10,6 +10,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_config.h"
 #include "uvd_language.h"
 #include "uvd_types.h"
+#include "uvd_util.h"
 #include "uvd_version.h"
 #include <vector>
 
@@ -71,8 +72,22 @@ bool UVDArgConfig::operator==(const std::string &r) const
 }
 */
 
-uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, std::vector<std::string> &args)
+uv_err_t setupInstallDir()
 {
+	std::string programName;
+
+	uv_assert_err_ret(getProgramName(programName));
+	uv_assert_ret(g_config);
+	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
+	g_config->m_installDir = uv_dirname(uv_dirname(programName));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, std::vector<std::string> &args)
+{	
+	uv_assert_err_ret(setupInstallDir());
+
 	//Iterate for each actual command line argument
 	//skip first arg which is prog name
 	for( std::vector<std::string>::size_type argsIndex = 1; argsIndex < args.size(); ++argsIndex )

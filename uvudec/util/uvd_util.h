@@ -39,6 +39,10 @@ Put in namespace maybe and do some template magic?
 
 std::string uv_basename(const std::string &file);
 std::string uv_dirname(const std::string &file);
+//Return the canonical path to the currently exeucting program name
+uv_err_t getProgramName(std::string &programName);
+//Given symbolic link file, give canonical path
+uv_err_t resolveSymbolicLink(const std::string &linkFile, std::string &sRet);
 
 uv_err_t isRegularFile(const std::string &file);
 uv_err_t isDir(const std::string &file);
