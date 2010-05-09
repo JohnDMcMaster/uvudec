@@ -57,6 +57,17 @@ uv_err_t UVD::init(const std::string &file, int architecture)
 	return init(data, architecture);
 }
 
+uv_err_t GetDefaultCPUFile(std::string &ret)
+{
+	ret = DEFAULT_CPU_FILE;
+	//This should be relative to installed directory if not absolute
+	if( ret[0] != '/' )
+	{
+		ret = g_config->m_installDir + "/" + ret;
+	}
+	return UV_ERR_OK;
+}
+
 //int init_count = 0;
 uv_err_t UVD::init(UVDData *data, int architecture)
 {
@@ -73,7 +84,7 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	switch( architecture )
 	{
 	default:
-		configFile = DEFAULT_CPU_FILE;
+		uv_assert_err_ret(GetDefaultCPUFile(configFile));
 	};
 	
 	uv_assert_ret(m_config);
