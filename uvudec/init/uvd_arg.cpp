@@ -80,6 +80,7 @@ uv_err_t setupInstallDir()
 	uv_assert_ret(g_config);
 	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
 	g_config->m_installDir = uv_dirname(uv_dirname(programName));
+	g_config->m_archDir = g_config->m_installDir + "/arch";
 
 	return UV_ERR_OK;
 }
