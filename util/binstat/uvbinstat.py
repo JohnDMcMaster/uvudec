@@ -203,9 +203,28 @@ def misrip27CCheck():
 	return True
 
 def missingAddressPinCheck():
-	# Dice into chunks and see if we have repeats
-	# A missing address pin will cause the same data to repeat over and over again
-	# Increase in powers of 2 to check for each possible fault
+	"""
+	Dice into chunks and see if we have repeats
+	A missing address pin will cause the same data to repeat over and over again
+	Increase in powers of 2 to check for each possible fault
+
+	If we check for individual pin failures, we should also know if larger sets have failed
+	
+
+	Simple example
+		Original
+			0123 4567 89AB CDEF
+		1000 failed
+			0123 4567 0123 4567. 
+		0100 failed
+			0123 0123 89AB 89AB. 
+		0010 failed
+			0101 4545 8989 CDCD
+		0001 failed
+			0022 4466 88AA CCEE
+		1100 failed
+			0123 0123 0123 0123.
+	"""
 
 	# Only check the first two blocks in each range
 	# Assuming a clean rip, they should be perfectly repeated and other checks aren't necessary
@@ -217,21 +236,20 @@ def missingAddressPinCheck():
 		
 		matches = 0
 		
-		# Check adjacent blocks
+		# Check adjacent block pairs
 		# If all match, we have an address pin issue
-		# Blank sections shouldn't present any issues
-		# Easier to just count
+		# Blank sections shouldn't present any issues since non-blank areas should still have valid data
 		checked = 0
-		for blockIndex in range(blockSize, len(g_binString), blockSize):			
-			lower = g_binString[blockIndex - blockSize:blockIndex]
-			upper = g_binString[blockIndex:blockIndex + blockSize]
+		for blockIndex in range(blockSize, len(g_binString), 2 * blockSize):			
+			lower = g_binString[blockIndex - blockSize : blockIndex]
+			upper = g_binString[blockIndex : blockIndex + blockSize]
 			checked += 1
 			if lower == upper:
 				matches += 1
 		adjacentMatchFrequencies[blockExponent] = matches
 		if matches == checked:
 			printError('an address pin is probably missing')
-			printError('repeated block size: 0x%.4X (%d), bits: 0x%.4X (%d)' % (blockSize, blockSize, int(math.log(blockSize, 2)), int(math.log(blockSize, 2))))
+			printError('repeated block size: 0x%.4X (%d), address bit: 0x%.4X (%d)' % (blockSize, blockSize, int(math.log(blockSize, 2)), int(math.log(blockSize, 2))))
 
 def help():
 	version()
