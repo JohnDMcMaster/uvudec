@@ -43,6 +43,7 @@ void UVDUnitTest::defaultDecompileFileTest(void)
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
+	printf("Opening on %s\n", file.c_str());
 	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
 	CPPUNIT_ASSERT(data != NULL);	
 	
