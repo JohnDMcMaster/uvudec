@@ -2,14 +2,9 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-USING_STATIC=N
+USING_STATIC=Y
 
-ifeq ($(USING_STATIC),Y)
-# This might not work and valgrind doesn't like it either
-EXE_NAME=$(TESTING_EXE).static
-else
-EXE_NAME=$(TESTING_EXE).dynamic
-endif
+EXE_NAME=$(TESTING_EXE)
 
 CC_SRCS =   \
 
