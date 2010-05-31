@@ -58,6 +58,10 @@ uv_err_t writeFile(const std::string &sFile, const char *buff, size_t buffsz);
 uv_err_t parseFunc(const std::string &text, std::string &name, std::string &content);
 
 uv_err_t splitConfigLinesVector(const std::vector<std::string> &in, const std::string &delim, std::vector< std::vector<std::string> > &out);
+//"0x100-0x1FF" or "0x100,0x1FF" form
+//If a single number is given, assume from that number to itself
+//Will error if not of either of these forms
+uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t *second);
 
 uv_err_t getTempFile(std::string &sFile);
 std::string escapeArg(const std::string &sIn);
