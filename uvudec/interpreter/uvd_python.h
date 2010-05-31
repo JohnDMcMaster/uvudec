@@ -1,12 +1,12 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #ifdef USING_PYTHON
 
+#include "config.h"
 #include "uvd_interpreter.h"
 
 //This is the only supported method for now

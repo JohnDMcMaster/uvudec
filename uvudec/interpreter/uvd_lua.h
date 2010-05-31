@@ -1,9 +1,13 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
+
+#ifndef UVD_LUA_H
+#define UVD_LUA_H
+
+#include "config.h"
 
 #ifdef USING_LUA
 
@@ -30,3 +34,5 @@ protected:
 };
 
 #endif //USING_LUA
+
+#endif
