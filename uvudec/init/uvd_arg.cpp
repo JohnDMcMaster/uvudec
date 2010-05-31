@@ -181,10 +181,12 @@ uv_err_t initSharedConfig()
 			1, argParser, true));
 	
 	//Analysis target related
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE_MIN, 0, "addr-include-min", "minimum analysis address", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE_MAX, 0, "addr-include-max", "maximum analysis address", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE_MIN, 0, "addr-exclude-min", "minimum exclusion address", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE_MAX, 0, "addr-exclude-max", "maximum exclusion address", 1, argParser, false));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE, 0, "addr-exclude", "exclusion address range (, or - separated)", 1, argParser, false));
+	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE_MIN, 0, "addr-include-min", "minimum analysis address", 1, argParser, false));
+	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE_MAX, 0, "addr-include-max", "maximum analysis address", 1, argParser, false));
+	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE_MIN, 0, "addr-exclude-min", "minimum exclusion address", 1, argParser, false));
+	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE_MAX, 0, "addr-exclude-max", "maximum exclusion address", 1, argParser, false));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS, 0, "analysis-address", "only output analysis data for specified address", 1, argParser, false));
 
 	//Analysis
@@ -376,30 +378,27 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	/*
 	we need to parse two args at once, otherwise this is messy
 	think was doing this before as comma seperate list?
-	
+	*/
 	//Positive strategy: specify the address we want
-	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS_INCLUDE_MIN )
+	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS_INCLUDE )
 	{
+		uint32_t low = 0;
+		uint32_t high = 0;
+		
 		uv_assert_ret(!argumentArguments.empty());
-		config->m_addressMin = firstArgNum;
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS_INCLUDE_MAX )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		config->m_addressMax = firstArgNum;
+		uv_assert_err_ret(parseNumericRangeString(firstArg, &low, &high));
+		uv_assert_err_ret(config->addAddressInclusion(low, high));
 	}
 	//Negative strategy: specify the addresses we don't want
-	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS_EXCLUDE_MIN )
+	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS_EXCLUDE )
 	{
+		uint32_t low = 0;
+		uint32_t high = 0;
+		
 		uv_assert_ret(!argumentArguments.empty());
-		exclusion_addr_min = firstArgNum;
+		uv_assert_err_ret(parseNumericRangeString(firstArg, &low, &high));
+		uv_assert_err_ret(config->addAddressExclusion(low, high));
 	}
-	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS_EXCLUDE_MAX )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		exclusion_addr_max = firstArgNum;
-	}
-	*/
 	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_ADDRESS )
 	{
 		uv_assert_ret(!argumentArguments.empty());

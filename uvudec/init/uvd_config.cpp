@@ -225,9 +225,6 @@ UVDConfig::UVDConfig()
 	m_sDebugFile = UVD_OPTION_FILE_STDOUT;
 	//m_pDebugFile = NULL;
 
-	m_addressMin = 0;
-	m_addressMax = 0;
-
 	//Don't default to an unsupported language	
 #if defined(USING_JAVASCRIPT)
 	//Default: javascript has the highest preformance
@@ -261,8 +258,6 @@ UVDConfig::UVDConfig()
 	m_verbose_printing = false;
 
 
-	m_addr_min = 0;
-	m_addr_max = 0;
 	m_hex_addr_print_width = 4;
 	m_caps = false;
 	m_binary = false;
@@ -455,7 +450,6 @@ uv_err_t UVDConfig::parseUserConfig()
 
 uv_err_t UVDConfig::processParseMain()
 {
-	//g_noncodingAddresses.push_back(UVDMemoryLocation(exclusion_addr_min, exclusion_addr_max));
 	//Make sure we are logging to correct target now that we have parsed args
 	uv_assert_err_ret(uv_log_init(m_sDebugFile.c_str()));
 	
@@ -464,6 +458,9 @@ uv_err_t UVDConfig::processParseMain()
 
 uv_err_t UVDConfig::init()
 {
+	//By default assume all addresses are potential analysis areas
+	m_addressRangeValidity.m_default = UVD_ADDRESS_ANALYSIS_INCLUDE;
+	
 	//Load user defined defaults
 	uv_assert_err_ret(parseUserConfig());
 	
@@ -477,6 +474,302 @@ uv_err_t UVDConfig::deinit()
 		delete *iter;
 	}
 	m_configArgs.clear();
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::addAddressInclusion(uint32_t low, uint32_t high)
+{
+	//If the first check we do is an inclusion, assume by default to exclude
+	if( m_addressRangeValidity.empty() )
+	{
+		m_addressRangeValidity.m_default = UVD_ADDRESS_ANALYSIS_EXCLUDE;
+	}
+	m_addressRangeValidity.add(low, high, UVD_ADDRESS_ANALYSIS_INCLUDE);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::addAddressExclusion(uint32_t low, uint32_t high)
+{
+	//If the first check we do is an exclusion, assume by default to include
+	if( m_addressRangeValidity.empty() )
+	{
+		m_addressRangeValidity.m_default = UVD_ADDRESS_ANALYSIS_INCLUDE;
+	}
+	m_addressRangeValidity.add(low, high, UVD_ADDRESS_ANALYSIS_EXCLUDE);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::getValidAddressRanges(std::vector<UVDRangePair> &ranges)
+{
+	uv_err_t rc = UV_ERR_GENERAL;
+	UVDRangePair cur;
+
+	ranges.clear();
+	
+	//Seed it
+	rc = nextValidAddress(0, &cur.m_min);
+	uv_assert_err_ret(rc);
+	//No valid ranges?
+	if( rc == UV_ERR_DONE )
+	{
+		return UV_ERR_OK;
+	}
+	
+	//Otherwise we are seeded and ready to churn out ranges
+	for( ;; )
+	{
+		//Find the end range
+		rc = nextInvalidAddress(cur.m_min, &cur.m_max);
+		uv_assert_err_ret(rc);
+		//Fill max range if no more and we are on a valid range till end
+		if( rc == UV_ERR_DONE )
+		{
+			cur.m_max = UVD_ADDR_MAX;
+		}
+		else
+		{
+			//The address before the next invalid is the highest valid address
+			--cur.m_max;
+		}
+		//Add the range
+		ranges.push_back(cur);
+
+		//Done if we just processed the last valid range
+		if( rc == UV_ERR_DONE )
+		{
+			break;
+		}
+		
+		//Shift
+		//We are garaunteed at least one more address since we are not at end (indicated by UV_ERR_DONE)
+		rc = nextValidAddress(cur.m_max + 1, &cur.m_min);
+		uv_assert_err_ret(rc);
+		//No more valid addresses?
+		if( rc == UV_ERR_DONE )
+		{
+			break;
+		}
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::getAddressMin(uint32_t *addr)
+{
+	uv_err_t rc = UV_ERR_GENERAL;
+	
+	//Get the lowest possible valid address
+	rc = nextValidAddress(0, addr);
+	uv_assert_err_ret(rc);
+	uv_assert_ret(rc != UV_ERR_DONE);
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::getAddressMax(uint32_t *addr)
+{
+	uv_err_t rc = UV_ERR_GENERAL;
+	
+	//Get the highest possible valid address
+	rc = lastValidAddress(UINT_MAX, addr);
+	uv_assert_err_ret(rc);
+	uv_assert_ret(rc != UV_ERR_DONE);
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::nextValidAddress(uint32_t start, uint32_t *ret)
+{
+	return UV_DEBUG(nextAddressState(start, ret, UVD_ADDRESS_ANALYSIS_INCLUDE));
+}
+
+uv_err_t UVDConfig::nextInvalidAddress(uint32_t start, uint32_t *ret)
+{
+	return UV_DEBUG(nextAddressState(start, ret, UVD_ADDRESS_ANALYSIS_EXCLUDE));
+}
+
+uv_err_t UVDConfig::lastValidAddress(uint32_t start, uint32_t *ret)
+{
+	return UV_DEBUG(lastAddressState(start, ret, UVD_ADDRESS_ANALYSIS_INCLUDE));
+}
+
+uv_err_t UVDConfig::lastInvalidAddress(uint32_t start, uint32_t *ret)
+{
+	return UV_DEBUG(lastAddressState(start, ret, UVD_ADDRESS_ANALYSIS_EXCLUDE));
+}
+
+uv_err_t UVDConfig::nextAddressState(uint32_t start, uint32_t *ret, uint32_t targetState)
+{
+	//Given is a valid canidate
+	uint32_t next = start;
+	//printf("nextAddressState() start at 0x%.8X\n", start);
+	
+	//Each time we invalidate the address, re-iterate over the list to see if its stable
+	for( ;; )
+	{
+		uint32_t state = UVD_ADDRESS_ANALYSIS_UNKNOWN;
+		UVDUint32RangePriorityList::iterator iter;
+		uint32_t nextStart = next;
+
+		//See if we get a better match
+		for( iter = m_addressRangeValidity.begin(); iter != m_addressRangeValidity.end(); ++iter )
+		{
+			if( (*iter).matches(next) )
+			{
+				state = (*iter).m_matchState;
+				break;
+			}
+
+			if( (*iter).m_t.m_min > start && (nextStart == start || (*iter).m_t.m_min < nextStart) )
+			{
+				nextStart = (*iter).m_t.m_min;
+			}
+		}
+		
+		//Nothing more can be matched
+		if( state == UVD_ADDRESS_ANALYSIS_UNKNOWN )
+		{
+			//If the default matches our state, we are done
+			if( m_addressRangeValidity.m_default == targetState )
+			{
+				break;
+			}
+			//Otherwise, is there a valid range we could jump to?
+			else if( nextStart != next )
+			{
+				next = nextStart;
+			}
+			//If no more range canidates, there are no possible valid locations left
+			else
+			{
+				return UV_ERR_DONE;
+			}
+		}
+		//Are we at a valid address?  We are done
+		else if( state == targetState )
+		{
+			break;
+		}
+		//A non-matching state, keep going if possible
+		//Exclusion?  Advance to next possible canidate then
+		//else if( state == UVD_ADDRESS_ANALYSIS_EXCLUDE )
+		else
+		{
+			//Advance to one beyond the end of the exclusion range
+			//...But only if its a valid address
+			if( (*iter).m_t.m_max == UINT_MAX )
+			{
+				//There are no valid addresses
+				return UV_ERR_DONE;
+			}
+			//Otherwise advance to the next canidate
+			next = (*iter).m_t.m_max + 1;
+		}
+	}
+	
+	//Save and ret
+	uv_assert_ret(ret);
+	*ret = next;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t targetState)
+{
+	//Given is a valid canidate
+	uint32_t next = start;
+	
+	//Each time we invalidate the address, re-iterate over the list to see if its stable
+	//Since the ACL order is arbirary, we cannot lineraize this
+	for( ;; )
+	{
+		uint32_t state = UVD_ADDRESS_ANALYSIS_UNKNOWN;
+		UVDUint32RangePriorityList::iterator iter;
+		//If we need to keep decreasing space, the next availible space where it could change
+		uint32_t nextStart = next;
+
+		printf_debug("loop\n");
+
+		//Avoid special cases with empty check
+		if( !m_addressRangeValidity.empty() )
+		{
+			printf_debug("checking ACL\n");
+			iter = m_addressRangeValidity.end();
+			//Backtrack to a valid position
+			--iter;
+			//See if we get a better match
+			for( ; ; --iter )
+			{
+				if( (*iter).matches(next) )
+				{
+					state = (*iter).m_matchState;
+					break;
+				}
+				printf_debug("no iter match \n");
+				
+				//Prepare the next block range to check if we don't match a range
+				//Valid canidate and best canidate
+				if( (*iter).m_t.m_max < start && (nextStart == start || (*iter).m_t.m_max > nextStart) )
+				{
+					nextStart = (*iter).m_t.m_max;
+				}
+				
+				if( iter == m_addressRangeValidity.begin() )
+				{
+					break;
+				}
+			}
+		}
+		
+		//Nothing could be matched
+		if( state == UVD_ADDRESS_ANALYSIS_UNKNOWN )
+		{
+			printf_debug("no match\n");
+			//If the default matches our state, we are done
+			if( m_addressRangeValidity.m_default == targetState )
+			{
+				break;
+			}
+			//Otherwise, is there a valid range we could jump to?
+			else if( nextStart != next )
+			{
+				next = nextStart;
+				printf_debug("Continuing at 0x%.8X\n", next);
+			}
+			//If no more range canidates, there are no possible valid locations left
+			else
+			{
+				return UV_ERR_DONE;
+			}
+		}
+		//Are we at a valid address?  We are done
+		else if( state == targetState )
+		{
+			printf_debug("state reached\n");
+			break;
+		}
+		//A non-matching state, keep going if possible
+		//Exclusion?  Advance to next possible canidate then
+		//else if( state == UVD_ADDRESS_ANALYSIS_EXCLUDE )
+		else
+		{
+			printf_debug("non matching state\n");
+			//Advance to one beyond the end of the exclusion range
+			//...But only if its a valid address
+			if( (*iter).m_t.m_min == 0 )
+			{
+				//There are no valid addresses
+				return UV_ERR_DONE;
+			}
+			//Otherwise advance to the next canidate
+			next = (*iter).m_t.m_min - 1;
+		}
+	}
+	
+	//Save and ret
+	uv_assert_ret(ret);
+	*ret = next;
 	
 	return UV_ERR_OK;
 }
