@@ -73,6 +73,7 @@ CXX_SRCS = 	\
 			$(UTIL_DIR)/uvd_debug.cpp \
 			$(UTIL_DIR)/uvd_error.cpp \
 			$(UTIL_DIR)/uvd_log.cpp \
+			$(UTIL_DIR)/uvd_priority_list.cpp \
 			$(UTIL_DIR)/uvd_types.cpp \
 			$(UTIL_DIR)/uvd_util.cpp \
 			$(UTIL_DIR)/uvd_util_string.cpp \
