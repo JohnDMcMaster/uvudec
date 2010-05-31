@@ -22,6 +22,38 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd.h"
 #include <linux/limits.h>
 
+uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t *second)
+{
+	char delim = 0;
+	std::vector<std::string> parts;
+	
+	uv_assert_ret(first);
+	uv_assert_ret(second);
+	
+	if( s.find('-') != std::string::npos )
+	{
+		delim = '-';
+	}
+	else if( s.find(',') != std::string::npos )
+	{
+		delim = ',';
+	}
+	//Self to self then
+	else
+	{
+		*first = strtol(s.c_str(), NULL, 0);
+		*second = *first;
+		return UV_ERR_OK;
+	}
+	
+	parts = split(s, delim, true);
+	uv_assert_ret(parts.size() == 2);
+	*first = strtol(parts[0].c_str(), NULL, 0);
+	*second = strtol(parts[1].c_str(), NULL, 0);
+	
+	return UV_ERR_OK;
+}
+
 std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks)
 {
 	char **coreRet = NULL;
@@ -96,8 +128,11 @@ char **uv_split(const char *str, char delim)
 }
 
 /*
+XXX: this is really old code that seems to work, but really should be phased out
+
 str: string to split
 delim: character to delimit by
+	If null, will return the array with a single string
 n_ret: if set, will return number of items in the output, otherwise, output is a null terminated array
 ret_blanks: return empty strings?
 */
