@@ -1,14 +1,15 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#pragma once
+#ifndef UVD_ADDRESS_H
+#define UVD_ADDRESS_H
 
-#include <uvd_types.h>
 #include <string>
+#include "uvd_data.h"
+#include "uvd_types.h"
 
 /* Internal RAM */
 #define UV_DISASM_MEM_RAM_INT			1
@@ -183,4 +184,40 @@ struct uv_disasm_mem_tag_t
 };
 */
 
+/*
+This is for virtual memory segments as opposed to above that deal with physical address spaces
+For now, assume all segments hold valid data of some sort
+Later, add flags and such
+	Capabilities of a physical address space probably should ovveride those of any virtual segment?
+Currently need some basic idea of what segments are active for determing total program size for progress bars
+*/
+class UVDMemorySegment
+{
+public:
+	UVDMemorySegment();
+	~UVDMemorySegment();
 
+public:
+	//Where the data starts
+	uv_addr_t m_start;
+	//The data held at this address
+	UVDData *m_data;
+};
+
+//Virtual memory space
+class UVDSegmentedMemory
+{
+public:
+	UVDSegmentedMemory();
+	~UVDSegmentedMemory();
+	
+public:
+	/*
+	The machine may or may not support actual segments (ie might really be a paged system)
+	This more refers to how the address space layout logUVDSegmentedMemoryically is discontiguous with programs loading data at various addresses
+	Rename later if needed
+	*/
+	std::vector<UVDMemorySegment *> m_segments;
+};
+
+#endif
