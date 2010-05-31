@@ -1,7 +1,15 @@
-This is the bug tracking system
-Should move bulk of this to github wiki
+An experimental Trac bug tracker is at http://trac6.assembla.com/uvudec/
+Most things will likely start moving from here to there.
 
-Known issues
+Top priority
+-Fix issues with generted object files
+	Add object file generation unit tests
+-Fix rpat port
+	Convert rpat to more C++ style implementation
+	Add unit tests
+-Finish reversing .sig format
+	Then implement uvpat2sig
+	uvpat2sig unit tests
 
 TODO
 -After much R&D, I have concluded that the ELF construction method sucks
@@ -256,3 +264,4 @@ Research: other projects
 -Look at SDCC peephole optimizer
 	Scripting of optimizations
 	May be able to provide a compatible reverse form?
+-Be able to support 64 bit architectures
