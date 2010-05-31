@@ -178,3 +178,29 @@ bool UVDMemoryLocation::operator==(const UVDMemoryLocation *other) const
 {
 	return compare(other) == 0;
 }
+
+/*
+UVDMemorySegment
+*/
+
+UVDMemorySegment::UVDMemorySegment()
+{
+	m_start = 0;
+	m_data = NULL;
+}
+
+UVDMemorySegment::~UVDMemorySegment()
+{
+}
+
+/*
+UVDSegmentedMemory
+*/
+
+UVDSegmentedMemory::UVDSegmentedMemory()
+{
+}
+
+UVDSegmentedMemory::~UVDSegmentedMemory()
+{
+}
