@@ -161,6 +161,13 @@ public:
 	uv_err_t init();
 	uv_err_t deinit();
 
+	//How many bytes we have to analyze in total
+	//Based on size of program and analysis exclusions
+	uv_err_t getNumberAnalyzedBytes(uint32_t *analyzedBytesOut);
+	//Actual allowable address limits, not just what config says
+	uv_err_t getAddressMin(uv_addr_t *out);
+	uv_err_t getAddressMax(uv_addr_t *out);
+
 	uv_err_t insertReference(uint32_t targetAddress, uint32_t from, uint32_t type);
 	//For destinations, not sources
 	uv_err_t insertCallReference(uint32_t targetAddress, uint32_t from);

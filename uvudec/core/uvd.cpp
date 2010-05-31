@@ -1,10 +1,10 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
+#include "config.h"
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -376,7 +376,7 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 	uv_assert_ret(m_data);
 
 	uv_assert_ret(minAddr <= maxAddr);
-	uv_assert_ret(maxAddr <= m_config->m_addr_max);
+	//uv_assert_ret(maxAddr <= m_config->m_addr_max);
 	//dataSize = maxAddr - minAddr;
 
 	block = new UVDAnalyzedBlock();
@@ -657,14 +657,18 @@ uv_err_t UVD::opcodeDeinit()
 
 UVDIterator UVD::begin()
 {
-	UVDIterator iter = UVDIterator(this);
+	UVDIterator iter;
+	
+	UV_DEBUG(iter.init(this));
 	iter.m_data = m_data;
 	return iter;
 }
 
 UVDIterator UVD::begin(uint32_t offset)
 {
-	UVDIterator iter = UVDIterator(this, offset);
+	UVDIterator iter;
+	
+	UV_DEBUG(iter.init(this, offset, 0));
 	iter.m_data = m_data;
 	return iter;
 }
@@ -680,10 +684,13 @@ UVDIterator UVD::end()
 {
 	//Pos is "next position"
 	//Size is first invalid position
-	UVDIterator iter = UVDIterator(this, m_data->size());
+	UVDIterator iter;
+	
+	UV_DEBUG(iter.init(this, m_data->size(), 0));
 	iter.m_data = m_data;
 	return iter;
 }
+
 UVDIterator UVD::end(UVDData *data)
 {
 	UVDIterator iter = end();
@@ -785,10 +792,12 @@ uv_err_t UVD::decompile(int destinationLanguage, std::string &output)
 	uv_assert_ret(m_config);
 	
 	//If unspecified, default to full range
+	/*
 	if( m_config->m_addr_max == 0 )
 	{
 		m_config->m_addr_max = dat_sz - 1;
 	}
+	*/
 	printf_debug("Raw data size: 0x%x (%d)\n", dat_sz, dat_sz);
 
 	//Most of program time should be spent here
@@ -816,8 +825,11 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	//UVDIterator iterEnd;
 	int printPercentage = 1;
 	int printNext = printPercentage;
+	uint32_t analyzedBytes = 0;
 
 	uv_assert_ret(m_config);
+	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&analyzedBytes));
+	uv_assert_ret(analyzedBytes != 0);
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: printing...\n");
 	UVDBenchmark decompilePrintBenchmark;
@@ -838,9 +850,9 @@ uv_err_t UVD::decompilePrint(std::string &output)
 
 		++iterations;				
 		printf_debug("\n\n\n");
-		printf_debug("Iteration loop iteration\n");
+		printf_debug("Iteration loop iteration\n");		
 
-		int curPercent = 100 * startPos / m_config->m_addr_max;
+		int curPercent = 100 * startPos / analyzedBytes;
 		if( curPercent >= printNext )
 		{
 			uint64_t delta = getTimingMicroseconds() - decompilePrintBenchmark.getStart();

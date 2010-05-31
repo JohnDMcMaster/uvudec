@@ -135,12 +135,12 @@ class UVD;
 class UVDIterator
 {
 public:
-	//UVDIterator();
-	//UVDIterator(UVD *disassembler = NULL, uint32_t position = g_addr_min, uint32_t index = 0);
-	UVDIterator(UVD *disassembler = NULL);
-	UVDIterator(UVD *disassembler, uint32_t position, uint32_t index = 0);
+	UVDIterator();
+	//UVDIterator(UVD *disassembler = NULL);
+	//UVDIterator(UVD *disassembler, uv_addr_t position, uint32_t index = 0);
 	//uv_err_t init(UVD *disassembler, uint32_t position = g_addr_min, uint32_t index = 0);
-	uv_err_t init(UVD *disassembler, uint32_t position, uint32_t index);
+	uv_err_t init(UVD *disassembler);
+	uv_err_t init(UVD *disassembler, uv_addr_t position, uint32_t index);
 	uv_err_t deinit();
 	~UVDIterator();
 
@@ -291,6 +291,13 @@ public:
 	//uv_err_t setFile(const std::string &file);	
 	//uv_err_t setData(UVData *data);
 	UVDData *getData();
+	/*
+	In more complicated architectures, data may not be simply from 0 to end
+	Preparations for later analysis allowing virtual addresses and such
+	Each segment contains a peice of data at a certain virtual memory offset
+	FIXME: this is a placeholder and just returns a simple version for now
+	*/
+	uv_err_t getDataSegments(std::vector<UVDMemorySegment *> &segments);
 
 protected:
 	//If not doing analysis only, prints the decompile results
@@ -341,10 +348,14 @@ public:
 	UVDFormat *m_format;
 
 	UVDFLIRT *m_flirt;
-
+	
 protected:
 	//Source of data to disassemble
 	UVDData *m_data;
+	//Segmented memory view instead of flat m_data view
+	//Most use of m_data should eventually be switched over to use this
+	//m_data really only works for simple embedded archs
+	UVDSegmentedMemory m_segmentedMemory;
 };
 
 //TODO: this is a hack, needs to be fixed

@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -12,9 +11,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <set>
 #include <string>
 #include <vector>
-#include "uvd_instruction.h"
 #include "interpreter/uvd_interpreter.h"
 #include "uvd_arg.h"
+#include "uvd_instruction.h"
+#include "uvd_priority_list.h"
 #include "uvd_config_flirt.h"
 
 //Resultant address from a call routine
@@ -26,6 +26,20 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 //#define SCRIPT_KEY_ARITMETIC		"ARIMETIC"
 //An alternative representation of an address
 #define SCRIPT_KEY_SYMBOL			"ADDRESS_SYMBOL"
+
+/*
+To control whether addresses are analyzed or not
+Some more specialized types might be added later if necessary
+These apply only to config passed in arguments and may not reflect the entire range of tags applied to address areas,
+such as string tables discovered during analysis
+XXX: it may be desirable, however, to later unify these
+*/
+//Invalid value
+#define UVD_ADDRESS_ANALYSIS_UNKNOWN			0
+//Force analysis
+#define UVD_ADDRESS_ANALYSIS_INCLUDE			1
+//Do not analyze
+#define UVD_ADDRESS_ANALYSIS_EXCLUDE			2
 
 class UVDConfigValue;
 class UVDOperand;
@@ -142,6 +156,32 @@ public:
 	*/
 	uv_err_t parseMain(int argc, char **argv); 
 	uv_err_t parseMain(int argc, char **argv, char **envp); 
+	
+	//Include or exclude addresses from analysis
+	uv_err_t addAddressInclusion(uint32_t low, uint32_t high);
+	uv_err_t addAddressExclusion(uint32_t low, uint32_t high);
+	//As per configuration, get a strictly increasing range of all valid analysis address ranges
+	//Two adjacent ranges must have at least one non-analyzed address in between
+	uv_err_t getValidAddressRanges(std::vector<UVDRangePair> &ranges);
+	
+	//Note these are CONFIGURATION limits, not necessarily anywhere neear whats actually allowed
+	//By default this will be from 0 to UINT_MAX and the program may only be from say 0x0000 to 0xFFFF
+	//If no vaddresses are valid, these should probably error
+	//Currently they'd return UV_ERR_DONE
+	uv_err_t getAddressMin(uint32_t *addr);
+	uv_err_t getAddressMax(uint32_t *addr);
+	
+	//The following two should be used to construct blocks valid for analysis in alternating fashion
+	//based on the configuration settings here
+	//Including the given value as a canidate, return the next address valid for analysis
+	//If no more addresses are valid, returns the success code UV_ERR_DONE
+	uv_err_t nextValidAddress(uint32_t start, uint32_t *ret);
+	//Including the given value as a canidate, return the next address invalid for analysis
+	//If no more addresses are invalid, returns the success code UV_ERR_DONE
+	uv_err_t nextInvalidAddress(uint32_t start, uint32_t *ret);
+	//Extend rules above, but going in reverse
+	uv_err_t lastValidAddress(uint32_t start, uint32_t *ret);
+	uv_err_t lastInvalidAddress(uint32_t start, uint32_t *ret);
 
 protected:
 	// ~/.uvudec file
@@ -152,6 +192,9 @@ protected:
 	Called from parseMain() to process config specific options
 	*/
 	uv_err_t processParseMain();
+
+	uv_err_t nextAddressState(uint32_t start, uint32_t *ret, uint32_t targetState);
+	uv_err_t lastAddressState(uint32_t start, uint32_t *ret, uint32_t targetState);
 
 public:
 	//TODO: move these into a general config structure?
@@ -185,10 +228,6 @@ public:
 	std::string m_sDebugFile;
 	//FILE *m_pDebugFile;
 	
-	//g_addr_min, g_addr_max
-	uint32_t m_addressMin;
-	uint32_t m_addressMax;
-
 	//Callbacks
 	//Prefix the version print information
 	uv_thunk_t versionPrintPrefixThunk;
@@ -225,10 +264,6 @@ public:
 
 	//uvd_format.h
 	
-	//unsigned int g_addr_min;
-	unsigned int m_addr_min;
-	//unsigned int g_addr_max;
-	unsigned int m_addr_max;
 	//How many hex digits to put on addresses 
 	//unsigned int g_hex_addr_print_width;
 	unsigned int m_hex_addr_print_width;
@@ -272,6 +307,9 @@ public:
 	
 	//FLIRT related options (flirt.*)
 	UVDConfigFLIRT m_flirt;
+	//The address ranges that should/shouldn't be analyzed
+	//Later might add in some other stuff like differentiating between addresses skipped for analysis and actually not present
+	UVDUint32RangePriorityList m_addressRangeValidity;
 };
 
 //Default configuration options

@@ -33,32 +33,42 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_types.h"
 #include "uvd_config_symbol.h"
 
-/*
 UVDIterator::UVDIterator()
 {
 	m_uvd = NULL;
 }
-*/
 
+/*
 UVDIterator::UVDIterator(UVD *disassembler)
 {
-	if( g_config )
-	{
-		UV_DEBUG(init(disassembler, g_config->m_addr_min, 0));
-	}
+	UV_DEBUG(init(disassembler));
 }
 
-UVDIterator::UVDIterator(UVD *disassembler, unsigned int position, unsigned int index)
+UVDIterator::UVDIterator(UVD *disassembler, uv_addr_t position, uint32_t index)
 {
 	UV_DEBUG(init(disassembler, position, index));
 }
+*/
 
 UVDIterator::~UVDIterator()
 {
 	UV_DEBUG(deinit());
 }
 
-uv_err_t UVDIterator::init(UVD *disassembler, unsigned int position, unsigned int index)
+uv_err_t UVDIterator::init(UVD *uvd)
+{
+	uv_addr_t absoluteMinAddress = 0;
+
+	m_uvd = uvd;
+
+	uv_assert_ret(m_uvd);
+	uv_assert_ret(m_uvd->m_analyzer);
+	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMin(&absoluteMinAddress));
+	
+	return UV_DEBUG(init(uvd, absoluteMinAddress, 0));
+}
+
+uv_err_t UVDIterator::init(UVD *disassembler, uv_addr_t position, uint32_t index)
 {
 	//UV_ENTER();
 	m_uvd = disassembler;
@@ -90,10 +100,12 @@ uv_err_t UVDIterator::next()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDBenchmark nextInstructionBenchmark;
+	uv_addr_t absoluteMaxAddress = 0;
 	
 	UV_ENTER();
 		
 	uv_assert_ret(g_config);
+	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
 	
 	if( *this == m_uvd->end() )
 	{
@@ -116,7 +128,7 @@ uv_err_t UVDIterator::next()
 	
 	//Global debug sort of cutoff
 	//Force to end
-	if( m_nextPosition > g_config->m_addr_max )
+	if( m_nextPosition > absoluteMaxAddress )
 	{
 		*this = m_uvd->end();
 		return UV_ERR_DONE;
@@ -462,6 +474,7 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	UVDOpcodeLookupElement *element = NULL;
 	int opcodeRead = 0;
 	UVD *uvd = NULL;
+	uv_addr_t absoluteMaxAddress = 0;
 	
 	UV_ENTER();
 	printf_debug("\n");
@@ -471,7 +484,9 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	uv_assert_ret(uvd);
 	uv_assert(data);
 	
-	if( m_nextPosition > g_config->m_addr_max )
+	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
+	
+	if( m_nextPosition > absoluteMaxAddress )
 	{
 		*this = m_uvd->end();
 		return UV_ERR_DONE;

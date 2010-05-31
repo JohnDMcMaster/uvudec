@@ -321,6 +321,51 @@ uv_err_t UVDAnalyzer::deinit()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDAnalyzer::getNumberAnalyzedBytes(uint32_t *analyzedBytesOut)
+{
+	uv_addr_t minAddress = 0;
+	uv_addr_t maxAddress = 0;
+
+	uv_assert_err_ret(getAddressMin(&minAddress));
+	uv_assert_err_ret(getAddressMax(&maxAddress));
+	uv_assert_ret(minAddress <= maxAddress);
+	//printf_debug("Analyzed bytes range: 0x%.8X-0x%.8X\n", minAddress, maxAddress);
+
+	uv_assert_ret(analyzedBytesOut);
+	*analyzedBytesOut = maxAddress - minAddress + 1;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::getAddressMin(uv_addr_t *out)
+{
+	//Since we assume for now that the executable is 0 to size - 1, min address here is the min address
+	return UV_DEBUG(m_uvd->m_config->getAddressMin(out));
+}
+
+uv_err_t UVDAnalyzer::getAddressMax(uv_addr_t *out)
+{
+	uv_addr_t maxConfigAddress = 0;
+	uv_addr_t maxPhysicalAddress = 0;
+	
+	uv_assert_err_ret(m_uvd->m_config->getAddressMax(&maxConfigAddress));
+	uv_assert_err_ret(m_uvd->getData()->size(&maxPhysicalAddress));
+	//We got size, not end
+	--maxPhysicalAddress;
+	
+	//Return the lower of the two
+	uv_assert_ret(out);
+	if( maxPhysicalAddress <= maxConfigAddress )
+	{
+		*out = maxPhysicalAddress;
+	}
+	else
+	{
+		*out = maxConfigAddress;
+	}
+	return UV_ERR_OK;
+}
+
 void UVDAnalyzer::updateCache(uint32_t address, const UVDVariableMap &analysisResult)
 {
 	printf_debug("Caching analysis of address %d\n", address);

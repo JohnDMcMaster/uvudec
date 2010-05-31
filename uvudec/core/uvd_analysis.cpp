@@ -10,9 +10,10 @@ This does UVD prepping analysis before passing data off to m_analyzer
 Things such as interpreting results and converting to generic structures
 */
 
-#include "uvd_benchmark.h"
-#include "uvd_analysis.h"
 #include "uvd.h"
+#include "uvd_analysis.h"
+#include "uvd_benchmark.h"
+#include "uvd_util.h"
 
 int g_filterPostRet;
 
@@ -23,8 +24,10 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &space, UVDAnalyzedMemoryLocations::iterator &iter, uint32_t types, bool curAddressLegal)
 {
 	uint32_t superblockMaxAddress = 0;
+	uv_addr_t absoluteMaxAddress = 0;
 	
 	uv_assert_ret(g_config);
+	uv_assert_err_ret(g_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
 
 	uv_assert_ret(superblock);
 	uv_assert_err_ret(superblock->getMaxAddress(superblockMaxAddress));
@@ -57,9 +60,9 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 			iter = space.end();
 			break;
 		}
-		if( referencedMemory->m_min_addr > g_config->m_addr_max )
+		if( referencedMemory->m_min_addr > absoluteMaxAddress )
 		{
-			printf_debug("Limit reached: referencedMemory->m_min_addr (0x%.8X) > m_addr_max (0x%.8X)\n", referencedMemory->m_min_addr, g_config->m_addr_max);
+			printf_debug("Limit reached: referencedMemory->m_min_addr (0x%.8X) > absoluteMaxAddress (0x%.8X)\n", referencedMemory->m_min_addr, absoluteMaxAddress);
 			iter = space.end();
 			break;
 		}
@@ -104,7 +107,11 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 
 	UVDAnalysisDBArchive *curDb = NULL;
 	
+	uv_addr_t absoluteMaxAddress = 0;
+	
 	uv_assert_ret(m_config);
+
+	uv_assert_err_ret(m_analyzer->getAddressMax(&absoluteMaxAddress));
 
 	printf_debug("\n");
 	printf_debug("\n");
@@ -176,9 +183,9 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		}
 		
 		//Truncate to end of analyzed region if necessary
-		if( functionBlockEnd > m_config->m_addr_max )
+		if( functionBlockEnd > absoluteMaxAddress )
 		{
-			functionBlockEnd = m_config->m_addr_max;
+			functionBlockEnd = absoluteMaxAddress;
 		}
 		
 		/*
@@ -265,6 +272,8 @@ uv_err_t UVD::constructBlocks()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDAnalyzedBlock *superblock = NULL;
+	uv_addr_t absoluteMaxAddress = 0;
+	uv_addr_t absoluteMinAddress = 0;
 	
 	printf_debug("\n");
 	printf_debug_level(UVD_DEBUG_PASSES, "uvd: block analysis...\n");
@@ -272,9 +281,11 @@ uv_err_t UVD::constructBlocks()
 	blockAnalysisBenchmark.start();
 
 	uv_assert_ret(m_config);
+	uv_assert_err_ret(m_analyzer->getAddressMin(&absoluteMinAddress));
+	uv_assert_err_ret(m_analyzer->getAddressMax(&absoluteMaxAddress));
 	
 	//Highest level block: entire program
-	uv_assert_err(constructBlock(m_config->m_addr_min, m_config->m_addr_max, &superblock));
+	uv_assert_err(constructBlock(absoluteMinAddress, absoluteMaxAddress, &superblock));
 	m_analyzer->m_block = superblock;
 
 	//Find functions, add them as sub blocks
@@ -379,8 +390,10 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	UVDIterator iter;
 	uint32_t printPercentage = 1;
 	uint32_t printNext = printPercentage;
+	uv_addr_t numberAnalyzedBytes = 0;
 
 	uv_assert_ret(m_config);
+	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
 	iter = begin();
 	for( ;; )
@@ -390,9 +403,9 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		uint32_t startPos = iter.getPosition();
 		uint32_t endPos = 0;
 		
-		if( m_config->m_addr_max )
+		if( numberAnalyzedBytes )
 		{
-			uint32_t curPercent = 100 * startPos / m_config->m_addr_max;
+			uint32_t curPercent = 100 * startPos / numberAnalyzedBytes;
 			if( curPercent >= printNext )
 			{
 				printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
@@ -574,9 +587,11 @@ uv_err_t UVD::analyzeControlFlowTrace()
 	//Probably need full ranges, do only start for now
 	std::set<uint32_t> calls;
 	std::set<uint32_t> jumps;
+	uv_addr_t numberAnalyzedBytes = 0;
 	
 	uv_assert_ret(m_CPU);
 	uv_assert_ret(m_config);
+	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
 	//Another way to do with would be to do "START" and then all other vectors
 	for( std::vector<UVDCPUVector *>::iterator iter = m_CPU->m_vectors.begin(); iter != m_CPU->m_vectors.end(); ++iter )
@@ -616,9 +631,9 @@ uv_err_t UVD::analyzeControlFlowTrace()
 			uint32_t startPos = iter.getPosition();
 			uint32_t endPos = 0;
 			
-			if( m_config->m_addr_max )
+			if( numberAnalyzedBytes )
 			{
-				uint32_t curPercent = 100 * startPos / m_config->m_addr_max;
+				uint32_t curPercent = 100 * startPos / numberAnalyzedBytes;
 				if( curPercent >= printNext )
 				{
 					printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
