@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -16,8 +15,8 @@ Eventually a C interface will be exposed again with at least basic capabilities
 #include <string>
 #include <vector>
 #include <map>
+#include <limits.h>
 #include <stdint.h>
-/* For NULL */
 #include <stdlib.h>
 
 #ifndef TRUE
@@ -35,6 +34,11 @@ typedef int32_t uv_err_t;
 
 //A function with appropriete return type that takes no args
 typedef uv_err_t (*uv_thunk_t)();
+
+//An analyzed data address
+//FIXME: do massive replaces to get this into code
+typedef uint32_t uv_addr_t;
+#define UVD_ADDR_MAX			UINT_MAX
 
 /*
 Instruction classes
@@ -250,14 +254,26 @@ private:
 
 typedef std::map<std::string, UVDVarient> UVDVariableMap;
 
-#ifdef __cplusplus
-extern "C"
+/*
+UVDUint32RangePair
+Originally for UVDUint32RangePriorityList and other memory range pairings
+*/
+class UVDUint32RangePair
 {
-#endif /* ifdef __cplusplus */
+public:
+	UVDUint32RangePair();
+	UVDUint32RangePair(uint32_t min, uint32_t max);
 
-#ifdef __cplusplus
-}
-#endif /* ifdef __cplusplus */
+	//Returns 0 if max < min
+	uint32_t size() const;
+	bool contains(uint32_t val);
+
+public:
+	uint32_t m_min;
+	uint32_t m_max;
+};
+//For general use
+typedef UVDUint32RangePair UVDRangePair;
 
 #endif /* ifndef UV_DISASM_TYPES_H */
 
