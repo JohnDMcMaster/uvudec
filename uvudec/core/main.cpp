@@ -62,17 +62,17 @@ static uv_err_t disassemble(std::string file)
 		printf_error("Could not read file: %s\n", file.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	uv_assert_all(data);
+	uv_assert(data);
 	
 	//Create a disassembler engine active on that input
 	printf_debug_level(UVD_DEBUG_SUMMARY, "disassemble: initializing engine...\n");
 	if( UV_FAILED(UVD::getUVD(&uvd, data)) )
 	{
 		printf_error("Failed to initialize engine\n");
-		return UV_DEBUG(UV_ERR_GENERAL);
+		uv_assert_err(UV_ERR_GENERAL);
 	}
-	uv_assert_all(uvd);
-	uv_assert_all(g_uvd);
+	uv_assert(uvd);
+	uv_assert(g_uvd);
 
 	//Get string output
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");
@@ -80,10 +80,10 @@ static uv_err_t disassemble(std::string file)
 	if( UV_FAILED(rc) )
 	{
 		printf_error("Failed to disassemble!\n");
-		return UV_DEBUG(UV_ERR_GENERAL);
+		uv_assert_err(UV_ERR_GENERAL);
 	}
 
-	printf_debug_level(UVD_DEBUG_PASSES, "main: decompiled\n");
+	printf_debug_level(UVD_DEBUG_PASSES, "main: disassembled\n");
 
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Ready to print!\n");
 	//Print string output
@@ -204,13 +204,6 @@ uv_err_t uvmain(int argc, char **argv)
 		printf_error("Could not open file: %s\n", g_outputFile.c_str());
 		uv_assert(UV_ERR_GENERAL);
 	}
-
-	//printf_debug_level(UVD_DEBUG_SUMMARY, "Initializing log...\n");
-	//Keep same as debug output
-	//uv_log_init(NULL);
-	//uv_log_init("-");
-	
-	printf_debug("min: 0x%.4X, max: 0x%.4X\n", config->m_addr_min, config->m_addr_max);
 
 	if( UV_FAILED(disassemble(g_targetFile)) )
 	{
