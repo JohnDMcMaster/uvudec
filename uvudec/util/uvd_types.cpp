@@ -1,3 +1,9 @@
+/*
+UVNet Universal Decompiler (uvudec)
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Licensed under terms of the three clause BSD license, see LICENSE for details
+*/
+
 #include <string.h>
 #include <stdio.h>
 #include "uvd_types.h"
@@ -99,4 +105,34 @@ std::string UVDVarient::toString() const
 	}
 	
 	return sRet;
+}
+
+/*
+UVDUint32RangePair
+*/
+
+UVDUint32RangePair::UVDUint32RangePair()
+{
+	m_min = 0;
+	m_max = 0;
+}
+
+UVDUint32RangePair::UVDUint32RangePair(uint32_t min, uint32_t max)
+{
+	m_min = min;
+	m_max = max;
+}
+
+uint32_t UVDUint32RangePair::size() const
+{
+	if( m_min > m_max )
+	{
+		return 0;
+	}
+	return m_max - m_min + 1;
+}
+
+bool UVDUint32RangePair::contains(uint32_t val)
+{
+	return val >= m_min && val <= m_max;
 }
