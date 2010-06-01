@@ -411,12 +411,12 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVDConfig::parseMain(int argc, char **argv)
+uv_err_t UVDConfig::parseMain(int argc, char *const *argv)
 {
 	return UV_DEBUG(parseMain(argc, argv, NULL));
 }
 
-uv_err_t UVDConfig::parseMain(int argc, char **argv, char **envp)
+uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 {
 	uv_err_t processRc = UV_ERR_GENERAL;
 
