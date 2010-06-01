@@ -77,13 +77,10 @@ uv_err_t executeToText(const std::string &sCommand,
 		std::string *stdOut,
 		std::string *stdErr);
 
-std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks = true);
-std::vector<std::string> charPtrArrayToVector(char **argv, int argc);
+std::string limitString(const std::string &s, size_t maxLength);
 
-#ifdef __cplusplus
-//extern "C"
-//{
-#endif /* ifdef __cplusplus */
+std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks = true);
+std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc);
 
 //Should mark these deprecated in favor of the C++ versions
 //they tend to be in old C code causing mem leaks
@@ -122,12 +119,13 @@ uv_err_t uvd_parse_line(const char *line_in, char **key_in, char **value_in);
 
 std::string parseSubstring(const std::string &in, const std::string &seek, const std::string &start, const std::string &end, std::string::size_type *pos = 0);
 
-#ifdef __cplusplus
-//}
-#endif /* ifdef __cplusplus */
-
 //Get function arguments, parsing parenthesis correctly
 uv_err_t getArguments(const std::string &in, std::vector<std::string> &out);
+
+/*
+As would be needed to pass to "system"
+*/
+std::string stringVectorToSystemArgument(const std::vector<std::string> &args);
 
 //Used for benchmarking
 uint64_t getTimingMicroseconds(void);

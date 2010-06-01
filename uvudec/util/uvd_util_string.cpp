@@ -366,3 +366,36 @@ uv_err_t uvd_parse_line(const char *line_in, char **key_in, char **value_in)
 error:
 	return UV_DEBUG(rc);
 }
+
+std::string limitString(const std::string &s, size_t maxLength)
+{
+	uint32_t length = s.size();
+	
+	if( length > maxLength )
+	{
+		length = maxLength;
+	}
+	
+	return s.substr(0, length);
+}
+
+std::string stringVectorToSystemArgument(const std::vector<std::string> &args)
+{
+	/*
+	This is not techincally correct (secure)
+	But its good enough for displaying args for unit tests
+	*/
+	
+	std::string ret;
+	for( std::vector<std::string>::size_type i = 0; i < args.size(); ++i )
+	{
+		ret += "\"";
+		ret += args[i];
+		ret += "\"";
+		if( i < i < args.size() - 1 )
+		{
+			ret += " ";
+		}
+	}
+	return ret;
+}
