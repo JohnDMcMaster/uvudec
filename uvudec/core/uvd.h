@@ -162,6 +162,15 @@ public:
 protected:
 	//Force printing of header information
 	uv_err_t initialPrint();
+	//Subparts to organize better
+	uv_err_t initialPrintHeader();
+	uv_err_t initialPrintUselessASCIIArt();
+	uv_err_t initialPrintStringTable();
+	
+	uv_err_t nextAddressLabel(uint32_t startPosition);
+	uv_err_t nextAddressComment(uint32_t startPosition);
+	uv_err_t nextCalledSources(uint32_t startPosition);
+	uv_err_t nextJumpedSources(uint32_t startPosition);
 
 public:
 	//Source of data to disassemble
