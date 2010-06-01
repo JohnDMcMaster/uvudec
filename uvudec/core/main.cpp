@@ -87,7 +87,8 @@ static uv_err_t disassemble(std::string file)
 
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Ready to print!\n");
 	//Print string output
-	fprintf(g_pOutputFile, "%s\n", output.c_str());
+	//It already will have a newline on the end of each line
+	fprintf(g_pOutputFile, "%s", output.c_str());
 	rc = UV_ERR_OK;
 	
 error:
