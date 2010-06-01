@@ -366,6 +366,33 @@ uv_err_t UVDAnalyzer::getAddressMax(uv_addr_t *out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDAnalyzer::nextValidAddress(uint32_t start, uint32_t *ret)
+{
+	uint32_t configRet = 0;
+	uint32_t addressMax = 0;
+	uv_err_t rc = UV_ERR_GENERAL;
+
+	uv_assert_err_ret(getAddressMax(&addressMax));
+	rc = m_uvd->m_config->nextValidAddress(start, &configRet);
+	uv_assert_err_ret(rc);
+	
+	//No more valid addresses based on config?
+	if( rc == UV_ERR_DONE )
+	{
+		return UV_ERR_DONE;
+	}
+	//We may have also exceeded the practical file bounds
+	if( configRet > addressMax )
+	{
+		return UV_ERR_DONE;
+	}
+
+	//Seems like its still a valid address
+	*ret = configRet;
+	
+	return UV_ERR_OK;
+}
+
 void UVDAnalyzer::updateCache(uint32_t address, const UVDVariableMap &analysisResult)
 {
 	printf_debug("Caching analysis of address %d\n", address);
