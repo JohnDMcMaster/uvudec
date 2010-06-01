@@ -167,6 +167,7 @@ public:
 	//Actual allowable address limits, not just what config says
 	uv_err_t getAddressMin(uv_addr_t *out);
 	uv_err_t getAddressMax(uv_addr_t *out);
+	uv_err_t nextValidAddress(uint32_t start, uint32_t *ret);
 
 	uv_err_t insertReference(uint32_t targetAddress, uint32_t from, uint32_t type);
 	//For destinations, not sources
