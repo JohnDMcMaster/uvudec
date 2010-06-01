@@ -154,8 +154,8 @@ public:
 	/*
 	Parse info from main to setup our configuration
 	*/
-	uv_err_t parseMain(int argc, char **argv); 
-	uv_err_t parseMain(int argc, char **argv, char **envp); 
+	uv_err_t parseMain(int argc, char *const *argv); 
+	uv_err_t parseMain(int argc, char *const *argv, char *const *envp); 
 	
 	//Include or exclude addresses from analysis
 	uv_err_t addAddressInclusion(uint32_t low, uint32_t high);
@@ -202,8 +202,8 @@ public:
 	//if availible
 	//used to print program name for usage
 	int m_argc;
-	char **m_argv;
-	std::vector<std::string> m_args; 
+	char *const *m_argv;
+	std::vector<std::string> m_args;
 
 	//Canonical name where our install was to
 	std::string m_installDir;
@@ -216,7 +216,7 @@ public:
 	//Which type of flow analysis to do
 	int m_flowAnalysisTechnique;
 	//If any are set, will only output analysis of symbols at the given addresses
-	std::set<int> m_analysisOutputAddresses; 
+	std::set<int> m_analysisOutputAddresses;
 	
 	//Default interpreter to use for script files
 	int m_configInterpreterLanguage;
