@@ -10,6 +10,7 @@ CC_SRCS =   \
 
 CXX_SRCS = 	\
 			$(TESTING_DIR)/main.cpp \
+			$(TESTING_DIR)/main_hook.cpp \
 			$(TESTING_DIR)/uvd_test.cpp \
 
 USING_LIB_UVUDEC=Y
