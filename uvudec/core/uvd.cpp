@@ -687,8 +687,10 @@ UVDIterator UVD::end()
 	UVDIterator iter;
 	
 	//This will work fine unless we fill up the entire address space
-	UV_DEBUG(iter.init(this, m_data->size(), 0));
+	UV_DEBUG(iter.init(this));
 	iter.m_data = m_data;
+	//The key part
+	UV_DEBUG(iter.makeEnd());
 	return iter;
 }
 
