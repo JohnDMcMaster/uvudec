@@ -38,6 +38,10 @@ uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t
 	{
 		delim = ',';
 	}
+	else if( s.find(':') != std::string::npos )
+	{
+		delim = ':';
+	}
 	//Self to self then
 	else
 	{
