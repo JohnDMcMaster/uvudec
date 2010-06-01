@@ -1,6 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -23,6 +23,10 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST(engineInitTest);
 	CPPUNIT_TEST(analysisDirTest);
 	CPPUNIT_TEST(disassembleTest);
+	CPPUNIT_TEST(disassembleRangeTestDeliminators);
+	CPPUNIT_TEST(disassembleRangeTestDefaultEquivilence);
+	CPPUNIT_TEST(disassembleRangeTestComplex);
+	CPPUNIT_TEST(uvudecBasicRun);
 	CPPUNIT_TEST_SUITE_END();
 
 	public:
@@ -66,8 +70,23 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 		Disassemble the default binary
 		*/
 		void disassembleTest(void);
-
+		/*
+		Disassemble the default binary with inclusion/exclusion ranges
+		*/
+		void disassembleRangeTestDeliminators(void);
+		void disassembleRangeTestDefaultEquivilence(void);
+		void disassembleRangeTestComplex(void);
+		/*
+		Actually calls uvudec's uvmain using the hooks
+		Does a basic test where as most of hte thorough test test libuvudec rather than what the uvudec exe can do
+		*/
+		void uvudecBasicRun(void);
+	
 	private:
+		//Initize and verify that we don't have any errors running these args
+		//program name does not need to be supplied
+		void generalDisassemble(const std::vector<std::string> &args);
+		void generalDisassemble(const std::vector<std::string> &args, std::string &output);
 };
 
 #endif
