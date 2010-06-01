@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -351,7 +350,7 @@ error:
 	return rc;
 }
 
-std::vector<std::string> charPtrArrayToVector(char **argv, int argc)
+std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc)
 {
 	std::vector<std::string> ret;
 	for( int i = 0; i < argc; ++i )
