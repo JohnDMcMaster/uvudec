@@ -36,6 +36,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 UVDIterator::UVDIterator()
 {
 	m_uvd = NULL;
+	m_isEnd = FALSE;
 }
 
 /*
@@ -58,6 +59,7 @@ UVDIterator::~UVDIterator()
 uv_err_t UVDIterator::init(UVD *uvd)
 {
 	uv_addr_t absoluteMinAddress = 0;
+	m_isEnd = FALSE;
 
 	m_uvd = uvd;
 
@@ -70,11 +72,11 @@ uv_err_t UVDIterator::init(UVD *uvd)
 
 uv_err_t UVDIterator::init(UVD *disassembler, uv_addr_t position, uint32_t index)
 {
-	//UV_ENTER();
+	m_isEnd = FALSE;
 	m_uvd = disassembler;
 	m_nextPosition = position;
 	m_positionIndex = index;
-	m_printedInformation = false;
+	m_printedInformation = FALSE;
 	return UV_ERR_OK;
 }
 
@@ -82,6 +84,16 @@ uv_err_t UVDIterator::deinit()
 {
 	m_data = NULL;
 	m_uvd = NULL;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::makeEnd()
+{
+	m_indexBuffer.clear();
+	m_nextPosition = 0;
+	m_positionIndex = 0;
+	m_printedInformation = FALSE;
+	m_isEnd = TRUE;
 	return UV_ERR_OK;
 }
 
@@ -102,15 +114,9 @@ uv_err_t UVDIterator::next()
 	UVDBenchmark nextInstructionBenchmark;
 	uv_addr_t absoluteMaxAddress = 0;
 	
-	UV_ENTER();
-		
 	uv_assert_ret(g_config);
-	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
-	
-	if( *this == m_uvd->end() )
-	{
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
+	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));	
+	uv_assert_ret(*this != m_uvd->end());
 		
 	++m_positionIndex;
 
@@ -130,6 +136,7 @@ uv_err_t UVDIterator::next()
 	//Force to end
 	if( m_nextPosition > absoluteMaxAddress )
 	{
+		//XXX Is this unsafe on any system?
 		*this = m_uvd->end();
 		return UV_ERR_DONE;
 	}
@@ -283,8 +290,7 @@ uv_err_t UVDIterator::initialPrint()
 	UVDConfig *config = NULL;
 	UVDAnalyzer *analyzer = NULL;
 	
-	UV_ENTER();
-	
+		
 	uv_assert_ret(m_uvd);
 	config = m_uvd->m_config;
 	uv_assert_ret(config);
@@ -420,13 +426,14 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 	return UV_ERR_OK;
 }
 
-/*
-Gets the next logical print group
-These all should be associated with a small peice of data, such as a single instruction
-Ex: an address on line above + call count + disassembled instruction
-*/
 uv_err_t UVDIterator::nextCore()
 {
+	/*
+	Gets the next logical print group
+	These all should be associated with a small peice of data, such as a single instruction
+	Ex: an address on line above + call count + disassembled instruction
+	*/
+
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDInstruction instruction;
 	unsigned int startPosition = m_nextPosition;
@@ -436,8 +443,7 @@ uv_err_t UVDIterator::nextCore()
 	UVDBenchmark nextInstructionBenchmark;
 	UVDBenchmark otherBenchmark;
 	
-	UV_ENTER();
-	
+		
 	uvd = m_uvd;
 	uv_assert_ret(uvd);
 	analyzer = uvd->m_analyzer;
@@ -447,7 +453,6 @@ uv_err_t UVDIterator::nextCore()
 
 	uv_assert_ret(g_config);
 	
-	UV_ENTER();
 	m_indexBuffer.clear();
 	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
 
@@ -533,8 +538,7 @@ UV_DISASM_FUNC_PROTO(uvd_next)
 	UVD *uvd = NULL;
 	uv_addr_t absoluteMaxAddress = 0;
 	
-	UV_ENTER();
-	printf_debug("\n");
+		printf_debug("\n");
 	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
 	
 	uvd = m_uvd;
@@ -708,14 +712,14 @@ void UVDIterator::debugPrint() const
 
 bool UVDIterator::operator==(const UVDIterator &other) const
 {
-	UV_ENTER();
-
+	
 	printf_debug("UVDIterator::operator==:\n");
 	debugPrint();
 	other.debugPrint();
 
 	//Should comapre m_uvd as well?
-	return m_nextPosition == other.m_nextPosition 
+	return m_isEnd == other.m_isEnd
+			&& m_nextPosition == other.m_nextPosition 
 			&& m_positionIndex == other.m_positionIndex
 			//This check is needed for proper ending
 			//.end will not have a buffer, but post last address read will (or we are at .end anyway)
@@ -729,8 +733,7 @@ bool UVDIterator::operator!=(const UVDIterator &other) const
 
 std::string UVDIterator::operator*()
 {
-	UV_ENTER();
-	
+		
 	//New object not yet initialized?
 	printf_debug("Index buffer size: %d\n", m_indexBuffer.size());
 	if( m_indexBuffer.empty() )

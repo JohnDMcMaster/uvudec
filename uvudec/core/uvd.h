@@ -143,6 +143,9 @@ public:
 	uv_err_t init(UVD *disassembler, uv_addr_t position, uint32_t index);
 	uv_err_t deinit();
 	~UVDIterator();
+	
+	//Make it as UVD::end() would return
+	uv_err_t makeEnd();
 
 	uint32_t getPosition();
 
@@ -189,6 +192,9 @@ private:
 	std::vector<std::string> m_indexBuffer;
 	//Printed startup information yet?
 	int m_printedInformation;
+	//Otherwise there are weird corner cases not knowing if we are actually at the end
+	//or the highest address or looped back to start
+	int m_isEnd;
 };
 
 
