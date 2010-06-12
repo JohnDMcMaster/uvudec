@@ -193,9 +193,9 @@ uv_err_t initSharedConfig()
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ANALYSIS_ONLY, 0, "analysis-only", "only do analysis, don't print data", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ANALYSIS_DIR, 0, "analysis-dir", "create data suitible for stored analysis", 1, argParser, false));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ANALYSIS_FLOW_TECHNIQUE, 0, "flow-analysis",
-			"how to trace jump, calls",
-				"\tlinear: start at beginning, read all instructions linearly, then find jump/calls (default)\n"
-				"\ttrace: start at all vectors, analyze all segments called/branched recursivly\n"
+			"how to determine next instruction to analyze",
+				"\tlinear (linear sweep): start at beginning, read all instructions linearly, then find jump/calls (default)\n"
+				"\ttrace (recursive descent): start at all vectors, analyze all segments called/branched recursivly\n"
 				,	
 			1, argParser, false));
 
