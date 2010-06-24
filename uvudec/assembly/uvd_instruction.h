@@ -10,7 +10,8 @@ This is an ancient file in the history of this project
 The code may be a bit archaic and needs some cleanup
 */
 
-#pragma once
+#ifndef UVD_INSTRUCTION_H
+#define UVD_INSTRUCTION_H
 
 #include <vector>
 #include <string>
@@ -136,6 +137,7 @@ Replacement for uv_inst_operand_t
 */
 class UVD;
 class UVDInstruction;
+class UVDIteratorCommon;
 class UVDOperand
 //struct uv_inst_operand_t
 {
@@ -144,7 +146,8 @@ public:
 	~UVDOperand();
 	uv_err_t deinit();
 
-	uv_err_t parseOperand(uint32_t &nextPosition);
+	//Will return UV_ERR_DONE to indicate incomplete parsing of the operand due to out of data
+	uv_err_t parseOperand(UVDIteratorCommon *uvdIter);
 
 	uv_err_t uvd_parsed2opshared(const struct uvd_parsed_t *parsed_type, UVDOperandShared **op_shared_in);
 	//Append to given string
@@ -338,7 +341,9 @@ public:
 
 	uv_err_t collectVariables(UVDVariableMap &environment);
 
-	uv_err_t parseOperands(uint32_t &nextPosition, std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
+	//Will return UV_ERR_DONE to indicate incomplete parsing of the operand due to out of data
+	uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
+			std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
 
 public:
 
@@ -369,3 +374,5 @@ public:
 };
 
 const char *uvd_data_str(int uvd_data);
+
+#endif
