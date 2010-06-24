@@ -36,8 +36,10 @@ It would be cool to set system preferences to compile this selectivly in program
 //#define printf_warn printf_debug
 //Or should this be treated as a level 1 error?
 #define printf_warn(format, ...) printf("WARNING: " format, ## __VA_ARGS__)
-//#define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
-void printf_error(const char *format, ...);
+//An error the user should see because they likely caused the issue due to bad input (file, arg, etc)
+#define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
+//An internal error
+void printf_debug_error(const char *format, ...);
 
 #define printf_deprecated(format, ...) printf_debug_level(UVD_DEBUG_DEPRECATED, format, ## __VA_ARGS__)
 

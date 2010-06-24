@@ -45,7 +45,7 @@ const char *uv_err_str(uv_err_t err)
 	}
 }
 
-void printf_error(const char *format, ...)
+void printf_debug_error(const char *format, ...)
 {
 	//If we are in any sort of debug state, report errors
 	if( g_config->anyVerboseActive() )
