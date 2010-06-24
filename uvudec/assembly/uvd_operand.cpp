@@ -84,11 +84,13 @@ uv_err_t UVDOperand::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDOperand::parseOperand(uint32_t &nextPosition)
+uv_err_t UVDOperand::parseOperand(UVDIteratorCommon *uvdIter)
 {
 	UVDInstruction *inst = NULL;
 	UVDData *data = NULL;
 	UVD *uvd = NULL;
+	uv_err_t rcNextAddress = UV_ERR_GENERAL;
+	int read = -1;
 
 	uv_assert_ret(m_instruction);
 	inst = m_instruction;
@@ -111,39 +113,44 @@ uv_err_t UVDOperand::parseOperand(uint32_t &nextPosition)
 	{
 		switch(m_shared->m_immediate_size)
 		{
-		case 8:			
-			m_ui8 = data->read(nextPosition);	
-			/*
-			if( operand_offset >= inst->shared->total_length )
+		case 8:
+			read = data->read(uvdIter->m_nextPosition);	
+			uv_assert_ret(read >= 0);
+			m_ui8 = read;
+			rcNextAddress = uvdIter->nextValidExecutableAddress();
+			uv_assert_err_ret(rcNextAddress);
+			if( rcNextAddress == UV_ERR_DONE )
 			{
-				UV_ERR(rc);
-				goto error;
+				//Premature termination
+				return UV_ERR_DONE;
 			}
-			*/
-			++nextPosition;
+			
 			break;
 		case 16:
-			/* No idea on endianess */
-			/*
-			{				if( UV_FAILED(parseOperands(m_shared_arg, op_arg, binary, offset)) )
+			read = data->read(uvdIter->m_nextPosition);
+			uv_assert_ret(read >= 0);
+			m_ui16 = read << 8;
+			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			rcNextAddress = uvdIter->nextValidExecutableAddress();
+			uv_assert_err_ret(rcNextAddress);
+			if( rcNextAddress == UV_ERR_DONE )
 			{
-				UV_ERR(rc);
-				goto error;
+				//Premature termination
+				return UV_ERR_DONE;
+			}
+			
+			read = data->read(uvdIter->m_nextPosition);
+			uv_assert_ret(read >= 0);
+			m_ui16 += read;	
+			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			rcNextAddress = uvdIter->nextValidExecutableAddress();
+			uv_assert_err_ret(rcNextAddress);
+			if( rcNextAddress == UV_ERR_DONE )
+			{
+				//Pre-mature termination
+				return UV_ERR_DONE;
 			}
 
-				int i = 0;
-				fflush(stdout);
-				for( i = 0; i < inst->inst_size; ++i )
-				{
-					printf_debug("binary(offset)[%d] = %d\n", i, binary[nextPosition + i]);
-				}
-				fflush(stdout);
-			}
-			*/
-			m_ui16 = data->read(nextPosition) << 8;
-			++nextPosition;
-			m_ui16 += data->read(nextPosition);	
-			++nextPosition;
 			break;
 		default:
 			UV_ERR(rc);
@@ -173,42 +180,11 @@ uv_err_t UVDOperand::parseOperand(uint32_t &nextPosition)
 		}
 		printf_debug("Function/modifier: %s\n", m_shared->m_name.c_str());
 		uv_assert_err_ret(inst);
-		if( UV_FAILED(inst->parseOperands(nextPosition, m_shared->m_func->m_args, m_func->m_args)) )
+		if( UV_FAILED(inst->parseOperands(uvdIter, m_shared->m_func->m_args, m_func->m_args)) )
 		{
 			UV_ERR(rc);
 			goto error;
 		}
-
-		/*
-		printf_debug("Iterating over operands...\n");
-		fflush(stdout);
-		//These should probably be changed to linked lists some day
-		for( arg_index = 0; arg_index < m_shared->m_func->m_args.size(); ++arg_index )
-		{
-			UVDOperand *op_arg = NULL;
-			UVDOperandShared *m_shared_arg = NULL;
-
-			printf_debug("Operand iter\n");
-			fflush(stdout);
-		
-			m_shared_arg = m_shared->func->args[arg_index];
-			op_arg = new UVDOperand();
-			if( !op_arg )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-				
-			if( UV_FAILED(parseOperands(m_shared_arg, op_arg, binary, offset)) )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-			op->func->m_args.push_back(op_arg);
-		}
-		*/
-		//assert(m_shared->func->n_args);
-		//assert(op->func->n_args);
 		uv_assert_ret(m_shared->m_func->m_args.size() == m_func->m_args.size());
 		
 		break;
