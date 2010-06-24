@@ -13,6 +13,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define UVD_PROP_ACTION_USELESS_ASCII_ART		"action.print_ascii_art"
 //Debug
 #define UVD_PROP_DEBUG_LEVEL					"debug.level"
+#define UVD_PROP_DEBUG_ARGS						"debug.args"
 #define UVD_PROP_DEBUG_INIT						"debug.init"
 #define UVD_PROP_DEBUG_PROCESSING				"debug.processing"
 #define UVD_PROP_DEBUG_ANALYSIS					"debug.analysis"
@@ -32,6 +33,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 //Analysis
 #define UVD_PROP_ANALYSIS_DIR					"analysis.dir"
 #define UVD_PROP_ANALYSIS_ONLY					"analysis.only"
+//Recursive descent, linear sweep, etc
 #define UVD_PROP_ANALYSIS_FLOW_TECHNIQUE		"analysis.flow_technique"
 //Output
 #define UVD_PROP_OUTPUT_OPCODE_USAGE			"output.opcode_usage"
