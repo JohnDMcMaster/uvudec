@@ -326,8 +326,8 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	args.clear();
 	args.push_back("--addr-exclude=0x10000,0x20000");
 	generalDisassemble(args, sameAsDefaultRange);
-	printf("\n\n\n<%s>\n\n\n", limitString(defaultRange, 200).c_str());
-	printf("\n\n\n<%s>\n\n\n", limitString(uselessExcludedrange, 200).c_str());
+	printf("\n\n\ndefaultRange\n<%s>\n\n\n", limitString(defaultRange, 200).c_str());
+	printf("\n\n\nuselessExcludedrange\n<%s>\n\n\n", limitString(uselessExcludedrange, 200).c_str());
 	CPPUNIT_ASSERT(defaultRange == uselessExcludedrange);
 }
 
@@ -359,8 +359,8 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	args.push_back("--addr-include=0x0000-0x0002");
 	args.push_back("--addr-include=0x000B-0x000E");
 	generalDisassemble(args, output);
-	printf("\n\n\n<%s>\n\n\n", limitString(output, 200).c_str());
-	printf("\n\n\n<%s>\n\n\n", limitString(target, 200).c_str());
+	printf("\n\n\noutput<%s>\n\n\n", limitString(output, 200).c_str());
+	printf("\n\n\ntarget<%s>\n\n\n", limitString(target, 200).c_str());
 	CPPUNIT_ASSERT(output == target);
 }
 
@@ -383,14 +383,22 @@ void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args, std::
 	//Make sure we can fit it in the buffer
 	CPPUNIT_ASSERT(sizeof(argv) / sizeof(argv[0]) > args.size());
 	
+	std::string toExec;
+	
 	//Prog name
 	argc = 1;
+	toExec += argv[0];
 	//Copy all args into the buffer
 	for( std::vector<std::string>::size_type i = 0; i < args.size(); ++i )
 	{
-		argv[argc] = (char *)args[i].c_str();
+		std::string arg = args[i];
+		
+		toExec += " ";
+		toExec += arg;
+		argv[argc] = (char *)arg.c_str();
 		++argc;
 	}
+	printf("To exec: %s\n", toExec.c_str());
 	
 	CPPUNIT_ASSERT(g_config == NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
