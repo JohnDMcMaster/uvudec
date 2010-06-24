@@ -167,12 +167,16 @@ public:
 	//Actual allowable address limits, not just what config says
 	uv_err_t getAddressMin(uv_addr_t *out);
 	uv_err_t getAddressMax(uv_addr_t *out);
-	uv_err_t nextValidAddress(uint32_t start, uint32_t *ret);
+
+	//Next valid address capable of having any sort of analysis on it
+	uv_err_t nextValidAddress(uv_addr_t start, uv_addr_t *ret);
+	//Like above, but also must be a canidate for an executable area
+	uv_err_t nextValidExecutableAddress(uv_addr_t start, uv_addr_t *ret);
 
 	uv_err_t insertReference(uint32_t targetAddress, uint32_t from, uint32_t type);
 	//For destinations, not sources
-	uv_err_t insertCallReference(uint32_t targetAddress, uint32_t from);
-	uv_err_t insertJumpReference(uint32_t targetAddress, uint32_t from);
+	uv_err_t insertCallReference(uv_addr_t targetAddress, uv_addr_t from);
+	uv_err_t insertJumpReference(uv_addr_t targetAddress, uv_addr_t from);
 	
 	void updateCache(uint32_t address, const UVDVariableMap &analysisResult);
 	uv_err_t readCache(uint32_t address, UVDVariableMap &analysisResult);
@@ -209,6 +213,9 @@ public:
 private:
 	//Force a rebuild of the internal database
 	//uv_err_t rebuildDb();
+	//Only based on coding list, not any other validity
+	//Used internally by nextValidExecutionAddress()
+	uv_err_t nextCodingAddress(uv_addr_t start, uv_addr_t *ret);
 
 public:
 	//Superblock for block representation of program
