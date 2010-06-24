@@ -1,15 +1,18 @@
-#include "uvd_compiler.h"
+/*
+UVNet Universal Decompiler (uvudec)
+Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>
+Licensed under terms of the three clause BSD license, see LICENSE for details
+*/
 
-UVDAssemblyCompiler::UVDAssemblyCompiler()
+#include "uvd_compiler_assembly.h"
+
+UVDCompilerAssembly::UVDCompilerAssembly()
 {
-	m_shared = NULL;
 	m_compiler = UVD_COMPILER_UNKNOWN;
 }
 
-uv_err_t UVDAssemblyCompiler::comment(const std::string &in, std::string &out)
+uv_err_t UVDCompilerAssembly::comment(const std::string &in, std::string &out)
 {
-	if( )
-	
-	out = "# " + out;
+	out = "# " + in;
 	return UV_ERR_OK;
 }
