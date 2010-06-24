@@ -1,6 +1,8 @@
 #include "uvd_error.h"
+#include "uvd_config.h"
 #include "uvd_log.h"
 #include <stdio.h>
+#include <stdarg.h>
 
 uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const char *func)
 {
@@ -40,5 +42,20 @@ const char *uv_err_str(uv_err_t err)
 
 	default:
 		return "UNKNOWN";
+	}
+}
+
+void printf_error(const char *format, ...)
+{
+	//If we are in any sort of debug state, report errors
+	if( g_config->anyVerboseActive() )
+	{
+		va_list ap;
+
+		va_start(ap, format);
+		printf("ERROR: ");
+		vfprintf(stdout, format, ap);
+		fflush(stdout);
+		va_end(ap);
 	}
 }

@@ -59,7 +59,7 @@ void printf_debug_level(uint32_t level, const char *format, ...)
 		set_level = 0;
 	}
 	
-	//Is logging disabledor are we at too high of a level
+	//Is logging disabled or are we at too high of a level?
 	if( !verbose || level > set_level )
 	{
 		return;

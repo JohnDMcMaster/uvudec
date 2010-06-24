@@ -12,7 +12,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define DEBUG_BREAK()			do { printf("DEBUG BREAK (%s:%d)\n", __FILE__, __LINE__); exit(1); } while ( 0 )
 
 
-//Don't print anything
+//Don't print anything.  A debug statement should not have this, only global level
 #define UVD_DEBUG_NONE			0
 //A message that should be disabled for production, but is used for current diagnosis
 #define UVD_DEBUG_TEMP			1
@@ -36,7 +36,9 @@ It would be cool to set system preferences to compile this selectivly in program
 //#define printf_warn printf_debug
 //Or should this be treated as a level 1 error?
 #define printf_warn(format, ...) printf("WARNING: " format, ## __VA_ARGS__)
-#define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
+//#define printf_error(format, ...) printf("ERROR: " format, ## __VA_ARGS__)
+void printf_error(const char *format, ...);
+
 #define printf_deprecated(format, ...) printf_debug_level(UVD_DEBUG_DEPRECATED, format, ## __VA_ARGS__)
 
 /*
