@@ -387,18 +387,19 @@ uv_err_t UVD::analyzeControlFlow()
 
 uv_err_t UVD::analyzeControlFlowLinear()
 {
-	UVDIterator iter;
+	UVDInstructionIterator iter;
 	uint32_t printPercentage = 1;
 	uint32_t printNext = printPercentage;
 	uv_addr_t numberAnalyzedBytes = 0;
+	
+	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis linear\n");
 
 	uv_assert_ret(m_config);
 	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
-	iter = begin();
+	iter = instructionBegin();
 	for( ;; )
 	{
-		UVDInstruction instruction;
 		std::string action;
 		uint32_t startPos = iter.getPosition();
 		uint32_t endPos = 0;
@@ -416,17 +417,17 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
 
 		//If we aren't at end, there should be more data
-		uv_assert_err_ret(iter.nextInstruction(instruction));
-		if( iter == end() )
+		uv_assert_err_ret(iter.nextInstruction());
+		if( iter == instructionEnd() )
 		{
 			printf_debug("disassemble: end");
 			break;
 		}
 		endPos = iter.getPosition();
 		
-		action = instruction.m_shared->m_action;
+		action = iter.m_instruction.m_shared->m_action;
 
-		printf_debug("Next instruction (start: 0x%.8X, end: 0x%.8X): %s\n", startPos, endPos, instruction.m_shared->m_memoric.c_str());
+		printf_debug("Next instruction (start: 0x%.8X, end: 0x%.8X): %s\n", startPos, endPos, iter.m_instruction.m_shared->m_memoric.c_str());
 
 		/*
 		We must extract the symbols from this
@@ -486,9 +487,9 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		ACALL #0x5500
 		*/
 
-		printf_debug("Action: %s, type: %d\n", action.c_str(), instruction.m_shared->m_inst_class);
+		printf_debug("Action: %s, type: %d\n", action.c_str(), iter.m_instruction.m_shared->m_inst_class);
 		//See if its a call instruction
-		if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_CALL )
+		if( iter.m_instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_CALL )
 		{
 			/*
 			NAME=ACALL
@@ -501,7 +502,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 			UVDVariableMap environment;
 			UVDVariableMap mapOut;
 
-			uv_assert_err_ret(instruction.collectVariables(environment));
+			uv_assert_err_ret(iter.m_instruction.collectVariables(environment));
 						
 			/*
 			Add iterator specific environment
@@ -516,10 +517,10 @@ uv_err_t UVD::analyzeControlFlowLinear()
 			uv_assert_ret(m_interpreter);
 			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
 			
-			uv_assert_err_ret(m_analyzer->analyzeCall(&instruction, startPos, mapOut));
+			uv_assert_err_ret(m_analyzer->analyzeCall(&iter.m_instruction, startPos, mapOut));
 			
 		}
-		else if( instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
+		else if( iter.m_instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
 		{
 			/*
 			NAME=JNB
@@ -532,7 +533,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 			UVDVariableMap environment;
 			UVDVariableMap mapOut;
 
-			uv_assert_err_ret(instruction.collectVariables(environment));
+			uv_assert_err_ret(iter.m_instruction.collectVariables(environment));
 						
 			/*
 			Add iterator specific environment
@@ -547,20 +548,12 @@ uv_err_t UVD::analyzeControlFlowLinear()
 			uv_assert_ret(m_interpreter);
 			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
 
-			uv_assert_err_ret(m_analyzer->analyzeJump(&instruction, startPos, mapOut));
+			uv_assert_err_ret(m_analyzer->analyzeJump(&iter.m_instruction, startPos, mapOut));
 		}
 	}
 
 	return UV_ERR_OK;
 }
-
-class UVDTracePoint
-{
-public:
-	//Location that generated the control flow, if applicable
-	//might only be used for debugging
-	uint32_t m_origin;
-};
 
 uv_err_t UVD::suspectValidInstruction(uint32_t address, int *isValid)
 {
@@ -579,6 +572,7 @@ uv_err_t UVD::suspectValidInstruction(uint32_t address, int *isValid)
 
 uv_err_t UVD::analyzeControlFlowTrace()
 {
+	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis trace\n");
 #if ANALYZE_CONTROL_FLOW
 	//For now only try to find where code is, so it doesn't matter how we arrived
 	std::set<uint32_t> openSet;
@@ -721,9 +715,6 @@ uv_err_t UVD::analyzeControlFlowTrace()
 				}
 			}
 		}
-
-
-			
 	}
 #endif
 	
@@ -745,12 +736,7 @@ uv_err_t UVD::analyze()
 	
 	verbose_pre = m_config->m_verbose;
 	
-	m_config->m_verbose = m_config->m_verbose_analysis;
-	
-	//Set a default compiler to generate code for
-	//How this is set will probably change drastically in the future
-	uv_assert(m_format);
-	m_format->m_compiler = new UVDCompiler();
+	m_config->m_verbose = m_config->m_verbose_analysis;	
 	
 	//Strings must be found first to find ROM data to exclude from disassembly
 	uv_assert_err(analyzeConstData());

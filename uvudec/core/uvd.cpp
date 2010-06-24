@@ -29,6 +29,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_address.h"
 #include "uvd_analysis.h"
 #include "uvd_benchmark.h"
+#include "uvd_compiler_assembly.h"
 #include "uvd_config_symbol.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
@@ -212,7 +213,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	//The true name of the function is unknown
 	//This name is stored as a way to figure out the real name vs the current symbol name 
 	functionShared->m_name = "";
-	functionShared->m_description = "Automatically generated.";	
+	functionShared->m_description = "Automatically generated";	
 
 	//Create the single known instance of this function
 	uv_assert_err_ret(UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(&functionInstance));
@@ -221,16 +222,6 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	//Only specific instances get symbol designations
 	functionInstance->setSymbolName(analyzedSymbolName(minAddress));
 	
-	/*
-	Skip for now:
-	UVDCompiler *m_compiler;
-	UVDSupportedVersions m_versions;
-	UVDCompilerOptions *m_compilerOptions;
-	int m_language;
-	std::string m_code;
-	std::string m_origin;
-	std::string m_notes;
-	*/
 	//This will perform copy
 	uv_assert_err_ret(functionInstance->setData(functionBlockDataChunk));
 	//And register it to that particular function
@@ -337,7 +328,7 @@ uv_err_t UVD::analyzeStrings()
 				if( c == 0 )
 				{
 					//Add the string
-					unsigned int endAddr = j - 1;
+					uv_addr_t endAddr = j - 1;
 
 					//Just insert one reference to each string for now
 					//A map
@@ -701,6 +692,27 @@ UVDIterator UVD::end(UVDData *data)
 	return iter;
 }
 
+UVDInstructionIterator UVD::instructionBegin()
+{
+	UVDInstructionIterator iter;
+	
+	UV_DEBUG(iter.init(this));
+	iter.m_data = m_data;
+	return iter;	
+}
+
+UVDInstructionIterator UVD::instructionEnd()
+{
+	UVDInstructionIterator iter;
+	
+	//This will work fine unless we fill up the entire address space
+	UV_DEBUG(iter.init(this));
+	iter.m_data = m_data;
+	//The key part
+	UV_DEBUG(iter.makeEnd());
+	return iter;
+}
+
 //FIXME: doesn't split
 std::vector<std::string> split(const std::string &s, char delim)
 {
@@ -774,9 +786,10 @@ uv_err_t UVD::disassemble(std::string &output)
 uv_err_t UVD::decompile(int destinationLanguage, std::string &output)
 {
 	//uint8_t *dat = NULL;	
-	unsigned int dat_sz = 0;
+	uint32_t dataSize = 0;
 	//unsigned int read = 0;
 	std::string configFile;
+	UVDCompiler *compiler = NULL;
 	
 	UV_ENTER();
 
@@ -784,24 +797,32 @@ uv_err_t UVD::decompile(int destinationLanguage, std::string &output)
 	decompileBenchmark.start();
 	
 	uv_assert_ret(m_data);
-	dat_sz = m_data->size();
+	dataSize = m_data->size();
 	
 	//Trivial case: nothing to analyze
-	if( dat_sz == 0 )
+	if( dataSize == 0 )
 	{
 		return UV_ERR_OK;
 	}
 	
 	uv_assert_ret(m_config);
 	
-	//If unspecified, default to full range
-	/*
-	if( m_config->m_addr_max == 0 )
+	printf_debug_level(UVD_DEBUG_PASSES, "Raw data size: 0x%x (%d)\n", dataSize, dataSize);
+
+	switch( destinationLanguage )
 	{
-		m_config->m_addr_max = dat_sz - 1;
-	}
-	*/
-	printf_debug("Raw data size: 0x%x (%d)\n", dat_sz, dat_sz);
+	case UVD_LANGUAGE_ASSEMBLY:
+		compiler = new UVDCompilerAssembly();
+		break;
+	default:
+		printf_error("Unknown destination langauge: 0x%.4X (%d)\n", destinationLanguage, destinationLanguage);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	};
+	uv_assert_ret(compiler);
+	//Set a default compiler to generate code for
+	//How this is set will probably change drastically in the future
+	uv_assert_ret(m_format);
+	uv_assert_err_ret(m_format->setCompiler(compiler));
 
 	//Most of program time should be spent here
 	uv_assert_err_ret(analyze());
@@ -829,10 +850,13 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	int printPercentage = 1;
 	int printNext = printPercentage;
 	uint32_t analyzedBytes = 0;
+	int verbose_old = 0;
 
 	uv_assert_ret(m_config);
 	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&analyzedBytes));
 	uv_assert_ret(analyzedBytes != 0);
+	verbose_old = m_config->m_verbose;
+	m_config->m_verbose = m_config->m_verbose_printing;
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: printing...\n");
 	UVDBenchmark decompilePrintBenchmark;
@@ -860,11 +884,12 @@ uv_err_t UVD::decompilePrint(std::string &output)
 		{
 			uint64_t delta = getTimingMicroseconds() - decompilePrintBenchmark.getStart();
 			double iterationTime = 1.0 * delta / iterations;
+			
 			printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: printing: %d %% (us / record: %.2lf)\n", curPercent, iterationTime);
 			printNext += printPercentage;
 		}
 
-		line = *iter;
+		uv_assert_err_ret(iter.getCurrent(line));
 		printf_debug("Line (0x%.8X): %s\n", iter.getPosition(), line.c_str());
 
 		//This didn't help for the bottleneck under investigation
@@ -884,7 +909,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 			printf_debug("Failed to get next\n");
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-		iter.debugPrint();
+		//iter.debugPrint();
 	}
 #ifdef USING_ROPE
 	output = outputRope.c_str();
@@ -898,6 +923,8 @@ uv_err_t UVD::decompilePrint(std::string &output)
 
 	decompilePrintBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile print time (%d records): %s\n", iterations, decompilePrintBenchmark.toString().c_str());
+
+	m_config->m_verbose = verbose_old;
 
 	return UV_ERR_OK;
 }

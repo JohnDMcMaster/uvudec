@@ -33,33 +33,35 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_types.h"
 #include "uvd_config_symbol.h"
 
-UVDIterator::UVDIterator()
+UVDIteratorCommon::UVDIteratorCommon()
 {
 	m_uvd = NULL;
 	m_isEnd = FALSE;
+	m_currentSize = 0;
 }
 
 /*
-UVDIterator::UVDIterator(UVD *disassembler)
+UVDIteratorCommon::UVDIteratorCommon(UVD *disassembler)
 {
 	UV_DEBUG(init(disassembler));
 }
 
-UVDIterator::UVDIterator(UVD *disassembler, uv_addr_t position, uint32_t index)
+UVDIteratorCommon::UVDIteratorCommon(UVD *disassembler, uv_addr_t position, uint32_t index)
 {
 	UV_DEBUG(init(disassembler, position, index));
 }
 */
 
-UVDIterator::~UVDIterator()
+UVDIteratorCommon::~UVDIteratorCommon()
 {
 	UV_DEBUG(deinit());
 }
 
-uv_err_t UVDIterator::init(UVD *uvd)
+uv_err_t UVDIteratorCommon::init(UVD *uvd)
 {
 	uv_addr_t absoluteMinAddress = 0;
 	m_isEnd = FALSE;
+	m_currentSize = 0;
 
 	m_uvd = uvd;
 
@@ -67,87 +69,85 @@ uv_err_t UVDIterator::init(UVD *uvd)
 	uv_assert_ret(m_uvd->m_analyzer);
 	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMin(&absoluteMinAddress));
 	
-	return UV_DEBUG(init(uvd, absoluteMinAddress, 0));
+	return UV_DEBUG(init(uvd, absoluteMinAddress));
 }
 
-uv_err_t UVDIterator::init(UVD *disassembler, uv_addr_t position, uint32_t index)
+uv_err_t UVDIteratorCommon::init(UVD *disassembler, uv_addr_t position)
 {
 	m_isEnd = FALSE;
+	m_currentSize = 0;
 	m_uvd = disassembler;
 	m_nextPosition = position;
-	m_positionIndex = index;
-	m_printedInformation = FALSE;
+	m_initialProcess = FALSE;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::deinit()
+uv_err_t UVDIteratorCommon::deinit()
 {
 	m_data = NULL;
 	m_uvd = NULL;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::makeEnd()
+uv_err_t UVDIteratorCommon::makeEnd()
 {
-	m_indexBuffer.clear();
+	uv_assert_err_ret(makeNextEnd());
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIteratorCommon::makeNextEnd()
+{
 	m_nextPosition = 0;
-	m_positionIndex = 0;
-	m_printedInformation = FALSE;
+	m_initialProcess = FALSE;
 	m_isEnd = TRUE;
 	return UV_ERR_OK;
 }
 
-unsigned int UVDIterator::getPosition()
+uv_addr_t UVDIteratorCommon::getPosition()
 {
 	return m_nextPosition;
 }
 
-UVDIterator UVDIterator::operator++()
-{
-	next();
-	return *this;
-}
-
-uv_err_t UVDIterator::next()
+uv_err_t UVDIteratorCommon::next()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	UVDBenchmark nextInstructionBenchmark;
-	uv_addr_t absoluteMaxAddress = 0;
+	//UVDBenchmark nextInstructionBenchmark;
+	//uv_addr_t absoluteMaxAddress = 0;
 	
 	uv_assert_ret(g_config);
-	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));	
-	uv_assert_ret(*this != m_uvd->end());
-		
-	++m_positionIndex;
+	//uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));	
+	//uv_assert_ret(*this != m_uvd->end());
 
-	printf_debug("next(), position index: %d, index buffer size: %d\n", m_positionIndex, m_indexBuffer.size());
 	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
-	
-	//We may have buffered data leftover form last parse
-	//Check this before seeing if we are at end
-	//Take buffered element if availible
-	if( m_positionIndex < m_indexBuffer.size() )
-	{
-		rc = UV_ERR_OK;
-		goto error;
-	}
-	
+		
 	//Global debug sort of cutoff
 	//Force to end
+	//This shouldn't happen actually
+	/*
 	if( m_nextPosition > absoluteMaxAddress )
 	{
-		//XXX Is this unsafe on any system?
-		*this = m_uvd->end();
-		return UV_ERR_DONE;
+		uv_assert_err_ret(makeEnd());
+		rc = UV_ERR_DONE;
+		goto error;
+	}
+	*/
+	//But we should check that we aren't at end otherwise we will loop since end() has address set to 0
+	if( m_isEnd )
+	{
+		rc = UV_ERR_DONE;
+		//Although we are flagged for no more instructions, we need to make it bitwise end for iter==end() checks
+		uv_assert_err_ret(makeEnd());
+		goto error;
 	}
 
 	//Otherwise, get next output cluster
 	
-	//Advance to next position
+	//Advance to next position, don't save parsed instruction
+	//Maybe we should save parsed instruction to the iter?  Seems important enough
 	uv_assert_err_ret(nextCore());
 	rc = UV_ERR_OK;
 error:
-	nextInstructionBenchmark.stop();
+	//nextInstructionBenchmark.stop();
 	//printf_debug_level(UVD_DEBUG_PASSES, "next() time: %s\n", nextInstructionBenchmark.toString().c_str());
 	return rc;
 }
@@ -180,58 +180,322 @@ std::string stringTableStringFormat(const std::string &s)
 	return sRet;
 }
 
-uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint32_t type)
+uv_err_t UVDIteratorCommon::initialProcess()
 {
-	UVDAnalyzedMemoryLocationReferences references;
-	char buff[256];
+	m_initialProcess = true;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIteratorCommon::clearBuffers()
+{
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIteratorCommon::nextCore()
+{
+	/*
+	Gets the next logical print group
+	These all should be associated with a small peice of data, such as a single instruction
+	Ex: an address on line above + call count + disassembled instruction
+	*/
+
 	UVD *uvd = NULL;
+	UVDAnalyzer *analyzer = NULL;
 	UVDFormat *format = NULL;
-		
+	//UVDBenchmark nextInstructionBenchmark;
+			
 	uvd = m_uvd;
 	uv_assert_ret(uvd);
+	analyzer = uvd->m_analyzer;
+	uv_assert_ret(analyzer);
 	format = uvd->m_format;
 	uv_assert_ret(format);
 
-	//Get all the locations that call this address
-	//FIXME: should this be call source?
-	uv_assert_err_ret(memLoc->getReferences(references, type));
-
-	for( UVDAnalyzedMemoryLocationReferences::iterator iter = references.begin(); iter != references.end(); ++iter )
-	{
-		//uint32_t key = (*iter).first;
-		UVDMemoryReference *value = (*iter).second;
-		uint32_t from = 0;
-		
-		uv_assert_err_ret(value);
-		from = value->m_from;
-		
-		snprintf(buff, 256, "#\t%s", format->formatAddress(from).c_str());
-		m_indexBuffer.push_back(buff);
-	}
+	uv_assert_ret(g_config);
 	
+	uv_assert_err_ret(clearBuffers());
+
+	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
+
+	if( !m_initialProcess )
+	{
+		uv_err_t rcInitialProcess = UV_ERR_GENERAL;
+	
+		rcInitialProcess = initialProcess();
+		uv_assert_err_ret(rcInitialProcess);	
+		uv_assert_ret(m_initialProcess);
+		//We may have had all prelim prints disabled
+		if( rcInitialProcess == UV_ERR_DONE )
+		{
+			return UV_ERR_OK;
+		}
+	}
+		
+	//nextInstructionBenchmark.start();
+	//Currently it seems we do not need to store if the instruction was properly decoded or not
+	//this can be caused in a multitude of ways by a multibyte instruction
+	if( UV_FAILED(nextInstruction()) )
+	{
+		printf_debug("Failed to get next instruction\n");
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}	
+	//nextInstructionBenchmark.stop();
+	//printf_debug_level(UVD_DEBUG_SUMMARY, "nextInstruction() time: %s\n", nextInstructionBenchmark.toString().c_str());
+
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::initialPrintHeader()
+uv_err_t UVDIteratorCommon::nextValidExecutableAddress()
+{
+	uv_err_t rcNextAddress = UV_ERR_GENERAL;
+	
+	//Should this actually be an error?
+	if( m_isEnd )
+	{
+		return UV_ERR_DONE;
+	}
+
+	++m_nextPosition;
+	++m_currentSize;
+	rcNextAddress = m_uvd->m_analyzer->nextValidExecutableAddress(m_nextPosition, &m_nextPosition);
+	uv_assert_err_ret(rcNextAddress);
+	if( rcNextAddress == UV_ERR_DONE )
+	{
+		//Don't try to advance further then
+		//But we are in middle of decoding, so let caller figure out what to do with buffers
+		uv_assert_err_ret(makeNextEnd());
+		return UV_ERR_DONE;
+	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIteratorCommon::addWarning(const std::string &lineRaw)
+{
+	printf_warn("%s\n", lineRaw.c_str());
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIteratorCommon::nextInstruction()
+{
+	/*
+	Gets the next logical print group
+	These all should be associated with a small peice of data, such as a single instruction
+	Ex: an address on line above + call count + disassembled instruction
+	Note that we can safely assume the current address is valid, but no addresses after it
+	*/
+	uv_err_t rcParseOperands = UV_ERR_GENERAL;
+	UVDInstructionShared *inst_shared = NULL;
+	uv_addr_t startPosition = 0;
+	//UVDData *data = m_uvd->m_data;
+	UVDData *data = m_data;
+	UVDOpcodeLookupElement *element = NULL;
+	uint8_t opcode = 0;
+	UVD *uvd = NULL;
+	uv_addr_t absoluteMaxAddress = 0;
+		
+	printf_debug("\n");
+	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
+	
+	//Reduce errors from stale data
+	m_instruction = UVDInstruction();
+	
+	uvd = m_uvd;
+	uv_assert_ret(uvd);
+	uv_assert_ret(data);
+	
+	//We are starting a new instruction, reset
+	m_currentSize = 0;
+	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
+	
+	//Hmm seems we should never branch here
+	//Lets see if we can prove it or at least comment to as why
+	uv_assert_ret(m_nextPosition <= absoluteMaxAddress);
+	/*
+	if( m_nextPosition > absoluteMaxAddress )
+	{
+		*this = m_uvd->end();
+		return UV_ERR_DONE;
+	}
+	*/
+	
+	//Used to get delta for copying the data we just iterated over
+	startPosition = m_nextPosition;
+	
+	uv_assert_err_ret(data->readData(m_nextPosition, (char *)&opcode));	
+	printf_debug("Just read @ 0x%.8X: 0x%.2X\n", m_nextPosition, opcode);
+	
+	//Go to next position
+	uv_assert_err_ret(nextValidExecutableAddress());
+	//printf_debug("post nextValidExecutableAddress: start: 0x%.4X, next time: 0x%.4X and is end: %d\n", startPosition, m_nextPosition, m_isEnd);
+	uv_assert_ret(m_nextPosition > startPosition || m_isEnd);
+	//If we get UV_ERR_DONE,
+	//Of course, if also we require operands, there will be issues
+	//But this doesn't mean we can't analyze the current byte
+	
+	uv_assert_ret(m_uvd->m_opcodeTable);
+	uv_assert_err_ret(m_uvd->m_opcodeTable->getElement(opcode, &element));
+
+	if( element == NULL )
+	{
+		if( m_uvd->m_config->m_haltOnTruncatedInstruction )
+		{
+			printf_debug("Undefined instruction: 0x%.2X\n", opcode);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		//XXX add something more descriptive
+		uv_assert_err_ret(addWarning("Undefined instruction"));
+		return UV_ERR_OK;
+	}
+	//XXX: this may change in the future to be less direct
+	inst_shared = element;
+	printf_debug("Memoric: %s\n", inst_shared->m_memoric.c_str());
+	
+	m_instruction.m_offset = startPosition;
+	m_instruction.m_shared = inst_shared;
+	m_instruction.m_uvd = m_uvd;
+
+	/*
+	Setup extension structs
+	There should be a perfect matching between each of these and the shared structs
+	*/
+	/* Since operand and shared operand structs are linked list, we can setup the entire structure by passing in the first elements */
+	rcParseOperands = m_instruction.parseOperands(this, m_instruction.m_shared->m_operands, m_instruction.m_operands);
+	uv_assert_err_ret(rcParseOperands);
+	//Truncated analysis?
+	if( rcParseOperands == UV_ERR_DONE )
+	{
+		//Did we request a half or should we comment and continue to best of our abilities?
+		if( m_uvd->m_config->m_haltOnTruncatedInstruction )
+		{
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		//FIXME: add a more usefule error message with offsets, how many bytes short, etc
+		uv_assert_err_ret(addWarning("Insufficient data to process instruction"));
+		return UV_ERR_OK;
+	}
+
+	printf_debug("m_nextPosition, initial: %d, final: %d\n", startPosition, m_nextPosition);
+
+	m_instruction.m_inst_size = m_currentSize;
+	//For now these should match
+	//XXX However, things like intel opcode extensions bytes will make this check invalid in the future
+	if( m_instruction.m_inst_size != m_instruction.m_shared->m_total_length )
+	{
+		printf_error("Instruction size: %d, shared size: %d\n", m_instruction.m_inst_size, m_instruction.m_shared->m_total_length);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	
+	//We now know the actual size, read the data we just iterated over
+	//This will always be valid since we are just storing a shadow copy of the instruction bytes
+	//We could alternativly create a UVDData object referring to the source binary file
+	uv_assert_err_ret(data->readData(m_instruction.m_offset, m_instruction.m_inst, m_instruction.m_inst_size));
+
+	printf_debug("m_nextPosition, initial: %d, final: %d\n", startPosition, m_nextPosition);
+
+	return UV_ERR_OK;
+}	
+
+/*
+UVDIterator
+*/
+
+UVDIterator::UVDIterator()
+{
+}
+
+UVDIterator::~UVDIterator()
+{
+}
+
+uv_err_t UVDIterator::init(UVD *uvd)
+{
+	uv_assert_err_ret(UVDIteratorCommon::init(uvd));
+	m_positionIndex = 0;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::init(UVD *disassembler, uv_addr_t position, uint32_t index)
+{
+	uv_assert_err_ret(UVDIteratorCommon::init(disassembler, position));
+	m_positionIndex = index;
+	return UV_ERR_OK;
+}
+
+UVDIterator UVDIterator::operator++()
+{
+	next();
+	return *this;
+}
+
+bool UVDIterator::operator==(const UVDIterator &other) const
+{
+	return m_isEnd == other.m_isEnd
+			&& m_nextPosition == other.m_nextPosition 
+			&& m_positionIndex == other.m_positionIndex
+			//Is this check necessary?  Think this was leftover from hackish ways of representing m_isEnd
+			//This check is needed for proper ending
+			//.end will not have a buffer, but post last address read will (or we are at .end anyway)
+			&& m_indexBuffer.size() == other.m_indexBuffer.size();
+}
+
+bool UVDIterator::operator!=(const UVDIterator &other) const
+{
+	return !operator==(other);
+}
+
+std::string UVDIterator::operator*()
+{
+	std::string ret;
+
+	UV_DEBUG(getCurrent(ret));
+
+	return ret;
+}
+
+uv_err_t UVDIterator::getCurrent(std::string &s)
+{
+	//New object not yet initialized?
+	printf_debug("Index buffer size: %d\n", m_indexBuffer.size());
+	if( m_indexBuffer.empty() )
+	{
+		uv_assert_ret(!m_isEnd);
+		printf_debug("Priming iterator\n");
+		if( UV_FAILED(nextCore()) )
+		{
+			printf_error("Failed to prime iterator!\n");
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+	}
+
+	printf_debug("position index: %d\n", m_positionIndex);
+	if( m_positionIndex >= m_indexBuffer.size() )
+	{
+		printf_error("Index out of bounds\n");
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	s = m_indexBuffer[m_positionIndex];
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::initialProcessHeader()
 {
 	char szBuff[256];
-	std::string line;
 	
 	//Program info
 	snprintf(szBuff, 256, "Generated by uvudec version %s", UVUDEC_VER_STRING);
-	uv_assert_err_ret(m_uvd->m_format->m_compiler->comment(szBuff, line));
-	m_indexBuffer.push_back(line);
+	uv_assert_err_ret(addComment(szBuff));
 	snprintf(szBuff, 256, "uvudec copyright 2009-2010 John McMaster");
-	m_indexBuffer.push_back(line);
+	uv_assert_err_ret(addComment(szBuff));
 	snprintf(szBuff, 256, "JohnDMcMaster@gmail.com");
-	m_indexBuffer.push_back(line);
+	uv_assert_err_ret(addComment(szBuff));
 	m_indexBuffer.push_back("");
 	m_indexBuffer.push_back("");
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::initialPrintUselessASCIIArt()
+uv_err_t UVDIterator::initialProcessUselessASCIIArt()
 {
 	std::string art = getRandomUVNetASCIIArt() + "\n";
 	m_indexBuffer.push_back(art);
@@ -241,7 +505,7 @@ uv_err_t UVDIterator::initialPrintUselessASCIIArt()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::initialPrintStringTable()
+uv_err_t UVDIterator::initialProcessStringTable()
 {
 	char szBuff[256];
 	UVDAnalyzer *analyzer = m_uvd->m_analyzer;
@@ -285,11 +549,12 @@ uv_err_t UVDIterator::initialPrintStringTable()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::initialPrint()
+uv_err_t UVDIterator::initialProcess()
 {
 	UVDConfig *config = NULL;
 	UVDAnalyzer *analyzer = NULL;
-	
+
+	uv_assert_err_ret(UVDIteratorCommon::initialProcess());
 		
 	uv_assert_ret(m_uvd);
 	config = m_uvd->m_config;
@@ -300,24 +565,174 @@ uv_err_t UVDIterator::initialPrint()
 	
 	if( config->m_print_header )
 	{
-		uv_assert_err_ret(initialPrintHeader());
+		uv_assert_err_ret(initialProcessHeader());
 	}
 	
 	if( config->m_uselessASCIIArt )
 	{
-		uv_assert_err_ret(initialPrintUselessASCIIArt());
+		uv_assert_err_ret(initialProcessUselessASCIIArt());
 	}
 
 	//String table
 	if( config->m_print_string_table )
 	{
-		uv_assert_err_ret(initialPrintStringTable());
+		uv_assert_err_ret(initialProcessStringTable());
 	}
 
-	m_printedInformation = true;
+	//Don't include instructions in the first batch if we printed stuff
+	if( !m_indexBuffer.empty() )
+	{
+		return UV_ERR_DONE;
+	}
+	else
+	{
+		return UV_ERR_OK;
+	}
+}
+
+uv_err_t UVDIterator::clearBuffers()
+{
+	m_indexBuffer.clear();
+	m_positionIndex = 0;
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDIterator::makeEnd()
+{
+	//Like almost at end
+	uv_assert_err_ret(UVDIteratorCommon::makeEnd());
+	//But without the buffered data to flush
+	m_indexBuffer.clear();
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::makeNextEnd()
+{
+	uv_assert_err_ret(UVDIteratorCommon::makeNextEnd());
+	m_positionIndex = 0;
+	return UV_ERR_OK;
+}
+
+/*
+void UVDIterator::debugPrint() const
+{
+	printf_debug("post next, offset: 0x%.8X, index: %d, buffer size: %d\n", m_nextPosition, m_positionIndex, m_indexBuffer.size()); 
+}
+*/
+
+uv_err_t UVDIterator::next()
+{
+	++m_positionIndex;
+
+	printf_debug("next(), position index: %d, index buffer size: %d\n", m_positionIndex, m_indexBuffer.size());
+	
+	//We may have buffered data leftover form last parse
+	//Check this before seeing if we are at end
+	//Take buffered element if availible
+	if( m_positionIndex < m_indexBuffer.size() )
+	{
+		return UV_ERR_OK;
+	}
+	
+	uv_assert_err_ret(UVDIteratorCommon::next());
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::nextCore()
+{
+	uv_err_t rcSuper = UV_ERR_GENERAL;
+	UVDBenchmark benchmark;
+	uv_addr_t startPosition = m_nextPosition;
+	
+	//Advance to next instruction location
+	rcSuper = UVDIteratorCommon::nextCore();
+	uv_assert_err_ret(rcSuper);
+	if( rcSuper == UV_ERR_DONE )
+	{
+		return UV_ERR_OK;
+	}
+
+	benchmark.start();
+	
+	if( g_config->m_addressLabel )
+	{
+		uv_assert_err_ret(nextAddressLabel(startPosition));
+	}
+
+	if( g_config->m_addressComment )
+	{
+		uv_assert_err_ret(nextAddressComment(startPosition));
+	}
+	
+	if( g_config->m_calledSources )
+	{
+		uv_assert_err_ret(nextCalledSources(startPosition));
+	}
+	
+	if( g_config->m_jumpedSources )
+	{
+		uv_assert_err_ret(nextJumpedSources(startPosition));
+	}
+
+	//Best to have data follow analysis
+	//Instruction is fully parsed now
+	//Convert to necessary string values
+	uv_assert_err_ret(m_uvd->stringListAppend(&m_instruction, m_indexBuffer));
+	printf_debug("Generated string list, size: %d\n", m_indexBuffer.size());
+
+	benchmark.stop();
+	//printf_debug_level(UVD_DEBUG_SUMMARY, "other than nextInstruction() time: %s\n", benchmark.toString().c_str());
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint32_t type)
+{
+	UVDAnalyzedMemoryLocationReferences references;
+	char buff[256];
+	UVD *uvd = NULL;
+	UVDFormat *format = NULL;
+		
+	uvd = m_uvd;
+	uv_assert_ret(uvd);
+	format = uvd->m_format;
+	uv_assert_ret(format);
+
+	//Get all the locations that call this address
+	//FIXME: should this be call source?
+	uv_assert_err_ret(memLoc->getReferences(references, type));
+
+	for( UVDAnalyzedMemoryLocationReferences::iterator iter = references.begin(); iter != references.end(); ++iter )
+	{
+		//uint32_t key = (*iter).first;
+		UVDMemoryReference *value = (*iter).second;
+		uint32_t from = 0;
+		
+		uv_assert_err_ret(value);
+		from = value->m_from;
+		
+		snprintf(buff, 256, "#\t%s", format->formatAddress(from).c_str());
+		m_indexBuffer.push_back(buff);
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDIterator::addWarning(const std::string &lineRaw)
+{
+	return UV_DEBUG(addComment(lineRaw));
+}
+
+uv_err_t UVDIterator::addComment(const std::string &lineRaw)
+{
+	std::string lineCommented;
+	
+	uv_assert_err_ret(m_uvd->m_format->m_compiler->comment(lineRaw, lineCommented));
+	m_indexBuffer.push_back(lineCommented);
+
+	return UV_ERR_OK;
+}
 
 uv_err_t UVDIterator::nextAddressLabel(uint32_t startPosition)
 {
@@ -338,9 +753,8 @@ uv_err_t UVDIterator::nextAddressComment(uint32_t startPosition)
 	char buff[256];
 	
 	//0x00001234:
-	snprintf(buff, 256, "# 0x%.8X", startPosition);
-	
-	m_indexBuffer.insert(m_indexBuffer.end(), buff);
+	snprintf(buff, 256, "0x%.8X", startPosition);
+	uv_assert_err_ret(addComment(buff));
 
 	return UV_ERR_OK;
 }
@@ -426,331 +840,37 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::nextCore()
-{
-	/*
-	Gets the next logical print group
-	These all should be associated with a small peice of data, such as a single instruction
-	Ex: an address on line above + call count + disassembled instruction
-	*/
-
-	uv_err_t rc = UV_ERR_GENERAL;
-	UVDInstruction instruction;
-	unsigned int startPosition = m_nextPosition;
-	UVD *uvd = NULL;
-	UVDAnalyzer *analyzer = NULL;
-	UVDFormat *format = NULL;
-	UVDBenchmark nextInstructionBenchmark;
-	UVDBenchmark otherBenchmark;
-	
-		
-	uvd = m_uvd;
-	uv_assert_ret(uvd);
-	analyzer = uvd->m_analyzer;
-	uv_assert_ret(analyzer);
-	format = uvd->m_format;
-	uv_assert_ret(format);
-
-	uv_assert_ret(g_config);
-	
-	m_indexBuffer.clear();
-	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
-
-	if( !m_printedInformation )
-	{
-		uv_assert_err_ret(initialPrint());	
-		//We may have had all prelim prints disabled
-		if( !m_indexBuffer.empty() )
-		{			
-			rc = UV_ERR_OK;
-			goto error;
-		}
-	}
-		
-	nextInstructionBenchmark.start();
-	if( UV_FAILED(nextInstruction(instruction)) )
-	{
-		printf_debug("Failed to get next instruction\n");
-		UV_ERR(rc);
-		goto error;
-	}	
-	nextInstructionBenchmark.stop();
-	//printf_debug_level(UVD_DEBUG_SUMMARY, "nextInstruction() time: %s\n", nextInstructionBenchmark.toString().c_str());
-	
-	otherBenchmark.start();
-	
-	if( g_config->m_addressLabel )
-	{
-		uv_assert_err_ret(nextAddressLabel(startPosition));
-	}
-
-	if( g_config->m_addressComment )
-	{
-		uv_assert_err_ret(nextAddressComment(startPosition));
-	}
-	
-	if( g_config->m_calledSources )
-	{
-		uv_assert_err_ret(nextCalledSources(startPosition));
-	}
-	
-	if( g_config->m_jumpedSources )
-	{
-		uv_assert_err_ret(nextJumpedSources(startPosition));
-	}
-
-	//Best to have data follow analysis
-	//Instruction is fully parsed now
-	//Convert to necessary string values
-	uv_assert_err_ret(m_uvd->stringListAppend(&instruction, m_indexBuffer));
-	printf_debug("Generated string list, size: %d\n", m_indexBuffer.size());
-
-	otherBenchmark.stop();
-	//printf_debug_level(UVD_DEBUG_SUMMARY, "other than nextInstruction() time: %s\n", otherBenchmark.toString().c_str());
-
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
-}
-
 /*
-Gets the next logical print group
-These all should be associated with a small peice of data, such as a single instruction
-Ex: an address on line above + call count + disassembled instruction
-*/
-uv_err_t UVDIterator::nextInstruction(UVDInstruction &instructionIn)
-{
-/*
-Ret holds a UVDInstruction ** that we should fill
-UV_DISASM_FUNC_PROTO(uvd_next)
-{
-*/
-	uv_err_t rc = UV_ERR_GENERAL;
-	UVDInstructionShared *inst_shared = NULL;
-	UVDInstruction *inst = &instructionIn;
-	uint8_t opcode = 0;
-	unsigned int position = 0;
-	//UVDData *data = m_uvd->m_data;
-	UVDData *data = m_data;
-	UVDOpcodeLookupElement *element = NULL;
-	int opcodeRead = 0;
-	UVD *uvd = NULL;
-	uv_addr_t absoluteMaxAddress = 0;
-	
-		printf_debug("\n");
-	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
-	
-	uvd = m_uvd;
-	uv_assert_ret(uvd);
-	uv_assert(data);
-	
-	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
-	
-	if( m_nextPosition > absoluteMaxAddress )
-	{
-		*this = m_uvd->end();
-		return UV_ERR_DONE;
-	}
-
-	/*
-	uv_assert(binary);
-	uv_assert(offset);
-	uv_assert(ret);
-	*/
-	
-	//Make sure we are in a coding region
-	//Number of non-coding addresses is expected to be small at this point
-	//Better algorithm later if necessary
-	for( ;; )
-	{
-		//Keep iterating as long as another memory region matches
-		bool found = 0;
-
-		for( std::vector<UVDMemoryLocation>::iterator iter = m_uvd->m_noncodingAddresses.begin(); iter != m_uvd->m_noncodingAddresses.end(); ++iter )
-		{
-			UVDMemoryLocation mem = *iter;
-			if( mem.intersects(UVDMemoryLocation(m_nextPosition)) )
-			{
-				found = true;
-				//We will keep intersecting until the end of this block
-				m_nextPosition = mem.m_max_addr + 1;
-				break;
-			}
-		}
-		
-		//If we didn't find any more intersections, break
-		if( !found )
-		{
-			break;
-		}
-	}
-
-	//At the end?
-	if( m_nextPosition == data->size() )
-	{
-		rc = UV_ERR_DONE;
-		goto error;
-	}
-
-	uv_assert(m_nextPosition <= data->size());
-	//Used to get delta for copying the data we just iterated over
-	position = m_nextPosition;
-	
-	opcodeRead = data->read(m_nextPosition);
-	printf_debug("Just read @ 0x%.8X: 0x%.2X\n", m_nextPosition, opcodeRead);
-	if( opcodeRead < 0 )
-	{
-		printf_debug("Out of range\n");
-		UV_ERR(rc);
-		goto error;
-	}
-	opcode = opcodeRead;
-	++m_nextPosition;
-	//inst_shared = opcode_structs[opcode];
-	//inst_shared
-	uv_assert(m_uvd->m_opcodeTable);
-	//element = m_uvd->m_opcodeTable->m_lookupTable[opcode];
-	uv_assert_err(m_uvd->m_opcodeTable->getElement(opcode, &element));
-
-	if( element == NULL )
-	{
-		printf_debug("Undefined instruction: 0x%.2X\n", opcode);
-		UV_ERR(rc);
-		goto error;
-	}
-	//XXX: this may change in the future to be less direct
-	inst_shared = element;
-	printf_debug("Memoric: %s\n", inst_shared->m_memoric.c_str());
-	
-	/*
-	inst = new UVDInstruction();
-	if( !inst )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	*/
-	inst->m_offset = position;
-	inst->m_shared = inst_shared;
-	inst->m_uvd = m_uvd;
-
-	/*
-	Setup extension structs
-	There should be a perfect matching between each of these and the shared structs
-	*/
-	/* Since operand and shared operand structs are linked list, we can setup the entire structure by passing in the first elements */
-	if( UV_FAILED(inst->parseOperands(m_nextPosition, inst->m_shared->m_operands, inst->m_operands)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	uv_assert_all(m_nextPosition > position);
-	printf_debug("m_nextPosition, initial: %d, final: %d\n", position, m_nextPosition);
-
-	inst->m_inst_size = m_nextPosition - position;
-	/* For now these should match */
-	if( inst->m_inst_size != inst->m_shared->m_total_length )
-	{
-		printf_debug("Instruction size: %d, shared size: %d\n", inst->m_inst_size, inst->m_shared->m_total_length);
-		UV_ERR(rc);
-		goto error;
-	}
-	
-	/* We now know the actual size, read the data we just iterated over */
-	if( data->read(inst->m_offset, inst->m_inst, inst->m_inst_size) != (int)inst->m_inst_size )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	
-	/*
-	{
-		std::string sPrint;
-		
-		for( unsigned int i = 0; i < inst->m_inst_size; ++i )
-		{
-			unsigned int c_temp = inst->m_inst[i];
-			printf_debug("inst[%d]: 0x%.2X\n", i, c_temp);
-		}
-		
-		if( UV_FAILED(inst->print_disasm(sPrint)) )
-		{
-			printf_debug("Could not print\n");
-			goto error;
-		}
-		printf_debug("early print: %s\n", sPrint.c_str());
-	}
-	*/
-	
-	m_positionIndex = 0;
-	
-	rc = UV_ERR_OK;
-	
-error:
-	printf_debug("m_nextPosition, initial: %d, final: %d\n", position, m_nextPosition);
-
-	return UV_DEBUG(rc);
-}	
-
-/*
-uv_err_t UVDIterator::parseOperands(UVDInstruction *instruction)
-{
-	uv_err_t rc = UV_ERR_GENERAL;
-	uv_assert(instruction);
-	uv_assert(instruction->m_shared);
-	rc = UV_ERR(UVDOperand::parseOperands(m_uvd, m_nextPosition, instruction->m_shared->m_operands, instruction->m_operands));
-error:
-	return UV_ERR(rc);
-}
+UVDInstructionIterator
 */
 
-void UVDIterator::debugPrint() const
+UVDInstructionIterator::UVDInstructionIterator()
 {
-	printf_debug("post next, offset: 0x%.8X, index: %d, buffer size: %d\n", m_nextPosition, m_positionIndex, m_indexBuffer.size()); 
 }
 
-bool UVDIterator::operator==(const UVDIterator &other) const
+UVDInstructionIterator::~UVDInstructionIterator()
+{
+}
+
+UVDInstructionIterator UVDInstructionIterator::operator++()
+{
+	next();
+	return *this;
+}
+
+bool UVDInstructionIterator::operator==(const UVDInstructionIterator &other) const
 {
 	
-	printf_debug("UVDIterator::operator==:\n");
-	debugPrint();
-	other.debugPrint();
+	printf_debug("UVDIteratorCommon::operator==:\n");
+	//debugPrint();
+	//other.debugPrint();
 
 	//Should comapre m_uvd as well?
 	return m_isEnd == other.m_isEnd
-			&& m_nextPosition == other.m_nextPosition 
-			&& m_positionIndex == other.m_positionIndex
-			//This check is needed for proper ending
-			//.end will not have a buffer, but post last address read will (or we are at .end anyway)
-			&& m_indexBuffer.size() == other.m_indexBuffer.size();
+			&& m_nextPosition == other.m_nextPosition;
 }
 
-bool UVDIterator::operator!=(const UVDIterator &other) const
+bool UVDInstructionIterator::operator!=(const UVDInstructionIterator &other) const
 {
 	return !operator==(other);
-}
-
-std::string UVDIterator::operator*()
-{
-		
-	//New object not yet initialized?
-	printf_debug("Index buffer size: %d\n", m_indexBuffer.size());
-	if( m_indexBuffer.empty() )
-	{
-		printf_debug("Priming iterator\n");
-		if( UV_FAILED(nextCore()) )
-		{
-			printf_debug("Failed to prime iterator!\n");
-			exit(0);
-		}
-	}
-
-	printf_debug("position index: %d\n", m_positionIndex);
-	if( m_positionIndex >= m_indexBuffer.size() )
-	{
-		printf_debug("Index out of bounds\n");
-		exit(0);
-	}
-	return m_indexBuffer[m_positionIndex];
 }
