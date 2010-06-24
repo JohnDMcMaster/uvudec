@@ -137,7 +137,7 @@ uv_err_t UVDLuaInterpreter::interpret(const UVDInterpreterExpression &exp, const
 	if( luaL_dostring(m_luaState, sLuaProgram.c_str()) != 0 )
 	{
 		//Execution failed
-		printf_error("ERROR: could not execute: %s\n", sLuaProgram.c_str());
+		printf_error("could not execute: %s\n", sLuaProgram.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
