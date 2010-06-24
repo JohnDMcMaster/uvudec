@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -27,7 +26,7 @@ static PyObject *uvd_easyprint(PyObject *self, PyObject* args)
 
 	if( !PyArg_ParseTuple(args, "s", &output) )
 	{
-		printf_error("PYTHON ERROR: uvd_easyprint given non-string\n");
+		printf_error("uvd_easyprint given non-string\n");
 		return NULL;
 	}
 	g_stringStream << output; 	
@@ -139,10 +138,6 @@ uv_err_t UVDPythonInterpreter::interpret(const UVDInterpreterExpression &exp, co
 	int iRet = 0;
 	std::string sErr;
 
-
-	UV_ENTER();
-
-	
 	if( pythonFile.empty() )
 	{
 		uv_assert_err(getTempFile(pythonFile));
@@ -184,7 +179,7 @@ uv_err_t UVDPythonInterpreter::interpret(const UVDInterpreterExpression &exp, co
 		printf_debug("Python program:\n%s\n\n", sPythonProgram.c_str());
 		printf_debug("Python error: %s\n", sErr.c_str());
 	}
-	
+		
 	rc = UV_ERR_OK;
 	
 error:
@@ -231,8 +226,6 @@ uv_err_t UVDPythonInterpreter::interpret(const UVDInterpreterExpression &exp, co
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string sPythonProgram;
-
-	UV_ENTER();
 
 	sPythonProgram = preparePythonProgram(exp, environment);
 
