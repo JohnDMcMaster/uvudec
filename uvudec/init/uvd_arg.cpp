@@ -158,6 +158,7 @@ uv_err_t initSharedConfig()
 	
 	//Debug
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_ARGS, 0, "verbose-args", "selectivly debug argument parsing", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_INIT, 0, "verbose-init", "selectivly debug initialization", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_PROCESSING, 0, "verbose-analysis", "selectivly debugging code analysis", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_ANALYSIS, 0, "verbose-processing", "selectivly debugging code post-analysis", 1, argParser, true));
@@ -261,11 +262,11 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	*/
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_LEVEL )
 	{
-		config->m_verbose = true;
-		config->m_verbose_init = true;
-		config->m_verbose_processing = true;
-		config->m_verbose_analysis = true;
-		config->m_verbose_printing = true;
+		//If they didn't set any flags, assume its a general state across the program
+		if( !config->anyVerboseActive() )
+		{
+			config->setVerboseAll();
+		}
 	
 		//Did we specify or want default?
 		if( argumentArguments.empty() )
@@ -275,6 +276,17 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		else
 		{
 			config->m_verbose_level = firstArgNum;
+		}
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_ARGS )
+	{
+		if( argumentArguments.empty() )
+		{
+			config->m_verbose_args = true;
+		}
+		else
+		{
+			config->m_verbose_args = argToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_INIT )
