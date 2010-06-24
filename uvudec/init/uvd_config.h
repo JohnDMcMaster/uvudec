@@ -183,6 +183,12 @@ public:
 	uv_err_t lastValidAddress(uint32_t start, uint32_t *ret);
 	uv_err_t lastInvalidAddress(uint32_t start, uint32_t *ret);
 
+	//Are any of the verbose (debug) flags set?
+	bool anyVerboseActive();
+	//Activate all verbose flags
+	void setVerboseAll();
+	void clearVerboseAll();
+
 protected:
 	// ~/.uvudec file
 	//Should be called before parseMain()...move this into init()
@@ -248,19 +254,21 @@ public:
 	int m_addressLabel;
 
 	//TODO: re-impliment this as flags
-	//g_verbose
 	int m_verbose;
-	//g_verbose_level
 	int m_verbose_level;
-	//g_verbose_init
+	//Program sections
+	int m_verbose_args;
 	int m_verbose_init;
-	//g_verbose_processing
 	int m_verbose_processing;
-	//g_verbose_analysis
 	int m_verbose_analysis;
-	//g_verbose_printing
 	int m_verbose_printing;
 
+	//The following will place comments and try the best of their abilities to continue
+	//if they are told to ignore errors
+	//Should we error if we don't have enough data for an instruction?
+	int m_haltOnTruncatedInstruction;
+	//Should we error if we don't recognize an opcode?
+	int m_haltOnInvalidOpcode;
 
 	//uvd_format.h
 	

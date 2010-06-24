@@ -250,13 +250,11 @@ UVDConfig::UVDConfig()
 	m_addressComment = false;
 	m_addressLabel = false;
 
-	m_verbose = false;
 	m_verbose_level = UVD_DEBUG_NONE;
-	m_verbose_init = false;
-	m_verbose_processing = false;
-	m_verbose_analysis = false;
-	m_verbose_printing = false;
+	clearVerboseAll();
 
+	m_haltOnTruncatedInstruction = FALSE;
+	m_haltOnInvalidOpcode = FALSE;
 
 	m_hex_addr_print_width = 4;
 	m_caps = false;
@@ -453,6 +451,9 @@ uv_err_t UVDConfig::processParseMain()
 	//Make sure we are logging to correct target now that we have parsed args
 	uv_assert_err_ret(uv_log_init(m_sDebugFile.c_str()));
 	
+	printf_debug("m_verbose_args: %d, m_verbose_init: %d, m_verbose_processing: %d, m_verbose_analysis: %d, m_verbose_printing: %d\n",
+			m_verbose_args, m_verbose_init, m_verbose_processing, m_verbose_analysis, m_verbose_printing);
+
 	return UV_ERR_OK;
 }
 
@@ -675,6 +676,8 @@ uv_err_t UVDConfig::nextAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 	return UV_ERR_OK;
 }
 
+#define printf_debug_address_state(...)
+
 uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t targetState)
 {
 	//Given is a valid canidate
@@ -689,12 +692,12 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 		//If we need to keep decreasing space, the next availible space where it could change
 		uint32_t nextStart = next;
 
-		printf_debug("loop\n");
+		printf_debug_address_state("address state loop\n");
 
 		//Avoid special cases with empty check
 		if( !m_addressRangeValidity.empty() )
 		{
-			printf_debug("checking ACL\n");
+			printf_debug_address_state("checking ACL\n");
 			iter = m_addressRangeValidity.end();
 			//Backtrack to a valid position
 			--iter;
@@ -706,7 +709,7 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 					state = (*iter).m_matchState;
 					break;
 				}
-				printf_debug("no iter match \n");
+				printf_debug_address_state("no iter match \n");
 				
 				//Prepare the next block range to check if we don't match a range
 				//Valid canidate and best canidate
@@ -725,7 +728,7 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 		//Nothing could be matched
 		if( state == UVD_ADDRESS_ANALYSIS_UNKNOWN )
 		{
-			printf_debug("no match\n");
+			printf_debug_address_state("no match\n");
 			//If the default matches our state, we are done
 			if( m_addressRangeValidity.m_default == targetState )
 			{
@@ -735,7 +738,7 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 			else if( nextStart != next )
 			{
 				next = nextStart;
-				printf_debug("Continuing at 0x%.8X\n", next);
+				printf_debug_address_state("Continuing at 0x%.8X\n", next);
 			}
 			//If no more range canidates, there are no possible valid locations left
 			else
@@ -746,7 +749,7 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 		//Are we at a valid address?  We are done
 		else if( state == targetState )
 		{
-			printf_debug("state reached\n");
+			printf_debug_address_state("state reached\n");
 			break;
 		}
 		//A non-matching state, keep going if possible
@@ -754,7 +757,7 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 		//else if( state == UVD_ADDRESS_ANALYSIS_EXCLUDE )
 		else
 		{
-			printf_debug("non matching state\n");
+			printf_debug_address_state("non matching state\n");
 			//Advance to one beyond the end of the exclusion range
 			//...But only if its a valid address
 			if( (*iter).m_t.m_min == 0 )
@@ -773,6 +776,35 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 	
 	return UV_ERR_OK;
 }
+
+bool UVDConfig::anyVerboseActive()
+{
+	return m_verbose_args || m_verbose || m_verbose_init || m_verbose_processing || m_verbose_analysis || m_verbose_printing;
+}
+
+void UVDConfig::clearVerboseAll()
+{
+	m_verbose = false;
+	m_verbose_args = false;
+	m_verbose_init = false;
+	m_verbose_processing = false;
+	m_verbose_analysis = false;
+	m_verbose_printing = false;
+}
+
+void UVDConfig::setVerboseAll()
+{
+	m_verbose = true;
+	m_verbose_args = true;
+	m_verbose_init = true;
+	m_verbose_processing = true;
+	m_verbose_analysis = true;
+	m_verbose_printing = true;
+}
+
+/*
+UVDParsedFunction
+*/
 
 UVDParsedFunction::UVDParsedFunction()
 {
