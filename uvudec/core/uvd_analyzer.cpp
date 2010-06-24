@@ -366,10 +366,10 @@ uv_err_t UVDAnalyzer::getAddressMax(uv_addr_t *out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAnalyzer::nextValidAddress(uint32_t start, uint32_t *ret)
+uv_err_t UVDAnalyzer::nextValidAddress(uv_addr_t start, uv_addr_t *ret)
 {
-	uint32_t configRet = 0;
-	uint32_t addressMax = 0;
+	uv_addr_t configRet = 0;
+	uv_addr_t addressMax = 0;
 	uv_err_t rc = UV_ERR_GENERAL;
 
 	uv_assert_err_ret(getAddressMax(&addressMax));
@@ -390,6 +390,83 @@ uv_err_t UVDAnalyzer::nextValidAddress(uint32_t start, uint32_t *ret)
 	//Seems like its still a valid address
 	*ret = configRet;
 	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::nextCodingAddress(uv_addr_t start, uint32_t *ret)
+{
+	uint32_t cur = start;
+	
+	for( ;; )
+	{
+		uint32_t last = cur;
+		
+		for( std::vector<UVDMemoryLocation>::iterator iter = m_uvd->m_noncodingAddresses.begin();
+				iter != m_uvd->m_noncodingAddresses.end(); ++iter )
+		{
+			UVDMemoryLocation mem = *iter;
+			
+			if( mem.intersects(UVDMemoryLocation(cur)) )
+			{
+				//Are we out of addresses?
+				if( mem.m_max_addr == UVD_ADDR_MAX )
+				{
+					return UV_ERR_DONE;
+				}
+				
+				//We will keep intersecting until the end of this block, advance past
+				cur = mem.m_max_addr + 1;
+				break;
+			}
+		}
+		
+		//Done if we stopped hitting non-coding addresses
+		if( last == cur )
+		{
+			break;
+		}
+	}
+	
+	*ret = cur;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::nextValidExecutableAddress(uv_addr_t start, uint32_t *ret)
+{
+	uv_addr_t cur = start;
+	
+	//Number of non-coding addresses is expected to be small at this point
+	//Better algorithm later if necessary
+	for( ;; )
+	{
+		//Keep iterating as long as another memory region matches
+		uv_addr_t last = cur;
+		uv_err_t rc = UV_ERR_GENERAL;
+		
+		//Filter based on generic invalid addresses
+		rc = nextValidAddress(cur, &cur);
+		uv_assert_err_ret(rc);
+		if( rc == UV_ERR_DONE )
+		{
+			return UV_ERR_DONE;
+		}
+
+		//Then filter based on regions found to be non-coding
+		rc = nextCodingAddress(cur, &cur);
+		uv_assert_err_ret(rc);
+		if( rc == UV_ERR_DONE )
+		{
+			return UV_ERR_DONE;
+		}
+		
+		//If we didn't find any more advancements, break
+		if( cur == last )
+		{
+			break;
+		}
+	}
+
 	return UV_ERR_OK;
 }
 
