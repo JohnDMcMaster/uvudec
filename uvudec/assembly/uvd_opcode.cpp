@@ -591,7 +591,7 @@ uv_err_t UVDOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			equalsPos = line.find("=");
 			if( equalsPos == std::string::npos )
 			{
-				printf_debug("ERROR: no key/value pair detected\n");
+				printf_debug("no key/value pair detected\n");
 				UV_ERR(rc);
 				goto error;
 			}
