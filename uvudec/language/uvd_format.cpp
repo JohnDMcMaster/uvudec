@@ -86,3 +86,16 @@ std::string UVDFormat::formatRegister(const std::string &reg)
 
 	return std::string(buff);
 }
+
+uv_err_t UVDFormat::setCompiler(UVDCompiler *compiler)
+{
+	uv_assert_ret(compiler);
+	
+	if( m_compiler )
+	{
+		delete m_compiler;
+	}
+	m_compiler = compiler;
+
+	return UV_ERR_OK;
+}

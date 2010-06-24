@@ -31,11 +31,15 @@ public:
 	std::string formatAddress(uint32_t address);
 	std::string formatRegister(const std::string &reg);
 	
+	//Set as new and delete old if necessary
+	//Ownership is transferred to this object
+	uv_err_t setCompiler(UVDCompiler *compiler);
+	
 	void printFormatting();
 
 public:
 	//Output data has to be formatted to a given compiler
+	//Note this has nothing to do with with the compiler used to compile the code
 	//This is owned by this object
 	UVDCompiler *m_compiler;
 };
-
