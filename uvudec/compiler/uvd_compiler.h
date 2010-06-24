@@ -84,6 +84,7 @@ public:
 	std::string m_version;
 
 	//Compiler define identifying type
+	//Is this leftover from C days and should be removed?
 	int m_compiler;
 	//Human readable name.  Ex: gcc-mips
 	std::string m_name;
