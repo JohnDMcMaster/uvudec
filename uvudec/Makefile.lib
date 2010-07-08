@@ -18,7 +18,13 @@ LIBS_DYNAMIC=$(LIB_DYNAMIC) $(LIB_DYNAMIC_MAJOR) $(LIB_DYNAMIC_MINOR) $(LIB_DYNA
 
 LIB_STATIC				= $(LIB_DIR)/$(LIB_NAME).a
 
-LIB_NAMES=$(LIB_STATIC) $(LIBS_DYNAMIC)
+
+ifeq ($(LINKAGE),static)
+LIB_NAMES=$(LIB_STATIC)
+else
+LIB_NAMES=$(LIBS_DYNAMIC)
+endif
+
 ALL_TARGETS=$(LIB_NAMES)
 
 AR_FLAGS=-rcs
@@ -57,7 +63,7 @@ $(LIB_DYNAMIC_MINOR): $(LIB_DYNAMIC_PATCH)
 $(LIB_DYNAMIC_REAL): depend $(OBJS)
 	@(echo 'Creating dynamic lib...')
 	mkdir -p $(LIB_DIR)
-	$(CC) -shared $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
+	$(CXX) -shared $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
 
 static: $(LIB_STATIC)
 	@(true)

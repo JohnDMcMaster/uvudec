@@ -14,7 +14,7 @@ endif
 
 $(EXE_NAME_FULL): depend $(OBJS)
 	mkdir -p $(BIN_DIR)
-	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE_NAME_FULL)
+	$(CXX) $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(EXE_NAME_FULL)
 ifeq ($(USING_UPX),Y)
 	$(UPX) $(UVUDEC_EXE)
 endif
