@@ -31,7 +31,7 @@ endif
 # System defaults
 include $(ROOT_DIR)/Makefile.defaults
 # Optional "./configure" result
-$(shell touch $(ROOT_DIR)/Makefile.configure)
+#$(shell if [ '!' -f $(ROOT_DIR)/Makefile.configure ] ; then touch $(ROOT_DIR)/Makefile.configure); fi )
 include $(ROOT_DIR)/Makefile.configure
 
 BIN_DIR=$(ROOT_DIR)/bin
@@ -96,7 +96,7 @@ endif
 
 # Lua stuff
 ifeq ($(USING_LUA),Y)
-FLAGS_SHARED += -DUSING_LUA
+FLAGS_SHARED += -DUSING_LUA -DUSING_LUA_API
 LUA_INCLUDE=$(LUA_DIR)/src
 LUA_LIB_STATIC=$(LUA_DIR)/src/liblua.a
 INCLUDES += -I$(LUA_INCLUDE)
@@ -115,6 +115,17 @@ endif
 # This may get more complicated if I can get the APIs working better
 ifeq ($(USING_PYTHON),Y)
 FLAGS_SHARED += -DUSING_PYTHON
+ifeq ($(USING_PYTHON_EXEC),Y)
+FLAGS_SHARED += -DUSING_PYTHON_EXEC
+endif
+ifeq ($(USING_PYTHON_API),Y)
+FLAGS_SHARED += -DUSING_PYTHON_API
+ifeq ($(LINKAGE),static)
+else
+LIBS += -lpython2.6
+LDFLAGS +=
+endif
+endif
 endif
 
 # Javascript support
@@ -132,45 +143,31 @@ endif
 # Now do actual USING_JAVASCRIPT effects
 ifeq ($(USING_JAVASCRIPT),Y)
 FLAGS_SHARED += -DUSING_JAVASCRIPT
+FLAGS_SHARED += -DUSING_JAVASCRIPT_API
 endif
 
 # SpiderApe stuff (a javascript engine)
-SPIDERAPE_STATIC=$(SPIDERAPE_DIR)/src/ape/libSpiderApe.a
-JS_STATIC=$(SPIDERAPE_DIR)/src/js/Linux_All_DBG.OBJ/libjs.a
+# TODO: figure out how to use this more properly
 ifeq ($(USING_SPIDERAPE),Y)
 FLAGS_SHARED += -DUSING_SPIDERAPE
-INCLUDES += -I$(SPIDERAPE_DIR)/include -I$(SPIDERAPE_DIR)/src/js -I$(SPIDERAPE_DIR)/src/ape
-ifeq ($(LINKAGE),static)
-LIBS += $(SPIDERAPE_STATIC) $(JS_STATIC)
-else
 LIBS += -lSpiderApe -ljs
-LDFLAGS += -L$(SPIDERAPE_DIR)/src/ape -L$(SPIDERAPE_DIR)/src/js/Linux_All_DBG.OBJ
+ifdef SPIDERAPE_PREFIX
+LDFLAGS += -L$(SPIDERAPE_PREFIX)/lib
+INCLUDES += -I$(SPIDERAPE_PREFIX)/include
 endif
-# FIXME: this breaks static linkage
-# fixed: disable plugins
-# LIBS +=  -lltdl
 endif
 
 
 ifeq ($(USING_LIBBFD),Y)
 FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD
-
-
-ifeq ($(LINKAGE),static)
-ifeq ($(USING_LIBBFD_UNINSTALLED),Y)
-LIBBFD_STATIC_LIB=$(BINUTILS_DIR)/bfd/libbfd.a
-LIBOPCODES_STATIC_LIB=$(BINUTILS_DIR)/opcodes/libopcodes.a
-LIBIBERTY_STATIC_LIB=$(BINUTILS_DIR)/libiberty/libiberty.a
-INCLUDES+=-I$(BINUTILS_DIR)/bfd
-else
+ifdef BINUTILS_PREFIX
+INCLUDES+=-I$(BINUTILS_PREFIX)/include
+LDFLAGS+=-L$(BINUTILS_PREFIX)/lib
+endif
 LIBBFD_STATIC_LIB=-lbfd
 LIBOPCODES_STATIC_LIB=-lopcodes
 LIBIBERTY_STATIC_LIB=-liberty
-endif
 LIBS+=$(LIBBFD_STATIC_LIB) $(LIBOPCODES_STATIC_LIB) $(LIBIBERTY_STATIC_LIB)
-
-# Dynamic
-else
 
 # Otherwise use system provided (doesn't build until install)
 LIBS += -lbfd -lopcodes -liberty
@@ -178,9 +175,7 @@ LIBS += -lbfd -lopcodes -liberty
 endif
 
 
-endif
-
-
+# hmm why is this hard coded?
 LIBZ_STATIC=/usr/lib/libz.a
 
 ifeq ($(USING_LIBZ),Y)
@@ -204,14 +199,19 @@ LDFLAGS +=
 else
 
 # We must incrementally link as we go along
-LIBS += -lc -lm
+LIBS += -lc -lm -lgcc
 #LIBS += -lstdc++ -lgcc
 LDFLAGS +=
 
 endif
 
+ifeq ($(LINKAGE),static)
+OBJECT_LINKAGE_SUFFIX=_s
+else
+OBJECT_LINKAGE_SUFFIX=_d
+endif
+OBJS = $(CC_SRCS:.c=$(OBJECT_LINKAGE_SUFFIX).o) $(CXX_SRCS:.cpp=$(OBJECT_LINKAGE_SUFFIX).o)
 
-OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 UVUDEC_EXE = $(BIN_DIR)/uvudec
 COFF2PAT_EXE = $(BIN_DIR)/uvcoff2pat
 OBJ2PAT_EXE = $(BIN_DIR)/uvobj2pat
@@ -242,21 +242,26 @@ $(LIB_DIR):
 	mkdir $(LIB_DIR)
 endif
 
-.c.o:
+%$(OBJECT_LINKAGE_SUFFIX).o: %.c
 	$(CC) $(CCFLAGS) $< -o $@
 
-.cpp.o:
+%$(OBJECT_LINKAGE_SUFFIX).o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 cleanLocal:
 	$(RM) *.o *~ $(UVUDEC_EXE) $(OBJS) uv_log.txt Makefile.bak core.*
 
 CLEAN_DEPS+=cleanLocal
-clean: $(CLEAN_DEPS)
+cleanTarget: $(CLEAN_DEPS)
 	@(true)
 
+# Sudsy soap would be proud!
+clean:
+	$(MAKE) TARGET=static cleanTarget
+	$(MAKE) TARGET=dynamic cleanTarget
+
 ifdef COMPILING_CODE
-MAKEFILE_DEPEND=Makefile.depend
+MAKEFILE_DEPEND=Makefile.depend$(OBJECT_LINKAGE_SUFFIX)
 $(shell touch $(MAKEFILE_DEPEND))
 include $(MAKEFILE_DEPEND)
 
@@ -264,7 +269,9 @@ ifdef MAKEDEPEND
 # Silicenced because they started to take up a lot of screen during each build
 # Ignore cannot find stdio.h stuff
 depend:
+#$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS)
 	@($(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null)
+	perl -pi -e 's/[.]o/$(OBJECT_LINKAGE_SUFFIX)[.]o/g' $(MAKEFILE_DEPEND)
 #	$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null
 # Remove annoying backup
 	@($(RM) $(MAKEFILE_DEPEND).bak)
@@ -293,5 +300,7 @@ info: $(INFO_TARGETS)
 	@(echo "LDFLAGS: $(LDFLAGS)")
 	@(echo "INCLUDES: $(INCLUDES)")
 	@(echo "ALL_TARGETS:$(ALL_TARGETS)")
+	@(echo "CXX:$(CXX)")
 	@(echo "")
 	@(echo "OBJS: $(OBJS)")
+	
