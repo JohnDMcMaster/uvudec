@@ -9,6 +9,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #ifndef UV_DEBUG_H
 #define UV_DEBUG_H
 
+#include <stdio.h>
+
 #define DEBUG_BREAK()			do { printf("DEBUG BREAK (%s:%d)\n", __FILE__, __LINE__); exit(1); } while ( 0 )
 
 
@@ -93,6 +95,9 @@ void uv_enter(const char *file, uint32_t line, const char *func);
 
 uv_err_t UVDDebugInit();
 uv_err_t UVDDebugDeinit();
+
+#define UVD_PRINT_STACK() uvd_print_trace(__FILE__, __LINE__, __FUNCTION__)
+void uvd_print_trace(const char *file, int line, const char *function);
 
 #endif /* ifndef UV_DEBUG_H */
 

@@ -9,6 +9,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_util.h"
 #include "elf/uvd_elf.h"
 #include <vector>
+#include <stdio.h>
 
 UVDAnalysisDB::UVDAnalysisDB()
 {
@@ -279,11 +280,13 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		std::string elfFile;
 		snprintf(buff, sizeof(buff), "%s/%s__%d.elf", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
 		elfFile = buff;
-		printf_debug_level(UVD_DEBUG_TEMP, "Writting ELF file to: %s\n", elfFile.c_str());
+		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting ELF file to: %s\n", elfFile.c_str());
 		config += "BINARY_ELF=" + elfFile + "\n";
 
 		uv_assert_err_ret(functionInstance->toUVDElf(&elf));
 		uv_assert_ret(elf);
+		//XXX fixme
+		uv_assert_err_ret(elf->setSourceFilename("image.bin"));
 		//And save it
 		uv_assert_err_ret(elf->saveToFile(elfFile));
 		delete elf;
@@ -348,7 +351,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *functio
 		if( j + 1 < function->m_representations.size() )
 		{
 			config += "\n";
-		}
+		}	
 	}
 
 	return UV_ERR_OK;
@@ -427,6 +430,10 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 			config += "\n";
 			config += "\n";
 		}
+
+//XXX
+printf("Debug break\n");
+break;
 	}	
 
 	uv_assert_err_ret(writeFile(configFile, config));	

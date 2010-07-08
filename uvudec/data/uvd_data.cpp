@@ -237,10 +237,16 @@ uv_err_t UVDData::concatenate(const std::vector<UVDData *> &dataVector, UVDData 
 
 uv_err_t UVDData::saveToFile(const std::string &file) const
 {
-	unsigned int dataSize = size();
+	uint32_t dataSize = 0;
 	char *buffer = NULL;
-	
+
+	uv_assert_err_ret(size(&dataSize));
+
+	printf("pre read\n");	
 	uv_assert_err_ret(readData(0, &buffer, dataSize));	
+	printf("post read\n");
+
+::hexdump(buffer, dataSize);
 
 	uv_assert_err_ret(writeFile(file, buffer, dataSize));
 	free(buffer);
@@ -252,3 +258,31 @@ uv_err_t UVDData::deepCopy(UVDData **out)
 	//Base class should prob be pure virtual anyway and seems like an error to try this on it
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
+
+void UVDData::hexdump()
+{
+	uint32_t dataSize = 0;
+	char *buffer = NULL;
+	
+	if( UV_FAILED(size(&dataSize)) )
+	{
+		printf_debug("Could not read data size\n"); 
+		return;
+	}
+	
+	if( UV_FAILED(readData(&buffer) ) )
+	{
+		printf_debug("Could not read data\n"); 
+		return;
+	}
+	
+	if( !buffer )
+	{
+		printf_debug("No data");
+		return;
+	}
+	
+	::hexdump(buffer, dataSize);
+	free(buffer);
+}
+

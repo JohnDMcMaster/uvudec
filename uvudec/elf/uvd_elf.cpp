@@ -55,6 +55,7 @@ typedef struct
 #include <vector>
 #include <string>
 
+#if 0
 /*
 start UVDElfStringTableElement
 */
@@ -109,12 +110,15 @@ uv_err_t UVDElfStringTableElement::updateDynamicValue()
 /*
 end UVDElfStringTableElement
 */
+#endif
 
+#if 0
 uv_err_t UVDElf::addRelocatableData(UVDRelocatableData *relocatableData,
 		const std::string &rawDataSymbolName)
 {
 	return UV_DEBUG(addRelocatableDataCore(relocatableData, rawDataSymbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
 }
+#endif
 
 uv_err_t UVDElf::addUVDRelocationFixup(UVDRelocationFixup *fixup)
 {
@@ -138,8 +142,19 @@ uv_err_t UVDElf::addUVDRelocationFixup(UVDRelocationFixup *fixup)
 	uv_assert_ret(elfRelocation);
 	//All relocations analyzed for now are just recorded as offset from function start
 	elfRelocation->setSymbol(symbol);
+
 	//Convert UVD relocation to ELF relocation
-	uv_assert_err_ret(elfRelocation->setupRelocations(fixup));
+	{
+		uint32_t offset = 0;
+		
+		//uv_assert_err_ret(elfRelocation->setupRelocations(fixup));
+		uv_assert_err_ret(fixup->getOffset(&offset));
+		uv_assert_err_ret(elfRelocation->setOffset(offset));
+	
+		uv_assert_err_ret(elfRelocation->setSizeBits(fixup->getSizeBits()));
+	}
+
+	elfRelocation->m_offset = fixup->m_offset;
 
 	//And register it
 	uv_assert_err_ret(symbol->addRelocation(elfRelocation));
@@ -222,17 +237,22 @@ uv_err_t UVDElf::getFunctionSymbol(const std::string &name, UVDElfSymbol **symbo
 uv_err_t UVDElf::getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeaderEntry **sectionOut)
 {
 	UVDElfStringTableSectionHeaderEntry *section = NULL;
-	unsigned int stringTableSectionHeaderIndex = 0;
+	//unsigned int stringTableSectionHeaderIndex = 0;
+	UVDElfSectionHeaderEntry *sectionUncasted = NULL;
 	
+	/*
 	//Index
 	stringTableSectionHeaderIndex = m_elfHeader.e_shstrndx;
 	//It should not be 0 (which is defined to be SHT_NULL), a good error check
 	uv_assert_ret(stringTableSectionHeaderIndex != 0);
 	//Make sure index is valid
 	uv_assert_ret(stringTableSectionHeaderIndex < m_sectionHeaderEntries.size());
+	sectionUncasted = m_sectionHeaderEntries[stringTableSectionHeaderIndex];
+	*/
+	uv_assert_err_ret(getSectionHeaderByName(UVD_ELF_SECTION_SECTION_STRING_TABLE, &sectionUncasted));
 	
 	//Grab it
-	section = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(m_sectionHeaderEntries[stringTableSectionHeaderIndex]);
+	section = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionUncasted);
 	uv_assert_ret(section);
 	
 	//Assign it
@@ -242,17 +262,17 @@ uv_err_t UVDElf::getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeader
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDElf::addSectionHeaderString(const std::string &s, unsigned int *index)
+uv_err_t UVDElf::addSectionHeaderString(const std::string &s)
 {
-	return UV_DEBUG(addStringCore(UVD_ELF_SECTION_SECTION_STRING_TABLE, s, index));
+	return UV_DEBUG(addStringCore(UVD_ELF_SECTION_SECTION_STRING_TABLE, s));
 }
 
-uv_err_t UVDElf::addSymbolString(const std::string &s, unsigned int *index)
+uv_err_t UVDElf::addSymbolString(const std::string &s)
 {
-	return UV_DEBUG(addStringCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s, index));
+	return UV_DEBUG(addStringCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s));
 }
 
-uv_err_t UVDElf::addStringCore(const std::string &sSection, const std::string &s, unsigned int *index)
+uv_err_t UVDElf::addStringCore(const std::string &sSection, const std::string &s)
 {
 	UVDElfSectionHeaderEntry *sectionHeaderEntry = NULL;
 	UVDElfStringTableSectionHeaderEntry *stringTableEntry = NULL;
@@ -263,11 +283,12 @@ uv_err_t UVDElf::addStringCore(const std::string &sSection, const std::string &s
 	stringTableEntry = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionHeaderEntry);
 	uv_assert_ret(stringTableEntry);
 	//And call its string managment
-	stringTableEntry->addString(s, index);
+	stringTableEntry->addString(s);
 	
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDElf::getSectionHeaderStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatableOut,
 		UVDRelocationManager *relocationManager)
 {
@@ -312,6 +333,33 @@ uv_err_t UVDElf::getStringRelocatableElementCore(const std::string &sSection, co
 	uv_assert_ret(relocatableOut);
 	*relocatableOut = relocatable;
 	
+	return UV_ERR_OK;
+}
+*/
+
+uv_err_t UVDElf::getSectionHeaderStringIndex(const std::string &s, uint32_t *index)
+{
+	return UV_DEBUG(getStringIndexCore(UVD_ELF_SECTION_SECTION_STRING_TABLE, s, index));
+}
+
+uv_err_t UVDElf::getSymbolStringIndex(const std::string &s, uint32_t *index)
+{
+	return UV_DEBUG(getStringIndexCore(UVD_ELF_SECTION_SYMBOL_STRING_TABLE, s, index));
+}
+
+uv_err_t UVDElf::getStringIndexCore(const std::string &sSection, const std::string &s, uint32_t *index)
+{
+	UVDElfSectionHeaderEntry *sectionHeaderEntry = NULL;
+	UVDElfStringTableSectionHeaderEntry *stringTableEntry = NULL;
+
+	//Find the section header for the string table (specified as part of the elf header)
+	uv_assert_err_ret(getSectionHeaderByName(sSection, &sectionHeaderEntry));
+	uv_assert_ret(sectionHeaderEntry);
+	stringTableEntry = dynamic_cast<UVDElfStringTableSectionHeaderEntry *>(sectionHeaderEntry);
+	uv_assert_ret(stringTableEntry);
+		
+	uv_assert_err_ret(stringTableEntry->getStringOffset(s, index));
+		
 	return UV_ERR_OK;
 }
 
@@ -379,7 +427,17 @@ uv_err_t UVDElf::getSectionHeaderIndex(const UVDElfSectionHeaderEntry *section, 
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **sectionOut)
+uv_err_t UVDElf::getSectionHeaderIndexByName(const std::string &name, uint32_t *index)
+{
+	UVDElfSectionHeaderEntry *section = NULL;
+	
+	uv_assert_err_ret(getSectionHeaderByName(name, &section));
+	uv_assert_err_ret(getSectionHeaderIndex(section, index));
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::getSectionHeaderByName(const std::string &name, UVDElfSectionHeaderEntry **sectionOut)
 {
 	uv_assert_ret(sectionOut);
 	
@@ -390,16 +448,16 @@ uv_err_t UVDElf::getSectionHeaderByName(const std::string &sName, UVDElfSectionH
 
 		uv_assert_ret(pCurSection);
 		pCurSection->getName(sCurName);
-		//printf_debug("Section: <%s> vs needed <%s>\n", sCurName.c_str(), sName.c_str());
+		//printf_debug("Section: <%s> vs needed <%s>\n", sCurName.c_str(), name.c_str());
 		//Found it?
-		if( sCurName == sName )
+		if( sCurName == name )
 		{
 			*sectionOut = pCurSection;
 			return UV_ERR_OK;
 		}
 	}
 
-	//printf_warn("Couldn't get section %s\n", sName.c_str());	
+	//printf_warn("Couldn't get section %s\n", name.c_str());	
 	//Not a totally abnormal error, don't log
 	return UV_ERR_NOTFOUND;
 }
@@ -410,6 +468,23 @@ uv_err_t UVDElf::getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElf
 	uv_assert_ret(sectionHeaderOut);
 	uv_assert_ret(*sectionHeaderOut);
 	(*sectionHeaderOut)->m_elf = this;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::addUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut)
+{
+	UVDElfSectionHeaderEntry *sectionHeader = NULL;
+	
+	uv_assert_err_ret(getUVDElfSectionHeaderEntry(sSection, &sectionHeader));
+	uv_assert_ret(sectionHeader);
+
+	uv_assert_err_ret(addSectionHeaderSection(sectionHeader));
+	
+	if( sectionHeaderOut )
+	{
+		*sectionHeaderOut = sectionHeader;
+	}
 	
 	return UV_ERR_OK;
 }

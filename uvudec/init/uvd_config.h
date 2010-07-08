@@ -225,7 +225,8 @@ public:
 	std::set<int> m_analysisOutputAddresses;
 	
 	//Default interpreter to use for script files
-	int m_configInterpreterLanguage;
+	uint32_t m_configInterpreterLanguage;
+	uint32_t m_configInterpreterLanguageInterface;
 	
 	//Configuration option parsing
 	//Could bet set from command line, interactive shell, or a file

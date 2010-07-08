@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#pragma once
+#ifndef UVD_LANGUAGE_H
+#define UVD_LANGUAGE_H
 
 /*
 Try to convert to various code types
@@ -41,4 +42,17 @@ of now unknown source type
 This will go backwards not forwards...if it detects C code it might get confused
 */
 #define UVD_LANGUAGE_AUTO						0x0100
+
+/*
+Technique used to access an interpreter
+*/
+//Uninitialized value
+#define UVD_LANGUAGE_INTERFACE_UNKNOWN			0
+//Execute the interpreter binary and parse the results back
+#define UVD_LANGUAGE_INTERFACE_EXEC				1
+//Use a supplied local binary API
+#define UVD_LANGUAGE_INTERFACE_API				2
+//Other possibilities include RPCs such as XML-RPC
+
+#endif
 

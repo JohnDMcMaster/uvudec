@@ -10,6 +10,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 /*
 Original use was to store relocatable object files to aid in static analysis
 FIXME: class is a mess, needs cleanup
+	working on it...finally
+TODO: intead of searching through string tables, use handles
+	Didn't want to do this before because thought I'd have to #define values
+	Can make these common ones reserved and use a factory function to retrieve new indexes if needed
 */
 
 #include "uvd_data.h"
@@ -80,13 +84,20 @@ public:
 			const std::string &sDataSection, const std::string &sRelocationSection,
 			UVDElf **out);
 	
+	
+	
+	
 	//Add another symbol along with supporting data
-	uv_err_t addRelocatableData(UVDRelocatableData *relocatableData,
-			const std::string &rawDataSymbolName);
+	//uv_err_t addRelocatableData(UVDRelocatableData *relocatableData,
+	//		const std::string &rawDataSymbolName);
 	uv_err_t addRelocatableDataCore(UVDRelocatableData *relocatableData,
 			const std::string &rawDataSymbolName,
 			const std::string &sDataSection, const std::string &sRelocationSection);
 	uv_err_t addUVDRelocationFixup(UVDRelocationFixup *fixup);
+
+
+
+
 
 	//Set the architecture
 	//Should throw error on unknown architecture?
@@ -101,6 +112,7 @@ public:
 	uv_err_t addProgramHeaderSection(UVDElfProgramHeaderEntry *section);
 	uv_err_t addSectionHeaderSection(UVDElfSectionHeaderEntry *section);
 	uv_err_t getSectionHeaderIndex(const UVDElfSectionHeaderEntry *section, uint32_t *index);
+	uv_err_t getSectionHeaderIndexByName(const std::string &sName, uint32_t *index);
 	
 	//WARNING: this is currently find, not get (ie won't create on not found)
 	uv_err_t getSectionHeaderByName(const std::string &sName, UVDElfSectionHeaderEntry **section);
@@ -112,30 +124,30 @@ public:
 	*/
 	//Gaurantee string is in the table
 	//If index is specified, it will be returned
-	uv_err_t addStringCore(const std::string &sSection, const std::string &s, unsigned int *index = NULL);
-	uv_err_t getStringIndexCore(const std::string &sSection, const std::string &s, unsigned int *index);
+	uv_err_t addStringCore(const std::string &sSection, const std::string &s);
+	//This should only be called from writter operations
+	uv_err_t getStringIndexCore(const std::string &sSection, const std::string &s, uint32_t *index);
 	//For a given string, get an object to find its final address
-	uv_err_t getStringRelocatableElementCore(const std::string &sSection, const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
+	//uv_err_t getStringRelocatableElementCore(const std::string &sSection, const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
 	
 
 	/*
 	.shstrtab utilities
 	Should be used for section header names
 	*/
-	uv_err_t addSectionHeaderString(const std::string &s, unsigned int *index = NULL);
-	uv_err_t getSectionHeaderStringIndex(const std::string &s, unsigned int *index);
-	uv_err_t getSectionHeaderStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
+	uv_err_t addSectionHeaderString(const std::string &s);
+	uv_err_t getSectionHeaderStringIndex(const std::string &s, uint32_t *index);
+	//uv_err_t getSectionHeaderStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
 	//Get the section header for .shstrtab
 	uv_err_t getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeaderEntry **sectionOut);
-
 
 	/*
 	.strtab
 	Used for symbol names
 	*/
-	uv_err_t addSymbolString(const std::string &s, unsigned int *index = NULL);
-	uv_err_t getSymbolStringIndex(const std::string &s, unsigned int *index);
-	uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable);
+	uv_err_t addSymbolString(const std::string &s);
+	uv_err_t getSymbolStringIndex(const std::string &s, uint32_t *index);
+	//uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable);
 	//Get the section header for .strtab
 	uv_err_t getSymbolStringTableSectionHeaderEntry(UVDElfStringTableSectionHeaderEntry **sectionOut);
 
@@ -154,6 +166,7 @@ public:
 	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	uv_err_t getVariableSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	uv_err_t getFunctionSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	uv_err_t setSourceFilename(const std::string &s);
 	
 	/*
 	.text
@@ -162,9 +175,17 @@ public:
 	*/
 	uv_err_t getTextSectionHeaderEntry(UVDElfTextSectionHeaderEntry **sectionHeaderOut);
 	
+	
+	/*
+	.rodata
+	Program constant data
+	The string table you might uusally think of
+	Not required for now since I'm only dealing with functions and not supporting data...yet
+	*/
+	
 	//Raw data adds
-	uv_err_t addSectionHeaderData(const std::string &sSection, UVDRelocatableData *relocatableData);
-	uv_err_t addSectionHeaderData(int sectionIndex, UVDRelocatableData *relocatableData);
+	//uv_err_t addSectionHeaderData(const std::string &sSection, UVDRelocatableData *relocatableData);
+	//uv_err_t addSectionHeaderData(int sectionIndex, UVDRelocatableData *relocatableData);
 	
 		
 	//Adds constant data to .rodata
@@ -182,36 +203,12 @@ public:
 	void printDebug();
 
 	//If the section does not exist, it will be created
+	//It will not be added to the ELF object
 	uv_err_t getUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
+	//Like above, but will be added to the section header table
+	uv_err_t addUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
 
-protected:
-	//Update all of the members so that it can be written to disk
-	uv_err_t updateForWrite();
-	uv_err_t updateHeaderForWrite();
-	uv_err_t updateProgramHeadersForWrite();
-	uv_err_t updateSectionHeadersForWrite();
-
-private:
-	//Elf header
-	uv_err_t constructElfHeaderBinary(UVDRelocationManager *elfRelocationManager);
-	uv_err_t constructProgramHeaderBinaryPhoff(UVDRelocationManager *elfRelocationManager,
-			UVDRelocatableData *elfHeaderRelocatable);
-	uv_err_t constructSectionHeaderBinaryShoff(UVDRelocationManager *elfRelocationManager,
-			UVDRelocatableData *elfHeaderRelocatable);
-	//Section header
-	uv_err_t constructProgramHeaderBinary(UVDRelocationManager &elfRelocationManager,
-			std::vector<UVDRelocatableData *> &headerSupportingData);
-	uv_err_t constructProgramHeaderSectionBinary(UVDRelocationManager &elfRelocationManager,
-			std::vector<UVDRelocatableData *> &headerSupportingData,
-			UVDElfProgramHeaderEntry *entry);
-	//Program header
-	uv_err_t constructSectionHeaderBinary(UVDRelocationManager &elfRelocationManager,
-			std::vector<UVDRelocatableData *> &headerSupportingData);
-	uv_err_t constructSectionHeaderSectionBinary(UVDRelocationManager &elfRelocationManager,
-			std::vector<UVDRelocatableData *> &headerSupportingData,
-			UVDElfSectionHeaderEntry *entry);
-
-private:
+public:
 	//If we loaded this, pointer to the raw data source
 	UVDData *m_data;
 	//Program header sections

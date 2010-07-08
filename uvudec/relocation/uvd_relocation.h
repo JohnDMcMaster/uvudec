@@ -142,7 +142,7 @@ public:
 	//Doing deep copy now makes this memory unsafish
 	//UVDRelocatableData(UVDData *data);
 	virtual ~UVDRelocatableData();
-	uv_err_t deinit();
+	virtual uv_err_t deinit();
 
 	/*
 	For table structures, sometimes a placeholder is needed at the beginning
@@ -169,10 +169,11 @@ public:
 	virtual uv_err_t getDefaultRelocatableData(UVDData **data);
 	
 	//The data here will be freed when this object is freed
-	//FIXME: does not do a deep copy, but should and have transferData for non-copy
+	//Above comment is wrong
+	//In actually, this does a depp copy
 	virtual uv_err_t setData(UVDData *data);
 	//Same as above, but not copied
-	virtual uv_err_t transferData(UVDData *data);
+	virtual uv_err_t transferData(UVDData *data, uint32_t freeAtDestruction);
 	
 	/*
 	Empty is an unitialized object that has no data added to it
@@ -180,6 +181,15 @@ public:
 	*/
 	virtual uv_err_t isEmpty(uint32_t *isEmpty);
 
+	//For debugging
+	void hexdump();
+	void hexdumpDefault();
+	
+	//How big the encapsulated data is
+	uv_err_t size(uint32_t *sizeOut);
+
+	virtual bool requiresDataSync();
+	
 protected:
 	//called before getData()
 	virtual uv_err_t updateData();
@@ -197,6 +207,9 @@ protected:
 	//This will be compiled into a larger chunk
 	//We own this
 	UVDData *m_data;
+	//Whether or not m_data is governed externally
+	//m_defaultRelocatableData is pecific to this object and unaffected by this
+	uint32_t m_freeDataAtDestruction;
 
 	//Cache of the default (0'd) relocatable data
 	//Primary data is stored in m_data
@@ -218,6 +231,9 @@ public:
 	uv_err_t addFixup(UVDRelocationFixup *fixup);
 	
 	virtual uv_err_t isEmpty(uint32_t *isEmpty);
+	
+	//FIXME hack
+	virtual bool requiresDataSync();
 
 protected:
 	//Iterate over all values and apply relocations
@@ -364,10 +380,14 @@ public:
 	//Do linker like actions to relocate the data
 	//Generates a resulting final peice of data from concatentating all the peices together
 	//This version allocates the data
+	//FIXME: this is a poor name
 	uv_err_t applyPatch(UVDData **data);
 	uv_err_t applyPatchCore(UVDData **dataOut, bool useDefaultValue);
 	
 	//uv_err_t getDataSize(int *dataSize);
+	//Find element and report the offset (that is, sum of size of all precending elements)
+	//Returns error on missing element
+	uv_err_t getOffset(const UVDRelocatableData *relocatableData, uint32_t *offsetOut);
 
 public:
 	//All of the "symbols" we must keep track of

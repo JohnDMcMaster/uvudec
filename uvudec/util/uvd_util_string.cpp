@@ -392,7 +392,7 @@ std::string stringVectorToSystemArgument(const std::vector<std::string> &args)
 		ret += "\"";
 		ret += args[i];
 		ret += "\"";
-		if( i < i < args.size() - 1 )
+		if( i < args.size() - 1 )
 		{
 			ret += " ";
 		}

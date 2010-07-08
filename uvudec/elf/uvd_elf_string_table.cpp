@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -9,9 +8,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_data.h"
 #include "uvd_types.h"
 #include "uvd_util.h"
-#include <elf.h>
-#include <vector>
 #include <string>
+#include <vector>
+#include <elf.h>
+#include <stdio.h>
 
 UVDElfStringTableSectionHeaderEntry::UVDElfStringTableSectionHeaderEntry()
 {
@@ -21,40 +21,61 @@ UVDElfStringTableSectionHeaderEntry::~UVDElfStringTableSectionHeaderEntry()
 {
 }
 
-void UVDElfStringTableSectionHeaderEntry::addString(const std::string &sIn, unsigned int *index)
+uv_err_t UVDElfStringTableSectionHeaderEntry::init()
 {
-	uint32_t netIndex = 0;
-	for( uint32_t i = 0; i < m_stringTable.size(); ++i )
-	{
-		const std::string &sCur = m_stringTable[i];
-		//Already in there?
-		if( sCur == sIn )
-		{
-			//Its present, return it
-			if( index )
-			{
-				*index = netIndex;
-			}
-			return;
-		}
-		netIndex += sCur.size() + 1;
-	}
-	//Not found, add it
-	if( index )
-	{
-		*index = netIndex;
-	}
-	m_stringTable.push_back(sIn);
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::init());
+	setType(SHT_STRTAB);
+	return UV_ERR_OK;
 }
 
-uv_err_t UVDElfStringTableSectionHeaderEntry::updateDataCore()
+void UVDElfStringTableSectionHeaderEntry::addString(const std::string &s)
 {
-
-	//If our data object didn't previously exist, create it
-	if( m_fileData == NULL )
+	for( uint32_t i = 0; i < m_stringTable.size(); ++i )
 	{
-		m_fileData = new UVDDataMemory(0);
+		const std::string &cur = m_stringTable[i];
+		//Already in there?
+		if( cur == s )
+		{
+			return;
+		}
 	}
+	//Not found, add it
+	m_stringTable.push_back(s);
+}
+
+uv_err_t UVDElfStringTableSectionHeaderEntry::getStringOffset(const std::string &s, uint32_t *offsetOut)
+{
+	uint32_t netOffset = 0;
+	
+	uv_assert_ret(offsetOut);
+	
+	for( uint32_t i = 0; i < m_stringTable.size(); ++i )
+	{
+		const std::string &cur = m_stringTable[i];
+		//Got it?
+		if( cur == s )
+		{
+			*offsetOut = netOffset;
+			return UV_ERR_OK;
+		}
+		netOffset += cur.size() + 1;
+	}
+	printf_error("Could not find string: %s in string table section %s\n", s.c_str(), m_name.c_str());
+	//Not found
+	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+uv_err_t UVDElfStringTableSectionHeaderEntry::constructForWrite()
+{
+	uv_assert_err_ret(UVDElfHeaderEntry::constructForWrite());
+
+	//FIXME
+	//m_elf->m_elfHeader.e_shstrndx = 1;
+
+	//If our data object didn't previously exist, create it so we can fill it in
+	//We should only do this once with current architecture
+	uv_assert_ret(!m_fileData);
+	m_fileData = new UVDDataMemory(0);
 	uv_assert_ret(m_fileData);
 
 	//Construct the data table
@@ -83,17 +104,24 @@ uv_err_t UVDElfStringTableSectionHeaderEntry::updateDataCore()
 		std::string s = *iter;
 		//Include null space
 		uint32_t bufferSize = s.size() + 1;
-
+printf("copying in string: %s\n", s.c_str());
+fflush(stdout);
 		uv_assert_err_ret(m_fileData->writeData(offset, s.c_str(), bufferSize));		
 		offset += bufferSize;
 	}
-		
+	
+printf("copied %d strings into %s string table, data addr = 0x%.8X\n", m_stringTable.size(), m_name.c_str(), (unsigned int)m_fileData);
+fflush(stdout);
+m_fileData->hexdump();
+fflush(stdout);
+	
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDElfStringTableSectionHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
 {
-	uv_assert_err_ret(updateData());
+	//This should not be called until after constructForWrite()
 	uv_assert_ret(m_fileData);
 	return UV_DEBUG(m_fileData->size(sectionSize));
 }
+

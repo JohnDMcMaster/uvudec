@@ -180,6 +180,12 @@ uv_err_t initSharedConfig()
 #endif //USING_JAVASCRIPT
 			,
 			1, argParser, true));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_CONFIG_LANGUAGE_INTERFACE, 0, "config-language-interface",
+			"how to access a specifc interpreter (options as availible)", 
+			"\texec: execute interpreter, parse results\n"
+			"\tAPI: use binary API to interpreter\n",
+			1, argParser, true));
+	
 	
 	//Analysis target related
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
@@ -379,6 +385,26 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		else
 		{
 			printf_error("unknown language: <%s>\n", sLang.c_str());
+			UVDHelp();
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_CONFIG_LANGUAGE_INTERFACE )
+	{
+		std::string sLangInterface = firstArg;
+		uv_assert_ret(argumentArguments.size() == 1);
+		
+		if( sLangInterface == "exec" )
+		{
+			config->m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
+		}
+		else if( sLangInterface == "api" || sLangInterface == "API" )
+		{
+			config->m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
+		}
+		else
+		{
+			printf_error("unknown language interface: <%s>\n", sLangInterface.c_str());
 			UVDHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}

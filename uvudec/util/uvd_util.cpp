@@ -496,8 +496,8 @@ uv_err_t isCSymbol(const std::string &in)
 	}
 	
 	//[a-zA-Z_]
-	if( !(in[0] >= 'a' && in[0] <= 'z'
-			|| in[0] >= 'A' && in[0] <= 'Z'
+	if( !((in[0] >= 'a' && in[0] <= 'z')
+			|| (in[0] >= 'A' && in[0] <= 'Z')
 			|| in[0] == '_') )
 	{
 		return UV_ERR_GENERAL;
@@ -506,9 +506,9 @@ uv_err_t isCSymbol(const std::string &in)
 	//[z-zA-Z0-9_].
 	for( std::string::size_type i = 1; i < in.size(); ++i )
 	{
-		if( !(in[0] >= 'a' && in[0] <= 'z'
-				|| in[0] >= 'A' && in[0] <= 'Z'
-				|| in[0] >= '0' && in[0] <= '9'
+		if( !((in[0] >= 'a' && in[0] <= 'z')
+				|| (in[0] >= 'A' && in[0] <= 'Z')
+				|| (in[0] >= '0' && in[0] <= '9')
 				|| in[0] == '_') )
 		{
 			return UV_ERR_GENERAL;
@@ -522,3 +522,91 @@ uv_err_t isConfigIdentifier(const std::string &in)
 {
 	return isCSymbol(in);
 }
+
+uint32_t g_bytesPerRow = 16;
+uint32_t g_bytesPerHalfRow = 8;
+
+static unsigned int hexdumpHalfRow(const char *data, size_t size, uint32_t start)
+{
+	uint32_t col = 0;
+
+	for( ; col < g_bytesPerHalfRow && start + col < size; ++col )
+	{
+		uint32_t index = start + col;
+		unsigned char c = data[index];
+		
+		printf("%.2X ", (unsigned int)c);
+		fflush(stdout);
+	}
+
+	//pad remaining
+	while( col < g_bytesPerHalfRow )
+	{
+		printf("   ");
+		fflush(stdout);
+		++col;
+	}
+
+	//End pad
+	printf(" ");
+	fflush(stdout);
+
+	return start + g_bytesPerHalfRow;
+}
+
+void hexdump(const char *data, size_t size)
+{
+	hexdumpCore(data, size, "");
+}
+
+void hexdumpCore(const char *data, size_t size, const std::string &prefix)
+{
+	/*
+	[mcmaster@gespenst icd2prog-0.3.0]$ hexdump -C /bin/ls |head
+	00000000  7f 45 4c 46 01 01 01 00  00 00 00 00 00 00 00 00  |.ELF............|
+	00000010  02 00 03 00 01 00 00 00  f0 99 04 08 34 00 00 00  |............4...|
+	00017380  00 00 00 00 01 00 00 00  00 00 00 00              |............|
+	*/
+
+	unsigned int pos = 0;
+	while( pos < size )
+	{
+		uint32_t row_start = pos;
+		uint32_t i = 0;
+
+		printf("%s", prefix.c_str());
+		fflush(stdout);
+
+		pos = hexdumpHalfRow(data, size, pos);
+		pos = hexdumpHalfRow(data, size, pos);
+
+		printf("|");
+		fflush(stdout);
+
+		//Char view
+		for( i = row_start; i < row_start + g_bytesPerRow && i < size; ++i )
+		{
+			char c = data[i];
+			if( isprint(c) )
+			{
+				printf("%c", c);
+				fflush(stdout);
+			}
+			else
+			{
+				printf("%c", '.');
+				fflush(stdout);
+			}
+		} 
+		for( ; i < row_start + g_bytesPerRow; ++i )
+		{
+			printf(" ");
+			fflush(stdout);
+		}
+
+		printf("|\n");
+		fflush(stdout);
+	}
+	fflush(stdout);
+}
+

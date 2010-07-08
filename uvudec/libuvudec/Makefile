@@ -35,6 +35,7 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_relocation.cpp \
 			$(ELF_DIR)/uvd_elf_string_table.cpp \
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
+			$(ELF_DIR)/uvd_elf_writter.cpp \
 			$(FLIRT_DIR)/uvd_bfd_library.cpp \
 			$(FLIRT_DIR)/uvd_config_flirt.cpp \
 			$(FLIRT_DIR)/uvd_elf_library.cpp \
@@ -61,6 +62,8 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_lua.cpp \
 			$(INTERPRETER_DIR)/uvd_operator.cpp \
 			$(INTERPRETER_DIR)/uvd_python.cpp \
+			$(INTERPRETER_DIR)/uvd_python_api.cpp \
+			$(INTERPRETER_DIR)/uvd_python_exec.cpp \
 			$(LANGUAGE_DIR)/uvd_format.cpp \
 			$(LANGUAGE_DIR)/uvd_language.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \

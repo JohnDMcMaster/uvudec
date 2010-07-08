@@ -1,7 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
@@ -10,10 +9,13 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_data.h"
 #include "uvd_types.h"
 #include "uvd_util.h"
-#include <elf.h>
 #include <vector>
 #include <string>
+#include <elf.h>
+#include <string.h>
+#include <typeinfo>
 
+#if 0
 UVDStringTableRelocatableElement::UVDStringTableRelocatableElement()
 {
 	m_stringTable = NULL;
@@ -55,7 +57,7 @@ uv_err_t UVDStringTableRelocatableElement::UVDStringTableRelocatableElement::upd
 	//We could consider registering it, but this probably indicates an error
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
-
+#endif
 
 /*
 UVDElfHeaderEntry
@@ -91,7 +93,20 @@ uv_err_t UVDElfHeaderEntry::updateForWrite()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDElfHeaderEntry::constructForWrite()
+{
+	//Default: nothing to finalize
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfHeaderEntry::applyRelocationsForWrite()
+{
+	//Default: nothing to update
+	return UV_ERR_OK;
+}
+
 /*
+UVDElfSectionHeaderEntry
 */
 
 uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntryCore(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut)
@@ -105,24 +120,26 @@ uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntryCore(const std::st
 			|| sSection == UVD_ELF_SECTION_SECTION_STRING_TABLE )
 	{
 		sectionHeader = new UVDElfStringTableSectionHeaderEntry();
-		uv_assert_ret(sectionHeader);
-		sectionHeader->setType(SHT_STRTAB);
 	}
 	else if( sSection == UVD_ELF_SECTION_SYMBOL_TABLE )
 	{
 		sectionHeader = new UVDElfSymbolSectionHeaderEntry();
-		uv_assert_ret(sectionHeader);
-		sectionHeader->setType(SHT_SYMTAB);
 	}
 	else if( sSection == UVD_ELF_SECTION_EXECUTABLE )
 	{
 		sectionHeader = new UVDElfTextSectionHeaderEntry();
-		uv_assert_ret(sectionHeader);
-		sectionHeader->setType(SHT_PROGBITS);
 	}
 	else if( sSection.find(".rel") == 0 )
 	{
 		sectionHeader = new UVDElfRelocationSectionHeaderEntry();
+	}
+	else if( sSection == UVD_ELF_SECTION_NULL )
+	{
+		sectionHeader = new UVDElfSectionHeaderEntry();
+		//Because this doesn't have its own type with init right now
+		//SHT_NULL would make a reasonable default though
+		uv_assert_ret(sectionHeader);
+		sectionHeader->setType(SHT_NULL);
 	}
 	//Default to generic structure
 	else
@@ -141,6 +158,9 @@ uv_err_t UVDElfSectionHeaderEntry::getUVDElfSectionHeaderEntryCore(const std::st
 uv_err_t UVDElfSectionHeaderEntry::updateForWrite()
 {
 	std::string name;
+	
+	uv_assert_err_ret(UVDElfHeaderEntry::updateForWrite());
+	
 	getName(name);
 	printf_debug("Section header %s update for write, m_relevantSectionHeader: 0x%.8X\n", name.c_str(), (unsigned int)m_relevantSectionHeader);
 	if( m_relevantSectionHeader )
@@ -156,16 +176,6 @@ uv_err_t UVDElfSectionHeaderEntry::updateForWrite()
 	return UV_ERR_OK;
 }	
 
-uv_err_t UVDElfProgramHeaderEntry::setHeaderData(const UVDData *data)
-{
-	uv_assert_ret(data);
-	
-	int toRead = sizeof(m_programHeader);
-	uv_assert_ret(data->read(0, (char *)&m_programHeader, toRead) == toRead);
-
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDElfSectionHeaderEntry::setHeaderData(const UVDData *data)
 {
 	uv_assert_ret(data);
@@ -173,21 +183,6 @@ uv_err_t UVDElfSectionHeaderEntry::setHeaderData(const UVDData *data)
 	int toRead = sizeof(m_sectionHeader);
 	uv_assert_ret(data->read(0, (char *)&m_sectionHeader, toRead) == toRead);
 
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getHeaderData(UVDData **headerDataOut)
-{
-	UVDData *headerData = NULL;
-	
-	//The actual data remains the same using this
-	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer((UVDDataMemory **)&headerData,
-			(char *)&m_programHeader, sizeof(m_programHeader),
-			false));
-	uv_assert_ret(headerData);
-	
-	uv_assert_ret(headerDataOut);
-	*headerDataOut = headerData;
 	return UV_ERR_OK;
 }
 
@@ -211,6 +206,7 @@ void UVDElfHeaderEntry::setFileData(UVDData *data)
 	m_fileData = data;
 }
 
+/*
 uv_err_t UVDElfHeaderEntry::updateData()
 {
 	uv_assert_err_ret(updateDataCore());
@@ -235,12 +231,14 @@ uv_err_t UVDElfHeaderEntry::updateDataCore()
 {
 	return UV_ERR_OK;
 }
+*/
+
 
 uv_err_t UVDElfHeaderEntry::getFileData(UVDData **data)
 {
 	printf_debug("Getting file data\n");
 	uv_assert_ret(data);
-	uv_assert_err_ret(updateData());
+	//uv_assert_err_ret(updateData());
 	//Optional, no assert
 	*data = m_fileData;
 	return UV_ERR_OK;
@@ -248,34 +246,50 @@ uv_err_t UVDElfHeaderEntry::getFileData(UVDData **data)
 
 uv_err_t UVDElfHeaderEntry::getFileRelocatableData(UVDRelocatableData **supportingData)
 {
+	//FIXME: why aren't we just returning immediatly?  Why the check?
+	//Seem sto be for updateData, which is being eliminated
 	UVDData *data = NULL;
 
 	printf_debug("Getting file relocatale data\n");
 	uv_assert_ret(supportingData);
 
-	//this will call updateData
 	uv_assert_err_ret(getFileData(&data));
 	if( !data )
 	{
 		*supportingData = NULL;
-		return UV_ERR_OK;
 	}
-	uv_assert_ret(m_fileRelocatableData);
-	*supportingData = m_fileRelocatableData;
+	else
+	{
+		uv_assert_ret(m_fileRelocatableData);
+		//Seems the real issue is that we should have set the data early on and updated it as necessary
+		if( m_fileRelocatableData->requiresDataSync() )
+		//FIXME hack
+		//if( typeid(m_fileRelocatableData) != UVDMultiRelocatableData )
+		{
+printf("setting data\n");
+fflush(stdout);
+			uv_assert_err_ret(m_fileRelocatableData->transferData(data, FALSE));
+printf("Just set hexdump\n");
+fflush(stdout);
+m_fileRelocatableData->hexdump();
+printf("Just set end hexdump\n");
+fflush(stdout);
+		}
+		*supportingData = m_fileRelocatableData;
+data->hexdump();
+printf("set data end\n");
+//exit(1);
+	}
+	
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDElfProgramHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
+/*
+uv_err_t UVDElfHeaderEntry::applyRelocations()
 {
-	uv_assert_err_ret(updateData());
-	//Supporting data is optional
-	if( !m_fileData )
-	{
-		uv_assert_ret(sectionSize);
-		*sectionSize = 0;
-	}
-	return UV_DEBUG(m_fileData->size(sectionSize));
+	return UV_ERR_OK;
 }
+*/
 
 /*
 UVDElfSectionHeaderEntry
@@ -294,13 +308,13 @@ UVDElfSectionHeaderEntry::~UVDElfSectionHeaderEntry()
 
 uv_err_t UVDElfSectionHeaderEntry::getName(std::string &sName)
 {
-	sName = m_sName;
+	sName = m_name;
 	return UV_ERR_OK;
 }
 
 void UVDElfSectionHeaderEntry::setName(const std::string &sName)
 {
-	m_sName = sName;
+	m_name = sName;
 }
 
 uv_err_t UVDElfSectionHeaderEntry::getName(int *nameIndex)
@@ -347,68 +361,6 @@ void UVDElfSectionHeaderEntry::setLinkSection(UVDElfSectionHeaderEntry *relevant
 	m_relevantSectionHeader = relevantSectionHeader;
 }
 
-#if 0
-uv_err_t UVDElfSectionHeaderEntry::getVirtualAddress(int *address)
-{
-	uv_assert_ret(type);
-	*address = m_sectionHeader.sh_addr;
-	return UV_ERR_OK;
-}
-
-void UVDElfSectionHeaderEntry::setVirtualAddress(int address)
-{
-	m_sectionHeader.sh_addr = address;
-}
-
-uv_err_t UVDElfSectionHeaderEntry::getPhysicalAddress(int *address)
-{
-	uv_assert_ret(type);
-	*nameIndex = m_sectionHeader.sh_name;
-	return UV_ERR_OK;
-}
-
-void UVDElfSectionHeaderEntry::setPhysicalAddress(int address)
-{
-	m_sectionHeader.sh_name = nameIndex;
-}
-
-uv_err_t UVDElfSectionHeaderEntry::getMemorySize(int *size)
-{
-	uv_assert_ret(type);
-	*nameIndex = m_sectionHeader.sh_name;
-	return UV_ERR_OK;
-}
-
-void UVDElfSectionHeaderEntry::setMemorySize(int size)
-{
-	m_sectionHeader.sh_name = nameIndex;
-}
-
-uv_err_t UVDElfSectionHeaderEntry::getFlags(int *flags)
-{
-	uv_assert_ret(type);
-	*flags = m_sectionHeader.sh_flags;
-	return UV_ERR_OK;
-}
-
-void UVDElfSectionHeaderEntry::setFlags(int flags)
-{
-	m_sectionHeader.sh_flags = flags;
-}
-
-uv_err_t UVDElfSectionHeaderEntry::getAlignment(int *alignment)
-{
-	uv_assert_ret(type);
-	*alignment = m_sectionHeader.sh_addralign;
-	return UV_ERR_OK;
-}
-
-void UVDElfSectionHeaderEntry::setAligntment(int alignment)
-{
-	m_sectionHeader.sh_addralign = alignment;
-}
-#endif
-
 /*
 UVDElfProgramHeaderEntry
 */
@@ -422,80 +374,42 @@ UVDElfProgramHeaderEntry::~UVDElfProgramHeaderEntry()
 {
 }
 
-#if 0
-uv_err_t UVDElfProgramHeaderEntry::getName(int *name)
+uv_err_t UVDElfProgramHeaderEntry::setHeaderData(const UVDData *data)
 {
+	uv_assert_ret(data);
+	
+	int toRead = sizeof(m_programHeader);
+	uv_assert_ret(data->read(0, (char *)&m_programHeader, toRead) == toRead);
+
+	return UV_ERR_OK;
 }
 
-uv_err_t UVDElfProgramHeaderEntry::getName(std::string &sName)
+uv_err_t UVDElfProgramHeaderEntry::getHeaderData(UVDData **headerDataOut)
 {
+	UVDData *headerData = NULL;
+	
+	//The actual data remains the same using this
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer((UVDDataMemory **)&headerData,
+			(char *)&m_programHeader, sizeof(m_programHeader),
+			false));
+	uv_assert_ret(headerData);
+	
+	uv_assert_ret(headerDataOut);
+	*headerDataOut = headerData;
+	return UV_ERR_OK;
 }
 
-void UVDElfProgramHeaderEntry::setName(int name)
+uv_err_t UVDElfProgramHeaderEntry::getSupportingDataSize(uint32_t *sectionSize)
 {
+	//uv_assert_err_ret(updateData());
+	//Supporting data is optional
+	if( !m_fileData )
+	{
+		uv_assert_ret(sectionSize);
+		*sectionSize = 0;
+	}
+	return UV_DEBUG(m_fileData->size(sectionSize));
 }
-
-void UVDElfProgramHeaderEntry::setName(const std::string &sName)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getType(int *type)
-{
-}
-
-void UVDElfProgramHeaderEntry::setType(int type)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getFlags(int *flags)
-{
-}
-
-void UVDElfProgramHeaderEntry::setFlags(int flags)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getVirtualAddress(int *address)
-{
-}
-
-void UVDElfProgramHeaderEntry::setVirtualAddress(int address)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getSectionLink(int *index)
-{
-}
-
-void UVDElfProgramHeaderEntry::setSectionLink(int index)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getInfo(int *info)
-{
-}
-
-void UVDElfProgramHeaderEntry::setInfo(int info)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getAlignment(int *alignment)
-{
-}
-
-void UVDElfProgramHeaderEntry::setAlignment(int alignment)
-{
-}
-
-uv_err_t UVDElfProgramHeaderEntry::getTableEntrySize(int *entrySize)
-{
-}
-
-void UVDElfProgramHeaderEntry::setTableEntrySize(int entrySize)
-{
-}
-
-#endif
 
 /*
 UVDElfTextSectionHeaderEntry
@@ -509,7 +423,14 @@ UVDElfTextSectionHeaderEntry::~UVDElfTextSectionHeaderEntry()
 {
 }
 
-uv_err_t UVDElfTextSectionHeaderEntry::updateDataCore()
+uv_err_t UVDElfTextSectionHeaderEntry::init()
+{
+	uv_assert_err_ret(UVDElfSectionHeaderEntry::init());
+	setType(SHT_PROGBITS);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElfTextSectionHeaderEntry::constructForWrite()
 {
 	printf_debug(".text update core\n");
 	/*
@@ -517,6 +438,8 @@ uv_err_t UVDElfTextSectionHeaderEntry::updateDataCore()
 	*/
 	std::vector<UVDData *> dataVector;
 	UVDElfSymbolSectionHeaderEntry *symbolSection = NULL;
+	
+	uv_assert_err_ret(UVDElfHeaderEntry::constructForWrite());
 	
 	uv_assert_ret(m_elf);
 	uv_assert_err_ret(m_elf->getSymbolTableSectionHeaderEntry(&symbolSection));
@@ -551,9 +474,15 @@ uv_err_t UVDElfTextSectionHeaderEntry::updateDataCore()
 	}
 
 	uv_assert_err_ret(UVDData::concatenate(dataVector, &m_fileData));
+	//printf(".text table (m_fileData):\n");
+	//m_fileData->hexdump();
 
 	return UV_ERR_OK;
 }
+
+/*
+UVDElfSectionHeaderEntry
+*/
 
 uv_err_t UVDElfSectionHeaderEntry::useRelocatableSection()
 {
@@ -594,6 +523,7 @@ uv_err_t UVDElfSectionHeaderEntry::useRelocatableSection()
 	
 	//Add the link entry...because we can I guess
 	//I'm not sure its real purpose, but this seems to be a case where its required
+	//TODO: research the above.  Why did I come to this conclusion?  Did objdump break without it?
 	uv_assert_err_ret(symbolSection->addSectionSymbol(sectionName));
 
 	uv_assert_err_ret(m_elf->addSectionHeaderSection(m_relocationSectionHeader));
@@ -608,3 +538,4 @@ uv_err_t UVDElfSectionHeaderEntry::getRelocatableSection(UVDElfRelocationSection
 	*entry = m_relocationSectionHeader;
 	return UV_ERR_OK;
 }
+

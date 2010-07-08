@@ -9,6 +9,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_binary_function.h"
 #include "uvd.h"
 
+#include <stdio.h>
+
 /*
 UVDBinarySymbol
 */
