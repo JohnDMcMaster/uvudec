@@ -30,18 +30,19 @@ INSTALL_DIR_BASE=$(PREFIX)/opt/uvudec
 INSTALLED_FILES_RELATIVE=N
 
 #Scripting support
-ifeq ($(shell which python |fgrep '/'),)
+ifeq ($(shell which python 2>/dev/null |fgrep '/'),)
 USING_PYTHON=N
 else
 USING_PYTHON=Y
+USING_PYTHON_EXEC=Y
 endif
 USING_LUA=N
 USING_SPIDERAPE=N
-SPIDERAPE_DIR=
+SPIDERAPE_PREFIX=
 
 # UPX packer
 # Allows for making exes smaller
-ifeq ($(shell which upx |fgrep '/'),)
+ifeq ($(shell which upx 2>/dev/null |fgrep '/'),)
 USING_UPX=N
 else
 USING_UPX=Y
@@ -61,3 +62,4 @@ USING_COFF2PAT=Y
 USING_OMF2PAT=Y
 USING_ELF2PAT=Y
 USING_PAT2SIG=Y
+
