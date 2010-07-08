@@ -29,18 +29,17 @@ If this small code excert is an issue, will rewrite and such to avoid issues
 #define JS_FAILED(x) (x != JS_TRUE)
 #define JS_SUCCEEDED(x) (x == JS_TRUE)
 
-std::stringstream g_stringStream;
+static std::stringstream g_stringStream;
 
-void spiderMonkeyErrorReporter(JSContext *cx, const char *message, JSErrorReport *report)
+static void spiderMonkeyErrorReporter(JSContext *cx, const char *message, JSErrorReport *report)
 {
-	printf_error("SpiderMonkey (under SpikerApe): Recieved error string: %s\n", message);
+	printf_error("SpiderMonkey (under SpiderApe): Recieved error string: %s\n", message);
 }
 
 /*
 Print reimplementation to redirect output to string buffer instead of stderr/stdout
 */ 
-JSBool
-uvd_ape_print_impl(std::ostream & os,
+static JSBool uvd_ape_print_impl(std::ostream & os,
 	       const std::string & recsep,
 	       const std::string & linesep,
 	       JSContext *cx, JSObject *obj,
@@ -69,81 +68,66 @@ uvd_ape_print_impl(std::ostream & os,
 	return JS_TRUE;
 }
 
-JSBool
-uvd_ape_print(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+JSBool uvd_ape_print(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
-	return uvd_ape_print_impl(g_stringStream, " ", "\n", cx, obj, argc, argv, rval );
-	//return uvd_ape_print_impl(std::cout, " ", "\n", cx, obj, argc, argv, rval );
+	return uvd_ape_print_impl(g_stringStream, " ", "\n", cx, obj, argc, argv, rval);
 }
 
-std::string getNextBufferData()
+static std::string getNextBufferData()
 {
 	std::string sRet;
-	/*
-	for( ;; )
-	{
-		char buffer[1024];
-		//Allow space for null termination
-		g_stringStream.read(buffer, sizeof(buffer) - 1);
-		int readCount = g_stringStream.gcount();
-		printf_debug("read from buffer: %d\n", readCount);
-		buffer[readCount] = 0;
-		if( readCount == 0 )
-		{
-			break;
-		}
-		sRet += buffer;
-	}
-	*/
 	sRet = g_stringStream.str();
 	g_stringStream.str("");
 	return sRet;
 }
 
 static JSFunctionSpec builtin_funcs[] = {
-	{"print",           uvd_ape_print,              0 },
+	{"uvd_print",           uvd_ape_print,              0 },
 	{0, 0, 0} // don't forget this, else risk a segfault.
 	};
 
-JSFunction * add_function(ape::MonkeyWrapper &js, std::string const & name, JSFunction * f )
+static uv_err_t addFunction(ape::MonkeyWrapper &js, std::string const & name, JSFunction *f)
 {
-	if( ! f ) return 0;
+	uv_assert_ret(f);
+	
 	jsval fv = OBJECT_TO_JSVAL(f->object);
-	//if( ! JS_DefineProperty(this->js_context(), this->js_object(),
 	if( ! JS_DefineProperty(js.context(), js.global(),
 				name.c_str(), fv, NULL, NULL, 0 ) )
 	{
-		//CERR << "add_function("<<name<<"): JS_DefineProperty() failed!\n";
-		return 0;
+		printf_error("addFunction(%s): JS_DefineProperty() failed!\n", name.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	//this->m_funcs[name] = f;
-	return f;
+	return UV_ERR_OK;
 }
 
-JSFunction * add_function( ape::MonkeyWrapper &js, std::string const & name, JSNative nf )
+static uv_err_t addFunction(ape::MonkeyWrapper &js, std::string const & name, JSNative nf)
 {
-	if( ! nf ) return 0;
-	JSFunction * f = JS_NewFunction(js.context(),
+	if( !nf )
+	{
+		return 0;
+	}
+	JSFunction *f = JS_NewFunction(js.context(),
 					nf, 0, JSFUN_FLAGS_MASK, // | JSFUN_BOUND_METHOD, // | JSFUN_LAMBDA,
 					js.global(),
 					name.c_str() );
-	return add_function( js, name, f );
+	uv_assert_err_ret(addFunction( js, name, f));
+	return UV_ERR_OK;
 }
 
-size_t add_functions( ape::MonkeyWrapper &js, JSFunctionSpec head[] )
+static uv_err_t addFunctions( ape::MonkeyWrapper &js, JSFunctionSpec head[] )
 {
-	size_t ret = 0;
 	for( JSFunctionSpec * f = head;
 	     f && f->name;
 	     ++f )
 	{
-		add_function( js, f->name, f->call );
-		++ret;
+		uv_assert_err_ret(addFunction( js, f->name, f->call ));
 	}
-	return ret;
+	return UV_ERR_OK;
 }
 
-
+/*
+UVDJavascriptSpiderapeInterpreter
+*/
 
 UVDJavascriptSpiderapeInterpreter::UVDJavascriptSpiderapeInterpreter()
 {
@@ -160,18 +144,15 @@ uv_err_t UVDJavascriptSpiderapeInterpreter::init()
 	//Stop printing errors to stdout
 	JS_SetErrorReporter(m_monkeyWrapper.context(), spiderMonkeyErrorReporter);
 	//Mostly ovveride print so output does not go to stdout
-	add_functions(m_monkeyWrapper, builtin_funcs);
+	uv_assert_err_ret(addFunctions(m_monkeyWrapper, builtin_funcs));
 
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDJavascriptSpiderapeInterpreter::interpret(const UVDInterpreterExpression &exp, const UVDVariableMap &environment, std::string &sRet)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	std::string sJavascriptProgram;
 	std::string sScriptRet;
-
-	UV_ENTER();
 
 	//Clear buffer, if possible
 	//g_stringStream.sync();
@@ -187,7 +168,7 @@ uv_err_t UVDJavascriptSpiderapeInterpreter::interpret(const UVDInterpreterExpres
 		std::string value;
 		UVDVarient varient = (*iter).second;
 		
-		uv_assert_err(varientToScriptValue(varient, value));
+		uv_assert_err_ret(varientToScriptValue(varient, value));
 		sJavascriptProgram += key  + "=" + value + ";\n";		
 	}
 	
@@ -199,7 +180,7 @@ uv_err_t UVDJavascriptSpiderapeInterpreter::interpret(const UVDInterpreterExpres
 	sJavascriptProgram +=
 		"function CALL(address)\n"
 		"{\n"
-			"\tprint('" SCRIPT_KEY_CALL "=' +  address + '\\n');\n"
+			"\tuvd_print('" SCRIPT_KEY_CALL "=' +  address + '\\n');\n"
 		"}\n"
 		"\n";
 	
@@ -207,8 +188,7 @@ uv_err_t UVDJavascriptSpiderapeInterpreter::interpret(const UVDInterpreterExpres
 	sJavascriptProgram +=
 		"function GOTO(address)\n"
 		"{\n"
-			"\tprint('" SCRIPT_KEY_JUMP "=' + address + '\\n');\n"
-			//"print('test');\n"
+			"\tuvd_print('" SCRIPT_KEY_JUMP "=' + address + '\\n');\n"
 		"}\n"
 		"\n";
 
@@ -235,7 +215,7 @@ uv_err_t UVDJavascriptSpiderapeInterpreter::interpret(const UVDInterpreterExpres
 	{
 		printf_error("Failed to execute script!\n");
 		printf_error("%s\n", sJavascriptProgram.c_str());
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	//Would like to make this into a general error code, ignore for now
 	sScriptRet = ape::jsval_to_std_string(m_monkeyWrapper.context(), retVal);
@@ -244,10 +224,7 @@ uv_err_t UVDJavascriptSpiderapeInterpreter::interpret(const UVDInterpreterExpres
 	sRet = getNextBufferData();
 	printf_debug("Buffered output: <%s>\n", sRet.c_str());	
 	
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 #endif ///USING_SPIDERAPE
