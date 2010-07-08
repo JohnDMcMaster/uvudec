@@ -12,9 +12,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_format.h"
 #include "uvd_util.h"
 #include "main.h"
-#include <string.h>
 #include <vector>
 #include <string>
+#include <stdio.h>
+#include <string.h>
 
 UVDInstructionShared::UVDInstructionShared()
 {

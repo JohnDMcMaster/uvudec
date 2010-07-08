@@ -70,6 +70,9 @@ public:
 
 	//Copy as appropriete to maintain own object that can be deleted
 	virtual uv_err_t deepCopy(UVDData **out);
+	
+	//For debugging
+	void hexdump();
 
 private:
 	//NOTE: this is not currently implemented, but may be in the future

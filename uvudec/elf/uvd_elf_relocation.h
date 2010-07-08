@@ -24,10 +24,10 @@ public:
 	
 	//Set the value of r_offset
 	//These two sets are equivilent, eliminate setSectionOffset later
-	uv_err_t setSectionOffset(uint32_t sectionOffset);
-	uv_err_t getSectionOffset(uint32_t *sectionOffset);	
-	virtual uv_err_t setOffset(uint32_t offset);
-	virtual uv_err_t getOffset(uint32_t *offset);
+	//uv_err_t setSectionOffset(uint32_t sectionOffset);
+	//uv_err_t getSectionOffset(uint32_t *sectionOffset);	
+	//virtual uv_err_t setOffset(uint32_t offset);
+	//virtual uv_err_t getOffset(uint32_t *offset);
 
 	//Every relocation has a number of bits it should support it seems
 	virtual uv_err_t updateRelocationTypeByBits(uint32_t nBits) = 0;
@@ -53,7 +53,8 @@ public:
 	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
 	uv_err_t getElfSymbol(UVDElfSymbol **symbolOut);
 
-	virtual uv_err_t updateForWrite();
+	//virtual uv_err_t constructForWrite();
+	virtual uv_err_t applyRelocationsForWrite();
 
 public:
 	//replaced by UVDRelocationFixup::m_symbol which must be of type UVDElfSymbol
@@ -120,12 +121,14 @@ public:
 	virtual uv_err_t initRelocatableData();
 
 	//To compute the necessary Elf32_Rel table
-	virtual uv_err_t updateDataCore();
-	virtual uv_err_t syncDataAfterUpdate();
+	//virtual uv_err_t updateDataCore();
+	//virtual uv_err_t syncDataAfterUpdate();
 
 	uv_err_t addRelocation(UVDElfRelocation *relocation);
 
-	virtual uv_err_t updateForWrite();
+	//virtual uv_err_t updateForWrite();
+	virtual uv_err_t constructForWrite();
+	virtual uv_err_t applyRelocationsForWrite();
 
 	//stored in sh_link
 	uv_err_t setSymbolSection(UVDElfSymbolSectionHeaderEntry *section);
@@ -147,6 +150,7 @@ protected:
 	std::vector<UVDElfRelocation *> m_relocations;
 };
 
+#if 0
 /*
 A relocation value based on finding the index of the element in a table
 */
@@ -166,5 +170,6 @@ public:
 	//The string we are looking for
 	std::string m_sTarget;
 };
+#endif
 
 #endif

@@ -10,6 +10,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_analyzer.h"
 #include "uvd_binary_function.h"
 #include <algorithm>
+#include <stdio.h>
 
 UVDMemoryReference::UVDMemoryReference()
 {

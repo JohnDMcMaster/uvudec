@@ -6,6 +6,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd_ascii_art.h"
+#include <stdlib.h>
 
 #define UVNET_LOGO_0 \
 "           ___________\n" \

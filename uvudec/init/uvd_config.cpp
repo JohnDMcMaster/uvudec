@@ -225,19 +225,44 @@ UVDConfig::UVDConfig()
 	m_sDebugFile = UVD_OPTION_FILE_STDOUT;
 	//m_pDebugFile = NULL;
 
+	//FIXME: this doesn't scale well.  Make this more generic
+	//At the very least, these defaults should be selected in the Makefile/configure proces
+	//since this should be selectable by that anyway
 	//Don't default to an unsupported language	
 #if defined(USING_JAVASCRIPT)
 	//Default: javascript has the highest preformance
 	m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
+#if defined(USING_JAVASCRIPT_API)
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
+#elif defined(USING_JAVASCRIPT_EXEC)
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
+#else
+#error 'Bad'
+#endif
 #elif defined(USING_PYTHON)
 	//Slow due to lack of working API, but works fine
 	m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
+#if defined(USING_PYTHON_API)
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
+#elif defined(USING_PYTHON_EXEC)
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
+#else
+#error 'Bad'
+#endif
 #elif defined(USING_LUA)
 	//No bitwise operators...annoying
 	m_configInterpreterLangauge = UVD_LANGUAGE_LUA;
+#if defined(USING_LUA_API)
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
+#elif defined(USING_LUA_EXEC)
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
+#else
+#error 'Bad'
+#endif
 #else
 #error No valid interpreters
 #endif
+
 	m_analysisOnly = false;
 	m_uselessASCIIArt = false;
 	m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__LINEAR;

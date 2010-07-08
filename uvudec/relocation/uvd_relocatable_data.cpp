@@ -16,6 +16,10 @@ class UVDRelocatableDataPlaceholder : public UVDRelocatableData
 public:
 	UVDRelocatableDataPlaceholder();
 	~UVDRelocatableDataPlaceholder();
+	virtual uv_err_t deinit();
+
+	uv_err_t setData(UVDData *data);
+	uv_err_t transferData(UVDData *data, uint32_t freeDataAtDestruction);
 	
 public:
 	//Statically allocated data structure
@@ -25,12 +29,36 @@ public:
 
 UVDRelocatableDataPlaceholder::UVDRelocatableDataPlaceholder()
 {
+	//This is statically allocated, should not be freed
+	//FIXME: this was probably was was responsible for UVDRelocatableData desturctor causing crashes
+	m_freeDataAtDestruction = FALSE;
 	m_data = &m_dataPlaceholder;
 	m_defaultRelocatableData = &m_dataPlaceholder;
 }
 
 UVDRelocatableDataPlaceholder::~UVDRelocatableDataPlaceholder()
 {
+}
+
+uv_err_t UVDRelocatableDataPlaceholder::deinit()
+{
+	//These were not dynamically allocated, so don't try to free them
+	m_data = NULL;
+	m_defaultRelocatableData = NULL;
+	
+	uv_assert_err_ret(UVDRelocatableData::deinit());
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableDataPlaceholder::setData(UVDData *data)
+{
+	//A placeholder has no data
+	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
+}
+
+uv_err_t UVDRelocatableDataPlaceholder::transferData(UVDData *data, uint32_t freeDataAtDestruction)
+{
+	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 }
 
 /*
@@ -40,6 +68,7 @@ UVDRelocatableData
 UVDRelocatableData::UVDRelocatableData()
 {
 	m_data = NULL;
+	m_freeDataAtDestruction = TRUE;
 	m_defaultRelocatableData = NULL;
 }
 
@@ -58,6 +87,7 @@ UVDRelocatableData::~UVDRelocatableData()
 
 uv_err_t UVDRelocatableData::deinit()
 {
+//FIXME: figure out double free issues
 return UV_ERR_OK;
 	for( std::set<UVDRelocationFixup *>::iterator iter = m_fixups.begin(); iter != m_fixups.end(); ++iter )
 	{
@@ -65,7 +95,10 @@ return UV_ERR_OK;
 	}
 	m_fixups.clear();
 
-	delete m_data;
+	if( m_freeDataAtDestruction )
+	{
+		delete m_data;
+	}
 	m_data = NULL;
 	
 	delete m_defaultRelocatableData;
@@ -139,11 +172,11 @@ uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
 {
 	uv_assert_ret(data);
 
-	if( !m_defaultRelocatableData )
+	if( !m_defaultRelocatableData && m_data )
 	{
 		uv_assert_err_ret(updateDefaultRelocatableData());
+		uv_assert_ret(m_defaultRelocatableData);
 	}
-	uv_assert_ret(m_defaultRelocatableData);
 	*data = m_defaultRelocatableData;
 	return UV_ERR_OK;
 }
@@ -178,7 +211,11 @@ uv_err_t UVDRelocatableData::setData(UVDData *data)
 	/*
 	Since we should own this data object, we need to delete old if present and make a deep copy
 	*/
-	delete m_data;
+	if( m_freeDataAtDestruction )
+	{
+		delete m_data;
+	}
+	m_data = NULL;
 	//This is invalidated and will have to be regen
 	delete m_defaultRelocatableData;
 	m_defaultRelocatableData = NULL;
@@ -187,19 +224,67 @@ uv_err_t UVDRelocatableData::setData(UVDData *data)
 	{
 		uv_assert_err_ret(data->deepCopy(&m_data));
 	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRelocatableData::transferData(UVDData *data, uint32_t freeDataAtDestruction)
+{
+	if( m_freeDataAtDestruction )
+	{
+		delete m_data;
+	}
+	m_data = data;
+	m_freeDataAtDestruction = freeDataAtDestruction;
+
+	return UV_ERR_OK;
+}
+
+void UVDRelocatableData::hexdump()
+{
+	UVDData *data = NULL;
+	
+	if( UV_FAILED(getRelocatableData(&data)) )
+	{
+		printf_debug("Could not get data\n");
+		return;
+	}
+	data->hexdump();
+}
+
+void UVDRelocatableData::hexdumpDefault()
+{
+	UVDData *data = NULL;
+	
+	if( UV_FAILED(getDefaultRelocatableData(&data)) )
+	{
+		printf_debug("Could not get data\n");
+		return;
+	}
+	data->hexdump();
+}
+
+uv_err_t UVDRelocatableData::size(uint32_t *sizeOut)
+{
+	UVDData *data = NULL;
+	
+	uv_assert_err_ret(getRelocatableData(&data));
+	uv_assert_ret(sizeOut);
+	if( data )
+	{
+		uv_assert_err_ret(data->size(sizeOut));
+	}
 	else
 	{
-		m_data = NULL;
+		*sizeOut = 0;
 	}
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDRelocatableData::transferData(UVDData *data)
+bool UVDRelocatableData::requiresDataSync()
 {
-	delete m_data;
-	m_data = data;
-	return UV_ERR_OK;
+	return true;
 }
 
 /*
@@ -225,20 +310,23 @@ uv_err_t UVDMultiRelocatableData::updateData()
 {
 	std::vector<UVDData *> datas;
 
+printf("\n\nMulti update on 0x%.8X\n", (unsigned int)this);
 	for( std::vector<UVDRelocatableData *>::iterator iter = m_relocatableDatas.begin();
 			iter != m_relocatableDatas.end(); ++iter )
 	{
 		UVDRelocatableData *relocatableData = *iter;
 		UVDData *data = NULL;
 		
+
 		uv_assert_ret(relocatableData);
 		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
 		datas.push_back(data);
+printf("\tMulti update on relocatable data 0x%.8X, data: 0x%.8X\n", (unsigned int)relocatableData, (unsigned int)data);
 	}
 	
 	//FIXME: we should probably delete the old m_data, realloc, copy or something it
 	uv_assert_err_ret(UVDData::concatenate(datas, &m_data));
-	printf_debug("multi update\n");	
+printf("multi update\n");	
 	return UV_ERR_OK;
 }
 
@@ -253,7 +341,7 @@ uv_err_t UVDMultiRelocatableData::updateDefaultRelocatableData()
 		UVDData *data = NULL;
 		
 		uv_assert_ret(relocatableData);
-		uv_assert_ret(relocatableData->getDefaultRelocatableData(&data));
+		uv_assert_err_ret(relocatableData->getDefaultRelocatableData(&data));
 		datas.push_back(data);
 	}
 	
@@ -290,3 +378,9 @@ uv_err_t UVDMultiRelocatableData::isEmpty(uint32_t *isEmpty)
 	*isEmpty = m_relocatableDatas.empty();
 	return UV_ERR_OK;
 }
+
+bool UVDMultiRelocatableData::requiresDataSync()
+{
+	return false;
+}
+

@@ -10,6 +10,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_types.h"
 #include "uvd_format.h"
 #include "main.h"
+#include <stdio.h>
 
 const char *uvd_data_str(int uvd_data)
 {

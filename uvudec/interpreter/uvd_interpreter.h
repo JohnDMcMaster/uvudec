@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#pragma once
+#ifndef UVD_INTERPRETER_H
+#define UVD_INTERPRETER_H
 
 #include <string>
 #include "uvd_types.h"
@@ -80,3 +81,6 @@ public:
 	//for unconditional and conditional branches/jumps
 	uv_err_t extractBranchOutput(UVDVariableMap &variableMap, UVDInterpretedBranch *out);
 };
+
+#endif
+

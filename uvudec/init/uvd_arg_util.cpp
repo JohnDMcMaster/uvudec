@@ -7,6 +7,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_arg.h"
 #include "uvd_arg_util.h"
 #include <vector>
+#include <string.h>
 
 uv_err_t parseFileOption(const std::string optionFileIn, FILE **pOptionFileIn)
 {

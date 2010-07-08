@@ -134,7 +134,8 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 	//Size
 	uv_assert_err_ret(elfRelocation->updateRelocationTypeByBits(analysisRelocation->getSizeBits()));
 	//Where
-	elfRelocation->setSectionOffset(analysisRelocation->m_offset);
+	//elfRelocation->setSectionOffset(analysisRelocation->m_offset);
+	elfRelocation->m_offset = analysisRelocation->m_offset;
 	//Note value is the external symbol value
 
 	

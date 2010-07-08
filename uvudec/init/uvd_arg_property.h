@@ -21,13 +21,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define UVD_PROP_DEBUG_FILE						"debug.file"
 //Config
 #define UVD_PROP_CONFIG_LANGUAGE				"config.language"
+#define UVD_PROP_CONFIG_LANGUAGE_INTERFACE		"config.language_interface"
 //Target
 #define UVD_PROP_TARGET_ADDRESS_INCLUDE			"target.address_include"
-//#define UVD_PROP_TARGET_ADDRESS_INCLUDE_MIN		"target.address_include.min"
-//#define UVD_PROP_TARGET_ADDRESS_INCLUDE_MAX		"target.address_include.max"
 #define UVD_PROP_TARGET_ADDRESS_EXCLUDE			"target.address_exclude"
-//#define UVD_PROP_TARGET_ADDRESS_EXCLUDE_MIN		"target.address_exclude.min"
-//#define UVD_PROP_TARGET_ADDRESS_EXCLUDE_MAX		"target.address_exclude.max"
 #define UVD_PROP_TARGET_FILE					"target.file"
 #define UVD_PROP_TARGET_ADDRESS					"target.address"
 //Analysis

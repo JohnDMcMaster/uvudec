@@ -30,94 +30,16 @@ uv_err_t UVDConfigExpression::deinit()
 	return UV_ERR_OK;
 }
 
-/*
-UVDConfigExpression::UVDConfigExpression(std::string &sExpression)
-{
-	compile(sExpression);
-}
-*/
-
 uv_err_t UVDConfigExpression::compile(const std::string &sExpression)
 {
 	uv_assert_ret(m_configExpressionInterpreter);
 	return UV_DEBUG(m_configExpressionInterpreter->compile(sExpression, this));
 }
 
-/************
-Language specific config interpreters
-These do fixup on config file to enable it to be executed in real languages
-************/
-
-
-#ifdef USING_PYTHON
-
-#include "interpreter/uvd_python.h"
-
-class UVDPythonConfigExpressionInterpreter : public UVDConfigExpressionInterpreter
-{
-public:
-	UVDPythonConfigExpressionInterpreter();
-	~UVDPythonConfigExpressionInterpreter();
-
-	uv_err_t init();
-	
-public:
-};
-
-UVDPythonConfigExpressionInterpreter::UVDPythonConfigExpressionInterpreter()
-{
-}
-
-UVDPythonConfigExpressionInterpreter::~UVDPythonConfigExpressionInterpreter()
-{
-}
-
-uv_err_t UVDPythonConfigExpressionInterpreter::init()
-{
-	uv_assert_err_ret(UVDConfigExpressionInterpreter::init());
-	m_interpreter = new UVDPythonInterpreter();
-	uv_assert_ret(m_interpreter);
-	return UV_ERR_OK;
-}
-#endif //USING_PYTHON
-
-
-#ifdef USING_LUA
-
-#include "interpreter/uvd_lua.h"
-
-class UVDLuaConfigExpressionInterpreter : public UVDConfigExpressionInterpreter
-{
-public:
-	UVDLuaConfigExpressionInterpreter();
-	~UVDLuaConfigExpressionInterpreter();
-
-	uv_err_t init();
-	
-public:
-};
-
-UVDLuaConfigExpressionInterpreter::UVDLuaConfigExpressionInterpreter()
-{
-}
-
-UVDLuaConfigExpressionInterpreter::~UVDLuaConfigExpressionInterpreter()
-{
-}
-
-uv_err_t UVDLuaConfigExpressionInterpreter::init()
-{
-	uv_assert_err_ret(UVDConfigExpressionInterpreter::init());
-	m_interpreter = new UVDLuaInterpreter();
-	uv_assert_ret(m_interpreter);
-	uv_assert_err_ret(m_interpreter->init());
-	return UV_ERR_OK;
-}
-#endif //USING_LUA
-
-
 /*
 Generic template implementation for basic interpreter functionality
+I had been hoping to use this interface to support compiled expression management,
+but it wasn't implemented and now this mostly just adds 
 */
 template <typename T>
 class UVDConfigExpressionInterpreterTemplate : public UVDConfigExpressionInterpreter
@@ -155,6 +77,21 @@ uv_err_t UVDConfigExpressionInterpreterTemplate<T>::init()
 #include "interpreter/uvd_javascript.h"
 typedef UVDConfigExpressionInterpreterTemplate<UVDJavascriptInterpreter> UVDJavascriptConfigExpressionInterpreter;
 #endif //USING_JAVASCRIPT
+
+#ifdef USING_PYTHON
+#include "interpreter/uvd_python.h"
+#ifdef USING_PYTHON_API
+typedef UVDConfigExpressionInterpreterTemplate<UVDPythonAPIInterpreter> UVDPythonConfigExpressionAPIInterpreter;
+#endif
+#ifdef USING_PYTHON_EXEC
+typedef UVDConfigExpressionInterpreterTemplate<UVDPythonExecInterpreter> UVDPythonConfigExpressionExecInterpreter;
+#endif
+#endif //USING_PYTHON
+
+#ifdef USING_LUA
+#include "interpreter/uvd_lua.h"
+typedef UVDConfigExpressionInterpreterTemplate<UVDLuaInterpreter> UVDLuaConfigExpressionInterpreter;
+#endif //USING_LUA
 
 /******
 base class interpreter
@@ -321,15 +258,33 @@ uv_err_t UVDConfigExpressionInterpreter::getConfigExpressionInterpreter(UVDConfi
 	
 	//Select the embedded interpreter we are going to use
 	int selectedInterpreter = 0;
+	int selectedInterpreterInterface = 0;
 	
 	uv_assert_ret(g_config);
 	selectedInterpreter = g_config->m_configInterpreterLanguage;
+	selectedInterpreterInterface = g_config->m_configInterpreterLanguageInterface;
 	switch( selectedInterpreter )
 	{
 #ifdef USING_PYTHON
 	case UVD_LANGUAGE_PYTHON:
-		printf_debug_level(UVD_DEBUG_SUMMARY, "Chose python interpreter\n");
-		interpreter = new UVDPythonConfigExpressionInterpreter();
+		switch( selectedInterpreterInterface )
+		{
+#ifdef USING_PYTHON_API
+		case UVD_LANGUAGE_INTERFACE_API:
+			printf_debug_level(UVD_DEBUG_SUMMARY, "Chose python API interpreter\n");
+			interpreter = new UVDPythonConfigExpressionAPIInterpreter();
+			break;
+#endif //USING_PYTHON_API
+#ifdef USING_PYTHON_EXEC
+		case UVD_LANGUAGE_INTERFACE_EXEC:
+			printf_debug_level(UVD_DEBUG_SUMMARY, "Chose python exec interpreter\n");
+			interpreter = new UVDPythonConfigExpressionExecInterpreter();
+			break;
+#endif //USING_PYTHON_EXEC
+		default:
+			printf_error("Unknown python interpreter interface\n");
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
 		break;
 #endif //USING_PYTHON
 #ifdef USING_LUA

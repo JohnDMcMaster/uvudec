@@ -75,20 +75,24 @@ public:
  	//Get the header entry with the fixups necessary to push it to the file
  	uv_err_t getHeaderEntryRelocatable(UVDRelocatableData **symbolEntryRelocatable);
 	
+	//Update symbol string table
 	virtual uv_err_t updateForWrite();
+	//virtual uv_err_t constructForWrite();
+	//Get string table refs
+	virtual uv_err_t applyRelocationsForWrite();
 
   	//The symbol's (function's/variable's) name
 
 protected:
-	virtual uv_err_t addSymbolNameRelocation();
+	//virtual uv_err_t addSymbolNameRelocation();
 	//The symbol is about to be saved and all its relocatables should be updated
-	virtual uv_err_t updateRelocations();
-	//Every symbol type has a specific type that it should have since construction
+	//virtual uv_err_t updateRelocations();
+	//Every symbol type has specific values depending on defined data
 	virtual uv_err_t updateType() = 0;
 
 public:
 	//The symbol's (function's/variable's) name
-	//std::string m_sName;
+	//std::string m_name;
 	//The actual data this symbol represents, if its resolved
 	//If the symbol is not resolved, data will be NULL
 	//Relocatable form so we can do some util stuff like get zerod version
@@ -106,6 +110,7 @@ public:
 	//The section header this relocation applies to, if its not special
 	//ie if STT_SECTION is used, used to compute st_shndx
 	UVDElfSectionHeaderEntry *m_relevantSectionHeader;
+	
 };
 
 /*
@@ -148,6 +153,7 @@ public:
 
 /*
 Section link symbol
+These are used to specify relocations relative to the start of a section
 */
 class UVDElfSectionSymbol : public UVDElfSymbol
 {
@@ -156,6 +162,24 @@ public:
 	~UVDElfSectionSymbol();
 
 	virtual uv_err_t updateForWrite();
+
+protected:
+	uv_err_t updateType();
+
+public:
+};
+
+/*
+File name symbol
+*/
+class UVDElfFilenameSymbol : public UVDElfSymbol
+{
+public:
+	UVDElfFilenameSymbol();
+	~UVDElfFilenameSymbol();
+
+	virtual uv_err_t updateForWrite();
+	//virtual uv_err_t applyRelocationsForWrite();
 
 protected:
 	uv_err_t updateType();
@@ -175,7 +199,7 @@ public:
 
 protected:
 	uv_err_t updateType();
-	virtual uv_err_t addSymbolNameRelocation();
+	//virtual uv_err_t addSymbolNameRelocation();
 
 public:
 };
@@ -198,8 +222,9 @@ public:
 	//A typical symbol having a name and such
 	//It will need to be further refined as a function etc
 	//Whether or not the symbol is defined will be determined by set data 
-	uv_err_t getFunctionSymbol(const std::string &section, UVDElfSymbol **symbol);
-	uv_err_t getVariableSymbol(const std::string &section, UVDElfSymbol **symbol);
+	uv_err_t getFunctionSymbol(const std::string &name, UVDElfSymbol **symbolOut);
+	uv_err_t getVariableSymbol(const std::string &name, UVDElfSymbol **symbolOut);
+	uv_err_t getFilenameSymbol(const std::string &name, UVDElfSymbol **symbolOut);
 	//Add a STT_SECTION entry
 	uv_err_t addSectionSymbol(const std::string &section);
 	
@@ -207,12 +232,18 @@ public:
 	uv_err_t getSymbolIndex(const UVDElfSymbol *symbool, uint32_t *index);
 	
 	//The symbol table has string relocations, non-trivial to return
-	virtual uv_err_t updateDataCore();
-	virtual uv_err_t syncDataAfterUpdate();
+	//virtual uv_err_t updateDataCore();
+	//virtual uv_err_t syncDataAfterUpdate();
 
-	uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable);
+	//uv_err_t getSymbolStringRelocatableElement(const std::string &s, UVDRelocatableElement **relocatable);
+	uv_err_t getSymbolStringIndex(const std::string &s, uint32_t *index);
 		
 	virtual uv_err_t updateForWrite();
+	virtual uv_err_t constructForWrite();
+	virtual uv_err_t applyRelocationsForWrite();
+	
+	//The filename this object will be attributed to being sourced from
+	uv_err_t setSourceFilename(const std::string &file);
 
 protected:
 	uv_err_t getSectionSymbol(const std::string &section, UVDElfSymbol **symbol);

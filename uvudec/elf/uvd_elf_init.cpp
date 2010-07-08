@@ -9,14 +9,16 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_data.h"
 #include "uvd_types.h"
 #include "uvd_util.h"
-#include <elf.h>
 #include <vector>
 #include <string>
-
+#include <elf.h>
+#include <stdio.h>
+#include <string.h>
 
 UVDElf::UVDElf()
 {
 	m_data = NULL;
+	memset(&m_elfHeader, 0, sizeof(Elf32_Ehdr));
 }
 
 UVDElf::~UVDElf()
@@ -263,50 +265,56 @@ uv_err_t UVDElf::init()
 
 	//Add the null section
 	//According to TIS, only SHT_NULL is defined, other fields are undefined
-	nullSection = new UVDElfSectionHeaderEntry();
-	uv_assert_ret(nullSection);
-	uv_assert_err_ret(nullSection->init());
-	nullSection->setType(SHT_NULL);
-	uv_assert_err_ret(addSectionHeaderSection(nullSection));
+	//nullSection = new UVDElfSectionHeaderEntry();
+	//uv_assert_ret(nullSection);
+	//uv_assert_err_ret(nullSection->init());
+	//nullSection->setType(SHT_NULL);
+	//uv_assert_err_ret(addSectionHeaderSection(nullSection));
+	uv_assert_err_ret(addUVDElfSectionHeaderEntry(UVD_ELF_SECTION_NULL,
+			&nullSection));
 
 	//Add section header string table section
-	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
+	uv_assert_err_ret(addUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SECTION_STRING_TABLE,
 			&sectionStringTableSection));
 	uv_assert_ret(sectionStringTableSection);
-	uv_assert_err_ret(sectionStringTableSection->init());
-	uv_assert_err_ret(addSectionHeaderSection(sectionStringTableSection));
+	//uv_assert_err_ret(sectionStringTableSection->init());
+	//uv_assert_err_ret(addSectionHeaderSection(sectionStringTableSection));
 	//Register the index (only SHT_NULL was before this)
 	//We could alternativly do this as a UVDRelocatable
-	m_elfHeader.e_shstrndx = 1;
+	//Is this necessary?  Shouldn't it be done later along with everything else?
+	//This was used to bootstrap the string finding process
+	//More useful for loaded files and uncesary as this could be accomplished during the loading process
+	//m_elfHeader.e_shstrndx = 1;
 	//Null string in string table must be first element
 	uv_assert_err_ret(addSectionHeaderString(""));
 
 	//Add executable data section
-	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
+	uv_assert_err_ret(addUVDElfSectionHeaderEntry(UVD_ELF_SECTION_EXECUTABLE,
 			&executableSection));
 	uv_assert_ret(executableSection);
-	uv_assert_err_ret(executableSection->init());
-	uv_assert_err_ret(addSectionHeaderSection(executableSection));
+	//uv_assert_err_ret(executableSection->init());
+	//uv_assert_err_ret(addSectionHeaderSection(executableSection));
 
 	//Add symbol string table section
-	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
+	uv_assert_err_ret(addUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_STRING_TABLE,
 			&symbolStringTableSection));
 	uv_assert_ret(symbolStringTableSection);
-	uv_assert_err_ret(symbolStringTableSection->init());
-	uv_assert_err_ret(addSectionHeaderSection(symbolStringTableSection));
+	//uv_assert_err_ret(symbolStringTableSection->init());
+	//uv_assert_err_ret(addSectionHeaderSection(symbolStringTableSection));
 	//Null string in string table must be first element
 	uv_assert_err_ret(addSymbolString(""));	
 
 	//Add symbol table section
-	uv_assert_err_ret(getUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_TABLE,
+	uv_assert_err_ret(addUVDElfSectionHeaderEntry(UVD_ELF_SECTION_SYMBOL_TABLE,
 			&symbolTableSection));
 	uv_assert_ret(symbolTableSection);
-	uv_assert_err_ret(symbolTableSection->init());
+	//uv_assert_err_ret(symbolTableSection->init());
 	symbolTableSection->setLinkSection(symbolStringTableSection);
-	uv_assert_err_ret(addSectionHeaderSection(symbolTableSection));
+	//uv_assert_err_ret(addSectionHeaderSection(symbolTableSection));
 
 	//Add .rel.text
 	//Must be done after fundamental sections are in place
+	//Above comment probably only applies to first architecture
 	uv_assert_err_ret(executableSection->useRelocatableSection());
 
 	return UV_ERR_OK;

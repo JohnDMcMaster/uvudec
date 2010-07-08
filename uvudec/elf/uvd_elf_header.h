@@ -15,6 +15,8 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <elf.h>
 
 //Section names
+//"No section", although this does exist as a section presumably for efficency reasons
+#define UVD_ELF_SECTION_NULL					""
 //The section name for the section string table
 #define UVD_ELF_SECTION_SECTION_STRING_TABLE			".shstrtab"
 //The section name for the symbol string table
@@ -53,12 +55,15 @@ public:
 	//Initialize based on some raw data
 	virtual uv_err_t setHeaderData(const UVDData *data) = 0;
 	//Get the raw header data representation
+	//It is callers responsibility to free the data
+	//but it should probably be changed to be this objects responsibility
 	virtual uv_err_t getHeaderData(UVDData **data) = 0;
 
 	virtual void setFileData(UVDData *data);
 	/*
 	Get the data we need to save
 	data will be free'd when this object is free'd
+	Should only be called by UVDElfWritter
 	*/
 	virtual uv_err_t getFileData(UVDData **data);
 	virtual uv_err_t getFileRelocatableData(UVDRelocatableData **supportingData);
@@ -70,8 +75,11 @@ public:
 	//virtual uv_err_t getFileData(UVDRelocatableDataMemory **data) = 0;
 	virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize) = 0;
 	//Update data so a standard above function can be used
-	virtual uv_err_t updateData();
-	virtual uv_err_t syncDataAfterUpdate();
+	//This should give enough information, in particular sizing, so that offsets can be calculated to place sections
+	//virtual uv_err_t updateData();
+	//virtual uv_err_t syncDataAfterUpdate();
+	//After all sections have been placed, fill in file offsets
+	//virtual uv_err_t applyRelocations();
 	
 	//Add a fixup location to the file data
 	//void addFileRelocation(UVDRelocatableData *relocation);
@@ -82,10 +90,21 @@ public:
 	*/
 	//void addElfRelocation(Elf32_Rel rel, int shtType);
 	
+	//Final update after updateData() has been called on all headers to fill in relocation information
 	virtual uv_err_t updateForWrite();
+	virtual uv_err_t constructForWrite();
+	virtual uv_err_t applyRelocationsForWrite();
+	
+	/*
+	Issue 1: UVDMultiRelocatableData is automatically synced and cannot have the data set on it
+	Issue 2: could manually sync at end of constructForWrite(), but error prone to forget and should always be done
+	Possible solution : call from uvd_elf_write.cpp to ensure sync after update.  Will be filtered out as subclass thinks appropriete
+	Solution for now: requiresDataSync() function
+	*/
+	//virtual uv_err_t syncDataAfterConstruct();
 	
 protected:
-	virtual uv_err_t updateDataCore();	
+	//virtual uv_err_t updateDataCore();	
 	
 public:
 	//The actual data
@@ -137,27 +156,6 @@ public:
 	virtual uv_err_t setHeaderData(const UVDData *data);
 
 	uv_err_t getSupportingDataSize(uint32_t *sectionSize);
-
-#if 0
-	uv_err_t getFlags(int *flags);
-	void setFlags(int flags);
-
-	uv_err_t getVirtualAddress(int *address);
-	void setVirtualAddress(int address);
-
-	//Usually section header link, but section dependent
-	uv_err_t getSectionLink(int *index);
-	void setSectionLink(int index);
-	
-	uv_err_t getInfo(int *info);
-	void setInfo(int info);
-
-	uv_err_t getAlignment(int *alignment);
-	void setAlignment(int alignment);
-
-	uv_err_t getTableEntrySize(int *entrySize);
-	void setTableEntrySize(int entrySize);
-#endif
 
 public:
 	//Section name
@@ -218,28 +216,11 @@ public:
 	//null if its not a relocatable section
 	virtual uv_err_t getRelocatableSection(UVDElfRelocationSectionHeaderEntry **entry);
 	
-#if 0
-	uv_err_t getVirtualAddress(int *address);
-	void setVirtualAddress(int address);
-
-	uv_err_t getPhysicalAddress(int *address);
-	void setPhysicalAddress(int address);
-
-	uv_err_t getMemorySize(int *size);
-	void setMemorySize(int size);
-
-	uv_err_t getFlags(int *flags);
-	void setFlags(int flags);
-
-	uv_err_t getAlignment(int *alignment);
-	void setAligntment(int alignment);
-#endif
-
 	uv_err_t updateForWrite();
 
 public:
 	//Name of this section
-	std::string m_sName;
+	std::string m_name;
 	//Section header for this element
 	Elf32_Shdr m_sectionHeader;
 	//If there is a .rel.<section name> section, pointer to it
@@ -258,16 +239,20 @@ class UVDElfStringTableSectionHeaderEntry : public UVDElfSectionHeaderEntry
 public:
 	UVDElfStringTableSectionHeaderEntry();
 	~UVDElfStringTableSectionHeaderEntry();
+	virtual uv_err_t init();
 	
-	//Make sure s is in the string table.  Return the index if specified
-	void addString(const std::string &s, unsigned int *index);
-
+	void addString(const std::string &s);
+	uv_err_t getStringOffset(const std::string &s, uint32_t *offsetOut);
+	//How big is the string table?
 	uv_err_t getSupportingDataSize(uint32_t *sectionSize);
 
 	//Only rebuilt when needed
 	//turned to updateData()
 	//uv_err_t ensureCurrentStringTableData();
-	virtual uv_err_t updateDataCore();
+	//During updateForWrite, we simply wait for new string table elements
+	//Here we build the table
+	//During relocateForWrite(), we simply push out offsets as requested
+	virtual uv_err_t constructForWrite();
 
 public:
 	std::vector<std::string> m_stringTable;
@@ -281,11 +266,12 @@ class UVDElfTextSectionHeaderEntry : public UVDElfSectionHeaderEntry
 public:
 	UVDElfTextSectionHeaderEntry();
 	~UVDElfTextSectionHeaderEntry();
+	uv_err_t init();
 
 	//This is a compilation of all of the symbols
 	//virtual uv_err_t getFileData(UVDData **data);
 	//virtual uv_err_t getSupportingDataSize(uint32_t *sectionSize);
-	virtual uv_err_t updateDataCore();
+	virtual uv_err_t constructForWrite();
 
 public:
 };

@@ -21,7 +21,7 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST(versionArgTest);
 	CPPUNIT_TEST(helpArgTest);
 	CPPUNIT_TEST(engineInitTest);
-	CPPUNIT_TEST(analysisDirTest);
+	//CPPUNIT_TEST(analysisDirTest);
 	CPPUNIT_TEST(disassembleTest);
 	CPPUNIT_TEST(disassembleRangeTestDeliminators);
 	CPPUNIT_TEST(disassembleRangeTestDefaultEquivilence);

@@ -4,9 +4,6 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
-#include <string.h>
-#include <string>
-#include <vector>
 #include "uvd_util.h"
 #include "uvd_address.h"
 #include "uvd_config.h"
@@ -15,6 +12,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include "uvd_instruction.h"
 #include "uvd_types.h"
 #include "uvd_opcode.h"
+#include <string>
+#include <vector>
+#include <string.h>
+#include <stdio.h>
 
 /**********************
 Begin init related

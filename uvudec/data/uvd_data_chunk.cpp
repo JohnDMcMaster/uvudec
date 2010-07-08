@@ -32,7 +32,7 @@ uv_err_t UVDDataChunk::init(UVDData *data)
 	return UV_DEBUG(init(data, 0, data->size()));
 }
 
-uv_err_t UVDDataChunk::init(UVDData *data, unsigned int minAddr, unsigned int maxAddr)
+uv_err_t UVDDataChunk::init(UVDData *data, uv_addr_t minAddr, uv_addr_t maxAddr)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 #ifdef UGLY_READ_HACK
@@ -50,9 +50,7 @@ uv_err_t UVDDataChunk::init(UVDData *data, unsigned int minAddr, unsigned int ma
 	m_buffer = (char *)malloc(dataSize * sizeof(char));
 	uv_assert(m_buffer);
 	
-	readRc = data->read(minAddr, m_buffer, dataSize);
-	uv_assert(readRc >= 0);
-	uv_assert(((unsigned int)readRc) == dataSize);
+	uv_assert_err_ret(data->readData(minAddr, m_buffer, dataSize));
 #else
 	m_data = data;
 #endif //UGLY_READ_HACK
@@ -90,7 +88,7 @@ uv_err_t UVDDataChunk::ensureRead()
 	uv_assert_ret(m_data);
 	m_buffer = (char *)malloc(m_bufferSize * sizeof(char));
 	uv_assert_ret(m_buffer);
-	uv_assert_err_ret(m_data->read(m_offset, m_buffer, m_bufferSize));
+	uv_assert_err_ret(m_data->readData(m_offset, m_buffer, m_bufferSize));
 
 	return UV_ERR_OK;
 }
