@@ -166,3 +166,9 @@ distCore:
 	$(TAR) -cvf $(PACKAGE)-$(UVUDEC_VER).tar $(PACKAGE)-$(UVUDEC_VER)
 	$(GZIP) $(PACKAGE)-$(UVUDEC_VER).tar
 	$(RM) -r $(PACKAGE)-$(UVUDEC_VER)
+
+mrproper: clean
+	find -name '*.o' -exec rm {} ';'
+	find -name '*.so' -exec rm {} ';'
+	find -name '*.a' -exec rm {} ';'
+
