@@ -743,7 +743,6 @@ printf("adding null symbol\n");
 	uv_assert_err_ret(UVDElfNullSymbol::getUVDElfNullSymbol(&symbol));
 	uv_assert_ret(symbol);	
 	uv_assert_err_ret(prepareSymbol(symbol));
-	uv_assert_err_ret(addSymbol(symbol));
 
 	return UV_ERR_OK;
 }
@@ -763,6 +762,9 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::addSymbol(UVDElfSymbol *symbol)
 	//Don't do this, there are external symbols without data
 	//uv_assert_ret(symbol->m_relocatableData.m_data);
 	m_symbols.push_back(symbol);
+
+printf("adding symbol\n");
+UVD_PRINT_STACK();
 	return UV_ERR_OK;
 }
 
