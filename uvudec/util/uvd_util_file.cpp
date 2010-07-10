@@ -153,9 +153,10 @@ std::string uv_basename(const std::string &file)
 	std::string::size_type pos = file.rfind("/");
 	if( pos == std::string::npos )
 	{
-		return "";
+		return file;
 	}
-	return file.substr(pos);
+	//We should be gauranteed the null terminator for safe bound
+	return file.substr(pos + 1);
 }
 
 std::string uv_dirname(const std::string &file)
@@ -163,7 +164,7 @@ std::string uv_dirname(const std::string &file)
 	std::string::size_type pos = file.rfind("/");
 	if( pos == std::string::npos )
 	{
-		return file;
+		return "";
 	}
 	return file.substr(0, pos);
 }
