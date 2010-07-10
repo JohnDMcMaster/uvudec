@@ -250,6 +250,10 @@ public:
 	//Find the function symbol passed in and add all relocations, if any
 	uv_err_t collectRelocations(UVDBinaryFunction *function);
 
+	uv_err_t analyzedSymbolName(uint32_t functionAddress, int symbolType, std::string &symbolName);
+	//This should get moved to util
+	uv_err_t analyzedSymbolName(std::string dataSource, uint32_t functionAddress, int type, std::string &symbolName);
+
 private:
 	uv_err_t doCollectRelocations(UVDBinaryFunction *function, UVDBinarySymbol *analysisSymbol);
 

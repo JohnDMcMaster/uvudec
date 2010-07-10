@@ -548,7 +548,7 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t fu
 
 	//Start by getting the symbol, if it exists
 	//Get name
-	uv_assert_err_ret(uvd->analyzedSymbolName(functionAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
+	uv_assert_err_ret(analyzedSymbolName(functionAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
 	//Query symbol
 	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
 	{
@@ -603,7 +603,7 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocationByBits(uint32_t label
 
 	//Start by getting the symbol, if it exists
 	//Get name
-	uv_assert_err_ret(uvd->analyzedSymbolName(labelAddress, UVD__SYMBOL_TYPE__LABEL, symbolName));
+	uv_assert_err_ret(analyzedSymbolName(labelAddress, UVD__SYMBOL_TYPE__LABEL, symbolName));
 	//Query symbol
 	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
 	{
@@ -646,6 +646,45 @@ uv_err_t UVDBinarySymbolManager::findSymbolByAddress(uint32_t address, UVDBinary
 	*symbolOut = (*iter).second;
 
 	return UV_ERR_OK; 
+}
+
+uv_err_t UVDBinarySymbolManager::analyzedSymbolName(uint32_t symbolAddress, int symbolType, std::string &symbolName)
+{
+	std::string dataSource;
+	
+	uv_assert_ret(m_analyzer->m_uvd->m_data);
+	dataSource = uv_basename(m_analyzer->m_uvd->m_data->getSource());
+	uv_assert_err_ret(analyzedSymbolName(dataSource, symbolAddress, symbolType, symbolName));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbolManager::analyzedSymbolName(std::string dataSource, uint32_t symbolAddress, int symbolType, std::string &symbolName)
+{
+	/*
+	Might be nice to add on something about these being unknown symbol rather than known
+	Ex:
+	uvd_unknown__candela_rev_3__3242
+	*/
+	char buff[512];
+	std::string typePrefix;
+	std::string mangeledDataSource;
+	UVDConfig *config = m_analyzer->m_uvd->m_config;
+
+	uv_assert_err_ret(config->m_symbols.getSymbolTypeNamePrefix(symbolType, typePrefix));
+	
+	if( config->m_symbols.m_autoNameMangeledDataSource )
+	{
+		//file + address
+		//Do mangling to make sure we don't have dots and such
+		mangeledDataSource = UVDBinarySymbol::mangleFileToSymbolName(dataSource) + config->m_symbols.m_autoNameMangeledDataSourceDelim;
+	}
+	
+	snprintf(buff, 512, "%s%s%s%.4X", config->m_symbols.m_autoNameUvudecPrefix.c_str(), mangeledDataSource.c_str(), typePrefix.c_str(), symbolAddress);
+	
+	symbolName = std::string(buff);
+
+	return UV_ERR_OK;
 }
 
 /*
