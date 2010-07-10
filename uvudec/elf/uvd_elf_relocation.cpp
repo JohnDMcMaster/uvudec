@@ -100,7 +100,8 @@ uv_err_t UVDElfRelocation::getHeaderEntryRelocatable(UVDRelocatableData **symbol
 	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&headerDataMemory,
 			(char *)&m_relocation, sizeof(Elf32_Rel), false));
 	uv_assert_ret(headerDataMemory);
-	uv_assert_err_ret(m_headerEntryRelocatableData.setData(headerDataMemory));
+	//uv_assert_err_ret(m_headerEntryRelocatableData.setData(headerDataMemory));
+	uv_assert_err_ret(m_headerEntryRelocatableData.transferData(headerDataMemory, true));
 	
 	uv_assert_ret(symbolEntryRelocatableOut);
 	*symbolEntryRelocatableOut = &m_headerEntryRelocatableData;
@@ -110,6 +111,7 @@ uv_err_t UVDElfRelocation::getHeaderEntryRelocatable(UVDRelocatableData **symbol
 
 uv_err_t UVDElfRelocation::applyRelocationsForWrite()
 {
+printf("relocation: applying relocation for write\n");
 	//The two r_info parts
 	{
 		UVDElfSymbol *symbol = NULL;
@@ -121,6 +123,7 @@ uv_err_t UVDElfRelocation::applyRelocationsForWrite()
 		sectionHeader = symbol->m_symbolSectionHeader;
 		uv_assert_ret(sectionHeader);
 		uv_assert_err_ret(sectionHeader->getSymbolIndex(symbol, &symbolIndex));
+printf("symbol: %s, index: %d\n", symbol->m_sName.c_str(), symbolIndex);
 	
 		//What does this comment mean?  What is the real object?
 		//Might help later to update the real object
@@ -139,6 +142,7 @@ uv_err_t UVDElfRelocation::applyRelocationsForWrite()
 		m_relocation.r_offset = elfSymbolFileOffset + m_offset;
 	}
 
+m_headerEntryRelocatableData.hexdump();
 	return UV_ERR_OK;
 }
 
@@ -328,6 +332,9 @@ uv_err_t UVDElfRelocationSectionHeaderEntry::constructForWrite()
 	
 	uv_assert_err_ret(relocatableData->getRelocatableData(&m_fileData));
 
+printf("relocation table after constructForWrite\n");
+m_fileRelocatableData->hexdump();
+
 	return UV_ERR_OK;
 }
 
@@ -356,6 +363,10 @@ uv_err_t UVDElfRelocationSectionHeaderEntry::applyRelocationsForWrite()
 		m_sectionHeader.sh_info = index;
 	}
 	
+printf("relocation table after relocations\n");
+m_fileRelocatableData->hexdump();
+printf("end table\n");
+
 	return UV_ERR_OK;
 }
 
