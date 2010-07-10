@@ -1,15 +1,16 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
+#include "uvd.h"
 #include "uvd_binary_function.h"
 #include "uvd_elf.h"
 #include "uvd_elf_relocation.h"
 #include "uvd_language.h"
 #include "uvd_md5.h"
+#include "uvd_util.h"
 
 /*
 UVDBinaryFunctionInstance
@@ -179,6 +180,18 @@ uv_err_t UVDBinaryFunctionInstance::toUVDElf(UVDElf **out)
 		uv_assert_err_ret(relocationFixupToElfRelocationFixup(elf, fixup));
 	}
 	
+	{
+		std::string sourceFilename;
+		std::string mangledSourceFilename;
+
+		sourceFilename = g_uvd->getData()->getSource();
+		uv_assert_ret(!sourceFilename.empty());
+		//TODO: add option here for absolute path save
+		mangledSourceFilename = uv_basename(sourceFilename);
+		uv_assert_ret(!mangledSourceFilename.empty());
+		uv_assert_err_ret(elf->setSourceFilename(mangledSourceFilename));
+	}
+
 	uv_assert_ret(out);
 	*out = elf;
 	
@@ -359,3 +372,5 @@ void UVDBinaryFunction::setFunctionInstance(UVDBinaryFunctionInstance *instance)
 {
 	m_instance = instance;
 }
+
+

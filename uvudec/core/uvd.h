@@ -394,6 +394,7 @@ public:
 	//Change data to correspond to given file
 	//uv_err_t setFile(const std::string &file);	
 	//uv_err_t setData(UVData *data);
+	//I think this was implemented to fix a bug of some sort...in truth is does nothing since it doesn't do standard error checking
 	UVDData *getData();
 	/*
 	In more complicated architectures, data may not be simply from 0 to end

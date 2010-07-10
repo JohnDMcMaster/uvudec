@@ -287,8 +287,6 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 
 		uv_assert_err_ret(functionInstance->toUVDElf(&elf));
 		uv_assert_ret(elf);
-		//XXX fixme
-		uv_assert_err_ret(elf->setSourceFilename("image.bin"));
 		//And save it
 		uv_assert_err_ret(elf->saveToFile(elfFile));
 		delete elf;

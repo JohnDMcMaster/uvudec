@@ -1,15 +1,15 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under terms of the three clause BSD license, see LICENSE for details
 */
 
 #include "uvd_binary_symbol.h"
 #include "uvd_binary_function.h"
+#include "uvd_util.h"
 #include "uvd.h"
-
 #include <stdio.h>
+#include <string.h>
 
 /*
 UVDBinarySymbol
@@ -261,6 +261,35 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 	*/
 
 	return UV_ERR_OK;
+}
+
+std::string UVDBinarySymbol::mangleFileToSymbolName(const std::string &in)
+{
+	/*
+	There are a lot of cases not covered for now
+	*/
+
+	//Start by getting the basename
+	//basename may modify string, make a copy
+	std::string ret = uv_basename(in);
+	
+	//remove everything after . (assume extension)
+	for( ;; )
+	{
+		std::string::size_type pos = ret.rfind('.');
+		if( pos == std::string::npos )
+		{
+			break;
+		}
+		//Get substring
+		ret = ret.substr(0, pos);
+	}
+	
+	//TODO:
+	//All other illegal stuff (ex: ' ') replace with _
+	//hmm actually is that techincally illegal?  Its just not possible in C
+	
+	return ret;
 }
 
 /*
