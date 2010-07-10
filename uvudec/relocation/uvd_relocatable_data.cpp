@@ -310,7 +310,7 @@ uv_err_t UVDMultiRelocatableData::updateData()
 {
 	std::vector<UVDData *> datas;
 
-printf("\n\nMulti update on 0x%.8X\n", (unsigned int)this);
+	//printf("\n\nMulti update on 0x%.8X\n", (unsigned int)this);
 	for( std::vector<UVDRelocatableData *>::iterator iter = m_relocatableDatas.begin();
 			iter != m_relocatableDatas.end(); ++iter )
 	{
@@ -321,12 +321,12 @@ printf("\n\nMulti update on 0x%.8X\n", (unsigned int)this);
 		uv_assert_ret(relocatableData);
 		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
 		datas.push_back(data);
-printf("\tMulti update on relocatable data 0x%.8X, data: 0x%.8X\n", (unsigned int)relocatableData, (unsigned int)data);
+		//printf("\tMulti update on relocatable data 0x%.8X, data: 0x%.8X\n", (unsigned int)relocatableData, (unsigned int)data);
 	}
 	
 	//FIXME: we should probably delete the old m_data, realloc, copy or something it
 	uv_assert_err_ret(UVDData::concatenate(datas, &m_data));
-printf("multi update\n");	
+	//printf("multi update\n");	
 	return UV_ERR_OK;
 }
 
