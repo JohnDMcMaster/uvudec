@@ -123,39 +123,18 @@ static std::string mangleFileToSymbol(const std::string &sIn)
 	return sBasename;
 }
 
-std::string UVD::analyzedSymbolName(uint32_t symbolAddress, int symbolType)
+uv_err_t UVD::analyzedSymbolName(uint32_t symbolAddress, int symbolType, std::string &symbolName)
 {
-	if( m_data )
-	{
-		std::string dataSource = uv_basename(m_data->getSource());
-		return analyzedSymbolName(dataSource, symbolAddress, symbolType);
-	}
-	return "";
+	std::string dataSource;
+	
+	uv_assert_ret(m_data);
+	dataSource = uv_basename(m_data->getSource());
+	uv_assert_err_ret(analyzedSymbolName(dataSource, symbolAddress, symbolType, symbolName));
+
+	return UV_ERR_OK;
 }
 
-/*
-For generating unknown symbol stuff
-*/
-static const char *getSymbolTypeNamePrefix(int symbolType)
-{
-	switch( symbolType )
-	{
-	case UVD__SYMBOL_TYPE__UNKNOWN:
-		return "unknown";
-	case UVD__SYMBOL_TYPE__FUNCTION:
-		return "sub";
-	case UVD__SYMBOL_TYPE__LABEL:
-		return "lab";
-	case UVD__SYMBOL_TYPE__ROM:
-		return "const";
-	case UVD__SYMBOL_TYPE__VARIABLE:
-		return "var";
-	default:
-		return "error";
-	}
-}
-
-std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t symbolAddress, int symbolType)
+uv_err_t UVD::analyzedSymbolName(std::string dataSource, uint32_t symbolAddress, int symbolType, std::string &symbolName)
 {
 	/*
 	Might be nice to add on something about these being unknown symbol rather than known
@@ -163,15 +142,23 @@ std::string UVD::analyzedSymbolName(std::string dataSource, uint32_t symbolAddre
 	uvd_unknown__candela_rev_3__3242
 	*/
 	char buff[512];
-	const char *typePrefix = getSymbolTypeNamePrefix(symbolType);
-	//make this optional?
-	const char *uvudecPrefix = "uvudec__";
+	std::string typePrefix;
+	std::string mangeledDataSource;
 
-	//file + address
-	//Do mangling to make sure we don't have dots and such
-	std::string mangeledDataSource = mangleFileToSymbol(dataSource);
-	snprintf(buff, 512, "%s%s__%s_%.4X", uvudecPrefix, mangeledDataSource.c_str(), typePrefix, symbolAddress);
-	return std::string(buff);
+	uv_assert_err_ret(m_config->m_symbols.getSymbolTypeNamePrefix(symbolType, typePrefix));
+	
+	if( m_config->m_symbols.m_autoNameMangeledDataSource )
+	{
+		//file + address
+		//Do mangling to make sure we don't have dots and such
+		mangeledDataSource = mangleFileToSymbol(dataSource) + m_config->m_symbols.m_autoNameMangeledDataSourceDelim;
+	}
+	
+	snprintf(buff, 512, "%s%s%s%.4X", m_config->m_symbols.m_autoNameUvudecPrefix.c_str(), mangeledDataSource.c_str(), typePrefix.c_str(), symbolAddress);
+	
+	symbolName = std::string(buff);
+
+	return UV_ERR_OK;
 }
 
 //Second pass used to create for DB storage
@@ -220,7 +207,9 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uv_assert_ret(functionInstance);
 	functionInstance->m_symbolAddress = UVDRelocatableElement(minAddress);
 	//Only specific instances get symbol designations
-	functionInstance->setSymbolName(analyzedSymbolName(minAddress));
+	std::string symbolName;
+	uv_assert_err_ret(analyzedSymbolName(minAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
+	functionInstance->setSymbolName(symbolName);
 	
 	//This will perform copy
 	uv_assert_err_ret(functionInstance->setData(functionBlockDataChunk));

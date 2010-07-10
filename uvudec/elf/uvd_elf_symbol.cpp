@@ -214,18 +214,6 @@ uv_err_t UVDElfSymbol::updateForWrite()
 
 	printf_elf_symbol_debug("base symbol write update\n");
 
-	/*
-	Update st_shndx if we linked to a section, or SHN_UNDEF otherwise
-	*/
-	if( m_relevantSectionHeader )
-	{
-		uint32_t index = 0;
-
-		//Specifies the section to link to
-		uv_assert_err_ret(elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
-		m_symbol.st_shndx = index;
-	}
-	
 	//Make sure name is in string table
 	uv_assert_err_ret(elf->addSymbolString(m_sName));
 	
@@ -243,6 +231,37 @@ uv_err_t UVDElfSymbol::applyRelocationsForWrite()
 {
 	//Types tend to change depending on whether or not data was set
 	uv_assert_err_ret(updateType());
+
+	/*
+	Update st_shndx if we linked to a section, or SHN_UNDEF otherwise
+	*/
+	if( m_relevantSectionHeader )
+	{
+		uint32_t index = 0;
+
+		//Specifies the section to link to
+		uv_assert_err_ret(m_symbolSectionHeader->m_elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
+		m_symbol.st_shndx = index;
+	}
+
+	{
+		UVDData *data = NULL;
+
+		uv_assert_err_ret(getData(&data));
+		//Defined
+		if( data )
+		{
+			//FIXME: assume single symbol per object file for now
+			uint32_t offset = 0;
+			uint32_t size = 0;
+			
+			uv_assert_err_ret(m_symbolSectionHeader->getSymbolSectionOffset(this, &offset));
+			uv_assert_err_ret(data->size(&size));
+			
+			m_symbol.st_value = offset;
+			m_symbol.st_size = size;
+		}
+	}
 
 	//uv_err_t UVDElfSymbol::addSymbolNameRelocation()
 	{
@@ -638,11 +657,10 @@ uv_err_t UVDElfSectionSymbol::updateType()
 
 uv_err_t UVDElfSectionSymbol::updateForWrite()
 {
-	printf_elf_symbol_debug("section symbol write update\n");
+	printf_elf_symbol_debug("section symbol <%s> write update\n", m_sName.c_str());
 
 	//We must update get the section index
 	//ELF32_ST_TYPE(ELF32_ST_BIND(m_symbol.st_info) == STT_SECTION
-	uint32_t index = 0;
 	UVDElf *elf = NULL;
 	
 	uv_assert_err_ret(UVDElfSymbol::updateForWrite());
@@ -653,8 +671,10 @@ uv_err_t UVDElfSectionSymbol::updateForWrite()
 
 	//Must specify the section to link to
 	uv_assert_ret(m_relevantSectionHeader);
-	uv_assert_err_ret(elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
-	m_symbol.st_shndx = index;
+	//This isn't updated until relocations
+	//uv_assert_ret(m_symbol.st_shndx);
+	//uv_assert_err_ret(elf->getSectionHeaderIndex(m_relevantSectionHeader, &index));
+	//m_symbol.st_shndx = index;
 
 	return UV_ERR_OK;
 }
@@ -742,7 +762,8 @@ printf("adding null symbol\n");
 	
 	uv_assert_err_ret(UVDElfNullSymbol::getUVDElfNullSymbol(&symbol));
 	uv_assert_ret(symbol);	
-	uv_assert_err_ret(prepareSymbol(symbol));
+	uv_assert_err_ret(prepareSymbolCore(symbol, FALSE));
+	uv_assert_err_ret(addSymbolCore(symbol, m_symbols.begin()));
 
 	return UV_ERR_OK;
 }
@@ -758,12 +779,22 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::initRelocatableData()
 
 uv_err_t UVDElfSymbolSectionHeaderEntry::addSymbol(UVDElfSymbol *symbol)
 {
+	return UV_DEBUG(addSymbolCore(symbol, m_symbols.end()));
+}
+
+uv_err_t UVDElfSymbolSectionHeaderEntry::addSymbolCore(UVDElfSymbol *symbol, const std::vector<UVDElfSymbol *>::iterator &iter)
+{
 	uv_assert_ret(symbol);
 	//Don't do this, there are external symbols without data
 	//uv_assert_ret(symbol->m_relocatableData.m_data);
-	m_symbols.push_back(symbol);
+	m_symbols.insert(iter, symbol);
 
-printf("adding symbol\n");
+std::string link;
+if( m_relevantSectionHeader )
+{
+	link = m_relevantSectionHeader->m_name;
+}
+printf("adding symbol %s, link %s\n", symbol->m_sName.c_str(), link.c_str());
 UVD_PRINT_STACK();
 	return UV_ERR_OK;
 }
@@ -792,11 +823,19 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::findSymbol(const std::string &name, UVD
 
 uv_err_t UVDElfSymbolSectionHeaderEntry::prepareSymbol(UVDElfSymbol *symbol)
 {
+	return UV_DEBUG(prepareSymbolCore(symbol, TRUE));
+}
+
+uv_err_t UVDElfSymbolSectionHeaderEntry::prepareSymbolCore(UVDElfSymbol *symbol, uint32_t shouldAdd)
+{
 	uv_assert_err_ret(symbol->init());
 	//So it can get string table indexes and such
 	symbol->m_symbolSectionHeader = this;
 	//Add it to our table list
-	uv_assert_err_ret(addSymbol(symbol));
+	if( shouldAdd )
+	{
+		uv_assert_err_ret(addSymbol(symbol));
+	}
 	
 	return UV_ERR_OK;
 }
@@ -805,8 +844,10 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::addSectionSymbol(const std::string &sec
 {
 	UVDElfSymbol *symbol = NULL;
 
+printf("adding section symbol: %s\n", section.c_str());
+
 	uv_assert_err_ret(getSectionSymbol(section, &symbol));
-	uv_assert_err_ret(addSymbol(symbol));
+	//uv_assert_err_ret(addSymbol(symbol));
 	return UV_ERR_OK;
 }
 
@@ -827,7 +868,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSectionSymbol(const std::string &sec
 	*/
 
 	UVDElfSymbol *symbol = NULL;
-	
+		
 	symbol = new UVDElfSectionSymbol();
 	uv_assert_ret(symbol);
 	
@@ -838,6 +879,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getSectionSymbol(const std::string &sec
 	//This is recomended by TIS spec
 	symbol->setBinding(STB_LOCAL);
 
+	uv_assert_ret(!section.empty());
 	uv_assert_ret(m_elf);
 	uv_assert_err_ret(m_elf->getSectionHeaderByName(section, &symbol->m_relevantSectionHeader));
 
@@ -909,13 +951,20 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getVariableSymbol(const std::string &na
 uv_err_t UVDElfSymbolSectionHeaderEntry::getFilenameSymbol(const std::string &name, UVDElfSymbol **symbolOut)
 {
 	UVDElfSymbol *symbol = NULL;
+	std::vector<UVDElfSymbol *>::iterator iter;
 	
 	symbol = new UVDElfFilenameSymbol();
 	uv_assert_ret(symbol);
 	
-	uv_assert_err_ret(prepareSymbol(symbol));
+	uv_assert_err_ret(prepareSymbolCore(symbol, FALSE));
 
 	symbol->setName(name);
+
+	//We need at least the null symbol first
+	iter = m_symbols.begin();
+	uv_assert_ret(iter != m_symbols.end());
+	++iter;
+	uv_assert_err_ret(addSymbolCore(symbol, iter));
 	
 	symbol->setType(STT_FILE);
 	symbol->setBinding(STB_LOCAL);
@@ -1049,7 +1098,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::applyRelocationsForWrite()
 		
 		uv_assert_ret(symbol);
 		uv_assert_err_ret(symbol->applyRelocationsForWrite());
-	}
+	}	
 	
 printf("symbol table after relocations\n");
 m_fileRelocatableData->hexdump();
@@ -1075,15 +1124,18 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::setSourceFilename(const std::string &fi
 	A file symbol has STB_LOCAL binding, its section index is SHN_ABS, and
 	it precedes the other STB_LOCAL symbols for the file, if it is present.
 	*/
-	std::vector<UVDElfSymbol *>::iterator iter = m_symbols.begin();
 	UVDElfSymbol *symbol = NULL;
 	
 	uv_assert_err_ret(getFilenameSymbol(file, &symbol));
+	
+	return UV_ERR_OK;
+}
 
-	//We need at least the null symbol first
-	uv_assert_ret(!m_symbols.empty());
-	++iter;
-	m_symbols.insert(iter, symbol);
+uv_err_t UVDElfSymbolSectionHeaderEntry::getSymbolSectionOffset(UVDElfSymbol *symbol, uint32_t *offsetOut)
+{
+	//FIXME: assume single symbol object files
+	uv_assert_ret(offsetOut);
+	*offsetOut = 0;
 	
 	return UV_ERR_OK;
 }
