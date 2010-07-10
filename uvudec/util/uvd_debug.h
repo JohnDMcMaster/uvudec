@@ -22,7 +22,7 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define UVD_DEBUG_PASSES		2
 //Main sections being executed
 #define UVD_DEBUG_SUMMARY		3
-//Debug messages from each section
+//Something that shouldn't be used anymore...maybe this should be higher level
 #define UVD_DEBUG_DEPRECATED	4
 //Debug messages from each section
 #define UVD_DEBUG_VERBOSE		5

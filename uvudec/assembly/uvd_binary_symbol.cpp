@@ -519,7 +519,7 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t fu
 
 	//Start by getting the symbol, if it exists
 	//Get name
-	symbolName = uvd->analyzedSymbolName(functionAddress);
+	uv_assert_err_ret(uvd->analyzedSymbolName(functionAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
 	//Query symbol
 	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
 	{
@@ -574,7 +574,7 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocationByBits(uint32_t label
 
 	//Start by getting the symbol, if it exists
 	//Get name
-	symbolName = uvd->analyzedSymbolName(labelAddress);
+	uv_assert_err_ret(uvd->analyzedSymbolName(labelAddress, UVD__SYMBOL_TYPE__LABEL, symbolName));
 	//Query symbol
 	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
 	{

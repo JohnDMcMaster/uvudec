@@ -217,8 +217,13 @@ public:
 	virtual uv_err_t initRelocatableData();
 
 	uv_err_t addSymbol(UVDElfSymbol *symbol);
+	//Add before iter
+	//Useful for certain symbols such as the null or file symbol that need specific order
+	uv_err_t addSymbolCore(UVDElfSymbol *symbol, const std::vector<UVDElfSymbol *>::iterator &iter);
+
 	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	uv_err_t prepareSymbol(UVDElfSymbol *symbol);
+	uv_err_t prepareSymbolCore(UVDElfSymbol *symbol, uint32_t shouldAdd);
 	//A typical symbol having a name and such
 	//It will need to be further refined as a function etc
 	//Whether or not the symbol is defined will be determined by set data 
@@ -230,6 +235,9 @@ public:
 	
 	//Used during writting relocations to ELF file
 	uv_err_t getSymbolIndex(const UVDElfSymbol *symbool, uint32_t *index);
+	//How far into the specified section, in bytes, the symbol definition is
+	//only valid for defined symbols
+	uv_err_t getSymbolSectionOffset(UVDElfSymbol *symbol, uint32_t *offsetOut);
 	
 	//The symbol table has string relocations, non-trivial to return
 	//virtual uv_err_t updateDataCore();

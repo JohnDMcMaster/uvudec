@@ -487,6 +487,8 @@ uv_err_t UVDConfig::init()
 	//By default assume all addresses are potential analysis areas
 	m_addressRangeValidity.m_default = UVD_ADDRESS_ANALYSIS_INCLUDE;
 	
+	uv_assert_err_ret(m_symbols.init());
+	
 	//Load user defined defaults
 	uv_assert_err_ret(parseUserConfig());
 	

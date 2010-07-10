@@ -135,6 +135,34 @@ May miss functions called through pointers
 */
 #define UVD__FLOW_ANALYSIS__TRACE				2
 
+class UVDConfigSymbols
+{
+public:
+	UVDConfigSymbols();
+	~UVDConfigSymbols();
+
+	uv_err_t init();
+	uv_err_t deinit();
+	
+	uv_err_t getSymbolTypeNamePrefix(int symbolType, std::string &ret);
+
+public:
+	//A prefix to put before every symbol generated
+	//To tag this was generated from analysis here
+	std::string m_autoNameUvudecPrefix;
+	//Should the name of the data source be prefixed to the output symbols?
+	uint32_t m_autoNameMangeledDataSource;
+	//If above is set, a string to put between the generated name and the rest of the symbol
+	std::string m_autoNameMangeledDataSourceDelim;
+	
+	//Symbol type naming
+	std::string m_autoNameUnknownPrefix;
+	std::string m_autoNameFunctionPrefix;
+	std::string m_autoNameLabelPrefix;
+	std::string m_autoNameROMPrefix;
+	std::string m_autoNameVariablePrefix;
+};
+
 /*
 General configuration options
 Not related to formatting of a specific compiler (language)
@@ -314,6 +342,8 @@ public:
 	//char g_reg_prefix[8]
 	std::string m_reg_prefix;
 	
+	//Automatic symbol naming
+	UVDConfigSymbols m_symbols;
 	//FLIRT related options (flirt.*)
 	UVDConfigFLIRT m_flirt;
 	//The address ranges that should/shouldn't be analyzed

@@ -241,6 +241,8 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	//snprintf(buff, sizeof(buff), "%s/%s", outputDir.c_str(), symbolName.c_str());
 	sOutputFilePrefix = symbolName;
 	
+	printf_debug_level(UVD_DEBUG_SUMMARY, "\n\n\nSaving function analysis data: %s\n", symbolName.c_str());
+	
 	if( g_writeRawBinary )
 	{
 		//Raw binary
