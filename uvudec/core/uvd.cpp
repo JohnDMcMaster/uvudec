@@ -89,44 +89,6 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVD::analyzedSymbolName(uint32_t symbolAddress, int symbolType, std::string &symbolName)
-{
-	std::string dataSource;
-	
-	uv_assert_ret(m_data);
-	dataSource = uv_basename(m_data->getSource());
-	uv_assert_err_ret(analyzedSymbolName(dataSource, symbolAddress, symbolType, symbolName));
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVD::analyzedSymbolName(std::string dataSource, uint32_t symbolAddress, int symbolType, std::string &symbolName)
-{
-	/*
-	Might be nice to add on something about these being unknown symbol rather than known
-	Ex:
-	uvd_unknown__candela_rev_3__3242
-	*/
-	char buff[512];
-	std::string typePrefix;
-	std::string mangeledDataSource;
-
-	uv_assert_err_ret(m_config->m_symbols.getSymbolTypeNamePrefix(symbolType, typePrefix));
-	
-	if( m_config->m_symbols.m_autoNameMangeledDataSource )
-	{
-		//file + address
-		//Do mangling to make sure we don't have dots and such
-		mangeledDataSource = UVDBinarySymbol::mangleFileToSymbolName(dataSource) + m_config->m_symbols.m_autoNameMangeledDataSourceDelim;
-	}
-	
-	snprintf(buff, 512, "%s%s%s%.4X", m_config->m_symbols.m_autoNameUvudecPrefix.c_str(), mangeledDataSource.c_str(), typePrefix.c_str(), symbolAddress);
-	
-	symbolName = std::string(buff);
-
-	return UV_ERR_OK;
-}
-
 //Second pass used to create for DB storage
 //Block contains analyzed code
 uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionIn)
@@ -174,7 +136,7 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	functionInstance->m_symbolAddress = UVDRelocatableElement(minAddress);
 	//Only specific instances get symbol designations
 	std::string symbolName;
-	uv_assert_err_ret(analyzedSymbolName(minAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
+	uv_assert_err_ret(m_analyzer->m_symbolManager.analyzedSymbolName(minAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
 	functionInstance->setSymbolName(symbolName);
 	
 	//This will perform copy

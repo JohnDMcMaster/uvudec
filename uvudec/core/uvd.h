@@ -349,11 +349,7 @@ public:
 	*/
 	uv_err_t decompile(int destinationLanguage, std::string &output);
 	
-	
-	uv_err_t analyzedSymbolName(uint32_t functionAddress, int symbolType, std::string &symbolName);
-	//This should get moved to util
-	uv_err_t analyzedSymbolName(std::string dataSource, uint32_t functionAddress, int type, std::string &symbolName);
-	
+		
 	//Given a function location, do analysis on the section to do actual decompiling
 	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction);
 	//uv_err_t analyzeFunction(UVDAnalyzedFunction &analyzedFunction);
@@ -454,9 +450,10 @@ public:
 
 	UVDFLIRT *m_flirt;
 	
-protected:
 	//Source of data to disassemble
 	UVDData *m_data;
+
+protected:
 	//Segmented memory view instead of flat m_data view
 	//Most use of m_data should eventually be switched over to use this
 	//m_data really only works for simple embedded archs
