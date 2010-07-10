@@ -241,7 +241,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	//snprintf(buff, sizeof(buff), "%s/%s", outputDir.c_str(), symbolName.c_str());
 	sOutputFilePrefix = symbolName;
 	
-	printf_debug_level(UVD_DEBUG_SUMMARY, "\n\n\nSaving function analysis data: %s\n", symbolName.c_str());
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving function analysis data: %s\n", symbolName.c_str());
 	
 	if( g_writeRawBinary )
 	{
@@ -432,10 +432,6 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 			config += "\n";
 			config += "\n";
 		}
-
-//XXX
-printf("Debug break\n");
-break;
 	}	
 
 	uv_assert_err_ret(writeFile(configFile, config));	

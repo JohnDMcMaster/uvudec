@@ -11,6 +11,15 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <stdio.h>
 #include <string.h>
 
+#if 1
+#define printf_elf_relocation_debug(...)
+#define ELF_RELOCATION_DEBUG(x)
+#else
+#define printf_elf_relocation_debug(format, ...)		do{ printf("ELF relocation: " format, ## __VA_ARGS__); fflush(stdout); } while(0)
+#define ELF_RELOCATION_DEBUG(x)		x
+#endif
+
+
 /*
 UVDElfRelocation
 */
@@ -111,7 +120,7 @@ uv_err_t UVDElfRelocation::getHeaderEntryRelocatable(UVDRelocatableData **symbol
 
 uv_err_t UVDElfRelocation::applyRelocationsForWrite()
 {
-printf("relocation: applying relocation for write\n");
+	printf_elf_relocation_debug("relocation: applying relocation for write\n");
 	//The two r_info parts
 	{
 		UVDElfSymbol *symbol = NULL;
@@ -123,7 +132,7 @@ printf("relocation: applying relocation for write\n");
 		sectionHeader = symbol->m_symbolSectionHeader;
 		uv_assert_ret(sectionHeader);
 		uv_assert_err_ret(sectionHeader->getSymbolIndex(symbol, &symbolIndex));
-printf("symbol: %s, index: %d\n", symbol->m_sName.c_str(), symbolIndex);
+		printf_elf_relocation_debug("symbol: %s, index: %d\n", symbol->m_sName.c_str(), symbolIndex);
 	
 		//What does this comment mean?  What is the real object?
 		//Might help later to update the real object
@@ -142,7 +151,7 @@ printf("symbol: %s, index: %d\n", symbol->m_sName.c_str(), symbolIndex);
 		m_relocation.r_offset = elfSymbolFileOffset + m_offset;
 	}
 
-m_headerEntryRelocatableData.hexdump();
+	ELF_RELOCATION_DEBUG(m_headerEntryRelocatableData.hexdump());
 	return UV_ERR_OK;
 }
 
@@ -332,8 +341,8 @@ uv_err_t UVDElfRelocationSectionHeaderEntry::constructForWrite()
 	
 	uv_assert_err_ret(relocatableData->getRelocatableData(&m_fileData));
 
-printf("relocation table after constructForWrite\n");
-m_fileRelocatableData->hexdump();
+	printf_elf_relocation_debug("relocation table after constructForWrite\n");
+	ELF_RELOCATION_DEBUG(m_fileRelocatableData->hexdump());
 
 	return UV_ERR_OK;
 }
@@ -363,9 +372,9 @@ uv_err_t UVDElfRelocationSectionHeaderEntry::applyRelocationsForWrite()
 		m_sectionHeader.sh_info = index;
 	}
 	
-printf("relocation table after relocations\n");
-m_fileRelocatableData->hexdump();
-printf("end table\n");
+	printf_elf_relocation_debug("relocation table after relocations\n");
+	ELF_RELOCATION_DEBUG(m_fileRelocatableData->hexdump());
+	printf_elf_relocation_debug("end table\n");
 
 	return UV_ERR_OK;
 }

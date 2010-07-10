@@ -12,6 +12,14 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <stdio.h>
 #include <string.h>
 
+#if 1
+#define printf_elf_writter_debug(...)
+#define ELF_WRITTER_DEBUG(x)
+#else
+#define printf_elf_writter_debug(format, ...)		do{ printf("ELF writter: " format, ## __VA_ARGS__); fflush(stdout); } while(0)
+#define ELF_WRITTER_DEBUG(x)		x
+#endif
+
 UVDElfWritter::UVDElfWritter()
 {
 	m_programHeaderPlaceholderRelocatableData = NULL;
@@ -33,7 +41,7 @@ uv_err_t UVDElfWritter::init(UVDElf *elf)
 
 uv_err_t UVDElfWritter::constructBinary(UVDData **dataOut)
 {
-printf("constructBinary()\n");
+	printf_elf_writter_debug("constructBinary()\n");
 	/*
 	There are two common techniques for placing relocatables:
 	-Two pass approach
@@ -60,7 +68,7 @@ printf("constructBinary()\n");
 	
 	//Phase 1: construct data peices to be assembled
 	//These should have as much information filled in as possible with the exception of fields depending on locations in the file
-printf("\n***\nupdateForWrite()\n");
+	printf_elf_writter_debug("\n***\nupdateForWrite()\n");
 	uv_assert_err_ret(updateForWrite());
 
 	//Phase 2: place all of the data
@@ -68,17 +76,17 @@ printf("\n***\nupdateForWrite()\n");
 	//It is reccomended to construct the data here (as opposed to phase 1) as updateForWrite() call order is not
 	//gauranteed and may not have all updates until end
 	//getFileRelocatableData() should be ready to be called
-printf("\n***\nconstruct()\n");
+	printf_elf_writter_debug("\n***\nconstruct()\n");
 	uv_assert_err_ret(construct());
-hexdump();
+	ELF_WRITTER_DEBUG(hexdump());
 
 	//Phase 3: now that we have placed all of the data, fixup references to the final addresses
-printf("\n***\napplyRelocations()\n");
+	printf_elf_writter_debug("\n***\napplyRelocations()\n");
 	uv_assert_err_ret(applyRelocations());
-hexdump();
+	ELF_WRITTER_DEBUG(hexdump());
 	
 	//Compute the final object
-printf("\n***\nApplying relocations\n");
+	printf_elf_writter_debug("\n***\nApplying relocations\n");
 	if( UV_FAILED(m_relocationManager.applyPatch(dataOut)) )
 	{
 		printf_error("Could not apply relocations for ELF object\n");
@@ -252,8 +260,7 @@ Section header
 
 uv_err_t UVDElfWritter::constructSectionHeaderBinary()
 {
-printf("constructSectionHeaderBinary: num sections: %d\n", m_elf->m_sectionHeaderEntries.size());
-fflush(stdout);
+	printf_elf_writter_debug("constructSectionHeaderBinary: num sections: %d\n", m_elf->m_sectionHeaderEntries.size());
 	uv_assert_err_ret(UVDRelocatableData::getUVDRelocatableDataPlaceholder(&m_sectionHeaderPlaceholderRelocatableData));
 	uv_assert_ret(m_sectionHeaderPlaceholderRelocatableData);
 	m_relocationManager.addRelocatableData(m_sectionHeaderPlaceholderRelocatableData);
@@ -266,8 +273,7 @@ fflush(stdout);
 		UVDElfSectionHeaderEntry *sectionHeaderEntry = m_elf->m_sectionHeaderEntries[i];
 		
 		uv_assert_ret(sectionHeaderEntry);
-printf("Constructing %s\n", sectionHeaderEntry->m_name.c_str());
-fflush(stdout);
+	printf_elf_writter_debug("Constructing %s\n", sectionHeaderEntry->m_name.c_str());
 		if( UV_FAILED(constructSectionHeaderSectionBinary(sectionHeaderEntry)) )
 		{
 			std::string name;
@@ -275,8 +281,8 @@ fflush(stdout);
 			printf_error("failed section: %s\n", name.c_str());
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-printf("construcSectionHeaderBinary hexdump\n");
-hexdump();
+	printf_elf_writter_debug("construcSectionHeaderBinary hexdump\n");
+	ELF_WRITTER_DEBUG(hexdump());
 	}
 	m_elf->m_elfHeader.e_shnum = m_elf->m_sectionHeaderEntries.size();
 
@@ -292,7 +298,7 @@ uv_err_t UVDElfWritter::constructSectionHeaderSectionBinary(UVDElfSectionHeaderE
 	//UVDRelocatableData *linkRelocatable = NULL;
 	UVDRelocatableData *supportingRelocatable = NULL;
 
-printf("Constructing section %s\n", entry->m_name.c_str());
+	printf_elf_writter_debug("Constructing section %s\n", entry->m_name.c_str());
 	
 	uv_assert_ret(entry);
 	uv_assert_err_ret(entry->constructForWrite());
@@ -322,8 +328,6 @@ printf("Constructing section %s\n", entry->m_name.c_str());
 
 	if( supportingRelocatable )
 	{
-//printf("adding section\n");
-//supportingRelocatable->hexdump();
 		/*
 		{
 			UVDData *data = NULL;
@@ -413,7 +417,7 @@ uv_err_t UVDElfWritter::updateSectionHeadersForWrite()
 			std::string name;
 			uv_assert_err_ret(entry->getName(name));
 
-			printf("section %s post updateForWrite() m_fileData:\n", name.c_str());
+			printf_elf_writter_debug("section %s post updateForWrite() m_fileData:\n", name.c_str());
 			uv_assert_err_ret(entry->getFileData(&data));
 			if( data )
 			{
@@ -421,7 +425,7 @@ uv_err_t UVDElfWritter::updateSectionHeadersForWrite()
 			}
 			else
 			{
-				printf("no data\n");
+				printf_elf_writter_debug("no data\n");
 			}
 		}
 #endif
@@ -532,8 +536,7 @@ uv_err_t UVDElfWritter::applySectionHeaderSectionRelocations(UVDElfSectionHeader
 
 uv_err_t UVDElfWritter::hexdump()
 {
-	printf("Section headers: %d\n", m_elf->m_sectionHeaderEntries.size());
-	fflush(stdout);
+	printf_elf_writter_debug("Section headers: %d\n", m_elf->m_sectionHeaderEntries.size());
 	for( std::vector<UVDElfSectionHeaderEntry *>::size_type i = 0; i < m_elf->m_sectionHeaderEntries.size(); ++i )
 	{
 		UVDElfSectionHeaderEntry *entry = m_elf->m_sectionHeaderEntries[i];
@@ -541,15 +544,13 @@ uv_err_t UVDElfWritter::hexdump()
 
 		uv_assert_ret(entry);
 		
-		printf("section header %s\n", entry->m_name.c_str());
-		fflush(stdout);
+		printf_elf_writter_debug("section header %s\n", entry->m_name.c_str());
 		uv_assert_err_ret(entry->getFileRelocatableData(&supportingRelocatable));
 		if( supportingRelocatable )
 		{
 			supportingRelocatable->hexdump();
 		}
-		printf("\n");
-		fflush(stdout);
+		printf_elf_writter_debug("\n");
 	}
 	
 	return UV_ERR_OK;

@@ -15,6 +15,14 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <string.h>
 #include <typeinfo>
 
+#if 1
+#define printf_elf_header_debug(...)
+#define ELF_HEADER_DEBUG(x)
+#else
+#define printf_elf_header_debug(format, ...)		do{ printf("ELF header: " format, ## __VA_ARGS__); fflush(stdout); } while(0)
+#define ELF_HEADER_DEBUG(x)		x
+#endif
+
 #if 0
 UVDStringTableRelocatableElement::UVDStringTableRelocatableElement()
 {
@@ -266,19 +274,15 @@ uv_err_t UVDElfHeaderEntry::getFileRelocatableData(UVDRelocatableData **supporti
 		//FIXME hack
 		//if( typeid(m_fileRelocatableData) != UVDMultiRelocatableData )
 		{
-printf("setting data\n");
-fflush(stdout);
+			printf_elf_header_debug("setting data\n");
 			uv_assert_err_ret(m_fileRelocatableData->transferData(data, FALSE));
-printf("Just set hexdump\n");
-fflush(stdout);
-m_fileRelocatableData->hexdump();
-printf("Just set end hexdump\n");
-fflush(stdout);
+			printf_elf_header_debug("Just set hexdump\n");
+			ELF_HEADER_DEBUG(m_fileRelocatableData->hexdump());
+			printf_elf_header_debug("Just set end hexdump\n");
 		}
 		*supportingData = m_fileRelocatableData;
-data->hexdump();
-printf("set data end\n");
-//exit(1);
+		data->hexdump();
+		printf_elf_header_debug("set data end\n");
 	}
 	
 	return UV_ERR_OK;

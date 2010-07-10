@@ -66,14 +66,14 @@ uv_err_t UVDRelocationManager::applyPatchCore(UVDData **dataOut, bool useDefault
 		uv_assert_err_ret(relocatableData->getRelocatableData(&data));
 		if( data )
 		{
-			printf("applyPatch hexdump\n");
-			data->hexdump();
+			//printf("applyPatch hexdump\n");
+			//data->hexdump();
 			dataVector.push_back(data);
 		}
 	}
-	printf("\napplyPatchCore(): concat start\n");
+	//printf("\napplyPatchCore(): concat start\n");
 	uv_assert_err_ret(UVDData::concatenate(dataVector, dataOut));
-	printf("\napplyPatchCore(): concat end\n\n");
+	//printf("\napplyPatchCore(): concat end\n\n");
 	
 	return UV_ERR_OK;
 }

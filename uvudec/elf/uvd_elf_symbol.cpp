@@ -121,10 +121,12 @@ symbol @ index 0x000001C0
 #include <stdio.h>
 #include <string.h>
 
-#if 0
+#if 1
 #define printf_elf_symbol_debug(...)
+#define ELF_SYMBOL_DEBUG(x)
 #else
-#define printf_elf_symbol_debug(format, ...)		printf("ELF symbol: " format, ## __VA_ARGS__)
+#define printf_elf_symbol_debug(format, ...)		do{ printf("ELF symbol: " format, ## __VA_ARGS__); fflush(stdout); } while(0)
+#define ELF_SYMBOL_DEBUG(x)		x
 #endif
 
 /*
@@ -273,16 +275,19 @@ uv_err_t UVDElfSymbol::applyRelocationsForWrite()
 		//The value
 		uv_assert_ret(m_symbolSectionHeader);
 		uv_assert_err_ret(m_symbolSectionHeader->getSymbolStringIndex(name, &offset));	
-{
-UVDData *data = NULL;
-m_relocatableData.getRelocatableData(&data);
-printf("name: %s, %s, symbol string table index: 0x%.8X, relocatable data: 0x%.8X, data: 0x%.8X\n", name.c_str(), m_sName.c_str(), offset, (unsigned int)&m_relocatableData, (unsigned int)data);
-}
+		
+		ELF_SYMBOL_DEBUG
+		({
+			UVDData *data = NULL;
+			m_relocatableData.getRelocatableData(&data);
+			printf_elf_symbol_debug("name: %s, %s, symbol string table index: 0x%.8X, relocatable data: 0x%.8X, data: 0x%.8X\n", name.c_str(), m_sName.c_str(), offset, (unsigned int)&m_relocatableData, (unsigned int)data);
+		});
+		
 		m_symbol.st_name = offset;
 
 	}
 	
-hexdump((char *)&m_symbol, sizeof(m_symbol));
+	ELF_SYMBOL_DEBUG(hexdump((char *)&m_symbol, sizeof(m_symbol)));
 
 	return UV_ERR_OK;
 }
@@ -443,7 +448,7 @@ uv_err_t UVDElfSymbol::getHeaderEntryRelocatable(UVDRelocatableData **symbolEntr
 	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&headerDataMemory,
 			(char *)&m_symbol, sizeof(Elf32_Sym), false));
 	uv_assert_ret(headerDataMemory);
-printf("created symbol data: 0x%.8X\n", (unsigned int)headerDataMemory);
+	printf_elf_symbol_debug("created symbol data: 0x%.8X\n", (unsigned int)headerDataMemory);
 	uv_assert_err_ret(m_headerEntryRelocatableData.transferData(headerDataMemory, true));
 
 	//Add relocations
@@ -739,8 +744,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::init()
 
 	setType(SHT_SYMTAB);
 
-//return UV_DEBUG(UV_ERR_GENERAL);
-UVD_PRINT_STACK();	
+	//ELF_SYMBOL_DEBUG(UVD_PRINT_STACK());
 	
 	//Add NULL symbol
 	uv_assert_err_ret(addNullSymbol());
@@ -758,7 +762,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::addNullSymbol()
 {
 	UVDElfNullSymbol *symbol = NULL;
 
-printf("adding null symbol\n");
+	printf_elf_symbol_debug("adding null symbol\n");
 	
 	uv_assert_err_ret(UVDElfNullSymbol::getUVDElfNullSymbol(&symbol));
 	uv_assert_ret(symbol);	
@@ -788,14 +792,16 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::addSymbolCore(UVDElfSymbol *symbol, con
 	//Don't do this, there are external symbols without data
 	//uv_assert_ret(symbol->m_relocatableData.m_data);
 	m_symbols.insert(iter, symbol);
+	ELF_SYMBOL_DEBUG({
+		std::string link;
+		if( m_relevantSectionHeader )
+		{
+			link = m_relevantSectionHeader->m_name;
+		}
+		printf_elf_symbol_debug("adding symbol %s, link %s\n", symbol->m_sName.c_str(), link.c_str());
+	});
 
-std::string link;
-if( m_relevantSectionHeader )
-{
-	link = m_relevantSectionHeader->m_name;
-}
-printf("adding symbol %s, link %s\n", symbol->m_sName.c_str(), link.c_str());
-UVD_PRINT_STACK();
+	//ELF_SYMBOL_DEBUG(UVD_PRINT_STACK());
 	return UV_ERR_OK;
 }
 
@@ -844,7 +850,7 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::addSectionSymbol(const std::string &sec
 {
 	UVDElfSymbol *symbol = NULL;
 
-printf("adding section symbol: %s\n", section.c_str());
+	printf_elf_symbol_debug("adding section symbol: %s\n", section.c_str());
 
 	uv_assert_err_ret(getSectionSymbol(section, &symbol));
 	//uv_assert_err_ret(addSymbol(symbol));
@@ -908,9 +914,9 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::getFunctionSymbol(const std::string &na
 	
 	uv_assert_err_ret(prepareSymbol(symbol));
 
-printf("setting function symbol name to %s\n", name.c_str());
+	printf_elf_symbol_debug("setting function symbol name to %s\n", name.c_str());
 	symbol->setName(name);
-printf("%s\n", symbol->m_sName.c_str());	
+	printf_elf_symbol_debug("%s\n", symbol->m_sName.c_str());	
 	
 	//Assume undefined by default
 	symbol->setType(STT_NOTYPE);
@@ -1100,9 +1106,9 @@ uv_err_t UVDElfSymbolSectionHeaderEntry::applyRelocationsForWrite()
 		uv_assert_err_ret(symbol->applyRelocationsForWrite());
 	}	
 	
-printf("symbol table after relocations\n");
-m_fileRelocatableData->hexdump();
-//DEBUG_BREAK();
+	printf_elf_symbol_debug("symbol table after relocations\n");
+	ELF_SYMBOL_DEBUG(m_fileRelocatableData->hexdump());
+	//DEBUG_BREAK();
 
 	return UV_ERR_OK;
 }

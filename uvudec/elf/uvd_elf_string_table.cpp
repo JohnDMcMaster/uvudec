@@ -13,6 +13,14 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <elf.h>
 #include <stdio.h>
 
+#if 1
+#define printf_elf_string_debug(...)
+#define ELF_STRING_DEBUG(x)
+#else
+#define printf_elf_string_debug(format, ...)		do{ printf("ELF string: " format, ## __VA_ARGS__); fflush(stdout); } while(0)
+#define ELF_STRING_DEBUG(x)		x
+#endif
+
 UVDElfStringTableSectionHeaderEntry::UVDElfStringTableSectionHeaderEntry()
 {
 }
@@ -104,16 +112,13 @@ uv_err_t UVDElfStringTableSectionHeaderEntry::constructForWrite()
 		std::string s = *iter;
 		//Include null space
 		uint32_t bufferSize = s.size() + 1;
-printf("copying in string: %s\n", s.c_str());
-fflush(stdout);
+		printf_elf_string_debug("copying in string: %s\n", s.c_str());
 		uv_assert_err_ret(m_fileData->writeData(offset, s.c_str(), bufferSize));		
 		offset += bufferSize;
 	}
 	
-printf("copied %d strings into %s string table, data addr = 0x%.8X\n", m_stringTable.size(), m_name.c_str(), (unsigned int)m_fileData);
-fflush(stdout);
-m_fileData->hexdump();
-fflush(stdout);
+	printf_elf_string_debug("copied %d strings into %s string table, data addr = 0x%.8X\n", m_stringTable.size(), m_name.c_str(), (unsigned int)m_fileData);
+	ELF_STRING_DEBUG(m_fileData->hexdump());
 	
 	return UV_ERR_OK;
 }

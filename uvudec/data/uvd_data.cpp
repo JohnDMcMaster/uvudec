@@ -242,11 +242,11 @@ uv_err_t UVDData::saveToFile(const std::string &file) const
 
 	uv_assert_err_ret(size(&dataSize));
 
-	printf("pre read\n");	
+	//printf("pre read\n");	
 	uv_assert_err_ret(readData(0, &buffer, dataSize));	
-	printf("post read\n");
+	//printf("post read\n");
 
-::hexdump(buffer, dataSize);
+	//::hexdump(buffer, dataSize);
 
 	uv_assert_err_ret(writeFile(file, buffer, dataSize));
 	free(buffer);
@@ -282,7 +282,7 @@ void UVDData::hexdump()
 		return;
 	}
 	
-	::hexdump(buffer, dataSize);
+	//::hexdump(buffer, dataSize);
 	free(buffer);
 }
 
