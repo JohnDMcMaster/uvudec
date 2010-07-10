@@ -89,40 +89,6 @@ error:
 	return UV_DEBUG(rc);
 }
 
-static std::string mangleFileToSymbol(const std::string &sIn)
-{
-	/*
-	There are a lot of cases not covered for now
-	*/
-
-	//Start by getting the basename
-	//basename may modify string, make a copy
-	char buff[512];
-	strcpy(buff, sIn.c_str());
-	char *szBasename = basename(buff);
-	if( !szBasename )
-	{
-		return "";
-	}
-	std::string sBasename = szBasename;
-	
-	//remove everything after . (assume extension)
-	for( ;; )
-	{
-		std::string::size_type pos = sBasename.rfind('.');
-		if( pos == std::string::npos )
-		{
-			break;
-		}
-		//Get substring
-		sBasename = sBasename.substr(0, pos);
-	}
-	
-	//All other stuff replace with _
-	
-	return sBasename;
-}
-
 uv_err_t UVD::analyzedSymbolName(uint32_t symbolAddress, int symbolType, std::string &symbolName)
 {
 	std::string dataSource;
@@ -151,7 +117,7 @@ uv_err_t UVD::analyzedSymbolName(std::string dataSource, uint32_t symbolAddress,
 	{
 		//file + address
 		//Do mangling to make sure we don't have dots and such
-		mangeledDataSource = mangleFileToSymbol(dataSource) + m_config->m_symbols.m_autoNameMangeledDataSourceDelim;
+		mangeledDataSource = UVDBinarySymbol::mangleFileToSymbolName(dataSource) + m_config->m_symbols.m_autoNameMangeledDataSourceDelim;
 	}
 	
 	snprintf(buff, 512, "%s%s%s%.4X", m_config->m_symbols.m_autoNameUvudecPrefix.c_str(), mangeledDataSource.c_str(), typePrefix.c_str(), symbolAddress);

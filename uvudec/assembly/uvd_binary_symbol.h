@@ -88,6 +88,10 @@ public:
 	*/
 	uv_err_t addRelocations(const UVDBinarySymbol *otherSymbol);
 
+	//Given a filename, create a legal symbol name part out of it
+	//Something like /temp/virus.bin -> virus
+	static std::string mangleFileToSymbolName(const std::string &sIn);
+
 public:
 	/*
 	The actual data this symbol represents, if its resolved
