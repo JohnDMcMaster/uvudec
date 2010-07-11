@@ -222,11 +222,13 @@ public:
 	~UVDBinarySymbolManager();
 	uv_err_t deinit();
 
-	uv_err_t findSymbolByAddress(uint32_t address, UVDBinarySymbol **symbol);
+	uv_err_t findSymbolByAddress(uv_addr_t address, UVDBinarySymbol **symbol);
 
-	uv_err_t findSymbol(std::string &name, UVDBinarySymbol **symbol);
+	uv_err_t findSymbol(const std::string &name, UVDBinarySymbol **symbol);
 	//If this one is used for analysis, make sure its an analyzed version
+	//Should be deprecated.  All analyzed symbols can easily be keyed to an address of some sort
 	uv_err_t findAnalyzedSymbol(std::string &name, UVDAnalyzedBinarySymbol **symbol);
+	uv_err_t findAnalyzedSymbolByAddress(uv_addr_t address, UVDAnalyzedBinarySymbol **symbol);
 	uv_err_t addSymbol(UVDBinarySymbol *symbol);
 	//Shortcuts for now
 	//These will create the function/label if necessary
@@ -237,22 +239,22 @@ public:
 	relocatableDataSize: the size of the section storing the function address
 		If there is not enough room to store, an error will be thrown
 	*/
-	uv_err_t addAbsoluteFunctionRelocation(uint32_t functionAddress,
+	uv_err_t addAbsoluteFunctionRelocation(uv_addr_t functionAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes);
 	uv_err_t addAbsoluteFunctionRelocationByBits(uint32_t functionAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits);
 	//ie from a jump/goto
-	uv_err_t addAbsoluteLabelRelocation(uint32_t labelAddress,
+	uv_err_t addAbsoluteLabelRelocation(uv_addr_t labelAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBytes);
-	uv_err_t addAbsoluteLabelRelocationByBits(uint32_t labelAddress,
+	uv_err_t addAbsoluteLabelRelocationByBits(uv_addr_t labelAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits);
 
 	//Find the function symbol passed in and add all relocations, if any
 	uv_err_t collectRelocations(UVDBinaryFunction *function);
 
-	uv_err_t analyzedSymbolName(uint32_t functionAddress, int symbolType, std::string &symbolName);
+	uv_err_t analyzedSymbolName(uv_addr_t functionAddress, int symbolType, std::string &symbolName);
 	//This should get moved to util
-	uv_err_t analyzedSymbolName(std::string dataSource, uint32_t functionAddress, int type, std::string &symbolName);
+	uv_err_t analyzedSymbolName(std::string dataSource, uv_addr_t functionAddress, int type, std::string &symbolName);
 
 private:
 	uv_err_t doCollectRelocations(UVDBinaryFunction *function, UVDBinarySymbol *analysisSymbol);
