@@ -267,6 +267,10 @@ UVDConfig::UVDConfig()
 	m_uselessASCIIArt = false;
 	m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__LINEAR;
 
+	m_rawFileSuffix = "_raw.bin";
+	m_relocatableFileSuffix = "_rel.bin";
+	m_elfFileSuffix = ".elf";
+
 	m_printUsed = false;
 	m_jumpedSources = false;
 	m_jumpedCount = 0;
@@ -290,6 +294,15 @@ UVDConfig::UVDConfig()
 	m_print_string_table = false;
 	m_print_block_id = false;
 	m_print_header = false;
+
+
+	m_computeFunctionMD5 = true;
+	m_computeFunctionRelocatableMD5 = true;
+
+	m_writeRawBinary = true;
+	m_writeRelocatableBinary = true;
+	m_writeElfFile = true;
+	m_functionIndexFilename = "index.func";
 }
 
 UVDConfig::~UVDConfig()
