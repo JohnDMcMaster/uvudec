@@ -413,7 +413,7 @@ uv_err_t UVDBinarySymbolManager::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinarySymbolManager::findSymbol(std::string &name, UVDBinarySymbol **symbolIn)
+uv_err_t UVDBinarySymbolManager::findSymbol(const std::string &name, UVDBinarySymbol **symbolIn)
 {
 	std::map<std::string, UVDBinarySymbol *>::iterator iter = m_symbols.find(name);
 	UVDBinarySymbol *symbol = NULL;
@@ -430,6 +430,28 @@ uv_err_t UVDBinarySymbolManager::findSymbol(std::string &name, UVDBinarySymbol *
 
 	uv_assert_ret(symbolIn);
 	*symbolIn = symbol;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbolManager::findAnalyzedSymbolByAddress(uv_addr_t address, UVDAnalyzedBinarySymbol **symbolOut)
+{
+	UVDBinarySymbol *symbolRaw = NULL;
+	UVDAnalyzedBinarySymbol *symbol = NULL;
+	uv_err_t rc = UV_ERR_GENERAL;
+
+	//Don't print for errors
+	rc = findSymbolByAddress(address, &symbolRaw);
+	if( UV_FAILED(rc) )
+	{
+		return rc;
+	}
+
+	symbol = dynamic_cast<UVDAnalyzedBinarySymbol *>(symbolRaw);
+	uv_assert_ret(symbol);
+
+	uv_assert_ret(symbolOut);
+	*symbolOut = symbol;
 
 	return UV_ERR_OK;
 }
@@ -535,28 +557,30 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocation(uint32_t function
 			relocatableDataOffset, relocatableDataSizeBytes * 8));
 }
 
-uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t functionAddress,
+uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t functionAddressBytes,
 		uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits)
 {
 	UVDAnalyzedBinarySymbol *symbol = NULL;
 	UVD *uvd = NULL;
-	std::string symbolName;
 
 	uv_assert_ret(m_analyzer);
 	uvd = m_analyzer->m_uvd;
 	uv_assert_ret(uvd);
 
 	//Start by getting the symbol, if it exists
-	//Get name
-	uv_assert_err_ret(analyzedSymbolName(functionAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
 	//Query symbol
-	if( UV_FAILED(findAnalyzedSymbol(symbolName, &symbol)) )
+	if( UV_FAILED(findAnalyzedSymbolByAddress(functionAddressBytes, &symbol)) )
 	{
+		std::string symbolName;
+
+		//Get name
+		uv_assert_err_ret(analyzedSymbolName(functionAddressBytes, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
+
 		//Create it new then
 		symbol = new UVDAnalyzedBinarySymbol();
 		uv_assert_ret(symbol);
 		uv_assert_err_ret(symbol->init());
-		symbol->setSymbolAddress(functionAddress);
+		symbol->setSymbolAddress(functionAddressBytes);
 		symbol->setSymbolName(symbolName);
 		//Register it
 		uv_assert_err_ret(addSymbol(symbol));
@@ -570,14 +594,14 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteFunctionRelocationByBits(uint32_t fu
 		functionSymbol = dynamic_cast<UVDBinaryFunctionInstance *>(symbol);
 		if( !functionSymbol )
 		{
-			printf_warn("previous symbol was not a function symbol as now indicated (0x%.4X)\n", functionAddress);
+			printf_warn("previous symbol was not a function symbol as now indicated (0x%.4X)\n", functionAddressBytes);
 		}
 		//uv_assert_ret(functionSymbol);
 	}
 	*/
 
 	uv_assert_ret(symbol);
-	symbol->registerLabelUsage(functionAddress);
+	symbol->registerLabelUsage(functionAddressBytes);
 	uv_assert_err_ret(symbol->addSymbolUseByBits(relocatableDataOffset, relocatableDataSizeBits));
 
 	return UV_ERR_OK;
@@ -637,11 +661,17 @@ uv_err_t UVDBinarySymbolManager::addAbsoluteLabelRelocationByBits(uint32_t label
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinarySymbolManager::findSymbolByAddress(uint32_t address, UVDBinarySymbol **symbolOut)
+uv_err_t UVDBinarySymbolManager::findSymbolByAddress(uv_addr_t address, UVDBinarySymbol **symbolOut)
 {
 	std::map<uint32_t, UVDBinarySymbol *>::iterator iter = m_symbolsByAddress.find(address);
 
-	uv_assert_ret(iter != m_symbolsByAddress.end());
+	//This is used for checking for existence
+	if( iter == m_symbolsByAddress.end() )
+	{
+		uv_assert_ret(symbolOut);
+		*symbolOut = NULL;
+		return UV_ERR_NOTFOUND;
+	}
 	uv_assert_ret(symbolOut);
 	*symbolOut = (*iter).second;
 
