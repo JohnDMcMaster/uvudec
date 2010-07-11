@@ -206,7 +206,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		UVDBinaryFunctionShared *functionShared = NULL;
 		uv_assert_err_ret(blockToFunction(functionBlock, &function));
 		functionShared = function->m_shared;
-		uv_assert_err_ret(analyzeFunction(functionShared));
+		//uv_assert_err_ret(analyzeFunction(functionShared));
 		//uv_assert_err_ret(curDb->loadFunction(functionShared));
 		uv_assert_err_ret(m_analyzer->loadFunction(function));
 	
@@ -239,6 +239,7 @@ uv_err_t UVD::analyzeBinaryFunctionCodeShared(UVDBinaryFunctionInstance *binaryF
 }
 */
 
+/*
 uv_err_t UVD::analyzeFunction(UVDBinaryFunctionShared *functionShared)
 {
 	uv_assert_ret(functionShared);
@@ -266,6 +267,7 @@ uv_err_t UVD::analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunct
 	
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVD::constructBlocks()
 {

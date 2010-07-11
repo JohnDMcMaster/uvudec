@@ -208,28 +208,14 @@ uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunctionShared *function)
 	return UV_ERR_OK;
 }
 
-//Raw function MD5
-int g_computeFunctionMD5 = true;
-//Relocatable function version MD5
-//Relocatable parts should be 0'd
-int g_computeFunctionRelocatableMD5 = true;
-
-//Write a .bin file exactly as the function was found
-int g_writeRawBinary = true;
-//Write a .bin file with default relocatable values (MD5 should match config MD5)
-//Implies writting out a complimentary file describing in text the relocations
-int g_writeRelocatableBinary = true;
-//Write an ELF format relocatable data
-int g_writeElfFile = true;
-
-
 uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionInstance,
-		const std::string &outputDir, int functionIndex, std::string &config)
+		const std::string &outputDir, int functionIndex, std::string &out)
 {
 //printf("output dir: %s\n", outputDir.c_str());
 	char buff[256];
 	UVDData *data = NULL;
+	UVDConfig *config = g_config;
 	
 	uv_assert_ret(functionInstance);
 	data = functionInstance->getData();
@@ -243,47 +229,48 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving function analysis data: %s\n", symbolName.c_str());
 	
-	if( g_writeRawBinary )
+	if( config->m_writeRawBinary )
 	{
 		//Raw binary
 		std::string binRawFile;
-		snprintf(buff, sizeof(buff), "%s/%s__%d_raw.bin", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
+		snprintf(buff, sizeof(buff), "%s/%s%s", outputDir.c_str(), sOutputFilePrefix.c_str(), config->m_rawFileSuffix.c_str());
 		binRawFile = buff;
 		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting raw binary to file: %s\n", binRawFile.c_str());
-		config += "BINARY_RAW=" + binRawFile + "\n";
+		out += "BINARY_RAW=" + binRawFile + "\n";
 		uv_assert_err_ret(data->saveToFile(binRawFile));
 	}
 
 #if RELOCATABLE_WRITE_BINRARIES
-	if( g_writeRelocatableBinary )
+	if( config->m_writeRelocatableBinary )
 	{
 		//Relocatable fixed binary
 		std::string binRelocatableFile;
-		snprintf(buff, sizeof(buff), "%s__%d_relocatable.bin", sOutputFilePrefix.c_str(), functionIndex);
+		snprintf(buff, sizeof(buff), "%s%s", sOutputFilePrefix.c_str(), config->m_relocatableFileSuffix.c_str());
 		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting relocatable binary to file: %s\n", binRelocatableFile.c_str());
 		binRelocatableFile = buff;
-		config += "BINARY_RELOCATABLE=" + binRelocatableFile + "\n";
+		out += "BINARY_RELOCATABLE=" + binRelocatableFile + "\n";
 		uv_assert_err_ret(data->saveToFile(outputDir + "/" + binRelocatableFile));
 	
 		//TODO: add config for relocations
 		std::string binRelocatableConfigFile;
-		snprintf(buff, 256, "%s/%s_%d_relocatable.cfg", outputDir.c_str(), symbolName.c_str(), functionIndex);
+		snprintf(buff, 256, "%s/%s_%d_relocatable.cfg", outputDir.c_str(), symbolName.c_str());
 		binRelocatableConfigFile = buff;
-		config += "BINARY_RELOCATABLE_CONFIG=" + binRelocatableConfigFile + "\n";
+		out += "BINARY_RELOCATABLE_CONFIG=" + binRelocatableConfigFile + "\n";
 		//Get relocations here and save file...
 	}
 #endif
 
 	//Preferred relocation format
-	if( g_writeElfFile)
+	if( config->m_writeElfFile)
 	{
 		UVDElf *elf = NULL;
+		std::string elfFileSuffix = ".elf";
 		
 		std::string elfFile;
-		snprintf(buff, sizeof(buff), "%s/%s__%d.elf", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
+		snprintf(buff, sizeof(buff), "%s/%s%s", outputDir.c_str(), sOutputFilePrefix.c_str(), config->m_elfFileSuffix.c_str());
 		elfFile = buff;
 		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting ELF file to: %s\n", elfFile.c_str());
-		config += "BINARY_ELF=" + elfFile + "\n";
+		out += "BINARY_ELF=" + elfFile + "\n";
 
 		uv_assert_err_ret(functionInstance->toUVDElf(&elf));
 		uv_assert_ret(elf);
@@ -292,18 +279,18 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		delete elf;
 	}
 	
-	if( g_computeFunctionMD5 )
+	if( config->m_computeFunctionMD5 )
 	{
 		std::string md5;
 		uv_assert_err_ret(functionInstance->getHash(md5));
-		config += "MD5=" + md5 + "\n";
+		out += "MD5=" + md5 + "\n";
 	}
 
-	if( g_computeFunctionRelocatableMD5 )
+	if( g_config->m_computeFunctionRelocatableMD5 )
 	{
 		std::string md5;
 		uv_assert_err_ret(functionInstance->getRelocatableHash(md5));
-		config += "MD5_RELOCATABLE=" + md5 + "\n";
+		out += "MD5_RELOCATABLE=" + md5 + "\n";
 	}
 
 	//Code is optional, sometimes we just have binary and know its, say, printf
@@ -314,7 +301,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		snprintf(buff, 256, "%s/%s_%d.c", outputDir.c_str(), sOutputFilePrefix.c_str(), functionIndex);
 		srcFile = buff;
 		
-		config += "SRC=" + srcFile + "\n";
+		out += "SRC=" + srcFile + "\n";
 		uv_assert_err_ret(writeFile(srcFile, functionInstance->m_code));
 	}
 
@@ -324,11 +311,8 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *function, const std::string &outputDir, std::string &config)
 {
 	uv_assert_ret(function);
-	
-	//Write main config file
-	//std::string configFile = outputDbFile + "/" + function->m_name + ".func";
-	//std::string config;
-	
+		
+	//Reminder: this can be empty as it is defined as the real function name or empty if unknown
 	config += "NAME=" + function->m_name + "\n";
 	config += "DESC=" + function->m_description + "\n";
 	
@@ -404,7 +388,7 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 	outputDir = outputDbFile;
 	
 	//Do one conglamerate file for now, but allow breaking up if required
-	std::string configFile = outputDbFile + "/index.func";
+	std::string configFile = outputDbFile + "/" + g_config->m_functionIndexFilename;
 	std::string config;
 	
 	printf_debug("this = %p\n", this);

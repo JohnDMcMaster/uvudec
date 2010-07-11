@@ -252,6 +252,10 @@ public:
 	//If any are set, will only output analysis of symbols at the given addresses
 	std::set<int> m_analysisOutputAddresses;
 	
+	std::string m_rawFileSuffix;
+	std::string m_relocatableFileSuffix;
+	std::string m_elfFileSuffix;
+
 	//Default interpreter to use for script files
 	uint32_t m_configInterpreterLanguage;
 	uint32_t m_configInterpreterLanguageInterface;
@@ -342,6 +346,26 @@ public:
 	//char g_reg_prefix[8]
 	std::string m_reg_prefix;
 	
+
+	//uvd_analysis_db.cpp declared
+	//Raw function MD5
+	uint32_t m_computeFunctionMD5;
+	//Relocatable function version MD5
+	//Relocatable parts should be 0'd
+	uint32_t m_computeFunctionRelocatableMD5;
+
+	//Write a .bin file exactly as the function was found
+	uint32_t m_writeRawBinary;
+	//Write a .bin file with default relocatable values (MD5 should match config MD5)
+	//Implies writting out a complimentary file describing in text the relocations
+	uint32_t m_writeRelocatableBinary;
+	//Write an ELF format relocatable data
+	uint32_t m_writeElfFile;
+	//When analysis is written, a summary file is written
+	//Idea was to make IDA .pat style file for storing function analysis
+	std::string m_functionIndexFilename;
+
+
 	//Automatic symbol naming
 	UVDConfigSymbols m_symbols;
 	//FLIRT related options (flirt.*)

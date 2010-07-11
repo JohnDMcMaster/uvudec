@@ -249,6 +249,17 @@ public:
 	uv_err_t addAbsoluteLabelRelocationByBits(uv_addr_t labelAddress,
 			uint32_t relocatableDataOffset, uint32_t relocatableDataSizeBits);
 
+	//Add the core definition
+	//May return error if addFunction() was already called
+	//Will not error if it was added previously as a relocation
+	uv_err_t addFunction(uv_addr_t functionAddress);
+	//Do we need this?  Labels are local and imply a relocation or they are useless
+	//Vectors are similar, but global.  Add a diff func for them
+	//uv_err_t addLabel(uv_addr_t labelAddress);
+	//TODO: implement this when needed
+	//Will be when start dealing with ISR or an MCU that doesn't vector to 0 for start
+	//uv_err_t addVector(uv_addr_t vectorTo, const std::string &name);
+
 	//Find the function symbol passed in and add all relocations, if any
 	uv_err_t collectRelocations(UVDBinaryFunction *function);
 
