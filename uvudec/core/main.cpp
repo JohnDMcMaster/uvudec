@@ -166,7 +166,7 @@ uv_err_t uvmain(int argc, char **argv)
 	UVDConfig *config = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
 	
-	UVD_WARN_IF_VERSION_MISMATCH()
+	UVD_WARN_IF_VERSION_MISMATCH();
 	
 	//Early library initialization.  Logging and arg parsing structures
 	uv_assert_err_ret(UVDInit());
