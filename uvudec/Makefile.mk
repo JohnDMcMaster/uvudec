@@ -43,6 +43,7 @@ CORE_DIR=$(ROOT_DIR)/core
 DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 FLIRT_DIR=$(ROOT_DIR)/flirt
+GUI_DIR=$(ROOT_DIR)/GUI
 HASH_DIR=$(ROOT_DIR)/hash
 INIT_DIR=$(ROOT_DIR)/init
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
@@ -72,9 +73,9 @@ INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
 WARNING_FLAGS=-Wall -Werror
-FLAGS_SHARED = -c $(WARNING_FLAGS) $(INCLUDES) $(DEBUG_FLAGS) $(UVUDEC_VER_FLAGS) $(OPTIMIZATION_LEVEL)
-CCFLAGS = $(FLAGS_SHARED)
-CXXFLAGS = $(FLAGS_SHARED)
+FLAGS_SHARED += -c $(WARNING_FLAGS) $(INCLUDES) $(DEBUG_FLAGS) $(UVUDEC_VER_FLAGS) $(OPTIMIZATION_LEVEL)
+CCFLAGS += $(FLAGS_SHARED)
+CXXFLAGS += $(FLAGS_SHARED)
 
 LDFLAGS += -L$(LIB_DIR) -L.
 
@@ -214,6 +215,7 @@ OBJS = $(CC_SRCS:.c=$(OBJECT_LINKAGE_SUFFIX).o) $(CXX_SRCS:.cpp=$(OBJECT_LINKAGE
 
 UVUDEC_EXE = $(BIN_DIR)/uvudec
 COFF2PAT_EXE = $(BIN_DIR)/uvcoff2pat
+GUI_EXE = $(BIN_DIR)/uvudecgui
 OBJ2PAT_EXE = $(BIN_DIR)/uvobj2pat
 OMF2PAT_EXE = $(BIN_DIR)/uvomf2pat
 ELF2PAT_EXE = $(BIN_DIR)/uvelf2pat
@@ -249,7 +251,7 @@ endif
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 cleanLocal:
-	$(RM) *.o *~ $(UVUDEC_EXE) $(OBJS) uv_log.txt Makefile.bak core.*
+	$(RM) *.o *~ $(UVUDEC_EXE) $(OBJS) uv_log.txt Makefile.bak core.* Makefile.depend*
 
 CLEAN_DEPS+=cleanLocal
 cleanTarget: $(CLEAN_DEPS)
@@ -271,7 +273,7 @@ ifdef MAKEDEPEND
 depend:
 #$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS)
 	@($(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null)
-	perl -pi -e 's/[.]o/$(OBJECT_LINKAGE_SUFFIX)[.]o/g' $(MAKEFILE_DEPEND)
+	perl -pi -e 's/[.]o/$(OBJECT_LINKAGE_SUFFIX).o/g' $(MAKEFILE_DEPEND)
 #	$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null
 # Remove annoying backup
 	@($(RM) $(MAKEFILE_DEPEND).bak)
