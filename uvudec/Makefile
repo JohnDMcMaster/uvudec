@@ -2,7 +2,7 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-PHONY += uvudec coff2pat omf2pat elf2pat obj2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore test
+PHONY += uvudec obj2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore test gui
 
 ALL_TARGETS=lib
 # ALL_TARGETS += doc
@@ -14,18 +14,6 @@ ifeq ($(USING_UVUDEC),Y)
 ALL_TARGETS += uvudec
 endif
 
-ifeq ($(USING_COFF2PAT),Y)
-ALL_TARGETS += coff2pat
-endif
-
-ifeq ($(USING_OMF2PAT),Y)
-ALL_TARGETS += omf2pat
-endif
-
-ifeq ($(USING_ELF2PAT),Y)
-ALL_TARGETS += elf2pat
-endif
-
 ifeq ($(USING_OBJ2PAT),Y)
 ALL_TARGETS += obj2pat
 endif
@@ -34,44 +22,20 @@ ifeq ($(USING_PAT2SIG),Y)
 ALL_TARGETS += pat2sig
 endif
 
+ifeq ($(USING_GUI),Y)
+ALL_TARGETS += gui
+endif
+
 include Makefile.mk
 
-SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(	CORE_DIR) $(DATA_DIR) $(ELF_DIR) $(HASH_DIR) $(INIT_DIR) $(INTERPRETER_DIR) $(LANGUAGE_DIR) $(UTIL_DIR) $(RELOCATION_DIR)
+# SOURCE_DIRS=$(ROOT_DIR) $(COMPILER_DIR) $(CORE_DIR) $(DATA_DIR) $(ELF_DIR) $(GUI_DIR) $(HASH_DIR) $(INIT_DIR) $(INTERPRETER_DIR) $(LANGUAGE_DIR) $(RELOCATION_DIR) $(UTIL_DIR)
 
-
-# Man
-MAN_SECTION=3
-MAN_RAW=manpage
-MAN_PAGE=uvudec
-MAN_UNCOMPRESSED=$(MAN_PAGE).$(MAN_SECTION)
-MAN=$(MAN_UNCOMPRESSED).gz
-MAN_DIR=$(PREFIX)/man/man$(MAN_SECTION)
 
 PACKAGE=uvudec
 
 ifeq ($(USING_UVUDEC),Y)
 uvudec: lib
 	cd core && $(MAKE)
-endif
-
-ifeq ($(USING_AR2PAT),Y)
-ar2pat:
-	cd ar2pat && $(MAKE)
-endif
-
-ifeq ($(USING_COFF2PAT),Y)
-coff2pat:
-	cd coff2pat && $(MAKE)
-endif
-
-ifeq ($(USING_OMF2PAT),Y)
-omf2pat:
-	cd omf2pat && $(MAKE)
-endif
-
-ifeq ($(USING_ELF2PAT),Y)
-elf2pat:
-	cd elf2pat && $(MAKE)
 endif
 
 ifeq ($(USING_OBJ2PAT),Y)
@@ -82,6 +46,11 @@ endif
 ifeq ($(USING_PAT2SIG),Y)
 pat2sig:
 	cd pat2sig && $(MAKE)
+endif
+
+ifeq ($(USING_GUI),Y)
+gui:
+	cd GUI && $(MAKE)
 endif
 
 dynamic:
@@ -111,7 +80,8 @@ cleanSubCore:
 	@(true)
 
 
-MAN_SECTION=1
+# Man
+MAN_SECTION=3
 MAN_RAW=manpage
 MAN_PAGE=uvudec
 MAN_UNCOMPRESSED=$(MAN_PAGE).$(MAN_SECTION)
