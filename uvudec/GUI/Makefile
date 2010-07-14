@@ -4,13 +4,12 @@
 
 EXE_NAME=$(GUI_EXE)
 
-X11R6_LIB_DIR = /usr/X11R6/lib
-QT_PREFIX=/opt/qtsdk-2010.04
-QT_LIB_DIR = $(QT_PREFIX)/qt/lib
-QT_BIN_DIR = $(QT_PREFIX)/qt/bin
+QT_DIR=$(QT_PREFIX)/qt
+QT_LIB_DIR = $(QT_DIR)/lib
+QT_BIN_DIR = $(QT_DIR)/bin
 
 QT_DEFINES    = -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
-QT_INCPATH    = -I/opt/qtsdk-2010.04/qt/mkspecs/linux-g++ -I. -I/opt/qtsdk-2010.04/qt/include/QtCore -I/opt/qtsdk-2010.04/qt/include/QtGui -I/opt/qtsdk-2010.04/qt/include -I. -I.
+QT_INCPATH    = -I$(QT_DIR)/mkspecs/linux-g++ -I. -I$(QT_DIR)/include/QtCore -I$(QT_DIR)/include/QtGui -I$(QT_DIR)/include -I. -I.
 QT_LFLAGS     = -Wl,-O1 -Wl,-rpath,$(QT_LIB_DIR)
 # Why did example have this double path?
 QT_LIBS       = -L$(QT_LIB_DIR) -lQtGui -L$(QT_LIB_DIR) -L$(X11R6_LIB_DIR) -lQtCore -lpthread 
