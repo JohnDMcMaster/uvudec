@@ -15,6 +15,11 @@ UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	m_project = NULL;
 }
 
+uv_err_t UVDMainWindow::init()
+{
+	return UV_ERR_OK;
+}
+
 void UVDMainWindow::on_actionNew_triggered()
 {
 	printf("%s\n", __FUNCTION__);

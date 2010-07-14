@@ -7,11 +7,32 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #include <QApplication>
 #include "uvd_GUI.h"
 
-int main(int argc, char *argv[])
+uv_err_t uvmain(int argc, char **argv, int *retOut)
 {
-	QApplication app(argc, argv);
-	UVDMainWindow win;
-	win.show();
-	return app.exec();
+	QApplication *application = NULL;
+	UVDMainWindow *mainWindow = NULL;
+
+	application = new QApplication(argc, argv);
+	uv_assert_ret(application);
+	mainWindow = new UVDMainWindow();
+	uv_assert_ret(mainWindow);
+
+	uv_assert_err_ret(mainWindow->init());
+	
+	mainWindow->show();
+	*retOut = application->exec();
+	
+	delete mainWindow;
+	delete application;
+	
+	return UV_ERR_OK;
+}
+
+int main(int argc, char **argv)
+{
+	int ret = 1;
+
+	UV_DEBUG(uvmain(argc, argv, &ret));
+	return ret;
 }
 
