@@ -2,9 +2,12 @@ UVNet Universal Decompiler (uvudec)
 Copyright (C) 2008-2010, John McMaster
 All rights reserved unless otherwise noted.
 
-This project may be licensed under the terms of the three clause BSD
-license or version three of the GPL, or, at your discression, a later
-version.
+This project may be licensed under either of the following:
+-the terms of the three clause BSD license.  See file BSD for details
+-GPL v3, or, at your discression, a later version.  See file GPL for details
+	Besides, writting this in my MIT dorm, FSF is within yelling at me distance
+Note that not all external code may be BSD compatible.  The dual licensing for
+this project is independent of external licensing that may need to be followed.
 
 
 Dependencies
@@ -28,7 +31,7 @@ zlib (dependency of libbfd)
 rpat based code
 rpat is based on objdump, which is GPL V3+
 
-libsrecord (future integration)
+libsrecord (possible future integration)
 GPL V3
 See if can convince to at least release V3 or later
 
