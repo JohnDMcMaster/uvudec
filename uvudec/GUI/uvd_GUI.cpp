@@ -11,12 +11,16 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	: QMainWindow(parent)
 {
-	ui.setupUi(this);
+	m_mainWindow.setupUi(this);
+	m_project = NULL;
 }
 
 void UVDMainWindow::on_actionNew_triggered()
 {
 	printf("%s\n", __FUNCTION__);
+	
+	printf("adding an item\n");
+	m_mainWindow.symbolsListWidget->addItem(tr("An item!"));
 }
 
 void UVDMainWindow::on_actionOpen_triggered()

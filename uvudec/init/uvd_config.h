@@ -217,6 +217,9 @@ public:
 	void setVerboseAll();
 	void clearVerboseAll();
 
+	uv_err_t setConfigInterpreterLanguageInterface(const std::string &in);
+	uv_err_t setConfigInterpreterLanguage(const std::string &in);
+
 protected:
 	// ~/.uvudec file
 	//Should be called before parseMain()...move this into init()

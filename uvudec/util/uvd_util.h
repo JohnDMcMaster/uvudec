@@ -143,5 +143,12 @@ uv_err_t isConfigIdentifier(const std::string &in);
 void hexdump(const char *data, size_t size);
 void hexdumpCore(const char *data, size_t size, const std::string &prefix);
 
+#define UVD_WARN_IF_VERSION_MISMATCH()\
+		if( strcmp(UVUDEC_VER_STRING, UVDGetVersion()) )\
+		{\
+			printf_warn("libuvudec version mismatch (exe: %s, libuvudec: %s)\n", UVUDEC_VER_STRING, UVDGetVersion());\
+			fflush(stdout);\
+		}
+
 #endif /* ifndef UV_UTIL_H */
 
