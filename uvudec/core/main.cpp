@@ -41,11 +41,6 @@ static FILE *g_pOutputFile = NULL;
 
 uv_err_t versionPrintPrefixThunk();
 
-static const char *GetVersion()
-{
-	return UVUDEC_VER_STRING;
-}
-
 static uv_err_t disassemble(std::string file)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -161,7 +156,7 @@ uv_err_t versionPrintPrefixThunk()
 	}
 	*/
 
-	printf_help("%s version %s\n", program_name, GetVersion());
+	printf_help("%s version %s\n", program_name, UVUDEC_VER_STRING);
 	return UV_ERR_OK;
 }
 
@@ -171,11 +166,7 @@ uv_err_t uvmain(int argc, char **argv)
 	UVDConfig *config = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
 	
-	if( strcmp(GetVersion(), UVDGetVersion()) )
-	{
-		printf_warn("libuvudec version mismatch (exe: %s, libuvudec: %s)\n", GetVersion(), UVDGetVersion());
-		fflush(stdout);
-	}
+	UVD_WARN_IF_VERSION_MISMATCH()
 	
 	//Early library initialization.  Logging and arg parsing structures
 	uv_assert_err_ret(UVDInit());

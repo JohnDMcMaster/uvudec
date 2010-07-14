@@ -95,69 +95,7 @@ ifeq ($(USING_ROPE),Y)
 FLAGS_SHARED += -DUSING_ROPE
 endif
 
-# Lua stuff
-ifeq ($(USING_LUA),Y)
-FLAGS_SHARED += -DUSING_LUA -DUSING_LUA_API
-LUA_INCLUDE=$(LUA_DIR)/src
-LUA_LIB_STATIC=$(LUA_DIR)/src/liblua.a
-INCLUDES += -I$(LUA_INCLUDE)
-ifeq ($(LINKAGE),static)
-LIBS += $(LUA_LIB_STATIC)
-else
-LIBS += -llua
-endif
-endif
-
-ifeq ($(USING_LIBBFD),Y)
-USING_LIBZ=Y
-endif
-
-# Python stuff
-# This may get more complicated if I can get the APIs working better
-ifeq ($(USING_PYTHON),Y)
-FLAGS_SHARED += -DUSING_PYTHON
-ifeq ($(USING_PYTHON_EXEC),Y)
-FLAGS_SHARED += -DUSING_PYTHON_EXEC
-endif
-ifeq ($(USING_PYTHON_API),Y)
-FLAGS_SHARED += -DUSING_PYTHON_API
-ifeq ($(LINKAGE),static)
-else
-LIBS += -lpython2.6
-LDFLAGS +=
-endif
-endif
-endif
-
-# Javascript support
-USING_JAVASCRIPT=N
-ifeq ($(USING_SPIDERAPE),Y)
-USING_JAVASCRIPT=Y
-else
-USING_SPIDERAPE=N
-endif
-ifeq ($(USING_SPIDERMONKEY),Y)
-USING_JAVASCRIPT=Y
-else
-USING_SPIDERMONKEY=N
-endif
-# Now do actual USING_JAVASCRIPT effects
-ifeq ($(USING_JAVASCRIPT),Y)
-FLAGS_SHARED += -DUSING_JAVASCRIPT
-FLAGS_SHARED += -DUSING_JAVASCRIPT_API
-endif
-
-# SpiderApe stuff (a javascript engine)
-# TODO: figure out how to use this more properly
-ifeq ($(USING_SPIDERAPE),Y)
-FLAGS_SHARED += -DUSING_SPIDERAPE
-LIBS += -lSpiderApe -ljs
-ifdef SPIDERAPE_PREFIX
-LDFLAGS += -L$(SPIDERAPE_PREFIX)/lib
-INCLUDES += -I$(SPIDERAPE_PREFIX)/include
-endif
-endif
-
+include $(ROOT_DIR)/Makefile.interpreter
 
 ifeq ($(USING_LIBBFD),Y)
 FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD

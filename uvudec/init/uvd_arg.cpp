@@ -170,20 +170,40 @@ uv_err_t initSharedConfig()
 			"default config interpreter language (plugins may require specific)", 
 			""
 #ifdef USING_LUA
-			"\tlua: use Lua\n"
+			"\tlua: use Lua"
+#if UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT == UVD_LANGUAGE_LUA
+				" (default)"
+#endif
+				"\n"
 #endif //USING_LUA
 #ifdef USING_PYTHON
-			"\tpython: use Python\n"
+			"\tpython: use Python"
+#if UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT == UVD_LANGUAGE_PYTHON
+				" (default)"
+#endif
+				"\n"
 #endif //USING_PYTHON
 #ifdef USING_JAVASCRIPT
-			"\tjavascript: use javascript\n"
+			"\tjavascript: use javascript"
+#if UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT == UVD_LANGUAGE_JAVASCRIPT
+				" (default)"
+#endif
+				"\n"
 #endif //USING_JAVASCRIPT
 			,
 			1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_CONFIG_LANGUAGE_INTERFACE, 0, "config-language-interface",
 			"how to access a specifc interpreter (options as availible)", 
-			"\texec: execute interpreter, parse results\n"
-			"\tAPI: use binary API to interpreter\n",
+			"\texec: execute interpreter, parse results"
+#if UVD_CONFIG_INTERPRETER_LANGUAGE_INTERFACE_DEFAULT == UVD_LANGUAGE_INTERFACE_EXEC
+				" (default)"
+#endif
+				"\n"
+			"\tAPI: use binary API to interpreter"
+#if UVD_CONFIG_INTERPRETER_LANGUAGE_INTERFACE_DEFAULT == UVD_LANGUAGE_INTERFACE_API
+				" (default)"
+#endif
+				"\n",
 			1, argParser, true));
 	
 	
@@ -357,54 +377,26 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	*/
 	else if( argConfig->m_propertyForm == UVD_PROP_CONFIG_LANGUAGE )
 	{
-		std::string sLang = firstArg;
+		uv_err_t rc = UV_ERR_GENERAL;
+		
 		uv_assert_ret(!argumentArguments.empty());
 		
-		//To make selection pre-processable
-		if( false )
+		rc = UV_DEBUG(config->setConfigInterpreterLanguage(firstArg));
+		if( UV_FAILED(rc) )
 		{
-		}
-#ifdef USING_LUA
-		else if( sLang == "lua" )
-		{
-			config->m_configInterpreterLanguage = UVD_LANGUAGE_LUA;
-		}
-#endif //USING_LUA
-#ifdef USING_PYTHON
-		else if( sLang == "python" )
-		{
-			config->m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
-		}
-#endif //USING_PYTHON
-#ifdef USING_JAVASCRIPT
-		else if( sLang == "javascript" )
-		{
-			config->m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
-		}
-#endif //USING_PYTHON
-		else
-		{
-			printf_error("unknown language: <%s>\n", sLang.c_str());
 			UVDHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_CONFIG_LANGUAGE_INTERFACE )
 	{
-		std::string sLangInterface = firstArg;
+		uv_err_t rc = UV_ERR_GENERAL;
+
 		uv_assert_ret(argumentArguments.size() == 1);
 		
-		if( sLangInterface == "exec" )
+		rc = UV_DEBUG(config->setConfigInterpreterLanguageInterface(firstArg));
+		if( UV_FAILED(rc) )
 		{
-			config->m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
-		}
-		else if( sLangInterface == "api" || sLangInterface == "API" )
-		{
-			config->m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
-		}
-		else
-		{
-			printf_error("unknown language interface: <%s>\n", sLangInterface.c_str());
 			UVDHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}

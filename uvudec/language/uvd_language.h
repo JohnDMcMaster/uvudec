@@ -7,6 +7,9 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #ifndef UVD_LANGUAGE_H
 #define UVD_LANGUAGE_H
 
+#include <string>
+#include <stdint.h>
+
 /*
 Try to convert to various code types
 Code should be compilable into the original program, unmodified
@@ -53,6 +56,15 @@ Technique used to access an interpreter
 //Use a supplied local binary API
 #define UVD_LANGUAGE_INTERFACE_API				2
 //Other possibilities include RPCs such as XML-RPC
+
+/*
+class UVDLanguage
+{
+public:
+	static std::string languageToString(uint32_t in);
+	static std::string languageInterfaceToString(uint32_t in);
+};
+*/
 
 #endif
 

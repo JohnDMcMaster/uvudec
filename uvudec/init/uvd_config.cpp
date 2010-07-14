@@ -225,43 +225,8 @@ UVDConfig::UVDConfig()
 	m_sDebugFile = UVD_OPTION_FILE_STDOUT;
 	//m_pDebugFile = NULL;
 
-	//FIXME: this doesn't scale well.  Make this more generic
-	//At the very least, these defaults should be selected in the Makefile/configure proces
-	//since this should be selectable by that anyway
-	//Don't default to an unsupported language	
-#if defined(USING_JAVASCRIPT)
-	//Default: javascript has the highest preformance
-	m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
-#if defined(USING_JAVASCRIPT_API)
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
-#elif defined(USING_JAVASCRIPT_EXEC)
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
-#else
-#error 'Bad'
-#endif
-#elif defined(USING_PYTHON)
-	//Slow due to lack of working API, but works fine
-	m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
-#if defined(USING_PYTHON_API)
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
-#elif defined(USING_PYTHON_EXEC)
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
-#else
-#error 'Bad'
-#endif
-#elif defined(USING_LUA)
-	//No bitwise operators...annoying
-	m_configInterpreterLangauge = UVD_LANGUAGE_LUA;
-#if defined(USING_LUA_API)
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
-#elif defined(USING_LUA_EXEC)
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
-#else
-#error 'Bad'
-#endif
-#else
-#error No valid interpreters
-#endif
+	m_configInterpreterLanguage = UVD_LANGUAGE_UNKNOWN;
+	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_UNKNOWN;
 
 	m_analysisOnly = false;
 	m_uselessASCIIArt = false;
@@ -500,6 +465,9 @@ uv_err_t UVDConfig::init()
 	//By default assume all addresses are potential analysis areas
 	m_addressRangeValidity.m_default = UVD_ADDRESS_ANALYSIS_INCLUDE;
 	
+	m_configInterpreterLanguage = UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT;
+	m_configInterpreterLanguageInterface = UVD_CONFIG_INTERPRETER_LANGUAGE_INTERFACE_DEFAULT;
+
 	uv_assert_err_ret(m_symbols.init());
 	
 	//Load user defined defaults
@@ -842,6 +810,55 @@ void UVDConfig::setVerboseAll()
 	m_verbose_printing = true;
 }
 
+uv_err_t UVDConfig::setConfigInterpreterLanguage(const std::string &in)
+{
+	//To make selection pre-processable
+	if( false )
+	{
+	}
+#ifdef USING_LUA
+	else if( in == "lua" )
+	{
+		m_configInterpreterLanguage = UVD_LANGUAGE_LUA;
+	}
+#endif //USING_LUA
+#ifdef USING_PYTHON
+	else if( in == "python" )
+	{
+		m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
+	}
+#endif //USING_PYTHON
+#ifdef USING_JAVASCRIPT
+	else if( in == "javascript" )
+	{
+		m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
+	}
+#endif //USING_PYTHON
+	else
+	{
+		printf_error("unknown language: <%s>\n", in.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::setConfigInterpreterLanguageInterface(const std::string &in)
+{
+	if( in == "exec" )
+	{
+		m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
+	}
+	else if( in == "api" || in == "API" )
+	{
+		m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
+	}
+	else
+	{
+		printf_error("unknown language interface: <%s>\n", in.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	return UV_ERR_OK;
+}
 /*
 UVDParsedFunction
 */
