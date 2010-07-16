@@ -1,7 +1,7 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under terms of the three clause BSD license, see LICENSE for details
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include <QtGui>
@@ -147,8 +147,9 @@ void UVDMainWindow::on_actionAbout_triggered()
 	printf("%s\n", __FUNCTION__);
 
 	QMessageBox::about(this, tr("About uvudec GUI"),
-			tr("The <b>Application</b> example demonstrates how to "
-			"write modern GUI applications using Qt, with a menu bar, "
-			"toolbars, and a status bar."));
+			tr("UVNet Universal Decompiler GUI\n"
+			"Copyright 2010 John McMaster\n"
+			"Licensed under the terms of the GPL V3+ or, at your option, a later version"
+			));
 }
 
