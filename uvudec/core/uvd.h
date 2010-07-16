@@ -306,7 +306,7 @@ public:
 	uv_err_t init(const std::string &file, int architecture = 0);
 	uv_err_t init(UVDData *data, int architecture = 0);
 	//Initialize the opcode tables
-	uv_err_t init_config(const std::string &confFile);
+	uv_err_t init_config();
 	//uv_err_t opcodeDeinit();
 	uv_err_t init_misc(UVDConfigSection *misc_section);
 	uv_err_t init_memory(UVDConfigSection *mem_section);
@@ -347,7 +347,7 @@ public:
 	Given file, generate best representation possible in specified langauge to output file
 	Using what created the engine init
 	*/
-	uv_err_t decompile(int destinationLanguage, std::string &output);
+	uv_err_t decompile(std::string &output);
 	
 		
 	//Given a function location, do analysis on the section to do actual decompiling

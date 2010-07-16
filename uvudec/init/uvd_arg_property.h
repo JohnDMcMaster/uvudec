@@ -22,6 +22,9 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 //Config
 #define UVD_PROP_CONFIG_LANGUAGE				"config.language"
 #define UVD_PROP_CONFIG_LANGUAGE_INTERFACE		"config.language_interface"
+//Architecture
+#define UVD_PROP_ARCH_FILE						"arch.file"
+#define UVD_PROP_ARCH_PATHS						"arch.paths"
 //Target
 #define UVD_PROP_TARGET_ADDRESS_INCLUDE			"target.address_include"
 #define UVD_PROP_TARGET_ADDRESS_EXCLUDE			"target.address_exclude"

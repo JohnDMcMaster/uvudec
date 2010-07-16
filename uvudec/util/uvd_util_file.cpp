@@ -37,6 +37,36 @@ uv_err_t getProgramName(std::string &programName)
 	return UV_ERR_OK;
 }
 
+uv_err_t getWorkingDir(std::string &out)
+{
+	return UV_DEBUG(getEnvironmentVariable("PWD", out));
+}
+
+uv_err_t getCannonicalFileName(const std::string &filename, std::string &cannonicalFileName)
+{
+	std::string relativeDir;
+
+	uv_assert_err_ret(getWorkingDir(relativeDir));
+	uv_assert_err_ret(getCannonicalFileNameCore(filename, relativeDir, cannonicalFileName));
+	return UV_ERR_OK;
+}
+
+uv_err_t getCannonicalFileNameCore(const std::string &filename, const std::string &relativeCannonicalDir, std::string &cannonicalFileName)
+{
+	if( filename[0] == '/' )
+	{
+		cannonicalFileName = filename;
+	}
+	else
+	{
+		std::string temp;
+		
+		temp = relativeCannonicalDir + "/" + filename;
+		uv_assert_err_ret(collapsePath(temp, cannonicalFileName));
+	}
+	return UV_ERR_OK;
+}
+
 uv_err_t isSymbolicLink(const std::string &sFile, uint32_t *isLink)
 {
 	struct stat statStruct;
@@ -97,6 +127,43 @@ uv_err_t collapsePath(const std::string &relativePath, std::string &pathRet)
 		} 
 	}
 	
+	return UV_ERR_OK;
+}
+
+uv_err_t weaklyEnsurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out)
+{
+	if( in.find(".") == std::string::npos )
+	{
+		uv_assert_err_ret(ensurePathEndsWithExtension(in, extension, out));
+	}
+	else
+	{
+		out = in;
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t ensurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out)
+{
+	std::string dot;
+	if( extension[0] != '.' )
+	{
+		dot = ".";
+	}
+	return UV_DEBUG(ensurePathEndsWith(in, dot + extension, out));
+}
+
+uv_err_t ensurePathEndsWith(const std::string &in, const std::string &ending, std::string &out)
+{
+	//FIXME: make this technically correct
+	if( in.find(ending) == std::string::npos )
+	{
+		out = in + ending;
+	}
+	else
+	{
+		out = in;
+	}
 	return UV_ERR_OK;
 }
 

@@ -57,7 +57,7 @@ uv_err_t UVD::init(const std::string &file, int architecture)
 	return init(data, architecture);
 }
 
-uv_err_t GetDefaultCPUFile(std::string &ret)
+uv_err_t getDefaultCPUFile(std::string &ret)
 {
 	ret = DEFAULT_CPU_FILE;
 	//This should be relative to installed directory if not absolute
@@ -74,18 +74,21 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	uv_err_t rc = UV_ERR_GENERAL;
 	m_data = data;
 	m_architecture = architecture;
-	std::string configFile;
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
 	UVDBenchmark engineInitBenchmark;
 	engineInitBenchmark.start();
 
-	//In theory if not specified, should search dir
-	switch( architecture )
+	if( m_config->m_architectureFileName.empty() )
 	{
-	default:
-		uv_assert_err_ret(GetDefaultCPUFile(configFile));
-	};
+		//In theory if not specified, should search dir
+		//Doing en mass brute force analysis to find best matching file is an interesting topic by itself
+		switch( architecture )
+		{
+		default:
+			uv_assert_err_ret(getDefaultCPUFile(m_config->m_architectureFileName));
+		};
+	}
 	
 	uv_assert_ret(m_config);
 		
@@ -119,7 +122,7 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	uv_assert(m_format);
 
 	printf_debug("Initializing config...\n");
-	if( UV_FAILED(init_config(configFile)) )
+	if( UV_FAILED(init_config()) )
 	{
 		printf_error("failed 8051 init\n");
 		return UV_ERR(UV_ERR_GENERAL);
@@ -143,7 +146,7 @@ error:
 }
 
 //Initialize the opcode tables
-uv_err_t UVD::init_config(const std::string &configFile)
+uv_err_t UVD::init_config()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfigSection **sections = NULL;
@@ -160,9 +163,9 @@ uv_err_t UVD::init_config(const std::string &configFile)
 	UV_ENTER();
 
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(UVDConfig::uvd_read_sections(configFile, &sections, &n_sections)) )
+	if( UV_FAILED(UVDConfig::uvd_read_sections(m_config->m_architectureFileName, &sections, &n_sections)) )
 	{
-		printf_error("Could not read config file: %s\n", configFile.c_str());
+		printf_error("Could not read config file: %s\n", m_config->m_architectureFileName.c_str());
 		UV_ERR(rc);
 		goto error;
 	}

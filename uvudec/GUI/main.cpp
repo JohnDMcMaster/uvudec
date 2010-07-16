@@ -16,6 +16,8 @@ uv_err_t uvmain(int argc, char **argv, int *retOut)
 	uv_assert_ret(application);
 	mainWindow = new UVDMainWindow();
 	uv_assert_ret(mainWindow);
+	mainWindow->m_argc = argc;
+	mainWindow->m_argv = argv;
 
 	uv_assert_err_ret(mainWindow->init());
 	

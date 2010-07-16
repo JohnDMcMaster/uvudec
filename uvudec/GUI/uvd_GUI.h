@@ -8,10 +8,10 @@ Licensed under terms of the three clause BSD license, see LICENSE for details
 #define UVD_GUI_H
 
 #include "ui_uvudec.h"
+#include "uvd_project.h"
 #include "uvd_error.h"
 #include <string>
 
-class UVDProject;
 class UVDMainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -28,9 +28,19 @@ private slots:
 	void on_actionPrint_triggered();
 	void on_actionClose_triggered();
 
-private:
+	void on_actionAbout_triggered();
+
+	uv_err_t initializeProject(const std::string fileName);
+	uv_err_t beginAnalysis();
+
+public:
 	Ui::UVDMainWindow m_mainWindow;
 	UVDProject *m_project;
+	QString m_projectFileNameDialogFilter;
+	
+	//So we can pass options off to children later
+	int m_argc;
+	char **m_argv;
 };
 
 #endif
