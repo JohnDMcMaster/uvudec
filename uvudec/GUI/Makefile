@@ -23,13 +23,16 @@ LDFLAGS += $(QT_LFLAGS) $(QT_LIBS)
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-		$(GUI_DIR)/uvd_GUI.cpp \
 		$(GUI_DIR)/main.cpp \
+		$(GUI_DIR)/uvd_project.cpp \
+		$(GUI_DIR)/uvd_GUI.cpp \
 		$(GUI_DIR)/moc_uvd_GUI.cpp
 
 USING_LIB_UVUDEC=Y
 
 CLEAN_DEPS += cleanGUI
+
+USING_LIB_JANSSON=Y
 
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk

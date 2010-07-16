@@ -727,7 +727,7 @@ uv_err_t UVD::analyzeConstData()
 	uv_assert_err_ret(analyzeStrings());
 	return UV_ERR_OK;
 }
-	
+
 uv_err_t UVD::analyze()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -755,3 +755,4 @@ error:
 	m_config->m_verbose = verbose_pre;
 	return UV_DEBUG(rc);
 }
+

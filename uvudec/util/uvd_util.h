@@ -39,10 +39,20 @@ Put in namespace maybe and do some template magic?
 
 std::string uv_basename(const std::string &file);
 std::string uv_dirname(const std::string &file);
-//Return the canonical path to the currently exeucting program name
+//Return the canonical path to the currently executing program name
 uv_err_t getProgramName(std::string &programName);
 //Given symbolic link file, give canonical path
 uv_err_t resolveSymbolicLink(const std::string &linkFile, std::string &sRet);
+//Resolve relative to current directory
+uv_err_t getCannonicalFileName(const std::string &filename, std::string &cannonicalFileName);
+//Resolve relative to specified dir
+uv_err_t getCannonicalFileNameCore(const std::string &filename, const std::string &relativeDir, std::string &cannonicalFileName);
+uv_err_t getWorkingDir(std::string &out);
+uv_err_t collapsePath(const std::string &relativePath, std::string &pathRet);
+//Only add if something else isn't already present
+uv_err_t weaklyEnsurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out);
+uv_err_t ensurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out);
+uv_err_t ensurePathEndsWith(const std::string &in, const std::string &ending, std::string &out);
 
 uv_err_t isRegularFile(const std::string &file);
 uv_err_t isDir(const std::string &file);
@@ -126,7 +136,8 @@ uv_err_t getArguments(const std::string &in, std::vector<std::string> &out);
 As would be needed to pass to "system"
 */
 std::string stringVectorToSystemArgument(const std::vector<std::string> &args);
-
+//If variable is not found, will return UV_ERR_BLANK and value will be clear
+uv_err_t getEnvironmentVariable(const std::string &variable, std::string &value);
 //Used for benchmarking
 uint64_t getTimingMicroseconds(void);
 

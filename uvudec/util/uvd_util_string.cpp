@@ -399,3 +399,16 @@ std::string stringVectorToSystemArgument(const std::vector<std::string> &args)
 	}
 	return ret;
 }
+
+uv_err_t getEnvironmentVariable(const std::string &variable, std::string &value)
+{
+	const char *var = getenv(variable.c_str());
+	if( !var )
+	{
+		value.clear();
+		return UV_ERR_BLANK;
+	}
+	value = var;
+	return UV_ERR_OK;
+}
+

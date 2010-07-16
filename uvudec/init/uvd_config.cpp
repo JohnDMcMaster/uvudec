@@ -222,6 +222,7 @@ UVDConfig::UVDConfig()
 	versionPrintPrefixThunk = NULL;
 	usagePrintPostfixThunk = NULL;
 
+	m_targetFileName = DEFAULT_DECOMPILE_FILE;
 	m_sDebugFile = UVD_OPTION_FILE_STDOUT;
 	//m_pDebugFile = NULL;
 

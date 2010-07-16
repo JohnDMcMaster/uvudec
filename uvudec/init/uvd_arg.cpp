@@ -165,6 +165,7 @@ uv_err_t initSharedConfig()
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_PRINTING, 0, "verbose-printing", "selectivly debugging print routine", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true));
 	
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ARCH_FILE, 0, "arch-file", "architecture/CPU module file", 1, argParser, true));
 	//Config file processing
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_CONFIG_LANGUAGE, 0, "config-language",
 			"default config interpreter language (plugins may require specific)", 
@@ -370,6 +371,16 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		config->m_sDebugFile = firstArg;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		config->m_targetFileName = firstArg;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_ARCH_FILE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		config->m_architectureFileName = firstArg;
 	}
 	/*
 	Startup configuration

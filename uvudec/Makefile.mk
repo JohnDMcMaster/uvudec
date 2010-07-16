@@ -48,6 +48,7 @@ HASH_DIR=$(ROOT_DIR)/hash
 INIT_DIR=$(ROOT_DIR)/init
 INTERPRETER_DIR=$(ROOT_DIR)/interpreter
 LANGUAGE_DIR=$(ROOT_DIR)/language
+PROJECT_DIR=$(ROOT_DIR)/project
 RELOCATION_DIR=$(ROOT_DIR)/relocation
 TESTING_DIR=$(ROOT_DIR)/testing
 UTIL_DIR=$(ROOT_DIR)/util
@@ -68,7 +69,7 @@ INCLUDES += -I. -I$(ROOT_DIR)
 #for curDir in $(SOURCE_DIRS); do \
 #INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(INTERPRETER_DIR) -I$(LANGUAGE_DIR) -I$(UTIL_DIR) -I$(RELOCATION_DIR) -I$(FLIRT_DIR)
+INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(FLIRT_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(INTERPRETER_DIR) -I$(LANGUAGE_DIR) -I$(PROJECT_DIR) -I$(RELOCATION_DIR) -I$(UTIL_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -114,17 +115,22 @@ LIBS += -lbfd -lopcodes -liberty
 endif
 
 
-# hmm why is this hard coded?
-LIBZ_STATIC=/usr/lib/libz.a
 
 ifeq ($(USING_LIBZ),Y)
 ifeq ($(LINKAGE),static)
+# hmm why is this hard coded?
+LIBZ_STATIC=/usr/lib/libz.a
 LIBS += $(LIBZ_STATIC)
 else
 LIBS += -lz
 endif
 endif
 
+
+ifeq ($(USING_LIB_JANSSON),Y)
+# `pkg-config --cflags --libs jansson`
+LIBS += -ljansson
+endif
 
 
 # General libc stuff

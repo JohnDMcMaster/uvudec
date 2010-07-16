@@ -689,7 +689,7 @@ uv_err_t UVD::createAnalysisDir()
 	//Sorta hackish, do some cleanup later
 	//Lang is relativly unimportant, assembly indicates don't do any high level analysis
 	//(although it is ignored for now anyway)
-	uv_assert_err_ret(decompile(UVD_LANGUAGE_ASSEMBLY, discard));
+	uv_assert_err_ret(analyze());
 	m_config->m_analysisOnly = oldAnalysisOnly;
 	
 	return UV_ERR_OK;
@@ -697,58 +697,19 @@ uv_err_t UVD::createAnalysisDir()
 
 uv_err_t UVD::disassemble(std::string &output)
 {
-	return UV_DEBUG(decompile(UVD_LANGUAGE_ASSEMBLY, output));
+	//TODO: set config directive here
+	return UV_DEBUG(decompile(output));
 }
 
-uv_err_t UVD::decompile(int destinationLanguage, std::string &output)
+uv_err_t UVD::decompile(std::string &output)
 {
-	//uint8_t *dat = NULL;	
-	uint32_t dataSize = 0;
-	//unsigned int read = 0;
-	std::string configFile;
-	UVDCompiler *compiler = NULL;
-	
-	UV_ENTER();
-
 	UVDBenchmark decompileBenchmark;
 	decompileBenchmark.start();
-	
-	uv_assert_ret(m_data);
-	dataSize = m_data->size();
-	
-	//Trivial case: nothing to analyze
-	if( dataSize == 0 )
-	{
-		return UV_ERR_OK;
-	}
-	
-	uv_assert_ret(m_config);
-	
-	printf_debug_level(UVD_DEBUG_PASSES, "Raw data size: 0x%x (%d)\n", dataSize, dataSize);
-
-	switch( destinationLanguage )
-	{
-	case UVD_LANGUAGE_ASSEMBLY:
-		compiler = new UVDCompilerAssembly();
-		break;
-	default:
-		printf_error("Unknown destination langauge: 0x%.4X (%d)\n", destinationLanguage, destinationLanguage);
-		return UV_DEBUG(UV_ERR_GENERAL);
-	};
-	uv_assert_ret(compiler);
-	//Set a default compiler to generate code for
-	//How this is set will probably change drastically in the future
-	uv_assert_ret(m_format);
-	uv_assert_err_ret(m_format->setCompiler(compiler));
 
 	//Most of program time should be spent here
 	uv_assert_err_ret(analyze());
-
-	uv_assert_ret(m_config);
-	if( !m_config->m_analysisOnly )
-	{
-		uv_assert_err_ret(decompilePrint(output));
-	}
+	//And print
+	uv_assert_err_ret(decompilePrint(output));
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
 	decompileBenchmark.stop();
@@ -768,6 +729,43 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	int printNext = printPercentage;
 	uint32_t analyzedBytes = 0;
 	int verbose_old = 0;
+
+	{
+		UVDCompiler *compiler = NULL;
+
+		/*
+		{
+			uint32_t dataSize = 0;
+
+			uv_assert_ret(m_data);
+			dataSize = m_data->size();
+	
+			//Trivial case: nothing to analyze
+			//Eliminates special cases
+			if( dataSize == 0 )
+			{
+				return UV_ERR_OK;
+			}
+			printf_debug_level(UVD_DEBUG_PASSES, "Raw data size: 0x%x (%d)\n", dataSize, dataSize);
+		}
+		*/
+	
+		uint32_t destinationLanguage = UVD_LANGUAGE_ASSEMBLY;
+		switch( destinationLanguage )
+		{
+		case UVD_LANGUAGE_ASSEMBLY:
+			compiler = new UVDCompilerAssembly();
+			break;
+		default:
+			printf_error("Unknown destination langauge: 0x%.4X (%d)\n", destinationLanguage, destinationLanguage);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		};
+		uv_assert_ret(compiler);
+		//Set a default compiler to generate code for
+		//How this is set will probably change drastically in the future
+		uv_assert_ret(m_format);
+		uv_assert_err_ret(m_format->setCompiler(compiler));
+	}
 
 	uv_assert_ret(m_config);
 	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&analyzedBytes));
