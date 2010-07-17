@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_GUI_H
 
 #include "ui_uvudec.h"
+#include "uvd_GUI_analysis_thread.h"
 #include "uvd_project.h"
 #include "uvd_error.h"
 #include <string>
@@ -20,6 +21,10 @@ public:
 	UVDMainWindow(QMainWindow *parent = 0);
 	uv_err_t init();
 
+	uv_err_t initializeProject(const std::string fileName);
+	uv_err_t beginAnalysis();
+	uv_err_t updateAllViews();
+
 private slots:
 	void on_actionNew_triggered();
 	void on_actionOpen_triggered();
@@ -30,13 +35,13 @@ private slots:
 
 	void on_actionAbout_triggered();
 
-	uv_err_t initializeProject(const std::string fileName);
-	uv_err_t beginAnalysis();
-
 public:
 	Ui::UVDMainWindow m_mainWindow;
 	UVDProject *m_project;
 	QString m_projectFileNameDialogFilter;
+	
+	//Need to add some sort of thread safe queue object
+	UVDGUIAnalysisThread m_analysisThread;
 	
 	//So we can pass options off to children later
 	int m_argc;
