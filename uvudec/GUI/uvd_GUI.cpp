@@ -6,6 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <QtGui>
 
+#include "uvd_analysis_action.h"
 #include "uvd_GUI.h"
 #include "uvd_project.h"
 
@@ -22,6 +23,9 @@ UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 uv_err_t UVDMainWindow::init()
 {
 	m_projectFileNameDialogFilter = tr("uvudec oject (*.upj);;All Files (*)");
+	
+	m_analysisThread.m_mainWindow = this;
+	uv_assert_err_ret(m_analysisThread.init());
 	
 	return UV_ERR_OK;
 }
@@ -41,10 +45,9 @@ void UVDMainWindow::on_actionOpen_triggered()
 	printf("%s\n", __FUNCTION__);
 
 	fileName = QFileDialog::getOpenFileName(this, tr("Open Project"),
-			"",
+			DEFAULT_DECOMPILE_FILE,
 			m_projectFileNameDialogFilter);
 	UV_DEBUG(initializeProject(fileName.toStdString()));
-	UV_DEBUG(beginAnalysis());
 }
 
 uv_err_t UVDMainWindow::beginAnalysis()
@@ -68,10 +71,42 @@ uv_err_t UVDMainWindow::beginAnalysis()
 	uv_assert_err_ret(UVD::getUVD(&uvd, data));
 	uv_assert_ret(uvd);
 	uv_assert_ret(g_uvd);
+	m_project->m_uvd = uvd;
 
 	uv_assert_err_ret(uvd->analyze());
+	uv_assert_err_ret(updateAllViews());	
 	
 	delete data;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::updateAllViews()
+{
+	UVD *uvd = NULL;
+	UVDAnalyzer *analyzer = NULL;
+
+	uv_assert_ret(m_project);
+	uvd = m_project->m_uvd;
+	uv_assert_ret(uvd);
+	analyzer = uvd->m_analyzer;
+	uv_assert_ret(analyzer);
+
+	//Save old selected?
+	//uv_assert_err_ret(updateFunctionList());
+	m_mainWindow.symbolsListWidget->clear();
+	for( std::set<UVDBinaryFunction *>::iterator iter = analyzer->m_functions.begin();
+			iter != analyzer->m_functions.end(); ++iter )
+	{
+		UVDBinaryFunction *binaryFunction = *iter;
+		std::string functionName;
+		
+		uv_assert_ret(binaryFunction);
+		uv_assert_err_ret(binaryFunction->getFunctionInstance()->getSymbolName(functionName));
+		m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
+	}
+	
+	//uv_assert_err_ret(updateDisassemblyView());
 
 	return UV_ERR_OK;
 }
@@ -83,6 +118,8 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 
 	uv_assert_err_ret(m_project->setFileName(fileName));
 	uv_assert_err_ret(m_project->init(m_argc, m_argv));
+	m_analysisThread.start();
+	m_analysisThread.queueAnalysis(new UVDAnalysisActionBegin());
 
 	return UV_ERR_OK;
 }
@@ -137,6 +174,14 @@ void UVDMainWindow::on_actionPrint_triggered()
 void UVDMainWindow::on_actionClose_triggered()
 {
 	printf("%s\n", __FUNCTION__);
+	
+	m_analysisThread.m_active = FALSE;
+	m_analysisThread.wait(100);
+	if( !m_analysisThread.isFinished() )
+	{
+		printf_error("Analysis thread is still running, getting it before it gets away\n");
+		m_analysisThread.terminate();
+	}
 	
 	delete m_project;
 	m_project = NULL;

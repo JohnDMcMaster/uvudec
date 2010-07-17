@@ -24,8 +24,10 @@ CC_SRCS =   \
 
 CXX_SRCS = 	\
 		$(GUI_DIR)/main.cpp \
+		$(GUI_DIR)/uvd_analysis_action.cpp \
 		$(GUI_DIR)/uvd_project.cpp \
 		$(GUI_DIR)/uvd_GUI.cpp \
+		$(GUI_DIR)/uvd_GUI_analysis_thread.cpp \
 		$(GUI_DIR)/moc_uvd_GUI.cpp
 
 USING_LIB_UVUDEC=Y
