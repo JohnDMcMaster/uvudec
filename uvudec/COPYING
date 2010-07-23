@@ -6,8 +6,10 @@ This project may be licensed under the Lesser General Public Licenes V3, or, at
 your discression, a later version.  See file GPL for details.  While originally
 I wanted this under BSD licensing, dependency projects made it difficult to
 effectivly write code for without being in murky waters.  LGPL is a good
-compromise anyway between omeone taking this and being able to use it without
+compromise anyway between someone taking this and being able to use it without
 giving back.
+Content files are licensed under Creative Commons by-nc-sa unless otherwise
+indicated.
 
 Dependencies
 
