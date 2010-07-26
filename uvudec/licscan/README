@@ -1,0 +1,11 @@
+uvlicscan
+
+FLIRT signatures were a priority target so a license scanner could be
+implemented.  While any binary format could be made, binary compatibility
+with commercial tools allows existing tools to interoperate.
+Goals of uvlicscan:
+-Find code violating open source licenses
+-Generate and encourage the generation of open library signatures
+-High performance testing of the uvudec engine
+-An early end application of the decompiling engine
+
