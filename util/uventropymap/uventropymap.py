@@ -7,6 +7,7 @@ Released under version 3 GPL+
 Dependencies:
 	gnuplot
 		http://code.google.com/p/pycparser/
+	pefile
 '''
 
 import pefile
