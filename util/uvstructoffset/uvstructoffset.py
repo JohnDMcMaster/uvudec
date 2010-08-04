@@ -3,6 +3,7 @@
 uvstructoffset: structure offset computer
 Parses C header files for structure offsets
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
+Released under version 3 GPL+
 Dependencies:
 	pycparser
 		http://code.google.com/p/pycparser/
@@ -19,6 +20,7 @@ import os
 
 g_printCProg = False
 g_debug = False
+g_defines = None
 
 def printDebug(s):
 	if g_debug:
@@ -48,8 +50,9 @@ class StructPrinter:
 		self.indent = self.indent[0:-1]
 
 	def printStructOffsets(self, fileName):
-		#print 'opening on %s' % fileName
+		printDebug('opening on %s' % fileName)
 		ast = parse_file(fileName, use_cpp=True, cpp_args=["-D__extension__=", "-D__attribute__(...)="])
+		ast.extend(defines.split())
 	
 		self.CProg = """
 			#include <stdio.h>
@@ -94,26 +97,27 @@ def usage():
 	print 'args:'
 	print '--cprog: print the intermediate C program'
 	print '--debug: print debug statements'
+	print '--defines: cpp/gcc defines as space separated list, ex: -DNDEBUG'
 
 if __name__ == "__main__":
-	fileName = None
+	fileNames = list()
 	for i in range(1, len(sys.argv)):
 		arg = sys.argv[i]
 		if arg.find("--") < 0:
-			fileName = arg
+			fileNames.append(arg)
 		elif arg == "--cprog":
 			g_printCProg = True
 		elif arg == "--debug":
 			g_debug = True
+			g_printCProg = True
+		elif arg == "--defines":
+			g_defines = arg
 		else:
 			print 'Unrecognized arg: %s' % arg
 			usage()
 			sys.exit(1)	
 	
-	if fileName is None:
-		usage()
-		sys.exit(1)	
-
-	printer = StructPrinter()
-	printer.printStructOffsets(fileName)
+	for fileName in fileNames:
+		printer = StructPrinter()
+		printer.printStructOffsets(fileName)
 
