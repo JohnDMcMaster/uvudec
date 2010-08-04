@@ -1,6 +1,6 @@
 # UVNet Universal Decompiler (uvudec)
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
-# Licensed under terms of the three clause BSD license, see LICENSE for details
+# Licensed under GPL V3+, see COPYING for details
 
 # LINKAGE: set to either dynamic or static for our current target
 # USING_DYNAMIC: if we configured to support building dynamic exe
@@ -53,14 +53,7 @@ RELOCATION_DIR=$(ROOT_DIR)/relocation
 TESTING_DIR=$(ROOT_DIR)/testing
 UTIL_DIR=$(ROOT_DIR)/util
 
-# version stuff
-UVUDEC_VER_MAJOR=0
-UVUDEC_VER_MINOR=3
-UVUDEC_VER_PATCH=0
-# Deprecated
-UVUDEC_VER_BUILD=0
-UVUDEC_VER=$(UVUDEC_VER_MAJOR).$(UVUDEC_VER_MINOR).$(UVUDEC_VER_PATCH)
-UVUDEC_VER_FLAGS=-DUVUDEC_VER_MAJOR=$(UVUDEC_VER_MAJOR) -DUVUDEC_VER_MINOR=$(UVUDEC_VER_MINOR) -DUVUDEC_VER_PATCH=$(UVUDEC_VER_PATCH)
+include $(ROOT_DIR)/Makefile.version
 
 PACKAGE=uvudec
 

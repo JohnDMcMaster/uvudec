@@ -1,0 +1,14 @@
+# UVNet Universal Decompiler (uvudec)
+# Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
+# Licensed under terms of the three clause BSD license, see LICENSE for details
+
+# version stuff
+UVUDEC_VER_MAJOR=0
+UVUDEC_VER_MINOR=3
+UVUDEC_VER_PATCH=0
+# Deprecated
+UVUDEC_VER_BUILD=0
+
+UVUDEC_VER=$(UVUDEC_VER_MAJOR).$(UVUDEC_VER_MINOR).$(UVUDEC_VER_PATCH)
+UVUDEC_VER_FLAGS=-DUVUDEC_VER_MAJOR=$(UVUDEC_VER_MAJOR) -DUVUDEC_VER_MINOR=$(UVUDEC_VER_MINOR) -DUVUDEC_VER_PATCH=$(UVUDEC_VER_PATCH)
+

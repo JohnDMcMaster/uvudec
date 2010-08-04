@@ -9,3 +9,7 @@ Goals of uvlicscan:
 -High performance testing of the uvudec engine
 -An early end application of the decompiling engine
 
+Requirements
+-Distributed arhictecture
+	A program can query across multiple servers
+
