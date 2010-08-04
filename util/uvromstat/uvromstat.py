@@ -1,7 +1,9 @@
 #!/usr/bin/python
-# uvbinstat: look for patterns in binary images
-# Intended to find patterns indicating a bad rip
-# Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
+'''
+uvromstat: look for patterns in binary images
+Intended to find patterns indicating a bad rip
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
+'''
 
 """
 WARNING: assumes all ROMs are length multiples of 2
@@ -257,7 +259,7 @@ def help():
 	usage()
 
 def version():
-	print 'uvbinstat version %s' % (VERSION)
+	print 'uvromstat version %s' % (VERSION)
 	print 'Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>'
 
 def usage():
@@ -332,3 +334,4 @@ if __name__ == "__main__":
 		g_plotAvailible = False
 
 	main()
+	
