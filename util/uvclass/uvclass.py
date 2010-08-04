@@ -1,7 +1,10 @@
 #!/usr/bin/python
-# uvclass.py: class skeleton creation
-# Generates C++ base function table for unknown objects
-# Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>
+'''
+uvclass.py: class skeleton creation
+Generates C++ base function table for unknown objects
+Released under version 3 GPL+
+Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>
+'''
 
 import sys
 
