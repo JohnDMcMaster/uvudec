@@ -9,11 +9,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDConfigFLIRT::UVDConfigFLIRT()
 {
-	m_signatureLengthMin = UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH_DEFAULT;
-	m_signatureLengthMax = UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT;
+	m_patSignatureLengthMin = UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH_DEFAULT;
+	m_patSignatureLengthMax = UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT;
 	m_patternFileNewline = UVD_PROP_FLIRT_PAT_NEWLINE_DEFAULT;
-	m_relocateNearFar = UVD_PROP_FLIRT_RELOCATION_NEARFAR_DEFAULT;
-	
+	m_relocateNearFar = UVD_PROP_FLIRT_PAT_RELOC_NEARFAR_DEFAULT;
+	m_patLeadingLength = UVD_PROP_FLIRT_PAT_LEADING_LENGTH_DEFAULT;
+	m_patModuleLengthMax = UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX_DEFAULT;
+
 	m_outputFile = "/dev/stdout";
 }
 

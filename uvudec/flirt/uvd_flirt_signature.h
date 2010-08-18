@@ -4,9 +4,15 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#ifndef UVD_FLIRT_SIGNATURE_H
+#define UVD_FLIRT_SIGNATURE_H
+
 /*
 For working with .sig files
 */
+class UVDFLIRTPatternAnalysis;
+class UVDData;
+class UVDFLIRT;
 class UVDFLIRTSignature
 {
 public:
@@ -34,3 +40,8 @@ public:
 	*/
 	UVDData *m_data;
 };
+
+#define UVD_FLIRT_SIG_LEADING_LENGTH				0x20
+
+#endif
+

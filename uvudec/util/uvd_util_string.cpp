@@ -379,6 +379,25 @@ std::string limitString(const std::string &s, size_t maxLength)
 	return s.substr(0, length);
 }
 
+std::string trimString(const std::string &s)
+{
+	std::string whitespace = " \r\n\t";
+	std::string::size_type startPos = s.find_first_not_of(whitespace);
+	if( startPos == std::string::npos )
+	{
+		return "";
+	}
+	std::string::size_type endPos = s.find_last_not_of(whitespace);
+	if( endPos == std::string::npos )
+	{
+		return s.substr(startPos);
+	}
+	else
+	{
+		return s.substr(startPos, endPos - startPos);
+	}
+}
+
 std::string stringVectorToSystemArgument(const std::vector<std::string> &args)
 {
 	/*

@@ -25,19 +25,7 @@ obj2pat entry point
 #include "uvd_address.h"
 #include "uvd_language.h"
 
-/*
-During parse, several things can happen:
--Exact opcode match
--A prefix
--A multibyte opcode
-
-Before this was handled by function pointers and corresponding opcode table
-Seems a solid architecture, should stick with it
-*/
-
-//typedef uv_err_t (*uv_disasm_func)(struct );
-
-uv_err_t versionPrintPrefixThunk();
+static uv_err_t versionPrintPrefixThunk();
 
 static const char *GetVersion()
 {
@@ -105,7 +93,7 @@ uv_err_t initProgConfig()
 	return UV_ERR_OK;	
 }
 
-uv_err_t versionPrintPrefixThunk()
+static uv_err_t versionPrintPrefixThunk()
 {
 	const char *program_name = "uvobj2pat";
 	
@@ -155,7 +143,8 @@ uv_err_t uvmain(int argc, char **argv)
 	if( UV_FAILED(UVDFLIRT::getFLIRT(&g_flirt)) )
 	{
 		printf_error("Failed to initialize FLIRT engine\n");
-		return UV_DEBUG(UV_ERR_GENERAL);
+		rc = UV_ERR_OK;
+		goto error;
 	}
 	uv_assert_ret(g_flirt);
 

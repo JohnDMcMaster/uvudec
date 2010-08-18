@@ -7,6 +7,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_ARGS_PROPERTY_H
 #define UVD_FLIRT_ARGS_PROPERTY_H
 
+#include "uvd_flirt_signature.h"
+#include "uvd_flirt_pattern.h"
+
 #define UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH				"flirt.signature.length.min"
 //In bytes
 #define UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH_DEFAULT		4
@@ -15,10 +18,20 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //In bytes.  This is FLAIR note, I don't actually know why yet.  Suspect it has to do with .pat format
 #define UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT		0x8000
 
+/*
+.pat file related
+*/
+
 //Output newline type, val cr, lf, or crlf
 //IDA uses crlf it seems (at least on Windows)
 #define UVD_PROP_FLIRT_PAT_NEWLINE						"flirt.pattern.newline"
 #define UVD_PROP_FLIRT_PAT_NEWLINE_DEFAULT				"\r\n"
+
+#define UVD_PROP_FLIRT_PAT_LEADING_LENGTH				"flirt.pattern.leading.length"
+#define UVD_PROP_FLIRT_PAT_LEADING_LENGTH_DEFAULT		UVD_FLIRT_SIG_LEADING_LENGTH
+
+#define UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX			"flirt.pattern.module.length.max"
+#define UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX_DEFAULT	0x8000
 
 /*
 Certain linkers do hacks to speed up near calls by replacing far call code with
@@ -30,7 +43,12 @@ relocatable opcodes
 
 Should be set to a bool val
 */
-#define UVD_PROP_FLIRT_RELOCATION_NEARFAR				"flirt.relocation.nearfar"
-#define UVD_PROP_FLIRT_RELOCATION_NEARFAR_DEFAULT		false
+#define UVD_PROP_FLIRT_PAT_RELOC_NEARFAR			"flirt.relocation.nearfar"
+#define UVD_PROP_FLIRT_PAT_RELOC_NEARFAR_DEFAULT	false
+
+/*
+.sig file related
+*/
 
 #endif
+
