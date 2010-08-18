@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#pragma once
+#ifndef UVD_COMPILER_H
+#define UVD_COMPILER_H
 
 #include "uvd_types.h"
 #include <string>
@@ -91,4 +92,6 @@ public:
 	//Additional version information identifying a special branch or such.  Ex: "Sourcery ARM"
 	std::string m_typeExtra;
 };
+
+#endif
 

@@ -48,12 +48,12 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	if( argConfig->m_propertyForm == UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		flirtConfig->m_signatureLengthMin = firstArgNum;
+		flirtConfig->m_patSignatureLengthMin = firstArgNum;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		flirtConfig->m_signatureLengthMax = firstArgNum;
+		flirtConfig->m_patSignatureLengthMax = firstArgNum;
 	}
 	//All of these have mult input files and one output file
 	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )

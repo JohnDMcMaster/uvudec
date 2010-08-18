@@ -19,6 +19,21 @@ http://www.hex-rays.com/idapro/flirt.htm
 #include <string>
 #include <vector>
 
+//TODO: move these to variable controlled
+//#define FLIRT_DEBUG
+#ifdef FLIRT_DEBUG
+#define printf_flirt_debug(format, ...) printf("DEBUG: FLIRT: " format, ## __VA_ARGS__)
+#else
+#define printf_flirt_debug(...)
+#endif
+
+//#define FLIRT_WARNING
+#ifdef FLIRT_WARNING
+#define printf_flirt_warning(format, ...) printf("WARNING: FLIRT: " format, ## __VA_ARGS__)
+#else
+#define printf_flirt_warning(...)
+#endif
+
 /*
 Core FLIRT engine
 */
@@ -52,3 +67,4 @@ public:
 extern UVDFLIRT *g_flirt;
 
 #endif
+

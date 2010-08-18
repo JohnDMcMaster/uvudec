@@ -79,7 +79,7 @@ uv_err_t UVDFLIRTPatternAnalysisUVD::saveToString(std::string &output)
 	*/
 	
 	//Begining signature
-	uint32_t signatureLengthMin = g_config->m_flirt.m_signatureLengthMin;
+	uint32_t signatureLengthMin = g_config->m_flirt.m_patSignatureLengthMin;
 	std::string lineEnding = g_config->m_flirt.m_patternFileNewline;
 	//From pat doc
 	const uint32_t maxModuleLength = 0x8000;
@@ -155,7 +155,7 @@ uv_err_t UVDFLIRTPatternAnalysisUVD::saveToString(std::string &output)
 
 uv_err_t UVDFLIRTPatternAnalysisUVD::getPatLeadingSignature(UVDFLIRTPatternEntry *entry, std::string &out)
 {
-	uint32_t signatureLengthMax = g_config->m_flirt.m_signatureLengthMax;
+	uint32_t signatureLengthMax = g_config->m_flirt.m_patSignatureLengthMax;
 	char buff[0x100];
 	//FIXME: this should use signatureLengthMax
 	//32 byte start seq (64 hex chars)
@@ -198,7 +198,7 @@ uv_err_t UVDFLIRTPatternAnalysisUVD::getPatLeadingSignature(UVDFLIRTPatternEntry
 
 uv_err_t UVDFLIRTPatternAnalysisUVD::getPatCRC(UVDFLIRTPatternEntry *entry, std::string &out)
 {
-	uint32_t signatureLengthMax = g_config->m_flirt.m_signatureLengthMax;
+	uint32_t signatureLengthMax = g_config->m_flirt.m_patSignatureLengthMax;
 	//Compute CRC on remaining data up to 0xFF bytes
 	uint32_t crcLength = 0;
 	uint32_t crc = 0;
@@ -299,7 +299,7 @@ uv_err_t UVDFLIRTPatternAnalysisUVD::getPatReferencedNames(UVDFLIRTPatternEntry 
 uv_err_t UVDFLIRTPatternAnalysisUVD::getPatTailBytes(UVDFLIRTPatternEntry *entry, std::string &out)
 {
 	char buff[0x100];
-	uint32_t signatureLengthMax = g_config->m_flirt.m_signatureLengthMax;
+	uint32_t signatureLengthMax = g_config->m_flirt.m_patSignatureLengthMax;
 	UVDBinarySymbol *symbol = entry->m_symbol;
 	UVDData *data = symbol->m_data;
 	UVDRelocatableData *relocatableData = symbol->m_relocatableData;

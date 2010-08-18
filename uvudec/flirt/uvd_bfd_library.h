@@ -9,9 +9,7 @@ Uses libbfd (part of GNU binutils) for object file manipulation
 "The GNU Binutils are a collection of binary tools."
 http://sourceware.org/binutils/
 
-Since libbfd is part of GPL licensed code, it can only be supported if
-code is GPL licensed.  This is really only an issue if you are trying
-to distribute a binary
+THIS CODE IS NOT CURRENTLY BEING USED
 */
 
 #ifndef UVD_BFD_LIBRARY_H

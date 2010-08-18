@@ -18,6 +18,7 @@ CXX_SRCS = 	\
 			$(ASSEMBLY_DIR)/uvd_register.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(COMPILER_DIR)/uvd_compiler_assembly.cpp \
+			$(COMPILER_DIR)/uvd_compiler_gcc.cpp \
 			$(CORE_DIR)/uvd.cpp \
 			$(CORE_DIR)/uvd_analysis.cpp \
 			$(CORE_DIR)/uvd_analysis_db.cpp \
@@ -36,13 +37,17 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_string_table.cpp \
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
 			$(ELF_DIR)/uvd_elf_writter.cpp \
+			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd.cpp \
+			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_core.cpp \
+			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_function.cpp \
+			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_relocation.cpp \
+			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_section.cpp \
 			$(FLIRT_DIR)/uvd_bfd_library.cpp \
 			$(FLIRT_DIR)/uvd_config_flirt.cpp \
 			$(FLIRT_DIR)/uvd_elf_library.cpp \
 			$(FLIRT_DIR)/uvd_flirt_args.cpp \
 			$(FLIRT_DIR)/uvd_flirt.cpp \
 			$(FLIRT_DIR)/uvd_flirt_pattern.cpp \
-			$(FLIRT_DIR)/uvd_flirt_pattern_bfd.cpp \
 			$(FLIRT_DIR)/uvd_flirt_pattern_uvd.cpp \
 			$(FLIRT_DIR)/uvd_flirt_signature.cpp \
 			$(FLIRT_DIR)/uvd_library.cpp \
@@ -79,6 +84,7 @@ CXX_SRCS = 	\
 			$(UTIL_DIR)/uvd_error.cpp \
 			$(UTIL_DIR)/uvd_log.cpp \
 			$(UTIL_DIR)/uvd_priority_list.cpp \
+			$(UTIL_DIR)/uvd_string_writter.cpp \
 			$(UTIL_DIR)/uvd_types.cpp \
 			$(UTIL_DIR)/uvd_util.cpp \
 			$(UTIL_DIR)/uvd_util_string.cpp \

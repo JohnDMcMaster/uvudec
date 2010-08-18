@@ -31,7 +31,7 @@ Put in namespace maybe and do some template magic?
 	template <typename T> T uvnet::uvd_minCore<T>(T a, T b) ...
 */
 #ifndef uvd_min
-#define uvd_min(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) ret; if( _a > _b ) ret = _a; else ret = _b; ret;})
+#define uvd_min(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) ret; if( _a > _b ) ret = _b; else ret = _a; ret;})
 #endif //uvd_min
 #ifndef uvd_max
 #define uvd_max(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) ret; if( _a < _b ) ret = _a; else ret = _b; ret;})
@@ -88,6 +88,8 @@ uv_err_t executeToText(const std::string &sCommand,
 		std::string *stdErr);
 
 std::string limitString(const std::string &s, size_t maxLength);
+//trim/strip whitespace
+std::string trimString(const std::string &s);
 
 std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks = true);
 std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc);

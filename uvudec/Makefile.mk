@@ -43,6 +43,7 @@ CORE_DIR=$(ROOT_DIR)/core
 DATA_DIR=$(ROOT_DIR)/data
 ELF_DIR=$(ROOT_DIR)/elf
 FLIRT_DIR=$(ROOT_DIR)/flirt
+FLIRT_BFD_DIR=$(FLIRT_DIR)/bfd
 GUI_DIR=$(ROOT_DIR)/GUI
 HASH_DIR=$(ROOT_DIR)/hash
 INIT_DIR=$(ROOT_DIR)/init
@@ -62,7 +63,7 @@ INCLUDES += -I. -I$(ROOT_DIR)
 #for curDir in $(SOURCE_DIRS); do \
 #INCLUDES += " -I$${curDir}" ;\
 #done;
-INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(FLIRT_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(INTERPRETER_DIR) -I$(LANGUAGE_DIR) -I$(PROJECT_DIR) -I$(RELOCATION_DIR) -I$(UTIL_DIR)
+INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(FLIRT_DIR) -I$(FLIRT_BFD_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(INTERPRETER_DIR) -I$(LANGUAGE_DIR) -I$(PROJECT_DIR) -I$(RELOCATION_DIR) -I$(UTIL_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -92,6 +93,7 @@ endif
 include $(ROOT_DIR)/Makefile.interpreter
 
 ifeq ($(USING_LIBBFD),Y)
+FLAGS_SHARED += -DUSING_LIBBFD
 FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD
 ifdef BINUTILS_PREFIX
 INCLUDES+=-I$(BINUTILS_PREFIX)/include
@@ -170,7 +172,7 @@ endif
 
 # BEGIN TARGETS
 
-all:  $(ALL_TARGETS)
+all: $(ALL_TARGETS)
 	@(echo 'all: done')
 	@(true)
 
@@ -218,7 +220,6 @@ endif
 endif
 
 PHONY += all .c.o .cpp.o clean dist depend info cleanLocal
-
 .PHONY: $(PHONY)
 
 info: $(INFO_TARGETS)
