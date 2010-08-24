@@ -55,6 +55,7 @@ sec) (or in relaxing targets and just when referring to original size:) bfd_unal
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #if 0
 #ifndef DEMANGLE_H
@@ -137,7 +138,14 @@ report (format, args); VA_CLOSE (args); xexit (1); }
 */
 void fatal(const char *format, ...)
 {
-	printf("fatal: %s\n", format);
+	va_list ap;
+
+	va_start(ap, format);
+	printf("fatal: ");
+	vprintf(format, ap);
+	printf("\n");
+	va_end(ap);
+
 	exit(1);
 }
 
@@ -150,19 +158,13 @@ void list_matching_formats(char **p)
 }
 
 /*
-Configured target name. 
+The macro TARGET is suppose to be defined by Makefile.  
 */
 #define TARGET "i686-pc-linux-gnu"
-
-void set_default_bfd_target(void)
+void set_bfd_target(const char *target)
 {
-	/*
-	   The macro TARGET is defined by Makefile.  
-	 */
-	const char *target = TARGET;
-
 	if(!bfd_set_default_target(target))
-		fatal("can't set BFD default target to `%s': %s", target, bfd_errmsg(bfd_get_error()));
+		fatal("can't set BFD target to `%s': %s", target, bfd_errmsg(bfd_get_error()));
 }
 
 
@@ -876,16 +878,19 @@ int main(int argc, char **argv)
 	int c;
 	int is_append = 0;
 	char *outfilename = NULL;
+	char target[32] = "";
 
 	program_name = *argv;
 
 	bfd_init();
-	set_default_bfd_target();
 
-	while(EOF != (c = getopt(argc, argv, "p:o:Carvgz")))
+	while(EOF != (c = getopt(argc, argv, "b:p:o:Carvgz")))
 	{
 		switch (c)
 		{
+		case 'b':
+			strncpy(target, optarg, sizeof(target));
+			break;
 		case 'C':
 			do_demangle = 1;
 			break;
@@ -921,6 +926,14 @@ int main(int argc, char **argv)
 	}
 	if(!(optind < argc))
 		usage();
+	if( target[0] )
+	{
+		set_bfd_target(target);
+	}
+	else
+	{
+		set_bfd_target(TARGET);
+	}
 	if(outfilename != NULL)
 	{
 		if(NULL == (out = fopen(outfilename, openflags[is_append])))
