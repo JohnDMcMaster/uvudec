@@ -1,9 +1,9 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
-uvudec entry point
+obj2pat entry point
 */
 
 #include <stdlib.h>
@@ -18,84 +18,40 @@ uvudec entry point
 #include "uvd_init.h"
 #include "uvd_util.h"
 #include "uvd.h"
+#include "uvd_flirt.h"
+#include "uvd_flirt_args.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
 #include "uvd_address.h"
 #include "uvd_language.h"
 
-/*
-During parse, several things can happen:
--Exact opcode match
--A prefix
--A multibyte opcode
-
-Before this was handled by function pointers and corresponding opcode table
-Seems a solid architecture, should stick with it
-*/
-
-//typedef uv_err_t (*uv_disasm_func)(struct );
-
-static std::string g_targetFile;
-static std::string g_outputFile;
-static FILE *g_pOutputFile = NULL;
-
-uv_err_t versionPrintPrefixThunk();
+static uv_err_t versionPrintPrefixThunk();
 
 static const char *GetVersion()
 {
 	return UVUDEC_VER_STRING;
 }
 
-static uv_err_t disassemble(std::string file)
+static uv_err_t doConvert()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string output;
-	UVD *uvd = NULL;
-	UVDData *data = NULL;
-
-	printf_debug_level(UVD_DEBUG_PASSES, "main: initializing data streams\n");
-	//Select input
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Initializing data stream on %s...\n", file.c_str());
-	if( UV_FAILED(UVDDataFile::getUVDDataFile(&data, file)) )
-	{
-		printf_error("Failed to initialize data stream!\n");
-		printf_error("Could not read file: %s\n", file.c_str());
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	uv_assert(data);
-	
-	//Create a disassembler engine active on that input
-	printf_debug_level(UVD_DEBUG_SUMMARY, "disassemble: initializing engine...\n");
-	if( UV_FAILED(UVD::getUVD(&uvd, data)) )
-	{
-		printf_error("Failed to initialize engine\n");
-		uv_assert_err(UV_ERR_GENERAL);
-	}
-	uv_assert(uvd);
-	uv_assert(g_uvd);
+	UVDConfigFLIRT *flirtConfig = NULL;
+		
+	flirtConfig = &g_uvd->m_config->m_flirt;
+	uv_assert_ret(flirtConfig);
 
 	//Get string output
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");
-	rc = uvd->disassemble(output);
-	if( UV_FAILED(rc) )
-	{
-		printf_error("Failed to disassemble!\n");
-		uv_assert_err(UV_ERR_GENERAL);
-	}
+	printf_debug_level(UVD_DEBUG_SUMMARY, "main: creating pat file...\n");
+	uv_assert_err_ret(g_flirt->patFiles2SigFile(flirtConfig->m_targetFiles, flirtConfig->m_outputFile));
+	printf_debug_level(UVD_DEBUG_PASSES, "main: pat done\n");
 
-	printf_debug_level(UVD_DEBUG_PASSES, "main: disassembled\n");
-
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Ready to print!\n");
-	//Print string output
-	//It already will have a newline on the end of each line
-	fprintf(g_pOutputFile, "%s", output.c_str());
 	rc = UV_ERR_OK;
 	
-error:
-	delete data;
 	return rc;
 }
 
+#if 0
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
 {
 	UVDConfig *config = NULL;
@@ -114,15 +70,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
 	}
 
-	if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
+	if( false )
 	{
-		uv_assert_ret(!argumentArguments.empty());
-		g_targetFile = firstArg;
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_FILE )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		g_outputFile = firstArg;
 	}
 	else
 	{
@@ -132,27 +81,21 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 	return UV_ERR_OK;
 }
+#endif
 
 uv_err_t initProgConfig()
 {
-	uv_assert_ret(g_config);
-	
-	//Arguments
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_FILE, 0, "output", "output program (default: stdout)", 1, argParser, false));
+	uv_assert_err_ret(initFLIRTSharedConfig());
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
 
-	g_outputFile = "/dev/stdout";
-	g_targetFile = DEFAULT_DECOMPILE_FILE;
-
 	return UV_ERR_OK;	
 }
 
-uv_err_t versionPrintPrefixThunk()
+static uv_err_t versionPrintPrefixThunk()
 {
-	const char *program_name = "uvudec";
+	const char *program_name = "uvobj2pat";
 	
 	/*
 	if( g_config && g_config->m_argv )
@@ -169,6 +112,7 @@ uv_err_t uvmain(int argc, char **argv)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfig *config = NULL;
+	UVDConfigFLIRT *flirtConfig = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
 	
 	if( strcmp(GetVersion(), UVDGetVersion()) )
@@ -193,22 +137,33 @@ uv_err_t uvmain(int argc, char **argv)
 		goto error;
 	}
 
-	if( g_targetFile.empty() )
+
+	//Create a doConvertr engine active on that input
+	printf_debug_level(UVD_DEBUG_SUMMARY, "doConvert: initializing FLIRT engine...\n");
+	if( UV_FAILED(UVDFLIRT::getFLIRT(&g_flirt)) )
 	{
-		printf_error("Target file not specified\n");
+		printf_error("Failed to initialize FLIRT engine\n");
+		rc = UV_ERR_OK;
+		goto error;
+	}
+	uv_assert_ret(g_flirt);
+
+	uv_assert_ret(g_uvd);
+	uv_assert_ret(g_uvd->m_config);
+	flirtConfig = &g_uvd->m_config->m_flirt;
+	uv_assert_ret(flirtConfig);
+
+	//Source .pat files
+	if( flirtConfig->m_targetFiles.empty() )
+	{
+		printf_error("Target file(s) not specified\n");
 		UVDHelp();
-		uv_assert(UV_ERR_GENERAL);
+		uv_assert_err(UV_ERR_GENERAL);
 	}
-
-	if( UV_FAILED(parseFileOption(g_outputFile, &g_pOutputFile)) )
+	
+	if( UV_FAILED(doConvert()) )
 	{
-		printf_error("Could not open file: %s\n", g_outputFile.c_str());
-		uv_assert(UV_ERR_GENERAL);
-	}
-
-	if( UV_FAILED(disassemble(g_targetFile)) )
-	{
-		printf_error("Top level disassemble failed\n");
+		printf_error("Top level doConvert failed\n");
 		uv_assert(UV_ERR_GENERAL);
 	}	
 

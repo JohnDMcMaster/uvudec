@@ -1,6 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_flirt_pattern.h"
 #include "uvd_flirt_pattern_bfd.h"
 #include "uvd_flirt_pattern_uvd.h"
+#include "uvd_flirt_signature.h"
 #include "uvd_util.h"
 
 UVDFLIRT *g_flirt = NULL;
@@ -22,6 +23,7 @@ UVDFLIRT::~UVDFLIRT()
 
 uv_err_t UVDFLIRT::init()
 {
+	printf_flirt_debug("initializing FLIRT engine\n");
 #ifdef UVD_FLIRT_PATTERN_UVD
 	UVDFLIRTPatternGeneratorUVD *generatorUVD = NULL;
 	
@@ -78,6 +80,48 @@ uv_err_t UVDFLIRT::objs2pat(const std::vector<std::string> &inputFiles, std::str
 		output += lastOutput;
 	}
 	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRT::patFiles2SigFile(const std::vector<std::string> &inputFiles, const std::string &outputFile)
+{
+	/*
+	TODO: check if we have relocation at end of line how this is treated since usually '.' padded
+	*/
+	std::string output;
+	
+	uv_assert_err_ret(patFiles2Sig(inputFiles, output));
+	uv_assert_err_ret(writeFile(outputFile, output));
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRT::patFiles2Sig(const std::vector<std::string> &inputFiles, std::string &output)
+{
+	UVDFLIRTSignatureDB *db = NULL;
+	
+	uv_assert_err_ret(patFiles2SigDB(inputFiles, &db));
+	uv_assert_ret(db);
+	uv_assert_err_ret(db->writeToFile(output));
+	delete db;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRT::patFiles2SigDB(const std::vector<std::string> &inputFiles, UVDFLIRTSignatureDB **out)
+{
+	UVDFLIRTSignatureDB *db = NULL;
+	
+	db = new UVDFLIRTSignatureDB();
+	uv_assert_ret(db);
+	uv_assert_err_ret(db->init());
+	
+	for( uint32_t i = 0; i < inputFiles.size(); ++i )
+	{
+		std::string curFile = inputFiles[i];
+		
+		uv_assert_err_ret(db->loadFromPatFile(curFile));
+	}
 	return UV_ERR_OK;
 }
 
