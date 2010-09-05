@@ -123,6 +123,7 @@ public:
 };
 
 //uv_err_t argParserDefault(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
+uv_err_t UVDInitConfigEarly();
 uv_err_t UVDInitConfig();
 void UVDHelp();
 

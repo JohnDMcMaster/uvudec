@@ -13,7 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string>
 
 uv_err_t parseFileOption(const std::string optionFileIn, FILE **pOptionFileIn);
-bool argToBool(const std::string &sArg);
+bool UVDArgToBool(const std::string &sArg);
 uv_err_t processArgCore(const std::string &arg, UVDParsedArg &parsedArg);
 uv_err_t processArg(const std::string &arg, std::vector<UVDParsedArg> &parsedArgs);
 uv_err_t matchArgConfig(const std::vector<UVDArgConfig *> &argConfigs, UVDParsedArg &arg, UVDArgConfig const **matchedArgConfig);

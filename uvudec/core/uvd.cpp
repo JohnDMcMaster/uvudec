@@ -434,6 +434,7 @@ uv_err_t UVDInit()
 	//Initially we log to console until a "real" log is setup which may be an actual file
 	//we don't know actual file because we haven't parsed args yet
 	uv_assert_err_ret(uv_log_init("/dev/stdout"));
+	uv_assert_err_ret(UVDInitConfigEarly());
 	uv_assert_err_ret(UVDDebugInit());
 	uv_assert_err_ret(UVDInitConfig());
 	printf_debug_level(UVD_DEBUG_PASSES, "UVDInit(): done\n");
