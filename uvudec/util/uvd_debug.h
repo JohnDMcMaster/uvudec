@@ -79,6 +79,7 @@ uv_assert_err is always enabled
 /* I don't check rc on printf anyway, fix later if needed */
 //#define printf_debug(format, ...) if( g_verbose ) { printf(format, ## __VA_ARGS__); }
 #define printf_debug(format, ...) printf_debug_level(UVD_DEBUG_VERBOSE, format, ## __VA_ARGS__)
+#define printf_debug_type(format, type, ...) printf_debug(format, ## __VA_ARGS__)
 void printf_debug_level(uint32_t level, const char *format, ...);
 
 #define uv_assert(x) if( !(x) ) { UV_ERR(rc); goto error; }

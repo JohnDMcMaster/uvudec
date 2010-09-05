@@ -46,7 +46,7 @@ public:
 };
 
 /*
-An ELF (Executable and Linker Format) reader/writter for working with relocatable object files
+An ELF (Executable and Linker Format) reader/writer for working with relocatable object files
 Focus will be on section header since original idea was only to do object file storing/loading for reloc
 */
 class UVDElf
@@ -125,7 +125,7 @@ public:
 	//Gaurantee string is in the table
 	//If index is specified, it will be returned
 	uv_err_t addStringCore(const std::string &sSection, const std::string &s);
-	//This should only be called from writter operations
+	//This should only be called from writer operations
 	uv_err_t getStringIndexCore(const std::string &sSection, const std::string &s, uint32_t *index);
 	//For a given string, get an object to find its final address
 	//uv_err_t getStringRelocatableElementCore(const std::string &sSection, const std::string &s, UVDRelocatableElement **relocatable, UVDRelocationManager *relocationManager);
