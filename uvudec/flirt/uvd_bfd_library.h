@@ -12,6 +12,8 @@ http://sourceware.org/binutils/
 THIS CODE IS NOT CURRENTLY BEING USED
 */
 
+#if 0
+
 #ifndef UVD_BFD_LIBRARY_H
 #define UVD_BFD_LIBRARY_H
 
@@ -33,6 +35,8 @@ public:
 	//Does the data passed in seem parsable by this library?
 	static uv_err_t canParse(UVDData *data, uint32_t *canParse);
 };
+
+#endif
 
 #endif
 

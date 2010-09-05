@@ -52,6 +52,8 @@ Tested with 2.19.1
 	const op_type *args = q->args.nib;
 */
 
+#if 0
+
 #ifdef USING_LIBBFD
 
 UVDBFDLibrary::UVDBFDLibrary()
@@ -86,3 +88,5 @@ uv_err_t UVDBFDLibrary::canParse(UVDData *data, uint32_t *canParse)
 }
 
 #endif
+#endif
+
