@@ -106,6 +106,12 @@ unsigned int uv_get_num_tokens_core(const char *text, char delim, int ret_blanks
 char *uv_get_line(const char *text, unsigned int lineNumber);
 
 /*
+Current line doesn't count
+Originally for checking stuff after --- in .pat file
+*/
+uint32_t nonBlankLinesRemaining(std::vector<std::string> &lines, std::vector<std::string>::iterator iter);
+
+/*
 Data returned is malloc'd 
 If size is non-NULL, the data size is stored there
 If size is NULL, ascii data will be assumed and ret will be null terminated

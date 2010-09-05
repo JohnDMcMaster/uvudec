@@ -35,6 +35,8 @@ const char *uv_err_str(uv_err_t err)
 	uv_err_str_case(UV_ERR_NOTSUPPORTED);
 	uv_err_str_case(UV_ERR_BUFFERSIZE);
 	uv_err_str_case(UV_ERR_ARBITRARYLIMIT);
+	uv_err_str_case(UV_ERR_COMPATIBILITY);
+	uv_err_str_case(UV_ERR_NOTIMPLEMENTED);
 
 	uv_err_str_case(UV_ERR_DISASM_COMBO);
 	uv_err_str_case(UV_ERR_DISASM_NODAT);
