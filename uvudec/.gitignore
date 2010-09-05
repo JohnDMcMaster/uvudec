@@ -1,3 +1,2 @@
-Makefile.configure
-Makefile.depend*
-uvudec
+bin
+
