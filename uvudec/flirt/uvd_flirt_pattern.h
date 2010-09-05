@@ -42,6 +42,7 @@ public:
 public:
 };
 
+#define UVD_FLIRT_PAT_TERMINATOR					"---"
 #define UVD_FLIRT_PAT_RELOCATION_CHAR				'.'
 #define UVD_FLIRT_PAT_PUBLIC_NAME_CHAR				':'
 #define UVD_FLIRT_PAT_REFERENCED_NAME_CHAR			'^'
