@@ -13,7 +13,7 @@ CXXFLAGS += $(FLAGS_SHARED)
 CXX_SRCS = main.cpp
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
 
-OUTPUT=sigread
+OUTPUT=rxdumpsig
 
 default: all
 

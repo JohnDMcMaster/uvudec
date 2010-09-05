@@ -457,13 +457,14 @@ void dump_tree()
 	if (n_internal_nodes) {
 		uint32_t relocation_bitmask;
 
+		//Simply all of the ones with the same prefix
 		for (int i = 0; i < n_internal_nodes; ++i) {
 			uint32_t n_node_bytes;
 			uint32_t cur_relocation_bitmask;
 	
 			n_node_bytes = read_byte();
 			//Only allowed 32 bytes
-			if (n_node_bytes > 0x20u)
+			if (n_node_bytes > 0x20u)e
 				err("Too many bytes\n");
 
 			cur_relocation_bitmask = 1 << (n_node_bytes - 1);
@@ -491,9 +492,14 @@ void dump_tree()
 	} else {
 		uint32_t read_flags;
 		uint32_t func_index = 0;
+		//Loop for each element with the same prefix, but possibly different crc16
+		//Listed in increasing sorted order of crc16
 		do {
 			uint32_t tree_block_len = read_byte();
 			uint32_t a_crc16 = read16();
+			//Loop for each bucketed signature
+			//All in this loop have the same crc16 and same length
+			//What may be different is what the relocation symbols are
 			do {
 				uint32_t total_len;
 				uint32_t ref_cur_offset = 0;
@@ -502,6 +508,7 @@ void dump_tree()
 				printf_indented("%d. tree_block_len:0x%.2X a_crc16:0x%.4X total_len:0x%.4X", func_index, tree_block_len, a_crc16, total_len);
 				++func_index;
 			
+				//Loop for each reference
 				do {
 					std::string name;
 					uint32_t delta = 0;
@@ -513,6 +520,7 @@ void dump_tree()
 					//whys neg ref useful?
 					has_negative = read_flags < 0x20;
 					
+					//Read reference name
 					for (int i = 0; ; ++i) {
 						if (i >= 1024)
 							err("reference length exceeded\n");
@@ -531,6 +539,7 @@ void dump_tree()
 					printf(" %.4X:%s", ref_cur_offset, name.c_str());					
 				} while (read_flags & 1);
 				
+				//Not sure what this is
 				if (read_flags & 2) {
 					uint32_t first;
 					uint32_t second;
