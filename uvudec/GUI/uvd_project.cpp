@@ -12,11 +12,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_util.h"
 #include <jansson.h>
 
-class UVDProjectWritter
+class UVDProjectWriter
 {
 public:
-	UVDProjectWritter();
-	~UVDProjectWritter();
+	UVDProjectWriter();
+	~UVDProjectWriter();
 	uv_err_t init(UVDProject *project);
 
 	uv_err_t doSave(const std::string &fileName);
@@ -40,11 +40,11 @@ UVDProject::~UVDProject()
 
 uv_err_t UVDProject::doSave()
 {
-	UVDProjectWritter writter;
+	UVDProjectWriter writer;
 
-	uv_assert_err_ret(writter.init(this));
+	uv_assert_err_ret(writer.init(this));
 	uv_assert_ret(!m_canonicalProjectFileName.empty());
-	uv_assert_err_ret(writter.doSave(m_canonicalProjectFileName));
+	uv_assert_err_ret(writer.doSave(m_canonicalProjectFileName));
 
 	return UV_ERR_OK;
 }
@@ -86,24 +86,24 @@ uv_err_t UVDProject::deinit()
 }
 
 /*
-UVDProjectWritter
+UVDProjectWriter
 */
 
-UVDProjectWritter::UVDProjectWritter()
+UVDProjectWriter::UVDProjectWriter()
 {
 }
 
-UVDProjectWritter::~UVDProjectWritter()
+UVDProjectWriter::~UVDProjectWriter()
 {
 }
 
-uv_err_t UVDProjectWritter::init(UVDProject *project)
+uv_err_t UVDProjectWriter::init(UVDProject *project)
 {
 	m_project = project;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDProjectWritter::doSave(const std::string &canonicalProjectFile)
+uv_err_t UVDProjectWriter::doSave(const std::string &canonicalProjectFile)
 {
 	/*
 	{
