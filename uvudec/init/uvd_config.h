@@ -220,6 +220,20 @@ public:
 	uv_err_t setConfigInterpreterLanguageInterface(const std::string &in);
 	uv_err_t setConfigInterpreterLanguage(const std::string &in);
 
+	uv_err_t registerArgument(const std::string &propertyForm,
+			char shortForm, std::string longForm, 
+			std::string helpMessage,
+			uint32_t numberExpectedValues,
+			UVDArgConfigHandler handler,
+			bool hasDefault);
+	uv_err_t registerArgument(const std::string &propertyForm,
+			char shortForm, std::string longForm, 
+			std::string helpMessage,
+			std::string helpMessageExtra,
+			uint32_t numberExpectedValues,
+			UVDArgConfigHandler handler,
+			bool hasDefault);
+
 protected:
 	// ~/.uvudec file
 	//Should be called before parseMain()...move this into init()
@@ -305,6 +319,10 @@ public:
 	int m_verbose_processing;
 	int m_verbose_analysis;
 	int m_verbose_printing;
+
+	//Different areas of code (modules: engines, plugins, etc)
+	//map of dedicated flags and strings used to print them, currently for debugging purposes
+	std::map<uint32_t, std::string> m_modulePrefixes;
 
 	//The following will place comments and try the best of their abilities to continue
 	//if they are told to ignore errors

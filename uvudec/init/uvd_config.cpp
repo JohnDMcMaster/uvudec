@@ -6,6 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "interpreter/uvd_python.h"
 #include "uvd_arg_util.h"
+#include "uvd_arg_property.h"
 #include "uvd_config.h"
 #include "uvd_language.h"
 #include "uvd_log.h"
@@ -860,6 +861,44 @@ uv_err_t UVDConfig::setConfigInterpreterLanguageInterface(const std::string &in)
 	}
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
+		char shortForm, std::string longForm, 
+		std::string helpMessage,
+		uint32_t numberExpectedValues,
+		UVDArgConfigHandler handler,
+		bool hasDefault)
+{
+	UVDArgConfig *argConfig = NULL;
+	
+printf("Registering property: %s\n", propertyForm.c_str());
+	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, numberExpectedValues, handler, hasDefault);
+	uv_assert_ret(argConfig);
+	g_config->m_configArgs.push_back(argConfig);
+
+	return UV_ERR_OK;
+}
+		
+uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
+		char shortForm, std::string longForm, 
+		std::string helpMessage,
+		std::string helpMessageExtra,
+		uint32_t numberExpectedValues,
+		UVDArgConfigHandler handler,
+		bool hasDefault)
+{
+	UVDArgConfig *argConfig = NULL;
+	
+printf("Registering property: %s\n", propertyForm.c_str());
+	
+	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
+	uv_assert_ret(argConfig);
+	g_config->m_configArgs.push_back(argConfig);
+
+	return UV_ERR_OK;
+}
+
+
 /*
 UVDParsedFunction
 */
