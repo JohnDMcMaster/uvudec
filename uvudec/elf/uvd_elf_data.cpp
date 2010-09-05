@@ -10,7 +10,7 @@ ELF I/O related stuff
 */
 
 #include "uvd_elf.h"
-#include "uvd_elf_writter.h"
+#include "uvd_elf_writer.h"
 
 /*
 Top level construction
@@ -18,10 +18,10 @@ Top level construction
 	
 uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 {
-	UVDElfWritter writter;
+	UVDElfWriter writer;
 	
-	uv_assert_err_ret(writter.init(this));
-	uv_assert_err_ret(writter.constructBinary(dataOut));
+	uv_assert_err_ret(writer.init(this));
+	uv_assert_err_ret(writer.constructBinary(dataOut));
 	
 	return UV_ERR_OK;
 }
