@@ -464,7 +464,7 @@ void dump_tree()
 	
 			n_node_bytes = read_byte();
 			//Only allowed 32 bytes
-			if (n_node_bytes > 0x20u)e
+			if (n_node_bytes > 0x20u)
 				err("Too many bytes\n");
 
 			cur_relocation_bitmask = 1 << (n_node_bytes - 1);
