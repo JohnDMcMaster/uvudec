@@ -16,7 +16,7 @@ UVDFLIRTPatternGenerator::UVDFLIRTPatternGenerator()
 
 UVDFLIRTPatternGenerator::~UVDFLIRTPatternGenerator()
 {
-	deinit();
+	UV_DEBUG(deinit());
 }
 
 uv_err_t UVDFLIRTPatternGenerator::deinit()
@@ -40,8 +40,9 @@ uv_err_t UVDFLIRTPatternGenerator::saveToString(const std::string &inputFile, st
 	
 	if( terminateFile )
 	{
-		output += "---" + g_config->m_flirt.m_patternFileNewline;
+		output += UVD_FLIRT_PAT_TERMINATOR + g_config->m_flirt.m_patternFileNewline;
 	}
 
 	return UV_ERR_OK;
 }
+
