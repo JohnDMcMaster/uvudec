@@ -26,29 +26,30 @@ public:
 	
 	//Read all of the data
 	virtual uv_err_t readData(char **buffer) const;	
-	virtual uv_err_t readData(unsigned int offset, char **buffer) const;
-	virtual uv_err_t readData(unsigned int offset, char **buffer, unsigned int bufferSize) const;	
-	virtual uv_err_t readData(unsigned int offset, std::string &s, unsigned int readSize) const;	
+	virtual uv_err_t readData(uint32_t offset, char **buffer) const;
+	virtual uv_err_t readData(uint32_t offset, char **buffer, uint32_t bufferSize) const;	
+	virtual uv_err_t readData(uint32_t offset, std::string &s, uint32_t readSize) const;	
 	//Core readData() implementation: child classes should implement this
 	//By default, this calls read()
-	virtual uv_err_t readData(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+	virtual uv_err_t readData(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
 	virtual uv_err_t readData(uint32_t offset, char *c) const;	
 	
 	//WARNING: next 2 read implementations will rely on each other, you must implement at least one
 	//Somewhat dangerous for new classes...maybe should do something different
-	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
-	virtual int read(unsigned int offset) const;
-	virtual int read(unsigned int offset, std::string &s, unsigned int readSize) const;	
+	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
+	virtual int read(uint32_t offset) const;
+	virtual int read(uint32_t offset, std::string &s, uint32_t readSize) const;	
 
 	//Try to move away from returning int
-	virtual uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
+	virtual uv_err_t writeData(uint32_t offset, const char *buffer, uint32_t bufferSize);
+	virtual uv_err_t writeData(uint32_t offset, const UVDData *data);
 
 	//Saves to a file
 	virtual uv_err_t saveToFile(const std::string &file) const;
 
 	//Read as if an array, equivilent to read with bad error checking
 	//Made to make legacy functions using buffer conform easier to new code, will be deprecated
-	unsigned char operator[](unsigned int offset);
+	unsigned char operator[](uint32_t offset);
 		
 	//How big the object is
 	//That is, the first value of read(offset) that would fail
@@ -94,17 +95,17 @@ public:
 	virtual std::string getSource();
 
 	//These always return 0
-	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
-	virtual int read(unsigned int offset) const;
-	virtual int read(unsigned int offset, std::string &s, unsigned int readSize) const;	
+	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
+	virtual int read(uint32_t offset) const;
+	virtual int read(uint32_t offset, std::string &s, uint32_t readSize) const;	
 	
 	//Also 0
 	virtual uint32_t size() const;
 	virtual uv_err_t size(uint32_t *sizeOut) const;
 
 	//Always an error for nonzero inputs
-	uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
-
+	uv_err_t writeData(uint32_t offset, const char *buffer, uint32_t bufferSize);
+	
 	virtual uv_err_t deepCopy(UVDData **out);
 };
 
@@ -124,7 +125,7 @@ public:
 	//Returns human readable string representation of the source
 	std::string getSource();	
 
-	int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;
+	int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;
 	uint32_t size() const;
 
 public:	
@@ -143,14 +144,14 @@ class UVDDataMemory : public UVDData
 public:
 	UVDDataMemory();
 	//Create a buffer, reserving given size
-	UVDDataMemory(unsigned int bufferSize);
+	UVDDataMemory(uint32_t bufferSize);
 	//Copy given buffer into this object
-	UVDDataMemory(const char *buffer, unsigned int bufferSize);
+	UVDDataMemory(const char *buffer, uint32_t bufferSize);
 	//static uv_err_t getUVDDataMemory(UVDDataMemory **data);
 	//Transfer buffer to this object
 	//The buffer will in effect be shared by this object
 	static uv_err_t getUVDDataMemoryByTransfer(UVDDataMemory **data,
-			char *buffer, unsigned int bufferSize,
+			char *buffer, uint32_t bufferSize,
 			//Should free() be called on the buffer at object destruction?
 			int freeAtDestruction = true);
 	//Do a copy
@@ -159,19 +160,43 @@ public:
 
 	std::string getSource();
 	//Reallocate storage.  Buffer data and pointer is invalidated
-	uv_err_t realloc(unsigned int bufferSize);
+	uv_err_t realloc(uint32_t bufferSize);
 	
-	int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;
-	uv_err_t writeData(unsigned int offset, const char *buffer, unsigned int bufferSize);
+	int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;
+	uv_err_t writeData(uint32_t offset, const char *buffer, uint32_t bufferSize);
 	uint32_t size() const;
 	
 	uv_err_t deepCopy(UVDData **out);
 
 public:
 	char *m_buffer;
-	unsigned int m_bufferSize;
+	uint32_t m_bufferSize;
 	//Should m_buffer be freed at destruction?
 	int m_freeAtDestruction;
+};
+
+class UVDBufferedDataMemory : public UVDDataMemory
+{
+public:
+	UVDBufferedDataMemory(uint32_t bufferSize = 0);
+	UVDBufferedDataMemory(const char *buffer, uint32_t bufferSize);
+	~UVDBufferedDataMemory();
+	
+	uv_err_t operator+=(const UVDData *other);
+	uv_err_t operator+=(const std::string &other);
+	uv_err_t append(const char *buffer, uint32_t bufferLength);
+	uv_err_t appendByte(uint8_t in);
+	
+	uint32_t size() const;
+	//Down-allocate space to minimum required
+	uv_err_t compact();
+
+public:
+	//Size as returned by size()
+	uint32_t m_virtualSize;
+	//How much to grow beyond new min size by when we need more room
+	uint32_t m_growScalar;
+	uint32_t m_growConstant;
 };
 
 /*
@@ -193,7 +218,7 @@ public:
 	//Init with all data
 	uv_err_t init(UVDData *data);
 	//Init with select data
-	uv_err_t init(UVDData *data, unsigned int minAddr, unsigned int maxAddr);
+	uv_err_t init(UVDData *data, uint32_t minAddr, uint32_t maxAddr);
 	~UVDDataChunk();
 	
 	bool operator==(UVDDataChunk &other);
@@ -206,7 +231,7 @@ public:
 	uint32_t getOffset();
 	uint32_t size() const;
 
-	virtual int read(unsigned int offset, char *buffer, unsigned int bufferSize) const;	
+	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
 
 	uv_err_t deepCopy(UVDData **out);
 
@@ -222,20 +247,11 @@ public:
 	//We do NOT own this data as the whole point of this class was to map onto external data
 	//At best it would just be a placeholder
 	UVDData *m_data;
-	unsigned int m_offset;
-	unsigned int m_bufferSize;
+	uint32_t m_offset;
+	uint32_t m_bufferSize;
 #ifdef UGLY_READ_HACK
 	char *m_buffer;
 #endif //UGLY_READ_HACK
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* ifdef __cplusplus */
-
-#ifdef __cplusplus
-}
-#endif /* ifdef __cplusplus */
 
 #endif /* UV_DISASM_DATA_H */

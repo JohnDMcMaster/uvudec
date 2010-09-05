@@ -153,9 +153,22 @@ int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize) co
 	return rc;
 }
 
-uv_err_t UVDData::writeData(unsigned int offset, const char *buffer, unsigned int bufferSize)
+uv_err_t UVDData::writeData(uint32_t offset, const char *buffer, unsigned int bufferSize)
 {
 	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+uv_err_t UVDData::writeData(uint32_t offset, const UVDData *data)
+{
+	char *buffer = NULL;
+	uv_assert_ret(data);
+	
+	uv_assert_err_ret(data->readData(&buffer));
+	//Let all bounds checking occur here
+	uv_assert_err_ret(writeData(offset, buffer, data->size()));
+	free(buffer);
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDData::size(uint32_t *sizeOut) const

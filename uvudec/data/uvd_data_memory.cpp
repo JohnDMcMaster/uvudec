@@ -186,3 +186,90 @@ uv_err_t UVDDataMemory::deepCopy(UVDData **out)
 	return UV_ERR_OK;
 }
 
+/*
+UVDBufferedDataMemory
+*/
+
+UVDBufferedDataMemory::UVDBufferedDataMemory(uint32_t bufferSize)
+{
+	m_virtualSize = bufferSize;
+	m_growScalar = 2;
+	m_growConstant = 1;
+}
+
+UVDBufferedDataMemory::UVDBufferedDataMemory(const char *buffer, uint32_t bufferSize)
+{
+	m_virtualSize = bufferSize;
+	m_growScalar = 2;
+	m_growConstant = 1;
+}
+
+UVDBufferedDataMemory::~UVDBufferedDataMemory()
+{
+}
+
+uv_err_t UVDBufferedDataMemory::operator+=(const UVDData *other)
+{
+	//Or should we just return?
+	uv_assert_ret(other);
+	
+	if( m_bufferSize + other->size() > m_virtualSize )
+	{
+		uv_assert_err_ret(realloc((m_bufferSize + other->size() > m_virtualSize) * m_growScalar + m_growConstant));
+	}
+	uv_assert_err_ret(UVDData::writeData(m_virtualSize, other));
+	m_virtualSize += other->size();
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBufferedDataMemory::operator+=(const std::string &other)
+{
+	if( m_bufferSize + other.size() > m_virtualSize )
+	{
+		uv_assert_err_ret(realloc((m_bufferSize + other.size() > m_virtualSize) * m_growScalar + m_growConstant));
+	}
+	uv_assert_err_ret(writeData(m_virtualSize, other.c_str(), other.size()));
+	m_virtualSize += other.size();
+	uv_assert_ret(m_virtualSize <= m_bufferSize);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBufferedDataMemory::append(const char *buffer, uint32_t bufferLength)
+{
+	if( m_bufferSize + bufferLength > m_virtualSize )
+	{
+		uv_assert_err_ret(realloc((m_bufferSize + bufferLength > m_virtualSize) * m_growScalar + m_growConstant));
+	}
+	uv_assert_err_ret(writeData(m_virtualSize, buffer, bufferLength));
+	m_virtualSize += bufferLength;
+	uv_assert_ret(m_virtualSize <= m_bufferSize);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBufferedDataMemory::appendByte(uint8_t in)
+{
+	return UV_DEBUG(append((char *)&in, sizeof(in)));
+}
+
+uint32_t UVDBufferedDataMemory::size() const
+{
+	return m_virtualSize;
+}
+
+uv_err_t UVDBufferedDataMemory::compact()
+{
+	uv_assert_ret(m_virtualSize <= m_bufferSize);
+	if( m_virtualSize == m_bufferSize )
+	{
+		return UV_ERR_OK;
+	}
+	
+	//Shrink it
+	uv_assert_err_ret(realloc(m_virtualSize));
+
+	return UV_ERR_OK;
+}
+
