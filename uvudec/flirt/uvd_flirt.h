@@ -1,6 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
@@ -19,17 +19,12 @@ http://www.hex-rays.com/idapro/flirt.htm
 #include <string>
 #include <vector>
 
-//TODO: move these to variable controlled
-//#define FLIRT_DEBUG
-#ifdef FLIRT_DEBUG
-#define printf_flirt_debug(format, ...) printf("DEBUG: FLIRT: " format, ## __VA_ARGS__)
-#else
-#define printf_flirt_debug(...)
-#endif
+#define printf_flirt_debug(format, ...) printf_debug_type(format, UVD_DEBUG_TYPE_FLIRT)
+//#define printf_flirt_debug(...)
 
 //#define FLIRT_WARNING
 #ifdef FLIRT_WARNING
-#define printf_flirt_warning(format, ...) printf("WARNING: FLIRT: " format, ## __VA_ARGS__)
+#define printf_flirt_warning(format, ...) do { printf("WARNING: FLIRT: " format, ## __VA_ARGS__); fflush(stdout); } while( 0 )
 #else
 #define printf_flirt_warning(...)
 #endif
@@ -37,6 +32,7 @@ http://www.hex-rays.com/idapro/flirt.htm
 /*
 Core FLIRT engine
 */
+class UVDFLIRTSignatureDB;
 class UVDFLIRT
 {
 public:
@@ -48,6 +44,13 @@ public:
 	//Automatically chose object format and engine
 	uv_err_t objs2patFile(const std::vector<std::string> &inputFiles, const std::string &outputFile);
 	uv_err_t objs2pat(const std::vector<std::string> &inputFiles, std::string &output);
+
+	//Input pattern files and output sig file
+	uv_err_t patFiles2SigFile(const std::vector<std::string> &inputFiles, const std::string &outputFile);
+	uv_err_t patFiles2Sig(const std::vector<std::string> &inputFiles, std::string &output);
+	//Output signature tree is NOT checked for consistancy against system signatures
+	//out should be deleted by calllee
+	uv_err_t patFiles2SigDB(const std::vector<std::string> &inputFiles, UVDFLIRTSignatureDB **out);
 
 	//Don't do a full UVD engine init, only grab the FLIRT component
 	//Since so much would break without a basic UVD engine, for now a basic UVD engine with no opcode caps is loaded

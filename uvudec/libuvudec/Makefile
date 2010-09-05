@@ -36,7 +36,7 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_relocation.cpp \
 			$(ELF_DIR)/uvd_elf_string_table.cpp \
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
-			$(ELF_DIR)/uvd_elf_writter.cpp \
+			$(ELF_DIR)/uvd_elf_writer.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_core.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_function.cpp \
@@ -47,9 +47,15 @@ CXX_SRCS = 	\
 			$(FLIRT_DIR)/uvd_elf_library.cpp \
 			$(FLIRT_DIR)/uvd_flirt_args.cpp \
 			$(FLIRT_DIR)/uvd_flirt.cpp \
+			$(FLIRT_DIR)/uvd_flirt_function.cpp \
 			$(FLIRT_DIR)/uvd_flirt_pattern.cpp \
 			$(FLIRT_DIR)/uvd_flirt_pattern_uvd.cpp \
 			$(FLIRT_DIR)/uvd_flirt_signature.cpp \
+			$(FLIRT_DIR)/uvd_flirt_signature_format.cpp \
+			$(FLIRT_DIR)/uvd_flirt_signature_tree_basic_node.cpp \
+			$(FLIRT_DIR)/uvd_flirt_signature_tree_hash_node.cpp \
+			$(FLIRT_DIR)/uvd_flirt_signature_tree_leading_node.cpp \
+			$(FLIRT_DIR)/uvd_flirt_signature_writer.cpp \
 			$(FLIRT_DIR)/uvd_library.cpp \
 			$(HASH_DIR)/uvd_crc.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
@@ -77,6 +83,7 @@ CXX_SRCS = 	\
 			$(RELOCATION_DIR)/uvd_relocation.cpp \
 			$(RELOCATION_DIR)/uvd_relocation_fixup.cpp \
 			$(RELOCATION_DIR)/uvd_relocation_manager.cpp \
+			$(RELOCATION_DIR)/uvd_relocation_writer.cpp \
 			$(RELOCATION_DIR)/uvd_simple_relocation_fixup.cpp \
 			$(UTIL_DIR)/uvd_ascii_art.cpp \
 			$(UTIL_DIR)/uvd_benchmark.cpp \
@@ -84,7 +91,7 @@ CXX_SRCS = 	\
 			$(UTIL_DIR)/uvd_error.cpp \
 			$(UTIL_DIR)/uvd_log.cpp \
 			$(UTIL_DIR)/uvd_priority_list.cpp \
-			$(UTIL_DIR)/uvd_string_writter.cpp \
+			$(UTIL_DIR)/uvd_string_writer.cpp \
 			$(UTIL_DIR)/uvd_types.cpp \
 			$(UTIL_DIR)/uvd_util.cpp \
 			$(UTIL_DIR)/uvd_util_string.cpp \
