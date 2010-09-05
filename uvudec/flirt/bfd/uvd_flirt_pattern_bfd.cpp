@@ -21,7 +21,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_flirt.h"
 #include "uvd_flirt_pattern_bfd.h"
 #include "uvd_flirt_pattern_bfd_core.h"
-#include "uvd_string_writter.h"
+#include "uvd_string_writer.h"
 
 /*
 UVDFLIRTPatternGeneratorBFD
@@ -39,7 +39,7 @@ UVDFLIRTPatternGeneratorBFD::~UVDFLIRTPatternGeneratorBFD()
 uv_err_t UVDFLIRTPatternGeneratorBFD::init()
 {
 	std::string defaultTarget = "i686-pc-linux-gnu";
-printf_debug("bfd init\n");
+	printf_flirt_debug("bfd init\n");
 	bfd_init();
 	if( !bfd_set_default_target(defaultTarget.c_str()) )
 	{
@@ -86,37 +86,55 @@ printf_debug("rc %d\n", rc);
 uv_err_t UVDFLIRTPatternGeneratorBFD::generateByBFD(bfd *abfd, std::string &output)
 {
 	UVDBFDPatCore generator;
-	generator.init(abfd);
+	
+	printf_flirt_debug("generating for bfd %s\n", bfd_get_filename(abfd));
+	
+	uv_assert_err_ret(generator.init(abfd));
 	uv_assert_err_ret(generator.generate());
-	output += generator.m_writter.m_buffer;
+	output += generator.m_writer.m_buffer;
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDFLIRTPatternGeneratorBFD::generateByFile(const std::string &fileName, std::string &output)
 {
+	/*
+	TODO: move recursion to recursive by BFD
+	*/
 	bfd *abfd = NULL;
 
+	//printf("head bfd generation for filename %s\n", fileName.c_str());
+	//fflush(stdout);
+	printf_flirt_debug("head bfd generation for filename %s\n", fileName.c_str());
 	abfd = bfd_openr(fileName.c_str(), "default");
 	uv_assert_ret(abfd);
 	//If we get an archive, we must recurse
 	if( bfd_check_format(abfd, bfd_archive) == TRUE )
 	{
+		bfd *lastArbfd = NULL;
+		bfd *arbfd = NULL;
+
 		//Recursive for each file in the archive
 		for(;; )
 		{
-			bfd *arbfd = NULL;
-
 			//What might have set an error?
 			bfd_set_error(bfd_error_no_error);
 
+			//If arbfd is NULL, indicates begin() on the linked list
 			arbfd = bfd_openr_next_archived_file(abfd, arbfd);
+			//We advanced, trash old if we are still hanging onto it
+			if( lastArbfd )
+			{
+				bfd_close(lastArbfd);
+			}
+			
+			//and end()?
 			if( arbfd == NULL )
 			{
 				uv_assert_ret(bfd_get_error() == bfd_error_no_more_archived_files);
 				break;
 			}
 			uv_assert_err_ret(generateByBFD(arbfd, output));
-			bfd_close(arbfd);
+			lastArbfd = arbfd;
 		}
 	}
 	//Otherwise, process

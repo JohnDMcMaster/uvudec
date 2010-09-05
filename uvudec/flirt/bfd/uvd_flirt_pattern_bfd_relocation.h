@@ -43,6 +43,7 @@ public:
 	~UVDBFDPatRelocations();
 
 	//Returns UV_ERR_GENERAL if we can't add, but won't log the error
+	uv_err_t isApplicable(arelent *bfdRelocation);
 	uv_err_t addRelocation(arelent *bfdRelocation);
 
 public:

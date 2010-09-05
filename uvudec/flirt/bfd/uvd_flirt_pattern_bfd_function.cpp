@@ -56,19 +56,36 @@ uint8_t UVDBFDPatFunction::readByte(uint32_t offset)
 	return m_section->m_content[m_offset + offset];
 }
 
-UVDStringWritter *UVDBFDPatFunction::getStringWritter()
+UVDStringWriter *UVDBFDPatFunction::getStringWriter()
 {
-	return &m_section->m_core->m_writter;
+	return &m_section->m_core->m_writer;
 }
 
 uv_err_t UVDBFDPatFunction::printLeadingBytes()
 {
 	uint32_t endPos = 0;
+	uint32_t startSize = 0;
+	uint32_t endSize = 0;
+	//FIXME
+	uint32_t expectedChars = 0x40;
 	
 	endPos = uvd_min(m_size, g_config->m_flirt.m_patLeadingLength);
-	printf_flirt_debug("Leading pattern bytes, m_size: 0x%.4X, length: 0x%.4X\n", m_size, g_config->m_flirt.m_patLeadingLength);
+	printf_flirt_debug("Leading pattern bytes, m_size: 0x%.4X, config max length: 0x%.4X, selected end pos: 0x%.4X\n", m_size, g_config->m_flirt.m_patLeadingLength, endPos);
+
 	//And let it be born
+	startSize = getStringWriter()->m_buffer.size();
 	uv_assert_err_ret(printPatternBytes(0, endPos));
+	endSize = getStringWriter()->m_buffer.size();
+	uv_assert_ret(endSize - startSize <= expectedChars);
+	//Pad trailing dots
+	for( uint32_t i = endSize - startSize; i < expectedChars; i += 2 )
+	{
+		getStringWriter()->print("%c%c", UVD_FLIRT_PAT_RELOCATION_CHAR, UVD_FLIRT_PAT_RELOCATION_CHAR);
+	}
+	//Recalc, should be fixed at 0x20
+	endSize = getStringWriter()->m_buffer.size();
+	uv_assert_ret(endSize - startSize == expectedChars);
+	
 	return UV_ERR_OK;
 }
 
@@ -79,8 +96,9 @@ uv_err_t UVDBFDPatFunction::printPatternBytes(uint32_t start, uint32_t end)
 	Original code did this, but it was somewhat hard to follow and this was easier
 	*/
 	//max sig len nibbles + null terminator
-	char leadingBytesBuff[0x1000];
-	char buff[16];
+	//char leadingBytesBuff[0x1000];
+	//char buff[16];
+	//Relative to function start
 	uv_addr_t curAddress = 0;
 	
 	printf_flirt_debug("start: 0x%.8X, end: 0x%.8X, m_size: 0x%.8X\n", start, end, m_size);
@@ -91,55 +109,97 @@ uv_err_t UVDBFDPatFunction::printPatternBytes(uint32_t start, uint32_t end)
 	//Inclusive, so can be equal
 	uv_assert_ret(end <= m_size);
 	//Leave room for terminating byte
-	uv_assert_ret(end * 2 < sizeof(leadingBytesBuff) - 1);
-
+	//printf_flirt_debug("end: 0x%.8X, sizeof(leadingBytesBuff): 0x%.8X\n", end, sizeof(leadingBytesBuff));
+	//uv_assert_ret(end * 2 < sizeof(leadingBytesBuff) - 1);
 	
 	//Fill in the definied bytes
 	//We will override relocations as needed next
 	curAddress = start;
-	for( uint32_t i = 0; ; ++i, ++curAddress )
+	//Print relocation bytes as needed
+	std::vector<UVDBFDPatRelocation *>::iterator relocIter = m_relocations.m_relocations.begin();
+	
+	//Skip relocations until we are in range
+	printf_flirt_debug("printing pattern bytes, number relocations: %d\n", m_relocations.m_relocations.size());
+//exit(1);
+	while( relocIter != m_relocations.m_relocations.end() )
 	{
-		if( curAddress >= end )
+		UVDBFDPatRelocation *reloc = NULL;
+		uint32_t relocAddr = 0;
+
+		reloc = *relocIter;
+		uv_assert_ret(reloc);
+		
+		relocAddr = reloc->m_address - m_offset;
+		//In range?
+		if( relocAddr >= start )
 		{
-			leadingBytesBuff[2 * i] = 0;
 			break;
 		}
-
-		sprintf(buff, "%.2X", readByte(i));
-		leadingBytesBuff[2 * i] = buff[0];
-		leadingBytesBuff[2 * i + 1] = buff[1];
+		//Guess not...advance
+		printf_flirt_debug("skipping relocation b/c not in range, reloc addr: 0%.4X, print start: 0x%.4X\n", relocAddr, start);
+		++relocIter;
 	}
 	
-	//Print relocation bytes as needed
-	for( std::vector<UVDBFDPatRelocation *>::iterator relocIter = m_relocations.m_relocations.begin(); relocIter != m_relocations.m_relocations.end(); ++relocIter )
+	//Each iteration write as much as possible between relocations
+	for( ;; )
 	{
-		UVDBFDPatRelocation *reloc = *relocIter;
-		//Relative to function
-		uint32_t relocationAddress = reloc->m_address - m_offset;
-		uv_addr_t curAddress = relocationAddress;
+		//Relative to function start
+		uint32_t relocationAddress = 0;
 		
-		//All relocations are not necessarily in this range
-		//Avoid nasty overflow condition
-		if( relocationAddress >= start )
+		if( curAddress >= end )
 		{
+			break;
+		}
+		
+		//Write as much as possible while we are still in range before the next relocation
+		if( relocIter != m_relocations.m_relocations.end() )
+		{
+			UVDBFDPatRelocation *reloc = NULL;
+
+			reloc = *relocIter;
+			//printf_flirt_debug("print relocation iteration on 0x%.8X from iter 0x%.8X, function (this) 0x%.8X\n", (int)reloc, (int)&relocIter, (int)this);
+			uv_assert_ret(reloc);
+			relocationAddress = reloc->m_address - m_offset;
+		}
+		
+		//Print all bytes before the relocation (if it exists) or until we run out of bytes
+		while( (relocIter == m_relocations.m_relocations.end() || curAddress < relocationAddress) && curAddress < end )
+		{
+			//snprintf(buff, sizeof(buff), "%.2X", readByte(i));
+			//leadingBytesBuff[2 * i] = buff[0];
+			//leadingBytesBuff[2 * i + 1] = buff[1];
+			getStringWriter()->print("%.2X", readByte(curAddress));
+			++curAddress;
+		}
+
+		//If we have a relocation, fill it in
+		if( relocIter != m_relocations.m_relocations.end() )
+		{
+			UVDBFDPatRelocation *reloc = NULL;
+		
+			reloc = *relocIter;
+			printf_flirt_debug("print relocation iteration on 0x%.8X from iter 0x%.8X, function (this) 0x%.8X\n", (int)reloc, (int)&relocIter, (int)this);
+			uv_assert_ret(reloc);
+		
+			//All relocations are not necessarily in this range
+			//And why not?
+			//Avoid nasty overflow condition
+			uv_assert_ret(relocationAddress >= start);
 			printf_flirt_debug("Beginning to print relocations\n");
 			printf_flirt_debug("relocation in range, reloc addr: 0%.4X, print start: 0x%.4X\n", relocationAddress, start);
 			//Hmm we should just do a memset
-			for( uint32_t i = (relocationAddress - start) * 2; curAddress < relocationAddress + reloc->m_size; i += 2, ++curAddress )
+			while( (curAddress < relocationAddress + reloc->m_size) && curAddress < end )
 			{
-				printf_flirt_debug("relocation i: 0x%.4X\n", i);
-				printf_flirt_debug("start: 0x%.4X, end: 0x%.4X\n", start, end);
-				leadingBytesBuff[i] = UVD_FLIRT_PAT_RELOCATION_CHAR;
-				leadingBytesBuff[i + 1] = UVD_FLIRT_PAT_RELOCATION_CHAR;
+				//printf_flirt_debug("relocation i: 0x%.4X\n", i);
+				//printf_flirt_debug("start: 0x%.4X, end: 0x%.4X\n", start, end);
+				getStringWriter()->print("%c%c", UVD_FLIRT_PAT_RELOCATION_CHAR, UVD_FLIRT_PAT_RELOCATION_CHAR);
+				++curAddress;
 			}
-		}
-		else
-		{
-			printf_flirt_debug("skipping relocation b/c not in range, reloc addr: 0%.4X, print start: 0x%.4X\n", relocationAddress, start);
+			++relocIter;
 		}
 	}
-	
-	getStringWritter()->print("%s", &leadingBytesBuff[0]);
+		
+	//getStringWriter()->print("%s", &leadingBytesBuff[0]);
 
 	printf_flirt_debug("pattern leading wrote\n");
 	fflush(stdout);
@@ -148,7 +208,7 @@ uv_err_t UVDBFDPatFunction::printPatternBytes(uint32_t start, uint32_t end)
 
 void UVDBFDPatFunction::printRelocationByte()
 {
-	getStringWritter()->print("%c%c", UVD_FLIRT_PAT_RELOCATION_CHAR, UVD_FLIRT_PAT_RELOCATION_CHAR);
+	getStringWriter()->print("%c%c", UVD_FLIRT_PAT_RELOCATION_CHAR, UVD_FLIRT_PAT_RELOCATION_CHAR);
 }
 
 uv_err_t UVDBFDPatFunction::printCRC()
@@ -168,7 +228,7 @@ uv_err_t UVDBFDPatFunction::printCRC()
 	*/
 	if( effectiveEndPosition <= g_config->m_flirt.m_patLeadingLength )
 	{
-		getStringWritter()->print(" 00 0000");
+		getStringWriter()->print(" 00 0000");
 	}
 	else
 	{
@@ -180,7 +240,7 @@ uv_err_t UVDBFDPatFunction::printCRC()
 		{
 			crcLength = 0xff;
 		}
-		getStringWritter()->print(" %02X %04X", crcLength, uvd_crc16((char *)(m_section->m_content + g_config->m_flirt.m_patLeadingLength), crcLength));
+		getStringWriter()->print(" %02X %04X", crcLength, uvd_crc16((char *)(m_section->m_content + g_config->m_flirt.m_patLeadingLength), crcLength));
 	}
 	
 	return UV_ERR_OK;
@@ -190,8 +250,8 @@ uv_err_t UVDBFDPatFunction::printRelocations()
 {
 	//The symbol name
 	//hmm this shouldn't be :0000, thats only valid if its at the start of the library?
-	getStringWritter()->print(" %04X", m_size);
-	getStringWritter()->print(" %c%.4X %s", UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, m_offset, bfd_asymbol_name(m_bfdAsymbol));
+	getStringWriter()->print(" %04X", m_size);
+	getStringWriter()->print(" %c%.4X %s", UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, m_offset, bfd_asymbol_name(m_bfdAsymbol));
 	
 	//Dependencies
 	for( std::vector<UVDBFDPatRelocation *>::iterator depRelocIter = m_relocations.m_relocations.begin(); depRelocIter != m_relocations.m_relocations.end(); ++depRelocIter )
@@ -199,11 +259,11 @@ uv_err_t UVDBFDPatFunction::printRelocations()
 		UVDBFDPatRelocation *depRelocation = *depRelocIter;
 		
 		//Not all relocations have names...blank if doesn't have a name?
-		getStringWritter()->print(" %c%04X", UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str());
+		getStringWriter()->print(" %c%04X", UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str());
 		//Many anoymous labels and other unnamed symbols
 		if( !depRelocation->m_symbolName.empty() )
 		{
-			getStringWritter()->print(" %s", depRelocation->m_symbolName.c_str());
+			getStringWriter()->print(" %s", depRelocation->m_symbolName.c_str());
 		}
 	}
 	
@@ -298,14 +358,14 @@ uv_err_t UVDBFDPatFunction::print()
 	//Tail/trailing bytes
 	if( effectiveEndPosition > g_config->m_flirt.m_patLeadingLength )
 	{
-		getStringWritter()->print(" ");
+		getStringWriter()->print(" ");
 		uv_assert_err_ret(printPatternBytes(g_config->m_flirt.m_patLeadingLength, effectiveEndPosition));
 	}
 		
-	getStringWritter()->print("\n");
+	getStringWriter()->print("\n");
 
 	printf_flirt_debug("\n\n\n");	
-	printf_flirt_debug("buffer:\n%s\n", getStringWritter()->m_buffer.c_str());
+	printf_flirt_debug("buffer:\n%s\n", getStringWriter()->m_buffer.c_str());
 	printf_flirt_debug("\n\n\n");	
 
 	return UV_ERR_OK;

@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_FLIRT_PATTERN_BFD_CORE_H
 
 #include "uvd_flirt_pattern_bfd_section.h"
-#include "uvd_string_writter.h"
+#include "uvd_string_writer.h"
 
 /*
 UVDBFDPatCore
@@ -37,7 +37,7 @@ public:
 	asymbol **m_contiguousSymbolTable;
 	UVDBFDPatSections m_sections;
 	//Gathers output during print
-	UVDStringWritter m_writter;
+	UVDStringWriter m_writer;
 };
 
 #endif
