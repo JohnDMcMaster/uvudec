@@ -90,6 +90,10 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 {	
 	uv_assert_err_ret(setupInstallDir());
 
+	/*
+	Core high level argument dispatching
+	We could store args as property map, but we'd still have to iterate over to match each part
+	*/
 	//Iterate for each actual command line argument
 	//skip first arg which is prog name
 	for( std::vector<std::string>::size_type argsIndex = 1; argsIndex < args.size(); ++argsIndex )
@@ -143,12 +147,8 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 	return UV_ERR_OK;
 }
 
-uv_err_t initSharedConfig()
+static uv_err_t initSharedConfig()
 {
-	g_config = new UVDConfig();
-	uv_assert_ret(g_config);
-	uv_assert_err_ret(g_config->init());
-
 	//Now add our arguments
 	
 	//Actions
@@ -238,6 +238,17 @@ uv_err_t initSharedConfig()
 	return UV_ERR_OK;	
 }
 
+//Called before debugging initialized
+uv_err_t UVDInitConfigEarly()
+{
+	g_config = new UVDConfig();
+	uv_assert_ret(g_config);
+	uv_assert_err_ret(g_config->init());
+
+	return UV_ERR_OK;
+}
+
+//Called after debugging initialized
 uv_err_t UVDInitConfig()
 {
 	//libuvudec shared config
@@ -313,7 +324,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_verbose_args = argToBool(firstArg);
+			config->m_verbose_args = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_INIT )
@@ -324,7 +335,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_verbose_init = argToBool(firstArg);
+			config->m_verbose_init = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PROCESSING )
@@ -335,7 +346,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_verbose_processing = argToBool(firstArg);
+			config->m_verbose_processing = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_ANALYSIS )
@@ -346,7 +357,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_verbose_analysis = argToBool(firstArg);
+			config->m_verbose_analysis = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PRINTING )
@@ -357,7 +368,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_verbose_printing = argToBool(firstArg);
+			config->m_verbose_printing = UVDArgToBool(firstArg);
 		}
 	}
 	/*
@@ -461,7 +472,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_analysisOnly = argToBool(firstArg);
+			config->m_analysisOnly = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ANALYSIS_FLOW_TECHNIQUE )
@@ -493,7 +504,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_printUsed = argToBool(firstArg);
+			config->m_printUsed = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_JUMPED_ADDRESSES )
@@ -504,7 +515,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_jumpedSources = argToBool(firstArg);
+			config->m_jumpedSources = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_CALLED_ADDRESSES )
@@ -515,7 +526,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_calledSources = argToBool(firstArg);
+			config->m_calledSources = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_USELESS_ASCII_ART )
@@ -526,7 +537,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_uselessASCIIArt = argToBool(firstArg);
+			config->m_uselessASCIIArt = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_ADDRESS_COMMENT )
@@ -537,7 +548,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_addressComment = argToBool(firstArg);
+			config->m_addressComment = UVDArgToBool(firstArg);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_ADDRESS_LABEL )
@@ -548,7 +559,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		}
 		else
 		{
-			config->m_addressLabel = argToBool(firstArg);
+			config->m_addressLabel = UVDArgToBool(firstArg);
 		}
 	}
 	//Unknown.  This is an error because this callback should have never been called

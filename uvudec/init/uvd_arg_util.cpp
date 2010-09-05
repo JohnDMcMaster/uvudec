@@ -44,7 +44,7 @@ uv_err_t parseFileOption(const std::string optionFileIn, FILE **pOptionFileIn)
 	return UV_ERR_OK;
 }
 
-bool argToBool(const std::string &sArg)
+bool UVDArgToBool(const std::string &sArg)
 {
 	if( strcmp(sArg.c_str(), "true") == 0 )
 	{
