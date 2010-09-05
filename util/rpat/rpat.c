@@ -176,7 +176,7 @@ static int do_demangle = 0;	/* Demangle names */
 static int skip_z = 0;	/* Skip zeroes */
 
 const char *noname = "(NULL)";
-const char *version = "0.3-uv";
+const char *version = "0.3.1-uv";
 
 //FLAIR imposed restriction on max function size 
 #define FLAIR_MAXLEN	0x8000
