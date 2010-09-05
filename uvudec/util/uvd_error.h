@@ -62,12 +62,17 @@ Error codes
 #define UV_ERR_ABORTED					UV_ERR_DECL_ERR(5)
 //Invalid arguments
 #define UV_ERR_ARGS						UV_ERR_DECL_ERR(6)
-//Not supported
+//Not supported.  It is unlikely it will be in any future release either
 #define UV_ERR_NOTSUPPORTED				UV_ERR_DECL_ERR(7)
 //Passed in buffer too small
 #define UV_ERR_BUFFERSIZE				UV_ERR_DECL_ERR(8)
 //An arbitrary limit, such as an internal buffer size, has been it
 #define UV_ERR_ARBITRARYLIMIT			UV_ERR_DECL_ERR(9)
+//Operation could succeed, but would not be compatible as specified
+//Created originally for IDASIG vs UVDSIG files which support additional architectures
+#define UV_ERR_COMPATIBILITY			UV_ERR_DECL_ERR(10)
+//Just not there yet 
+#define UV_ERR_NOTIMPLEMENTED			UV_ERR_DECL_ERR(11)
 
 /*
 Disassembly codes

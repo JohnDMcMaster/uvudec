@@ -431,3 +431,26 @@ uv_err_t getEnvironmentVariable(const std::string &variable, std::string &value)
 	return UV_ERR_OK;
 }
 
+uint32_t nonBlankLinesRemaining(std::vector<std::string> &lines, std::vector<std::string>::iterator iter)
+{
+	uint32_t nonBlankLines = 0;
+
+	if( iter == lines.end() )
+	{
+		return 0;
+	}
+	
+	while( iter != lines.end() )
+	{
+		std::string line = trimString(*iter);
+		
+		if( !line.empty() )
+		{
+			++nonBlankLines;
+		}
+		++iter;
+	}
+
+	return nonBlankLines;
+}
+
