@@ -168,9 +168,8 @@ public:
 	//It will be freed at the destruction of this object
 	virtual uv_err_t getDefaultRelocatableData(UVDData **data);
 	
-	//The data here will be freed when this object is freed
-	//Above comment is wrong
-	//In actually, this does a depp copy
+	//Does a deep copy
+	//FIXME: change to const
 	virtual uv_err_t setData(UVDData *data);
 	//Same as above, but not copied
 	virtual uv_err_t transferData(UVDData *data, uint32_t freeAtDestruction);
