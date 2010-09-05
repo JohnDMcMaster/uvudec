@@ -10,7 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_flirt_pattern_bfd_relocation.h"
 #include <stdint.h>
 #include "bfd.h"
-#include "uvd_string_writter.h"
+#include "uvd_string_writer.h"
 
 /*
 UVDBFDFunction
@@ -46,7 +46,7 @@ public:
 	uv_err_t shouldPrintFunction();
 
 protected:
-	UVDStringWritter *getStringWritter();
+	UVDStringWriter *getStringWriter();
 
 public:
 	asymbol *m_bfdAsymbol;

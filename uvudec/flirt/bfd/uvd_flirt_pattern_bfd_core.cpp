@@ -43,9 +43,10 @@ uv_err_t UVDBFDPatCore::generate()
 	
 	if( !(bfd_get_file_flags(m_bfd) & HAS_SYMS) )
 	{
-		printf_error("No symbols in \"%s\".\n", bfd_get_filename(m_bfd));
-		printf_error("flags: 0x%.8X\n", bfd_get_file_flags(m_bfd));
-		return UV_DEBUG(UV_ERR_GENERAL);
+		printf_warn("No symbols in \"%s\".\n", bfd_get_filename(m_bfd));
+		printf_warn("flags: 0x%.8X\n", bfd_get_file_flags(m_bfd));
+		//return UV_DEBUG(UV_ERR_GENERAL);
+		return UV_ERR_OK;
 	}
 
 	//Figure out where all of the symbols are
