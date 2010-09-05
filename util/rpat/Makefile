@@ -9,7 +9,7 @@ INCLUDES=
 ifeq ($(USING_STATIC),Y)
 
 ifeq ($(USING_LIBBFD_UNINSTALLED),Y)
-BINUTILS_DIR=/home/mcmaster/document/build/GNU/binutils/binutils-2.19.1
+BINUTILS_DIR=/home/mcmaster/document/build/GNU/binutils/binutils-2.20.1
 LIBBFD_STATIC_LIB=$(BINUTILS_DIR)/bfd/libbfd.a
 LIBOPCODES_STATIC_LIB=$(BINUTILS_DIR)/opcodes/libopcodes.a
 LIBIBERTY_STATIC_LIB=$(BINUTILS_DIR)/libiberty/libiberty.a
@@ -17,7 +17,7 @@ LIBIBERTY_STATIC_LIB=$(BINUTILS_DIR)/libiberty/libiberty.a
 INCLUDES+=-I$(BINUTILS_DIR)/bfd
 # You shouldn't use this, for libbfd internal use only
 # However, if you are desperate, it does have extra stuff, such as demangling
-# INCLUDES+=-I$(BINUTILS_DIR)/include
+INCLUDES+=-I$(BINUTILS_DIR)/include
 else
 LIBBFD_STATIC_LIB=libbfd.a
 LIBOPCODES_STATIC_LIB=libopcodes.a

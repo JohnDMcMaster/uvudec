@@ -30,12 +30,14 @@ Original copyright below
  */
 
 /*
-Fixups: - Corrected headers - Added Makefile A pain to link... - struct sec -> struct bfd_section
-http://sourceware.org/ml/binutils/2003-10/msg00500.html - _raw_size
-http://sourceware.org/ml/binutils/2003-10/msg00562.html Instead of Use (read) sec->_raw_size bfd_section_size (abfd, 
-sec) (or in relaxing targets and just when referring to original size:) bfd_unaltered_section_size (abfd, sec)
-
-- true C does not have true, used C++ instead 
+Fixups: 
+- Corrected headers 
+- Added Makefile...a pain to link
+- struct sec -> struct bfd_section
+	http://sourceware.org/ml/binutils/2003-10/msg00500.html - _raw_size
+	http://sourceware.org/ml/binutils/2003-10/msg00562.html Instead of Use (read) sec->_raw_size bfd_section_size (abfd, 
+	sec) (or in relaxing targets and just when referring to original size:) bfd_unaltered_section_size (abfd, sec)
+- well behaved C does not have "true", used "TRUE" instead 
 - don't use anything in the $(BINUTILS_DIR)/include
 */
 
