@@ -63,7 +63,7 @@ public:
 	/*
 	Get the data we need to save
 	data will be free'd when this object is free'd
-	Should only be called by UVDElfWritter
+	Should only be called by UVDElfWriter
 	*/
 	virtual uv_err_t getFileData(UVDData **data);
 	virtual uv_err_t getFileRelocatableData(UVDRelocatableData **supportingData);
