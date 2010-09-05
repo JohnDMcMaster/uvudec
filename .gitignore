@@ -1,2 +1,3 @@
 Makefile.configure
 Makefile.depend*
+*.o
