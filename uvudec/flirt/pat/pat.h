@@ -15,6 +15,7 @@ A library under first analysis
 To generate .pat files
 Architecture and source data file dependent
 */
+class UVDFLIRTFunction;
 class UVDFLIRTPatternGenerator
 {
 public:
@@ -38,6 +39,9 @@ public:
 		
 	//Start analysis, chosing the best analyzer object from detected format
 	//static uv_err_t getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generatorOut);
+	
+	static uv_err_t patLineToFunction(const std::string &in, UVDFLIRTFunction *out);
+	static bool isValidPatBytePattern(const std::string in);
 	
 public:
 };
