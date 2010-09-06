@@ -7,11 +7,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_crc.h"
 #include "uvd_util.h"
 #include "uvd_flirt.h"
-#include "uvd_flirt_pattern_bfd_function.h"
-#include "uvd_flirt_pattern_bfd_function_printer.h"
-#include "uvd_flirt_pattern_bfd_relocation.h"
-#include "uvd_flirt_pattern_bfd_section.h"
-#include "uvd_flirt_pattern_bfd_core.h"
+#include "flirt/pat/bfd/function.h"
+#include "flirt/pat/bfd/function_printer.h"
+#include "flirt/pat/bfd/relocation.h"
+#include "flirt/pat/bfd/section.h"
+#include "flirt/pat/bfd/core.h"
 
 /*
 UVDBFDPatFunction

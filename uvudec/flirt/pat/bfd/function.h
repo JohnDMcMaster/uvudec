@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_PATTERN_BFD_FUNCTION_H
 #define UVD_FLIRT_PATTERN_BFD_FUNCTION_H
 
-#include "uvd_flirt_pattern_bfd_relocation.h"
+#include "flirt/pat/bfd/relocation.h"
 #include <stdint.h>
 #include "bfd.h"
 #include "uvd_string_writer.h"

@@ -5,8 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include <string.h>
-#include "uvd_flirt_pattern_bfd_section.h"
-#include "uvd_flirt_pattern_bfd_core.h"
+#include "flirt/pat/bfd/section.h"
+#include "flirt/pat/bfd/core.h"
 #include "uvd_config.h"
 #include "uvd_flirt.h"
 

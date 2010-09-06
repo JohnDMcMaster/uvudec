@@ -4,8 +4,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_flirt_pattern_bfd_relocation.h"
-#include "uvd_flirt_pattern_bfd_function.h"
+#include "flirt/pat/bfd/relocation.h"
+#include "flirt/pat/bfd/function.h"
 #include "uvd_flirt.h"
 
 /*
