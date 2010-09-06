@@ -49,6 +49,10 @@ public:
 	std::vector<std::string> m_targetFiles;
 	//File to write to
 	std::string m_outputFile;
+
+	//Haven't quite figured out why it does this yet
+	//Related to C++ mangling somehow?
+	uint32_t m_prefixUnderscores;
 };
 
 #endif
