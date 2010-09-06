@@ -7,6 +7,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_crc.h"
 #include "flirt/function.h"
 #include "flirt/pat/pat.h"
+#include "flirt/flirt.h"
+#include "uvd_util.h"
 #include <string.h>
 
 /*
@@ -85,18 +87,19 @@ uv_err_t UVDFLIRTSignatureRawSequence::const_iterator::next()
 	if( *m_cur == SIGNATURE_ESCAPE_CHAR )
 	{
 		++m_cur;
-		if( *m_cur == SIGNATURE_ESCAPED_CHAR_END )
-		{
-			uv_assert_err_ret(makeEnd());
-		}
-		else
-		{
-			++m_cur;
-		}
 	}
-	else
+	++m_cur;
+	
+	/*
+	FIXME
+	This adds a lot of overhead
+	We should see if theres a more efficien way to do this
+	Maybe during construction we could store a pointer to end() so that .end() wouldn't have to scan each time?
+	*/
+	//See if we are at .end()
+	if( *m_cur == SIGNATURE_ESCAPE_CHAR && *(m_cur + 1) == SIGNATURE_ESCAPED_CHAR_END )
 	{
-		++m_cur;
+		uv_assert_err_ret(makeEnd());
 	}
 
 	return UV_ERR_OK;
@@ -144,6 +147,9 @@ UVDFLIRTSignatureRawSequence::const_iterator::deref UVDFLIRTSignatureRawSequence
 		else if( escaped == SIGNATURE_ESCAPED_CHAR_END )
 		{
 			printf_error("escaped char and not end()\n");
+			UVD_PRINT_STACK();
+			ret.m_isReloc = false;
+			ret.m_byte = 0;
 			return ret;
 		}
 		else
@@ -235,55 +241,132 @@ void UVDFLIRTSignatureRawSequence::transfer(UVDFLIRTSignatureRawSequence *other)
 	m_bytes = NULL;
 }
 
-uv_err_t UVDFLIRTSignatureRawSequence::fromString(const std::string &s)
+uv_err_t UVDFLIRTSignatureRawSequence::fromStringAllocSize(const std::string &s, uint32_t lengthIn, uint32_t *sizeOut)
 {
 	//Hmm okay so heres a first problem with our technique, it is not as fast to allocate these, we must first guess the size
 	//Scan over it first
 	//2 bytes for terminator (escape + termination)
 	uint32_t size = 2;
-	for( std::string::size_type i = 0; i < s.size(); ++i )
+	//Takes two chars to represent a byte
+	uv_assert_ret(s.size() % 2 == 0);
+	for( std::string::size_type i = 0; i + 1 < s.size(); )
 	{
-		char c = s[i];
+		char first = s[i];
+		
+		//early termination?
+		if( lengthIn != npos )
+		{
+			if( i >= lengthIn * 2 )
+			{
+				break;
+			}
+		}
 		
 		//We escape this
-		if( c == SIGNATURE_ESCAPE_CHAR )
+		if( first == UVD_FLIRT_PAT_RELOCATION_CHAR )
 		{
 			++size;
 		}
+		else
+		{
+			char buff[3];
+			uint8_t byte = 0;
+			
+			buff[0] = s[i];
+			buff[1] = s[i + 1];
+			buff[2] = 0;
+			
+			byte = strtol(&buff[0], NULL, 16);
+			if( byte == SIGNATURE_ESCAPE_CHAR )
+			{
+				++size;
+				++i;
+			}	
+		}
 		++size;
+		i += 2;
 	}
+	
+	uv_assert_ret(sizeOut);
+	*sizeOut = size;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureRawSequence::fromString(const std::string &s)
+{
+	return UV_DEBUG(fromStringCore(s, npos));
+}
+
+uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint32_t lengthIn)
+{
+	printf_flirt_debug("loading raw sequence from string: %s\n", s.c_str());
+
+	uint32_t size = 0;
+	
+	uv_assert_err_ret(fromStringAllocSize(s, lengthIn, &size));
 	
 	m_bytes = (uint8_t *)malloc(size);
 	uv_assert_ret(m_bytes);
+	//Poison
+	memset(m_bytes, 0xCD, size);
+	printf_flirt_debug("allocated memory\n");
 	
 	uint32_t pos = 0;
-	for( std::string::size_type i = 0; i < s.size(); ++i, ++pos )
+	for( std::string::size_type i = 0; i + 1 < s.size(); i += 2, ++pos )
 	{
-		char c = s[i];
-		if( c == SIGNATURE_ESCAPE_CHAR )
+		char first = s[i];
+		char second = s[i + 1];
+		
+		//early termination?
+		if( lengthIn != npos )
 		{
-			m_bytes[pos] = SIGNATURE_ESCAPE_CHAR;
-			++pos;
-			m_bytes[pos] = SIGNATURE_ESCAPED_CHAR_ESCAPED;
+			if( i >= lengthIn * 2 )
+			{
+				break;
+			}
 		}
-		else if( c == UVD_FLIRT_PAT_RELOCATION_CHAR )
+
+		uv_assert_ret(pos < size);
+		if( first == UVD_FLIRT_PAT_RELOCATION_CHAR )
 		{
+			uv_assert_ret(second == UVD_FLIRT_PAT_RELOCATION_CHAR);
 			m_bytes[pos] = SIGNATURE_ESCAPE_CHAR;
 			++pos;
+			uv_assert_ret(pos < size);
 			m_bytes[pos] = SIGNATURE_ESCAPED_CHAR_RELOCATION;
 		}
 		else
 		{
-			m_bytes[pos] = c;
+			char buff[3];
+			uint8_t byte = 0;
+		
+			buff[0] = first;
+			buff[1] = second;
+			buff[2] = 0;
+		
+			byte = strtol(&buff[0], NULL, 16);
+			if( byte == SIGNATURE_ESCAPE_CHAR )
+			{
+				m_bytes[pos] = SIGNATURE_ESCAPE_CHAR;
+				++pos;
+				uv_assert_ret(pos < size);
+				m_bytes[pos] = SIGNATURE_ESCAPED_CHAR_ESCAPED;
+			}
+			else
+			{
+				m_bytes[pos] = byte;
+			}
 		}
 	}
+	uv_assert_ret(pos < size);
 	m_bytes[pos] = SIGNATURE_ESCAPE_CHAR;
 	++pos;
+	uv_assert_ret(pos < size);
 	m_bytes[pos] = SIGNATURE_ESCAPED_CHAR_END;
 	++pos;
-	
 	uv_assert_ret(pos == size);
 	
+	printf_flirt_debug("finished fromString()\n");
 	return UV_ERR_OK;
 }
 
@@ -304,7 +387,8 @@ std::string UVDFLIRTSignatureRawSequence::toString() const
 			++cur;
 			if( *cur == '.' )
 			{
-				ret += ".";
+				ret += "..";
+				++cur;
 				continue;
 			}
 			else if( *cur == 0 )
@@ -323,6 +407,7 @@ std::string UVDFLIRTSignatureRawSequence::toString() const
 		char buff[3];
 		snprintf(buff, 3, "%.2X", *cur);
 		ret += buff;
+		++cur;
 	}
 
 	return ret;
@@ -400,8 +485,11 @@ uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start) const
 {
 	//Room needed for termination
 	uint32_t ret = 2;
+	printf_flirt_debug("allocSizeFrom()\n");
+	hexdump(m_bytes, 0x40);
 	for( const_iterator iter = start; iter != const_end(); UV_DEBUG(iter.next()) )
 	{
+		printf_flirt_debug("iteration, offset: 0x%.8X, 0x%.2X\n", iter.m_cur, *iter.m_cur);
 		++ret;
 		if( (*iter).m_isReloc )
 		{
@@ -416,8 +504,10 @@ uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *de
 	uint32_t size = 0;
 
 	size = allocSizeFrom(pos);
+	printf_flirt_debug("subseqTo, alloc size: %d, seq: \n", size, toString().c_str());
 	//Alloc
 	//Should we free dest->m_bytes?
+	uv_assert_ret(dest);
 	dest->m_bytes = (uint8_t *)malloc(size);
 	uv_assert_ret(dest->m_bytes);
 	//Copy

@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "flirt/pat/pat.h"
 #include "flirt/sig/tree/tree.h"
 #include "uvd_util.h"
+#include "flirt/flirt.h"
 #include <limits.h>
 
 /*
@@ -135,6 +136,8 @@ public:
 uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTFunction *function)
 {
 	UVDFLIRTSignatureTreeLeadingNodeInserter inserter;
+
+	printf_flirt_debug("inserting function into db, size: %d, seq: %s\n", function->m_sequence.size(), function->m_sequence.toString().c_str());
 	
 	uv_assert_err_ret(inserter.insert(this, function));
 	return UV_ERR_OK;
