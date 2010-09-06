@@ -204,7 +204,10 @@ uv_err_t UVDPatLoaderCore::fileLine(const std::string &in)
 	//std::vector<std::string> referencedNames;
 	std::string sTailingBytes;
 	UVDFLIRTFunction function;
-	UVDFLIRTSignatureRawSequence leadingSignature;
+	//UVDFLIRTSignatureRawSequence leadingSignature;
+	uint32_t leadingSignatureLength = 0;
+	
+	printf_flirt_debug("loading FLIRT function from pat line: %s\n", in.c_str());
 	
 	//function = new UVDFLIRTFunction();
 	//uv_assert_ret(function);
@@ -220,7 +223,6 @@ uv_err_t UVDPatLoaderCore::fileLine(const std::string &in)
 
 	//"5589E583EC18E8........C1E81F84C07426C744240C........C74424085800"
 	sLeadingSignature = parts[0];
-	uv_assert_err_ret(leadingSignature.fromString(sLeadingSignature));
 
 	//"2B"
 	sCRC16Len = parts[1];	
@@ -236,7 +238,12 @@ uv_err_t UVDPatLoaderCore::fileLine(const std::string &in)
 	sTotalLen = parts[3];
 	uv_assert_err_ret(checkPadding(sTotalLen, "total length", 4));
 	function.m_totalLength = strtol(sTotalLen.c_str(), NULL, 16);
-	
+
+	printf_flirt_debug("going to load seq\n");
+	leadingSignatureLength = uvd_min(function.m_totalLength, g_config->m_flirt.m_patLeadingLength);
+	uv_assert_err_ret(function.m_sequence.fromStringCore(sLeadingSignature, leadingSignatureLength));
+	printf_flirt_debug("loaded seq from string: %s\n", function.m_sequence.toString().c_str());
+
 	//How to tell between an unnamed symbol at the end and one named ABCD?  See if we have trailing bytes
 	uint32_t endIndex = parts.size();
 	if( function.m_crc16Length )

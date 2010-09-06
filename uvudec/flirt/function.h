@@ -109,8 +109,11 @@ public:
 	//Transfer allocated  memory to given other
 	void transfer(UVDFLIRTSignatureRawSequence *other);
 	
-	//We may later need to specify the length
+	uv_err_t fromStringAllocSize(const std::string &s, uint32_t lengthIn, uint32_t *sizeOut);
 	uv_err_t fromString(const std::string &s);
+	//Error if does not have at least length chars (npos is acceptable for ignore param)
+	//Length is in bytes, NOT string length
+	uv_err_t fromStringCore(const std::string &s, uint32_t lengthIn);
 	
 	//For debugging
 	//Upon error we truncate the print, ending in a ?
