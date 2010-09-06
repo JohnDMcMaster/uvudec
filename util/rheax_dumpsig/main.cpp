@@ -624,6 +624,7 @@ int main(int argc, char **argv)
 	advance(header->library_name_sz);
 	printf("library name: %s\n", library_name);
 		
+	printf("Root node at 0x%.8X\n", g_file_pos);
 	if (header->feature_flags & IDASIG__FEATURE__COMPRESSED)
 		decompress();
 	
