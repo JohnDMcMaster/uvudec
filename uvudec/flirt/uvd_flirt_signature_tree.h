@@ -188,11 +188,10 @@ public:
 	//Internal nodes will be rearranged as necessary
 	//Originally I was thinking we might steal the data allocated in function, but since we will likely have ot split, its not economical
 	uv_err_t insert(UVDFLIRTFunction *function);
-	uv_err_t insertSubseq(UVDFLIRTFunction *function, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
+	//uv_err_t insertSubseq(UVDFLIRTFunction *function, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
 
 	uv_err_t size(uint32_t *size);
 
-protected:
 	//Create a new child node, splitting us at pos
 	//pos should not equal begin and will be the first node in the new tree
 	uv_err_t split(UVDFLIRTSignatureRawSequence::iterator pos);

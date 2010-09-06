@@ -40,6 +40,7 @@ CXX_SRCS = 	\
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_core.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_function.cpp \
+			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_function_printer.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_relocation.cpp \
 			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_section.cpp \
 			$(FLIRT_DIR)/uvd_bfd_library.cpp \

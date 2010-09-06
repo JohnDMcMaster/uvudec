@@ -4,8 +4,10 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvd_config.h"
 #include "uvd_flirt_pattern.h"
 #include "uvd_flirt_signature_tree.h"
+#include "uvd_util.h"
 #include <limits.h>
 
 /*
@@ -114,13 +116,44 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::split(UVDFLIRTSignatureRawSequence::i
 	return UV_ERR_OK;
 }
 
+/*
+Alternativly, we could have added code with tightly interwoven end iterators
+This was much easier for now to get to work with old code
+*/
+class UVDFLIRTSignatureTreeLeadingNodeInserter
+{
+public:
+	//Entry point
+	uv_err_t insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTFunction *function);
+	//Recursive case
+	uv_err_t insertSubseq(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
+
+	UVDFLIRTSignatureRawSequence m_leadingSequence;
+	UVDFLIRTFunction *m_function;
+};
+
 uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTFunction *function)
 {
+	UVDFLIRTSignatureTreeLeadingNodeInserter inserter;
+	
+	uv_assert_err_ret(inserter.insert(this, function));
+	return UV_ERR_OK;
+};
+
+uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTFunction *function)
+{
+	uint32_t leadingLength = 0;
+	
+	leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);	
+	uv_assert_err_ret(function->m_sequence.subseqTo(&m_leadingSequence, function->m_sequence.const_begin(), leadingLength));
+	
+	m_function = function;
+
 	//Before was considering walking this seq, maybe reimplement this if needed later
-	return UV_DEBUG(insertSubseq(function, function->m_leadingSequence.const_begin()));
+	return UV_DEBUG(insertSubseq(rootNode, m_leadingSequence.begin()));
 }
 
-uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *function, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition)
+uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition)
 {
 	UVDFLIRTSignatureRawSequence::iterator thisBranchPoint;
 	
@@ -138,7 +171,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *functi
 	
 	//Start by finding how much of the sequence we share
 	//uv_err_t matchPosition(const UVDFLIRTSignatureRawSequence *other, const_iterator &otherStartEnd, const_iterator &thisMatchPoint) const;
-	uv_assert_err_ret(m_bytes.matchPosition(&function->m_leadingSequence, sequencePosition, thisBranchPoint));
+	uv_assert_err_ret(node->m_bytes.matchPosition(&m_leadingSequence, sequencePosition, thisBranchPoint));
 	
 	/*
 	Full tail match?
@@ -147,10 +180,10 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *functi
 		Node:  ABCA232ABC
 		Our:   ABCA232ABC
 	*/
-	if( thisBranchPoint == m_bytes.end() && sequencePosition == function->m_leadingSequence.end() )
+	if( thisBranchPoint == node->m_bytes.end() && sequencePosition == m_leadingSequence.end() )
 	{
 		//Add to our bucket
-		uv_assert_err_ret(m_crcNodes.insert(function));
+		uv_assert_err_ret(node->m_crcNodes.insert(m_function));
 	}
 	/*
 	A partial match
@@ -164,21 +197,21 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *functi
 		            \Split
 	Split original and add to the original
 	*/
-	else if( sequencePosition == function->m_leadingSequence.end() )
+	else if( sequencePosition == m_leadingSequence.end() )
 	{
 		UVDFLIRTSignatureTreeLeadingNode *newNode = NULL;
 		
-		uv_assert_err_ret(split(thisBranchPoint));
+		uv_assert_err_ret(node->split(thisBranchPoint));
 		//We should only have a single child now of our new node
-		uv_assert_ret(m_leadingChildren.size() == 1);		
+		uv_assert_ret(node->m_leadingChildren.size() == 1);		
 		//And now add a second child
 		//static uv_err_t fromSubsequence(const UVDFLIRTSignatureRawSequence *seq, UVDFLIRTSignatureRawSequence::iterator pos, uint32_t n, UVDFLIRTSignatureTreeLeadingNode **out);
-		uv_assert_err_ret(fromSubsequence(&m_bytes, thisBranchPoint, UVDFLIRTSignatureRawSequence::npos, &newNode));
+		uv_assert_err_ret(node->fromSubsequence(&node->m_bytes, thisBranchPoint, UVDFLIRTSignatureRawSequence::npos, &newNode));
 		uv_assert_ret(newNode);
-		m_leadingChildren.insert(newNode);
+		node->m_leadingChildren.insert(newNode);
 
 		//This node now has the proper prefix and we can bucket it
-		uv_assert_err_ret(m_crcNodes.insert(function));		
+		uv_assert_err_ret(node->m_crcNodes.insert(m_function));		
 	}
 	/*
 	Case: our new node is longer
@@ -193,7 +226,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *functi
 			       /\
 			        \Split
 	*/
-	else if( thisBranchPoint == m_bytes.end() )
+	else if( thisBranchPoint == node->m_bytes.end() )
 	{
 		/*
 		If any of hte children start with the same prefix, we are golden
@@ -202,7 +235,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *functi
 	
 		UVDFLIRTSignatureTreeLeadingNode *childNode = NULL;
 
-		for( LeadingChildrenSet::iterator iter = m_leadingChildren.begin(); iter != m_leadingChildren.end(); ++iter )
+		for( UVDFLIRTSignatureTreeLeadingNode::LeadingChildrenSet::iterator iter = node->m_leadingChildren.begin(); iter != node->m_leadingChildren.end(); ++iter )
 		{
 			UVDFLIRTSignatureTreeLeadingNode *cur = *iter;
 			
@@ -219,12 +252,12 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertSubseq(UVDFLIRTFunction *functi
 		if( !childNode )
 		{
 			////static uv_err_t fromSubsequence(const UVDFLIRTSignatureRawSequence *seq, UVDFLIRTSignatureRawSequence::iterator pos, uint32_t n, UVDFLIRTSignatureTreeLeadingNode **out);
-			uv_assert_err_ret(fromSubsequence(&function->m_leadingSequence, sequencePosition, UVDFLIRTSignatureRawSequence::npos, &childNode));
+			uv_assert_err_ret(node->fromSubsequence(&m_leadingSequence, sequencePosition, UVDFLIRTSignatureRawSequence::npos, &childNode));
 			uv_assert_ret(childNode);
-			m_leadingChildren.insert(childNode);
+			node->m_leadingChildren.insert(childNode);
 		}
 		//Alternativly we could recurse, but since we already know what needs to be done, why bother
-		uv_assert_err_ret(childNode->insertSubseq(function, sequencePosition));
+		uv_assert_err_ret(insertSubseq(childNode, sequencePosition));
 	}
 	//We got lazy and didn't go to sequence endings
 	else

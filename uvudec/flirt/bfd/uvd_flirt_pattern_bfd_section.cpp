@@ -109,17 +109,18 @@ uv_err_t UVDBFDPatSection::assignRelocation(arelent *bfdRelocation)
 	Not very efficient...just slams on each entry until we hit the correct one
 	But maybe thats best we can do since we are using linked list
 	*/
-	printf_flirt_debug("\nStart search\n");
+	printf_flirt_debug("finding function within section for arelent 0x%.8X\n", (int)bfdRelocation);
 	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.m_functions.begin();
 			iter != m_functions.m_functions.end(); ++iter )
 	{
 		UVDBFDPatFunction *uvdFunction = *iter;
 		
-		printf_flirt_debug("assinging relocations, current function: 0x%.8X\n", (int)uvdFunction);
+		//printf_flirt_debug("assinging relocations, current function: 0x%.8X\n", (int)uvdFunction);
 		//Successfully added?  We hit the correct range then
 		if( UV_SUCCEEDED(uvdFunction->m_relocations.isApplicable(bfdRelocation)) )
 		{
 			uv_assert_err_ret(uvdFunction->m_relocations.addRelocation(bfdRelocation));
+			printf_flirt_debug("found function within section for arelent 0x%.8X\n", (int)bfdRelocation);
 			return UV_ERR_OK;
 		}
 	}
