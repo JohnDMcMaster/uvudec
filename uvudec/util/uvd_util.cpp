@@ -554,9 +554,9 @@ static unsigned int hexdumpHalfRow(const char *data, size_t size, uint32_t start
 	return start + g_bytesPerHalfRow;
 }
 
-void hexdump(const char *data, size_t size)
+void hexdump(const void *data, size_t size)
 {
-	hexdumpCore(data, size, "");
+	hexdumpCore((const char *)data, size, "");
 }
 
 void hexdumpCore(const char *data, size_t size, const std::string &prefix)
