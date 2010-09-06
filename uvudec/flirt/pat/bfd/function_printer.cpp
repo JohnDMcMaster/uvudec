@@ -222,7 +222,7 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 		if( !depRelocation->m_symbolName.empty() && alreadyPrintedSymbols.find(depRelocation->m_symbolName) == alreadyPrintedSymbols.end() )
 		{			
 			getStringWriter()->print(" %c%.4X %s%s",
-					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str(),
+					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, 
 					symbolPrefix.c_str(), depRelocation->m_symbolName.c_str());
 			alreadyPrintedSymbols.insert(depRelocation->m_symbolName);
 		}
