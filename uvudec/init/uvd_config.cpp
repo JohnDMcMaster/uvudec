@@ -67,7 +67,7 @@ uv_err_t UVDConfigValue::parseTypeNumber(const std::string &in, UVDConfigValue *
 	}
 	else
 	{
-		printf("Unrecognized operand: %s, expected u or s, got %c\n", in.c_str(), in[0]);
+		printf_error("Unrecognized operand: %s, expected u or s, got %c\n", in.c_str(), in[0]);
 		UV_ERR(rc);
 		goto error;
 	}
@@ -871,7 +871,6 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 {
 	UVDArgConfig *argConfig = NULL;
 	
-printf("Registering property: %s\n", propertyForm.c_str());
 	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, numberExpectedValues, handler, hasDefault);
 	uv_assert_ret(argConfig);
 	g_config->m_configArgs.push_back(argConfig);
@@ -888,9 +887,7 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		bool hasDefault)
 {
 	UVDArgConfig *argConfig = NULL;
-	
-printf("Registering property: %s\n", propertyForm.c_str());
-	
+		
 	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
 	uv_assert_ret(argConfig);
 	g_config->m_configArgs.push_back(argConfig);

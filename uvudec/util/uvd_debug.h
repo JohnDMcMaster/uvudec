@@ -73,14 +73,26 @@ uv_assert_err is always enabled
 
 #else /* ifdef NDEBUG */
 
-#define UV_ERR		UV_DEBUG
+#define UVD_DEBUG_TYPE_NONE				0x00000000
+//Main engine initializaiton and such
+#define UVD_DEBUG_TYPE_GENERAL			0x00000001
+#define UVD_DEBUG_TYPE_FLIRT			0x00000100
+//If your plugin needs to debug, chose something above this
+#define UVD_DEBUG_TYPE_PLUGIN_BASE		0x10000000
+#define UVD_DEBUG_TYPE_ALL				0xFFFFFFFF
 
+typedef uint32_t uvd_debug_flag_t;
+//Return error if type already registered
+//argName ex: if "FLIRT" given, --debug-FLIRT will activate this debug flag
+uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &prefix);
+//Get a free flag to register for debugging (and other operations?)
+uv_err_t UVDGetTypeFlag(uvd_debug_flag_t *typeFlag);
 
-/* I don't check rc on printf anyway, fix later if needed */
-//#define printf_debug(format, ...) if( g_verbose ) { printf(format, ## __VA_ARGS__); }
 #define printf_debug(format, ...) printf_debug_level(UVD_DEBUG_VERBOSE, format, ## __VA_ARGS__)
-#define printf_debug_type(format, type, ...) printf_debug(format, ## __VA_ARGS__)
-void printf_debug_level(uint32_t level, const char *format, ...);
+#define printf_debug_type(type, format, ...) printf_debug_macro(UVD_DEBUG_TEMP, type, format, ## __VA_ARGS__)
+#define printf_debug_level(level, format, ...) printf_debug_macro(level, UVD_DEBUG_TYPE_ALL, format, ## __VA_ARGS__)
+#define printf_debug_macro(level, type, format, ...) printf_debug_core(level, type, __FILE__, __LINE__, __FUNCTION__, format, ## __VA_ARGS__)
+void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t line, const char *func, const char *format, ...);
 
 #define uv_assert(x) if( !(x) ) { UV_ERR(rc); goto error; }
 #define uv_assert_ret(x) if( !(x) ) { return UV_ERR(UV_ERR_GENERAL); }
@@ -89,8 +101,9 @@ uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const 
 void uv_enter(const char *file, uint32_t line, const char *func);
 
 #define UV_DEBUG(x) uv_err_ret_handler(x, __FILE__, __LINE__, __FUNCTION__)
+//This was an old distinction
+#define UV_ERR		UV_DEBUG
 #define UV_ENTER() uv_enter(__FILE__, __LINE__, __FUNCTION__)
-//#define UV_ENTER() do{ } while(0)
 
 #endif /* ifndef NDEBUG */
 

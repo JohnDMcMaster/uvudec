@@ -4,6 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvd_arg_util.h"
 #include "uvd_config.h"
 #include "uvd_debug.h"
 #include "uvd_log.h"
@@ -17,6 +18,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #endif
 
 static const char *g_last_func = NULL;
+static uint32_t g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
+//<propertyForm, numeric flag>
+static std::map<std::string, uint32_t> g_propertyFlagMap;
 
 static void uvd_signal_handler(int sig)
 {
@@ -41,39 +45,88 @@ static void uvd_signal_handler(int sig)
 	_exit(1);
 }
 
-void printf_debug_level(uint32_t level, const char *format, ...)
+static bool shouldPrintType(uint32_t type)
+{
+	//Any flags should be set?
+	//Or is it more useful to do all?
+	//usually we will have just one
+	return type & g_debugTypeFlags;
+}
+
+uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet)
+{
+	if( shouldSet )
+	{
+		g_debugTypeFlags |= flag;
+	}
+	else
+	{
+		g_debugTypeFlags &= ~flag;
+	}
+	return UV_ERR_OK;
+}
+
+static void printf_debug_prefix(FILE *logHandle, const char *prefix, const char *file, uint32_t line, const char *func)
+{
+	if( !logHandle )
+	{
+		logHandle = stdout;
+	}
+	if( prefix == NULL )
+	{
+		prefix = "";
+	}
+	fprintf(logHandle, "DEBUG %s(%s:%d): %s", file, func, line, prefix);
+}
+
+void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t line, const char *func, const char *format, ...)
 {
 	FILE *logHandle = g_log_handle;
 	va_list ap;
 	uint32_t verbose = 0;
 	uint32_t set_level = 0;
 
-	//Keep logging before g_config initialized
-	if( !logHandle )
+	if( shouldPrintType(type) )
 	{
-		logHandle = stdout;
-	}
-	if( g_config )
-	{
-		verbose = g_config->m_verbose;
-		set_level = g_config->m_verbose_level;
-	}
-	else
-	{
-		verbose = 0;
-		set_level = 0;
-	}
+		std::string typePrefix;
+		
+		//Keep logging before g_config initialized
+		if( !logHandle )
+		{
+			logHandle = stdout;
+		}
+		if( g_config )
+		{
+			verbose = g_config->m_verbose;
+			set_level = g_config->m_verbose_level;
+		}
+		else
+		{
+			verbose = 0;
+			set_level = 0;
+		}
 	
-	//Is logging disabled or are we at too high of a level?
-	if( !verbose || level > set_level )
-	{
-		return;
-	}
+		//Is logging disabled or are we at too high of a level?
+		if( !verbose || level > set_level )
+		{
+			return;
+		}
+		
+		if( g_config && g_config->m_modulePrefixes.find(type) != g_config->m_modulePrefixes.end() )
+		{
+			typePrefix = g_config->m_modulePrefixes[type];
+			if( !typePrefix.empty() )
+			{
+				typePrefix += ": ";
+			}
+		}
+		printf_debug_prefix(logHandle, typePrefix.c_str(), file, line, func);
 	
-	va_start(ap, format);
-	vfprintf(logHandle, format, ap);
-	fflush(logHandle);
-	va_end(ap);
+		va_start(ap, format);
+		vfprintf(logHandle, format, ap);
+		fflush(logHandle);
+		va_end(ap);
+	}
 }
 
 void uv_enter(const char *file, uint32_t line, const char *func)
@@ -87,10 +140,79 @@ const char *get_last_func()
 	return g_last_func;
 }
 
+static std::string argStringToDebugFlagProperty(const std::string &printPrefix)
+{
+	return std::string("debug.flag.") + printPrefix;
+}
+
+static std::string argStringToDebugFlagLongForm(const std::string &printPrefix)
+{
+	return std::string("debug-") + printPrefix;
+}
+
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+{
+	UVDConfig *config = NULL;
+	uint32_t typeFlag = 0;
+	
+	config = g_config;
+	uv_assert_ret(config);
+	uv_assert_ret(argConfig);
+
+	//Map our property to a flag
+	uv_assert_ret(g_propertyFlagMap.find(argConfig->m_propertyForm) != g_propertyFlagMap.end());
+	typeFlag = g_propertyFlagMap[argConfig->m_propertyForm];
+		
+	if( argumentArguments.empty() )
+	{
+		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, true));
+	}
+	else
+	{
+		std::string firstArg;
+
+		firstArg = argumentArguments[0];
+		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, UVDArgToBool(firstArg)));
+	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &printPrefix)
+{
+	std::string propertyForm = argStringToDebugFlagProperty(argName);
+	
+	uv_assert_ret(g_config);
+	uv_assert_ret(g_config->m_modulePrefixes.find(typeFlag) == g_config->m_modulePrefixes.end());
+	g_config->m_modulePrefixes[typeFlag] = printPrefix;
+	g_propertyFlagMap[propertyForm] = typeFlag;
+	
+	//static std::map<std::string, uint32_t> g_propertyFlagMap;
+	
+	uv_assert_err_ret(g_config->registerArgument(propertyForm,
+			0, argStringToDebugFlagLongForm(argName),
+			"set given debug flag",
+			1,
+			argParser,
+			true));
+	
+	return UV_ERR_OK;
+}
+
+static uv_err_t initializeTypePrefixes()
+{
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_GENERAL, "general", ""));
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_FLIRT, "flirt", "FLIRT"));
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDDebugInit()
 {
+	g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
 	signal(SIGSEGV, uvd_signal_handler);
 	signal(SIGFPE, uvd_signal_handler);
+	uv_assert_err_ret(initializeTypePrefixes());
 	return UV_ERR_OK;
 }
 
@@ -115,7 +237,8 @@ void uvd_print_trace(const char *file, int line, const char *function)
 
     printf("Call stack from %s:%d:\n", file, line);
 
-    for (size_t i = 1; i < stack_depth; i++) {
+    for (size_t i = 1; i < stack_depth; i++)
+    {
         printf("    %s\n", stack_strings[i]);
     }
     free(stack_strings); // malloc()ed by backtrace_symbols
