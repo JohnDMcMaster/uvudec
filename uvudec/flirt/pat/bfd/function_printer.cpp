@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_crc.h"
 #include "uvd_util.h"
-#include "uvd_flirt.h"
+#include "flirt/flirt.h"
 #include "flirt/pat/bfd/function.h"
 #include "flirt/pat/bfd/function_printer.h"
 #include "flirt/pat/bfd/relocation.h"
@@ -181,14 +181,36 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 	uint32_t publicNameOffset = 0;
 	//FLAIR only emits the first reference location
 	std::set<std::string> alreadyPrintedSymbols;
+	uint32_t flags = 0;
+	asymbol *bfdAsymbol = NULL;
+	std::string offsetSuffix;
+	std::string symbolPrefix;
+
+	bfdAsymbol = m_func->m_bfdAsymbol;
+	flags = bfdAsymbol->flags;
+	//Local referenced names should have a @ suffix
+	//weak syms are close enough to local, and certainly aren't global
+	if( flags & BSF_LOCAL || flags & BSF_WEAK )
+	{
+		offsetSuffix = "@";
+	}
+	
+	if( g_config->m_flirt.m_prefixUnderscores )
+	{
+		symbolPrefix = "_";
+	}
 	
 	//The symbol name
 	//FIXME: there are a lot of special cases are are skipping
 	//Can .pat files have more than one :0000 entry?
+	//yes they can
+	//ex: 5589E583EC208B4508D975E483F8FF746F83F8FE0F849E0000000FB7100FB74D A0 98D8 00C0 :0000 ___fesetenv :0000@ _fesetenv 
 	//Or should they always be one per line?
 	//Seems like its allowed, but probably somewhat specialized what will directly generate it in a .pat
 	//publicNameOffset = m_offset
-	getStringWriter()->print(" %c%.4X %s", UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, publicNameOffset, bfd_asymbol_name(m_func->m_bfdAsymbol));
+	getStringWriter()->print(" %c%.4X%s %s%s",
+			UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, publicNameOffset, offsetSuffix.c_str(),
+			symbolPrefix.c_str(), bfd_asymbol_name(m_func->m_bfdAsymbol));
 	
 	//Dependencies
 	for( std::vector<UVDBFDPatRelocation *>::iterator depRelocIter = m_func->m_relocations.m_relocations.begin(); depRelocIter != m_func->m_relocations.m_relocations.end(); ++depRelocIter )
@@ -198,9 +220,9 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 		//Not all relocations have names
 		//these are anonymous and should be skipped
 		if( !depRelocation->m_symbolName.empty() && alreadyPrintedSymbols.find(depRelocation->m_symbolName) == alreadyPrintedSymbols.end() )
-		{
-			getStringWriter()->print(" %c%.4X %s",
-					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str(),
+		{			
+			getStringWriter()->print(" %s%c%.4X %s",
+					symbolPrefix.c_str(), UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str(),
 					depRelocation->m_symbolName.c_str());
 			alreadyPrintedSymbols.insert(depRelocation->m_symbolName);
 		}
