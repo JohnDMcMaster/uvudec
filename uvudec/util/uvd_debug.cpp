@@ -8,6 +8,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_config.h"
 #include "uvd_debug.h"
 #include "uvd_log.h"
+#include "uvd_util.h"
+#include "uvd_compiler_gcc.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -228,33 +230,71 @@ void uvd_print_trace(const char *file, int line, const char *function)
 {
 	/*
 	Based on code from http://tombarta.wordpress.com/2008/08/01/c-stack-traces-with-gcc/
+
+	Eventually I'd like to write my own debugger and will be able to read this info directly so I can get line nums and such
+	Until then, hackish parsing
+
+	Example lines
+		libuvudec.so(_ZN28UVDFLIRTSignatureRawSequence14const_iteratordeEv+0x89) [0xaa9531]
+		./uvpat2sig.dynamic() [0x8049de5]
+		/lib/libc.so.6(__libc_start_main+0xe6) [0x5eccc6]
+
 	*/
-    const size_t max_depth = 100;
-    size_t stack_depth;
-    void *stack_addrs[max_depth];
-    char **stack_strings;
+	const size_t max_depth = 100;
+	size_t stack_depth;
+	void *stack_addrs[max_depth];
+	char **stack_strings;
 
-    stack_depth = backtrace(stack_addrs, max_depth);
-    stack_strings = backtrace_symbols(stack_addrs, stack_depth);
+	stack_depth = backtrace(stack_addrs, max_depth);
+	stack_strings = backtrace_symbols(stack_addrs, stack_depth);
 
-    printf("Call stack from %s:%d:\n", file, line);
+	printf("Call stack from %s:%d:\n", file, line);
 
-    for (size_t i = 1; i < stack_depth; i++)
-    {
-        printf("    %s\n", stack_strings[i]);
-    }
-    free(stack_strings); // malloc()ed by backtrace_symbols
-    fflush(stdout);
+	for (size_t i = 1; i < stack_depth; i++)
+	{
+		std::string curStack = stack_strings[i];
+		std::vector<std::string> lineParts = split(curStack, ' ');
+		
+		if( lineParts.size() == 2 )
+		{
+			std::string funcPart = lineParts[0];
+			std::string module;
+			std::string moduleOffset;
+			
+			if( UV_SUCCEEDED(parseFunc(funcPart, module, moduleOffset)) )
+			{
+				std::vector<std::string> moduleOffsetParts = split(moduleOffset, '+');
+				
+				if( moduleOffsetParts.size() == 2 )
+				{
+					UVDCompilerGCC gccCompiler;
+					std::string functionNameRaw = moduleOffsetParts[0];
+					std::string functionNameDemangled;
+					std::string functionOffsetRaw = moduleOffsetParts[1];
+				
+					if( UV_SUCCEEDED(gccCompiler.demangleByABI(functionNameRaw, functionNameDemangled)) )
+					{
+						//Mimic the rest of the stack
+						printf("    %s(%s+%s)[%08x]\n", module.c_str(), functionNameDemangled.c_str(), functionOffsetRaw.c_str(), (int)stack_addrs[i]);					
+						continue;
+					}
+				}
+			}
+		}
+		printf("    %s\n", curStack.c_str());
+	}
+	free(stack_strings); // malloc()ed by backtrace_symbols
+	fflush(stdout);
  #if 0
-    const size_t max_depth = 100;
-    size_t stack_depth;
-    void *stack_addrs[max_depth];
-    char **stack_strings;
+	const size_t max_depth = 100;
+	size_t stack_depth;
+	void *stack_addrs[max_depth];
+	char **stack_strings;
 
-    stack_depth = backtrace(stack_addrs, max_depth);
-    stack_strings = backtrace_symbols(stack_addrs, stack_depth);
+	stack_depth = backtrace(stack_addrs, max_depth);
+	stack_strings = backtrace_symbols(stack_addrs, stack_depth);
 
-    printf("Call stack from %s @ %s:%d:\n", function, file, line);
+	printf("Call stack from %s @ %s:%d:\n", function, file, line);
 
 	for (size_t i = 1; i < stack_depth; i++) {
 		size_t sz = 200; // just a guess, template names will go much wider
@@ -262,41 +302,41 @@ void uvd_print_trace(const char *file, int line, const char *function)
 		char *begin = 0, *end = 0;
 		// find the parentheses and address offset surrounding the mangled name
 		for (char *j = stack_strings[i]; *j; ++j) {
-		    if (*j == '(') {
-		        begin = j;
-		    }
-		    else if (*j == '+') {
-		        end = j;
-		    }
+			if (*j == '(') {
+				begin = j;
+			}
+			else if (*j == '+') {
+				end = j;
+			}
 		}
 		if (begin && end) {
-		    *begin++ = ' ';
-		    *end = ' ';
-		    // found our mangled name, now in [begin, end)
+			*begin++ = ' ';
+			*end = ' ';
+			// found our mangled name, now in [begin, end)
 
-		    int status;
-		    char *ret = abi::__cxa_demangle(begin, function, &sz, &status);
-		    if (ret) {
-		        // return value may be a realloc() of the input
-		        function = ret;
-		    }
-		    else {
-		        // demangling failed, just pretend it's a C function with no args
-		        strncpy(function, begin, sz);
-		        strncat(function, "()", sz);
-		        function[sz-1] = ' ';
-		    }
-		    printf("    %s:%s\n", stack_strings[i], function);
+			int status;
+			char *ret = abi::__cxa_demangle(begin, function, &sz, &status);
+			if (ret) {
+				// return value may be a realloc() of the input
+				function = ret;
+			}
+			else {
+				// demangling failed, just pretend it's a C function with no args
+				strncpy(function, begin, sz);
+				strncat(function, "()", sz);
+				function[sz-1] = ' ';
+			}
+			printf("	%s:%s\n", stack_strings[i], function);
 		}
 		else
 		{
-		    // didn't find the mangled name, just print the whole line
-		    printf("    %s\n", stack_strings[i]);
+			// didn't find the mangled name, just print the whole line
+			printf("	%s\n", stack_strings[i]);
 		}
 		free(function);
 	}
-    free(stack_strings); // malloc()ed by backtrace_symbols
-    fflush(stdout);
+	free(stack_strings); // malloc()ed by backtrace_symbols
+	fflush(stdout);
 #endif
 }
 #else
