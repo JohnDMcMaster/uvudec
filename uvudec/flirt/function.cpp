@@ -34,14 +34,23 @@ UVDFLIRTSignatureReference::~UVDFLIRTSignatureReference()
 {
 }
 
+int UVDFLIRTSignatureRawSequence::const_iterator::deref::compare(const deref &other) const
+{
+	if( m_isReloc && other.m_isReloc )
+	{
+		return 0;
+	}
+	return m_byte - other.m_byte;
+}
+
 bool UVDFLIRTSignatureRawSequence::const_iterator::deref::operator==(const deref &other) const
 {
-	return (m_isReloc && other.m_isReloc) || (m_byte == other.m_byte);
+	return compare(other) == 0;
 }
 
 bool UVDFLIRTSignatureRawSequence::const_iterator::deref::operator!=(const deref &other) const
 {
-	return !operator==(other);
+	return compare(other) != 0;
 }
 
 /*
@@ -93,14 +102,19 @@ uv_err_t UVDFLIRTSignatureRawSequence::const_iterator::next()
 	return UV_ERR_OK;
 }
 
+int UVDFLIRTSignatureRawSequence::const_iterator::compare(const const_iterator &other) const
+{
+	return m_cur - other.m_cur;
+}
+
 bool UVDFLIRTSignatureRawSequence::const_iterator::operator==(const const_iterator &other) const
 {
-	return m_seq == other.m_seq && m_cur == other.m_cur;
+	return compare(other) == 0;
 }
 
 bool UVDFLIRTSignatureRawSequence::const_iterator::operator!=(const const_iterator &other) const
 {
-	return !operator!=(other);
+	return compare(other) != 0;
 }
 
 UVDFLIRTSignatureRawSequence::const_iterator::deref UVDFLIRTSignatureRawSequence::const_iterator::operator*()

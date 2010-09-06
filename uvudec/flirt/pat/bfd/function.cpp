@@ -101,7 +101,8 @@ int UVDBFDPatFunction::const_iterator::compare(const_iterator other) const
 
 bool UVDBFDPatFunction::const_iterator::operator!=(const_iterator other) const
 {
-	return compare(other) != 0;
+	uint32_t compareRes = compare(other);
+	return compareRes != 0;
 }
 
 bool UVDBFDPatFunction::const_iterator::operator==(const_iterator other) const
