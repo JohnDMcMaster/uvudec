@@ -19,8 +19,7 @@ http://www.hex-rays.com/idapro/flirt.htm
 #include <string>
 #include <vector>
 
-#define printf_flirt_debug(format, ...) printf_debug_type(format, UVD_DEBUG_TYPE_FLIRT)
-//#define printf_flirt_debug(...)
+#define printf_flirt_debug(format, ...) printf_debug_type(UVD_DEBUG_TYPE_FLIRT, format, ## __VA_ARGS__)
 
 //#define FLIRT_WARNING
 #ifdef FLIRT_WARNING
