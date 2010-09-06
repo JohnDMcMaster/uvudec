@@ -41,6 +41,7 @@ public:
 		class deref
 		{
 		public:
+			int compare(const deref &other) const;
 			bool operator==(const deref &other) const;
 			bool operator!=(const deref &other) const;
 		
@@ -56,6 +57,7 @@ public:
 		
 		uv_err_t next();
 		
+		int compare(const const_iterator &other) const;
 		bool operator==(const const_iterator &other) const;
 		bool operator!=(const const_iterator &other) const;
 		
