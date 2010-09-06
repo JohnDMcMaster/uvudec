@@ -33,8 +33,7 @@ public:
 
 class UVDFLIRTSignatureRawSequence
 {
-public:	
-	//This is me playing around with how to make an STL like iterator class
+public:
 	class const_iterator
 	{
 	public:
@@ -68,6 +67,7 @@ public:
 	
 	protected:
 		uv_err_t makeEnd();
+		uv_err_t checkEnd();
 		
 	public:
 		//We might not actually need this
@@ -105,6 +105,8 @@ public:
 	iterator end();
 	const_iterator const_begin() const;
 	const_iterator const_end() const;
+
+	bool empty() const;
 
 	//Transfer allocated  memory to given other
 	void transfer(UVDFLIRTSignatureRawSequence *other);
