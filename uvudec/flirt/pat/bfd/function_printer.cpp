@@ -221,9 +221,9 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 		//these are anonymous and should be skipped
 		if( !depRelocation->m_symbolName.empty() && alreadyPrintedSymbols.find(depRelocation->m_symbolName) == alreadyPrintedSymbols.end() )
 		{			
-			getStringWriter()->print(" %s%c%.4X %s",
-					symbolPrefix.c_str(), UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str(),
-					depRelocation->m_symbolName.c_str());
+			getStringWriter()->print(" %c%.4X %s%s",
+					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, depRelocation->m_symbolName.c_str(),
+					symbolPrefix.c_str(), depRelocation->m_symbolName.c_str());
 			alreadyPrintedSymbols.insert(depRelocation->m_symbolName);
 		}
 		/*
