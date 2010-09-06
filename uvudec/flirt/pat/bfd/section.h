@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_PATTERN_BFD_SECTION_H
 #define UVD_FLIRT_PATTERN_BFD_SECTION_H
 
-#include "uvd_flirt_pattern_bfd_function.h"
+#include "flirt/pat/bfd/function.h"
 #include "uvd_types.h"
 
 /*

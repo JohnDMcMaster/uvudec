@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_flirt.h"
 #include "uvd_flirt_pattern.h"
-#include "uvd_flirt_pattern_bfd.h"
+#include "flirt/pat/bfd/bfd.h"
 #include "uvd_flirt_pattern_uvd.h"
 #include "uvd_flirt_signature.h"
 #include "uvd_util.h"

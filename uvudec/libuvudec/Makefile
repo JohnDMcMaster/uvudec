@@ -37,12 +37,12 @@ CXX_SRCS = 	\
 			$(ELF_DIR)/uvd_elf_string_table.cpp \
 			$(ELF_DIR)/uvd_elf_symbol.cpp \
 			$(ELF_DIR)/uvd_elf_writer.cpp \
-			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd.cpp \
-			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_core.cpp \
-			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_function.cpp \
-			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_function_printer.cpp \
-			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_relocation.cpp \
-			$(FLIRT_BFD_DIR)/uvd_flirt_pattern_bfd_section.cpp \
+			$(FLIRT_DIR)/pat/bfd/bfd.cpp \
+			$(FLIRT_DIR)/pat/bfd/core.cpp \
+			$(FLIRT_DIR)/pat/bfd/function.cpp \
+			$(FLIRT_DIR)/pat/bfd/function_printer.cpp \
+			$(FLIRT_DIR)/pat/bfd/relocation.cpp \
+			$(FLIRT_DIR)/pat/bfd/section.cpp \
 			$(FLIRT_DIR)/uvd_bfd_library.cpp \
 			$(FLIRT_DIR)/uvd_config_flirt.cpp \
 			$(FLIRT_DIR)/uvd_elf_library.cpp \

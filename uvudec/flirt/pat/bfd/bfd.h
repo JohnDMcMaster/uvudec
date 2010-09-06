@@ -12,7 +12,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_types.h"
 #include "uvd_flirt_pattern.h"
 #include <string>
-#include "bfd.h"
+#include <bfd.h>
 
 /*
 Using libbfd to get symbols and relocations
