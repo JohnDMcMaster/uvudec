@@ -159,7 +159,7 @@ Currently they must follow C symbol syntax
 */
 uv_err_t isConfigIdentifier(const std::string &in);
 
-void hexdump(const char *data, size_t size);
+void hexdump(const void *data, size_t size);
 void hexdumpCore(const char *data, size_t size, const std::string &prefix);
 
 #define UVD_WARN_IF_VERSION_MISMATCH()\
