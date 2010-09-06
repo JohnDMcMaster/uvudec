@@ -74,11 +74,11 @@ uv_err_t UVDBFDPatRelocations::addRelocation(arelent *bfdRelocation)
 	uvdRelocation->m_address = bfdRelocation->address;
 	uv_assert_ret(bfdRelocation->address >= m_function->m_offset);
 	uvdRelocation->m_offset = bfdRelocation->address - m_function->m_offset;
-	printf_flirt_debug("adding relocation 0x%.8X @ function offset 0x%.4X from section offset 0x%.4X and function offset 0x%.4X\n",
-			(int)uvdRelocation, (int)uvdRelocation->m_offset, (int)bfdRelocation->address, m_function->m_offset);
+	printf_flirt_debug("adding rel 0x%.8X @ func %s off 0x%.4X from sec off 0x%.4X, func off 0x%.4X\n",
+			(int)uvdRelocation, m_function->m_bfdAsymbol->name, (int)uvdRelocation->m_offset, (int)bfdRelocation->address, m_function->m_offset);
 	//Zero address relocations don't really make any sense since the opcode is undefined
 	//Should indicate an internal error
-	printf_flirt_debug("function symbol name: %s\n", m_function->m_bfdAsymbol->name);
+	//printf_flirt_debug("function symbol name: %s\n", m_function->m_bfdAsymbol->name);
 	/*
 	FIXME
 	This assertion doesn't currently work

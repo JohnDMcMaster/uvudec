@@ -471,6 +471,7 @@ UVDFLIRTFunction::~UVDFLIRTFunction()
 {
 }
 
+/*
 static uv_err_t zeroedBuffer(const UVDFLIRTSignatureRawSequence *seq, uint8_t **out)
 {
 	uint32_t size = 0;
@@ -518,5 +519,19 @@ uv_err_t UVDFLIRTFunction::computeCRC16()
 	free(crcBuff);	
 	return UV_ERR_OK;
 }
+*/
 
+uv_err_t UVDFLIRTFunction::transferSequence(UVDFLIRTSignatureRawSequence *sequence)
+{
+	sequence->transfer(&m_sequence);
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTFunction::setSequence(const UVDFLIRTSignatureRawSequence *sequence)
+{
+	sequence->copyTo(&m_sequence);
+	
+	return UV_ERR_OK;
+}
 

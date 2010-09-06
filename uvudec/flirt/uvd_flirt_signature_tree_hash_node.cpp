@@ -5,6 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd_flirt_signature_tree.h"
+#include "uvd_config.h"
+#include "uvd_util.h"
 #include <limits.h>
 
 bool UVDFLIRTSignatureTreeHashNodeCompare::operator()(UVDFLIRTSignatureTreeHashNode *first, UVDFLIRTSignatureTreeHashNode *second) const
@@ -30,7 +32,7 @@ UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode()
 UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode(const UVDFLIRTFunction *function)
 {
 	m_crc16 = function->m_crc16;
-	m_leadingLength = function->m_leadingSequence.size();
+	m_leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);
 }
 
 UVDFLIRTSignatureTreeHashNode::~UVDFLIRTSignatureTreeHashNode()

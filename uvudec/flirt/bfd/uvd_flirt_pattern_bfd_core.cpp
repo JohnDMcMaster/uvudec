@@ -6,6 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_flirt.h"
 #include "uvd_flirt_pattern_bfd_core.h"
+#include <string.h>
 
 UVDBFDPatCore::UVDBFDPatCore()
 {
@@ -43,22 +44,26 @@ uv_err_t UVDBFDPatCore::generate()
 	
 	if( !(bfd_get_file_flags(m_bfd) & HAS_SYMS) )
 	{
-		printf_warn("No symbols in \"%s\".\n", bfd_get_filename(m_bfd));
-		printf_warn("flags: 0x%.8X\n", bfd_get_file_flags(m_bfd));
+		//printf_warn("No symbols in \"%s\".\n", bfd_get_filename(m_bfd));
+		//printf_warn("flags: 0x%.8X\n", bfd_get_file_flags(m_bfd));
 		//return UV_DEBUG(UV_ERR_GENERAL);
 		return UV_ERR_OK;
 	}
 
 	//Figure out where all of the symbols are
+	printf_flirt_debug("\n\nbuilding symbol table\n");
 	uv_assert_err_ret(buildSymbolTable());
 	//Trim areas to create functions
+	printf_flirt_debug("\n\nsetting function sizes\n");
 	uv_assert_err_ret(setFunctionSizes());
 	//Assign relocations to each function
+	printf_flirt_debug("\n\nplacing relocations into functions\n");
 	uv_assert_err_ret(placeRelocationsIntoFunctions());
 	//And print the signatures
+	printf_flirt_debug("\n\nprinting\n");
 	uv_assert_err_ret(print());
 
-	printf_flirt_debug("finished normally\n");	
+	printf_flirt_debug("\n\noh snap!  finished normally\n");
 	return UV_ERR_OK;
 }
 
@@ -179,41 +184,48 @@ uv_err_t UVDBFDPatCore::placeRelocationsIntoFunctions()
 		//What is a com section?
 		if( bfd_is_abs_section(bfdAsection) || bfd_is_und_section(bfdAsection) || bfd_is_com_section(bfdAsection) )
 		{
-			printf_flirt_debug("skipping section: bad type\n");
+			printf_flirt_debug("skipping section %s: bad type\n", bfdAsection->name);
 			continue;
 		}
 		//Obviously has to be a relocation section
 		if( !(bfdAsection->flags & SEC_RELOC) )
 		{
-			printf_flirt_debug("skipping section: is reloc\n");
+			printf_flirt_debug("skipping section %s: is reloc\n", bfdAsection->name);
 			continue;
 		}
 		relocationSectionSize = bfd_get_reloc_upper_bound(m_bfd, bfdAsection);
 		uv_assert_ret(relocationSectionSize >= 0);
 		if( relocationSectionSize == 0 )
 		{
-			printf_flirt_debug("skipping section: 0 relocation size\n");
+			printf_flirt_debug("skipping section %s: 0 relocation size\n", bfdAsection->name);
 			continue;
 		}
 		uv_assert_err_ret(m_sections.find(bfdAsection, &uvdSection));
 		if( uvdSection == NULL )
 		{
-			printf_flirt_debug("skipping section: couldn't find section to apply to\n");
+			printf_flirt_debug("skipping section %s: couldn't find section to apply to\n", bfdAsection->name);
 			continue;
 		}
 		printf_flirt_debug("Reloc section name is %s\n", bfdAsection->name);
+		if( !strcmp(".debug_info", bfdAsection->name) )
+		{
+			printf_flirt_debug("skipping section %s: test\n", bfdAsection->name);
+			continue;
+		}
 		relocationArray = (arelent **)malloc(relocationSectionSize);
 		relocationCount = bfd_canonicalize_reloc(m_bfd, bfdAsection, relocationArray, m_contiguousSymbolTable);
 		if( relocationCount <= 0 )
 		{
-			printf_flirt_debug("skipping section: couldn't canonicalize relocations\n");
+			printf_flirt_debug("skipping section %s: couldn't canonicalize relocations\n", bfdAsection->name);
 			free(relocationArray);
 			continue;
 		}
 		
+		printf_flirt_debug("Looping over relocations, number: %d\n", relocationCount);
 		//is the array null terminated?  Is the relocation count just an extra safety?
 		for( relocationArrayPointer = relocationArray; relocationCount && *relocationArrayPointer != NULL; ++relocationArrayPointer, --relocationCount )
 		{
+			printf_flirt_debug("Looping over relocations, remaining: %d\n", relocationCount);
 			arelent *currentRelocation = *relocationArrayPointer;
 			uv_assert_err_ret(uvdSection->assignRelocation(currentRelocation));
 			

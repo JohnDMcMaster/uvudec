@@ -208,6 +208,13 @@ public:
 	
 	//Fill in the crc16 field based on m_tailingSequence
 	uv_err_t computeCRC16();
+	//Split sequence into areas
+	//uv_err_t compute();
+	
+	//Sequence in will be invalidated
+	uv_err_t transferSequence(UVDFLIRTSignatureRawSequence *m_sequence);
+	//Not invalidated
+	uv_err_t setSequence(const UVDFLIRTSignatureRawSequence *m_sequence);
 
 protected:
 	//Get a copy of sequence with relocations 0 filled
@@ -232,10 +239,12 @@ public:
 	//Need to define these
 	uint32_t m_attributeFlags;
 	
+	//Because of split relocations, much easier to just have a single sequence
 	//Maximum of length 0x20
-	UVDFLIRTSignatureRawSequence m_leadingSequence;
+	//UVDFLIRTSignatureRawSequence m_leadingSequence;
 	//Post 0x20 length stuff used for 
-	UVDFLIRTSignatureRawSequence m_tailingSequence;
+	//UVDFLIRTSignatureRawSequence m_tailingSequence;
+	UVDFLIRTSignatureRawSequence m_sequence;
 };
 
 #endif
