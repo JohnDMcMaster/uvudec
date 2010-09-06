@@ -5,8 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd_crc.h"
-#include "uvd_flirt_function.h"
-#include "uvd_flirt_pattern.h"
+#include "flirt/function.h"
+#include "flirt/pat/pat.h"
 #include <string.h>
 
 /*

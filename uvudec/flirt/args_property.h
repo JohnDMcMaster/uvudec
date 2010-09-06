@@ -7,8 +7,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_ARGS_PROPERTY_H
 #define UVD_FLIRT_ARGS_PROPERTY_H
 
-#include "uvd_flirt_signature.h"
-#include "uvd_flirt_pattern.h"
+#include "flirt/sig/sig.h"
+#include "flirt/pat/pat.h"
 
 #define UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH				"flirt.signature.length.min"
 //In bytes

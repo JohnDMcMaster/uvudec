@@ -4,12 +4,12 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_flirt.h"
-#include "uvd_flirt_pattern.h"
-#include "uvd_flirt_signature.h"
-#include "uvd_flirt_signature_tree.h"
-#include "uvd_flirt_signature_format.h"
-#include "uvd_flirt_signature_writer.h"
+#include "flirt/flirt.h"
+#include "flirt/pat/pat.h"
+#include "flirt/sig/sig.h"
+#include "flirt/sig/tree/tree.h"
+#include "flirt/sig/format.h"
+#include "flirt/sig/writer.h"
 #include "uvd_debug.h"
 #include "uvd_util.h"
 #include <string>

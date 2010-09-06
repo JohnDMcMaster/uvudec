@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #ifdef UVD_FLIRT_PATTERN_UVD
 
-#include "uvd_flirt_pattern.h"
+#include "flirt/pat/pat.h"
 
 /*
 A single function we have found

@@ -5,8 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd_config.h"
-#include "uvd_flirt_pattern.h"
-#include "uvd_flirt_signature_tree.h"
+#include "flirt/pat/pat.h"
+#include "flirt/sig/tree/tree.h"
 #include "uvd_util.h"
 #include <limits.h>
 
