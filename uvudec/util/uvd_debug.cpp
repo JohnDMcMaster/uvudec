@@ -41,6 +41,8 @@ static void uvd_signal_handler(int sig)
 	...and you'll never be right, no matter what you say!
 	*/
 	printf("Received signal: %s\n", sig_str);
+	//Yes, the stack is still intact
+	UVD_PRINT_STACK();
 	//exit() is not a "safe" function.  See man signal
 	_exit(1);
 }
