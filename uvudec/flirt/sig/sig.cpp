@@ -246,13 +246,14 @@ uv_err_t UVDPatLoaderCore::fileLine(const std::string &in)
 
 	//How to tell between an unnamed symbol at the end and one named ABCD?  See if we have trailing bytes
 	uint32_t endIndex = parts.size();
-	if( function.m_crc16Length )
+	if( leadingSignatureLength + function.m_crc16Length < function.m_totalLength )
 	{
 		--endIndex;
 		sTailingBytes = parts[endIndex];
 		if( !isValidPatBytePattern(sTailingBytes) )
 		{
 			printf_error("Invalid tailing byte pattern (CRC16 len: 0x%.2X): %s\n", function.m_crc16Length, sTailingBytes.c_str());
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
 	for( uint32_t i = 4; i < endIndex; ++i )
@@ -356,6 +357,7 @@ uv_err_t UVDFLIRTSignatureDB::writeToFile(const std::string &file)
 {
 	UVDData *data = NULL;
 	
+	uv_assert_ret(!file.empty());
 	uv_assert_err_ret(writeToData(&data));
 	uv_assert_err_ret(data->saveToFile(file));
 

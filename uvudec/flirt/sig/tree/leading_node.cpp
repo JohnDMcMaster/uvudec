@@ -129,7 +129,10 @@ public:
 	//Recursive case
 	uv_err_t insertSubseq(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
 
+	//The sequence we are trying to insert
 	UVDFLIRTSignatureRawSequence m_leadingSequence;
+	//Function the sequencei s from
+	//We'll need this to go to the lower levels
 	UVDFLIRTFunction *m_function;
 };
 
@@ -176,18 +179,80 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 	//uv_err_t matchPosition(const UVDFLIRTSignatureRawSequence *other, const_iterator &otherStartEnd, const_iterator &thisMatchPoint) const;
 	uv_assert_err_ret(node->m_bytes.matchPosition(&m_leadingSequence, sequencePosition, thisBranchPoint));
 	
+	
+	/*
+	A partial match
+	Split and other craziness
+	Recursive
+	Case: our original node is longer
+	Ex
+		Node:  ABCA 232ABC
+		Func:  ABCA
+		           /\
+		            \Split
+	Ex
+		Node:  ABCA 232ABC
+		Func:  ABCA 993432
+		           /\
+		            \Split
+	Split original
+	*/
+	if( thisBranchPoint != node->m_bytes.end() )
+	{
+		//UVDFLIRTSignatureTreeLeadingNode *newNode = NULL;
+		
+		uv_assert_err_ret(node->split(thisBranchPoint));
+		//We should only have a single child now of our new node
+		uv_assert_ret(node->m_leadingChildren.size() == 1);		
+	}
+	/*
+	Ex
+		Node:  ABCA
+		Func:  ABCA 232ABC
+		           /\
+		            \Split
+	Ex
+		Note: this case is now unimportant since above split if necessary
+			Watch out for use of thisBranchPoint though which is now invalid
+		Node:  ABCA 232ABC
+		Func:  ABCA 993432
+		           /\
+		            \Split
+	*/
+	if( sequencePosition != m_leadingSequence.end() )
+	{
+		UVDFLIRTSignatureTreeLeadingNode *childNode = NULL;
+
+		//No prefix match?  Branch here
+		////static uv_err_t fromSubsequence(const UVDFLIRTSignatureRawSequence *seq, UVDFLIRTSignatureRawSequence::iterator pos, uint32_t n, UVDFLIRTSignatureTreeLeadingNode **out);
+		uv_assert_err_ret(node->fromSubsequence(&m_leadingSequence, sequencePosition, UVDFLIRTSignatureRawSequence::npos, &childNode));
+		uv_assert_ret(childNode);
+		node->m_leadingChildren.insert(childNode);
+
+		//Alternativly we could recurse, but since we already know what needs to be done, why bother
+		uv_assert_err_ret(childNode->m_crcNodes.insert(m_function));
+		//uv_assert_err_ret(insertSubseq(childNode, sequencePosition));
+	}
 	/*
 	Full tail match?
 	This is the (most common) terminal case
 	Ex
 		Node:  ABCA232ABC
 		Our:   ABCA232ABC
+	This also will happen if we split our current node because the seq in was smaller
+		See above
+		Ex
+			Node:  ABCA 232ABC
+			Func:  ABCA
 	*/
-	if( thisBranchPoint == node->m_bytes.end() && sequencePosition == m_leadingSequence.end() )
+	//if( thisBranchPoint == node->m_bytes.end() && sequencePosition == m_leadingSequence.end() )
+	else
 	{
 		//Add to our bucket
 		uv_assert_err_ret(node->m_crcNodes.insert(m_function));
 	}
+
+#if 0
 	/*
 	A partial match
 	Split and other craziness
@@ -262,11 +327,11 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 		//Alternativly we could recurse, but since we already know what needs to be done, why bother
 		uv_assert_err_ret(insertSubseq(childNode, sequencePosition));
 	}
-	//We got lazy and didn't go to sequence endings
 	else
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
+#endif
 		
 	return UV_ERR_OK;
 }

@@ -59,6 +59,18 @@ bool UVDFLIRTSignatureRawSequence::const_iterator::deref::operator!=(const deref
 UVDFLIRTSignatureRawSequence
 */
 
+/*
+FIXME: treatment of end() is messy
+Current
+	end is when m_cur is NULL
+Maybe better
+	end is when m_cur is the last byte
+Seemed like a good idea at the time, but caused a lot of special cases
+such as making sure we begin() correctly
+	although we probably shouldn't be dealing in empty seqs anyway
+
+*/	
+
 uint32_t UVDFLIRTSignatureRawSequence::npos = 0xFFFFFFFF;
 
 UVDFLIRTSignatureRawSequence::const_iterator::const_iterator()
@@ -71,6 +83,10 @@ UVDFLIRTSignatureRawSequence::const_iterator::const_iterator(const UVDFLIRTSigna
 {
 	m_seq = seq;
 	m_cur = cur;
+	if( m_cur )
+	{
+		UV_DEBUG(checkEnd());
+	}
 }
 
 UVDFLIRTSignatureRawSequence::const_iterator::~const_iterator()
@@ -90,6 +106,13 @@ uv_err_t UVDFLIRTSignatureRawSequence::const_iterator::next()
 	}
 	++m_cur;
 	
+	uv_assert_err_ret(checkEnd());
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureRawSequence::const_iterator::checkEnd()
+{
 	/*
 	FIXME
 	This adds a lot of overhead
@@ -101,7 +124,6 @@ uv_err_t UVDFLIRTSignatureRawSequence::const_iterator::next()
 	{
 		uv_assert_err_ret(makeEnd());
 	}
-
 	return UV_ERR_OK;
 }
 
@@ -453,6 +475,9 @@ int UVDFLIRTSignatureRawSequence::compare(const UVDFLIRTSignatureRawSequence *ot
 			uv_assert_ret(!(*iterOther).m_isReloc);
 			return (*iterThis).m_byte - (*iterOther).m_byte;
 		}
+		
+		UV_DEBUG(iterThis.next());
+		UV_DEBUG(iterOther.next());
 	}
 }
 
@@ -464,6 +489,19 @@ uint32_t UVDFLIRTSignatureRawSequence::size() const
 		++ret;
 	}
 	return ret;
+}
+
+bool UVDFLIRTSignatureRawSequence::empty() const
+{
+	if( !m_bytes )
+	{
+		return true;
+	}
+	if( *m_bytes == SIGNATURE_ESCAPE_CHAR && *(m_bytes + 1) == SIGNATURE_ESCAPED_CHAR_END )
+	{
+		return true;
+	}
+	return false;
 }
 
 uint32_t UVDFLIRTSignatureRawSequence::allocSize() const
@@ -504,7 +542,8 @@ uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *de
 	uint32_t size = 0;
 
 	size = allocSizeFrom(pos);
-	printf_flirt_debug("subseqTo, alloc size: %d, seq: \n", size, toString().c_str());
+	uv_assert_ret(!empty());
+	printf_flirt_debug("subseqTo, alloc size: 0x%.2X, seq: \n", size, toString().c_str());
 	//Alloc
 	//Should we free dest->m_bytes?
 	uv_assert_ret(dest);
