@@ -4,8 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_config_flirt.h"
-#include "uvd_flirt_args_property.h"
+#include "flirt/config.h"
+#include "flirt/args_property.h"
 
 UVDConfigFLIRT::UVDConfigFLIRT()
 {

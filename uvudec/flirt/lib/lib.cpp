@@ -6,8 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #ifdef UVD_FLIRT_PATTERN_UVD
 
-#include "uvd_library.h"
-#include "uvd_elf_library.h"
+#include "flirt/lib/lib.h"
+#include "flirt/lib/elf.h"
 
 UVDLibrary::UVDLibrary()
 {

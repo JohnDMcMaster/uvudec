@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "flirt/pat/bfd/section.h"
 #include "flirt/pat/bfd/core.h"
 #include "uvd_config.h"
-#include "uvd_flirt.h"
+#include "flirt/flirt.h"
 
 /*
 UVDBFDPatSection

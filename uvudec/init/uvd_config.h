@@ -15,7 +15,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_arg.h"
 #include "uvd_instruction.h"
 #include "uvd_priority_list.h"
-#include "uvd_config_flirt.h"
+#include "flirt/config.h"
 
 //Resultant address from a call routine
 #define SCRIPT_KEY_CALL				"CALL_ADDRESS"

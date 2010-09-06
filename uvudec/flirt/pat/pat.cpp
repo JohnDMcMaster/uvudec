@@ -6,8 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_config.h"
 #include "uvd_crc.h"
-#include "uvd_flirt_pattern.h"
-#include "uvd_library.h"
+#include "flirt/pat/pat.h"
+#include "flirt/lib/lib.h"
 #include "uvd_util.h"
 
 UVDFLIRTPatternGenerator::UVDFLIRTPatternGenerator()

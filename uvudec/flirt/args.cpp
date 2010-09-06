@@ -5,8 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd_config.h"
-#include "uvd_flirt_args.h"
-#include "uvd_flirt_args_property.h"
+#include "flirt/args.h"
+#include "flirt/args_property.h"
 #include "uvd_arg_property.h"
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);

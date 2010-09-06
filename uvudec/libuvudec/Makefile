@@ -43,21 +43,21 @@ CXX_SRCS = 	\
 			$(FLIRT_DIR)/pat/bfd/function_printer.cpp \
 			$(FLIRT_DIR)/pat/bfd/relocation.cpp \
 			$(FLIRT_DIR)/pat/bfd/section.cpp \
-			$(FLIRT_DIR)/uvd_bfd_library.cpp \
-			$(FLIRT_DIR)/uvd_config_flirt.cpp \
-			$(FLIRT_DIR)/uvd_elf_library.cpp \
-			$(FLIRT_DIR)/uvd_flirt_args.cpp \
-			$(FLIRT_DIR)/uvd_flirt.cpp \
-			$(FLIRT_DIR)/uvd_flirt_function.cpp \
-			$(FLIRT_DIR)/uvd_flirt_pattern.cpp \
-			$(FLIRT_DIR)/uvd_flirt_pattern_uvd.cpp \
-			$(FLIRT_DIR)/uvd_flirt_signature.cpp \
-			$(FLIRT_DIR)/uvd_flirt_signature_format.cpp \
-			$(FLIRT_DIR)/uvd_flirt_signature_tree_basic_node.cpp \
-			$(FLIRT_DIR)/uvd_flirt_signature_tree_hash_node.cpp \
-			$(FLIRT_DIR)/uvd_flirt_signature_tree_leading_node.cpp \
-			$(FLIRT_DIR)/uvd_flirt_signature_writer.cpp \
-			$(FLIRT_DIR)/uvd_library.cpp \
+			$(FLIRT_DIR)/config.cpp \
+			$(FLIRT_DIR)/lib/bfd.cpp \
+			$(FLIRT_DIR)/lib/elf.cpp \
+			$(FLIRT_DIR)/lib/lib.cpp \
+			$(FLIRT_DIR)/args.cpp \
+			$(FLIRT_DIR)/flirt.cpp \
+			$(FLIRT_DIR)/function.cpp \
+			$(FLIRT_DIR)/pat/pat.cpp \
+			$(FLIRT_DIR)/pat/uvd.cpp \
+			$(FLIRT_DIR)/sig/tree/basic_node.cpp \
+			$(FLIRT_DIR)/sig/tree/hash_node.cpp \
+			$(FLIRT_DIR)/sig/tree/leading_node.cpp \
+			$(FLIRT_DIR)/sig/format.cpp \
+			$(FLIRT_DIR)/sig/sig.cpp \
+			$(FLIRT_DIR)/sig/writer.cpp \
 			$(HASH_DIR)/uvd_crc.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
 			$(HASH_DIR)/uvd_md5_GNU.cpp \

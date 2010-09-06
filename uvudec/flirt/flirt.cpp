@@ -4,11 +4,11 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_flirt.h"
-#include "uvd_flirt_pattern.h"
+#include "flirt/flirt.h"
+#include "flirt/pat/pat.h"
 #include "flirt/pat/bfd/bfd.h"
-#include "uvd_flirt_pattern_uvd.h"
-#include "uvd_flirt_signature.h"
+#include "flirt/pat/uvd.h"
+#include "flirt/sig/sig.h"
 #include "uvd_util.h"
 
 UVDFLIRT *g_flirt = NULL;

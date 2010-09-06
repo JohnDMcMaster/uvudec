@@ -7,7 +7,7 @@ Some code originally from
 http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 */
 
-#include "uvd_flirt_signature_format.h"
+#include "flirt/sig/format.h"
 
 #define __stringify_1(x)	#x
 #define __stringify(x)		__stringify_1(x)

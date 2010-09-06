@@ -14,7 +14,7 @@ http://www.hex-rays.com/idapro/flirt.htm
 #ifndef UVD_FLIRT_H
 
 #include "uvd.h"
-#include "uvd_flirt_pattern.h"
+#include "flirt/pat/pat.h"
 #include "uvd.h"
 #include <string>
 #include <vector>

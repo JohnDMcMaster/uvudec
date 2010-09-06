@@ -18,7 +18,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_config.h"
 #include "uvd_crc.h"
 #include "uvd_debug.h"
-#include "uvd_flirt.h"
+#include "flirt/flirt.h"
 #include "flirt/pat/bfd/bfd.h"
 #include "flirt/pat/bfd/core.h"
 #include "uvd_string_writer.h"
