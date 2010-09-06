@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "flirt/pat/bfd/relocation.h"
 #include "flirt/pat/bfd/function.h"
-#include "uvd_flirt.h"
+#include "flirt/flirt.h"
 
 /*
 UVDBFDPatRelocation
