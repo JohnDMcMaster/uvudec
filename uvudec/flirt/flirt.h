@@ -46,7 +46,6 @@ public:
 
 	//Input pattern files and output sig file
 	uv_err_t patFiles2SigFile(const std::vector<std::string> &inputFiles, const std::string &outputFile);
-	uv_err_t patFiles2Sig(const std::vector<std::string> &inputFiles, std::string &output);
 	//Output signature tree is NOT checked for consistancy against system signatures
 	//out should be deleted by calllee
 	uv_err_t patFiles2SigDB(const std::vector<std::string> &inputFiles, UVDFLIRTSignatureDB **out);

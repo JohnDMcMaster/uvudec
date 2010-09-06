@@ -88,21 +88,11 @@ uv_err_t UVDFLIRT::patFiles2SigFile(const std::vector<std::string> &inputFiles, 
 	/*
 	TODO: check if we have relocation at end of line how this is treated since usually '.' padded
 	*/
-	std::string output;
-	
-	uv_assert_err_ret(patFiles2Sig(inputFiles, output));
-	uv_assert_err_ret(writeFile(outputFile, output));
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDFLIRT::patFiles2Sig(const std::vector<std::string> &inputFiles, std::string &output)
-{
 	UVDFLIRTSignatureDB *db = NULL;
 	
 	uv_assert_err_ret(patFiles2SigDB(inputFiles, &db));
 	uv_assert_ret(db);
-	uv_assert_err_ret(db->writeToFile(output));
+	uv_assert_err_ret(db->writeToFile(outputFile));
 	delete db;
 	
 	return UV_ERR_OK;
@@ -120,8 +110,11 @@ uv_err_t UVDFLIRT::patFiles2SigDB(const std::vector<std::string> &inputFiles, UV
 	{
 		std::string curFile = inputFiles[i];
 		
+		uv_assert_ret(!curFile.empty());
 		uv_assert_err_ret(db->loadFromPatFile(curFile));
 	}
+	uv_assert_ret(out);
+	*out = db;
 	return UV_ERR_OK;
 }
 
