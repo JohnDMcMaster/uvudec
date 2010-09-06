@@ -394,7 +394,7 @@ std::string trimString(const std::string &s)
 	}
 	else
 	{
-		return s.substr(startPos, endPos - startPos);
+		return s.substr(startPos, endPos - startPos + 1);
 	}
 }
 
