@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_crc.h"
 #include "uvd_util.h"
-#include "uvd_flirt.h"
+#include "flirt/flirt.h"
 #include "flirt/pat/bfd/function.h"
 #include "flirt/pat/bfd/function_printer.h"
 #include "flirt/pat/bfd/relocation.h"

@@ -4,7 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_flirt.h"
+#include "flirt/flirt.h"
 #include "flirt/pat/bfd/core.h"
 #include <string.h>
 
@@ -107,17 +107,20 @@ uv_err_t UVDBFDPatCore::buildSymbolTable()
 		symbolBfd = bfd_asymbol_bfd(bfdAsymbol);
 		if( symbolBfd == NULL )
 		{
-			printf_flirt_debug("skipping symbol missing bfd: %s\n", bfd_asymbol_name(bfdAsymbol));
-			continue;
+			printf_error("symbol missing bfd: %s\n", bfd_asymbol_name(bfdAsymbol));
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		
 		flags = bfdAsymbol->flags;
+		/*
+		TODO: can we move this to shouldPrintFunction()?
 		//Ignore local symbols (alias?)
 		if( flags & BSF_WEAK )
 		{
 			printf_flirt_debug("skipping weak symbol: %s\n", bfd_asymbol_name(bfdAsymbol));
 			continue;
 		}
+		*/
 		printf_flirt_debug("sym name: %s, flags: 0x%X, val: 0x%X, asymbol val: 0x%X\n",
 					   bfd_asymbol_name(bfdAsymbol), flags, (unsigned int)bfdAsymbol->value, (unsigned int)bfd_asymbol_value(bfdAsymbol));
 		//Skip undefined symbols

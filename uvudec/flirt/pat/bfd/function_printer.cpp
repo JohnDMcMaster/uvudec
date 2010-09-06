@@ -266,11 +266,13 @@ uv_err_t UVDBFDPatFunctionPrinter::shouldPrintFunction()
 		return UV_ERR_DONE;
 	}
 	flags = bfdAsymbol->flags;
-	if( BSF_EXPORT != (flags & BSF_EXPORT) )
+	/*
+	if( (flags & BSF_EXPORT) != BSF_EXPORT )
 	{
 		printf_flirt_debug("Skipping private (non-exported) symbol %s\n", bfdAsymbol->name);
 		return UV_ERR_DONE;
 	}
+	*/
 	if( (flags & BSF_SECTION_SYM) || (flags & BSF_FILE) )
 	{
 		printf_flirt_debug("Skipping section/file symbol %s\n", bfdAsymbol->name);
@@ -286,7 +288,7 @@ uv_err_t UVDBFDPatFunctionPrinter::shouldPrintFunction()
 	//Make sure we have enough bytes as per our policy
 	if( m_func->m_size < g_config->m_flirt.m_patSignatureLengthMin )
 	{
-		printf_flirt_debug("Skipping short len symbol %s\n", bfdAsymbol->name);
+		printf_flirt_debug("Skipping short len symbol %s, length: 0x%.2X\n", bfdAsymbol->name, m_func->m_size);
 		return UV_ERR_DONE;
 	}
 	
