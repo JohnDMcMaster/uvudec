@@ -4,6 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "flirt/flirt.h"
 #include "flirt/function.h"
 #include "flirt/sig/sig.h"
 #include "flirt/sig/tree/tree.h"
@@ -126,8 +127,10 @@ uv_err_t UVDFLIRTSignatureDBWriter::updateForWrite()
 	//Header is allocated in the writter
 	
 	//Create the sig table
-	//Internal node table
+	//Internal node table?
 	
+	printf_flirt_debug("updateForWrite()\n");
+
 	uv_assert_err_ret(updateHeader());
 	
 	return UV_ERR_OK;
@@ -257,7 +260,8 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructLeadingNodeRecurse(UVDFLIRTSignatur
 {
 	uint32_t nLeadingChildren = 0;
 
-	nLeadingChildren = node->m_bytes.size();
+	nLeadingChildren = node->m_leadingChildren.size();
+	printf_flirt_debug("nLeadingChildren: %d\n", nLeadingChildren);
 	if( nLeadingChildren )
 	{
 		uv_assert_err_ret(bitshiftAppend(nLeadingChildren));
@@ -377,6 +381,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructTree()
 	//This seems to have been designed for easy iterative one pass write
 	
 	//Its gotta start somewhere
+	printf_flirt_debug("Constructing tree w/ root node children: %d\n", m_db->m_tree->m_leadingChildren.size());
 	uv_assert_err_ret(constructLeadingNode(m_db->m_tree));
 	
 	return UV_ERR_OK;
@@ -384,6 +389,8 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructTree()
 
 uv_err_t UVDFLIRTSignatureDBWriter::construct()
 {	
+	printf_flirt_debug("construct()\n");
+
 	uv_assert_err_ret(addRelocatableData((char *)&m_header, sizeof(m_header)));
 	uv_assert_err_ret(constructTree());
 	uv_assert_err_ret(addRelocatableData(&m_tree));
@@ -393,6 +400,8 @@ uv_err_t UVDFLIRTSignatureDBWriter::construct()
 
 uv_err_t UVDFLIRTSignatureDBWriter::applyRelocations()
 {
+	printf_flirt_debug("applyRelocations()\n");
+
 	//uv_assert_err_ret(applyHeaderRelocations());
 	return UV_ERR_OK;
 }
