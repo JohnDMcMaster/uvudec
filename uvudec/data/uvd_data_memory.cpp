@@ -107,17 +107,26 @@ uint32_t UVDDataMemory::size() const
 
 uv_err_t UVDDataMemory::realloc(unsigned int bufferSize)
 {
+	int32_t delta = 0;
+	
 	//No change?
-	if( bufferSize == m_bufferSize )
+	delta = bufferSize - m_bufferSize;
+	if( delta == 0 )
 	{
 		return UV_ERR_OK;
 	}
+	/*
 	free(m_buffer);
 	//In case we can't realloc
 	m_bufferSize = 0;
 	m_buffer = (char *)malloc(bufferSize);
+	*/
+	m_buffer = (char *)::realloc(m_buffer, bufferSize);
 	uv_assert_ret(m_buffer);
-memset(m_buffer, 0, bufferSize);
+	if( delta > 0 )
+	{
+		memset(m_buffer + m_bufferSize, 0, delta);
+	}
 	m_bufferSize = bufferSize;
 	return UV_ERR_OK;
 }
@@ -238,9 +247,11 @@ uv_err_t UVDBufferedDataMemory::operator+=(const std::string &other)
 
 uv_err_t UVDBufferedDataMemory::append(const char *buffer, uint32_t bufferLength)
 {
-	if( m_bufferSize + bufferLength > m_virtualSize )
+	uv_assert_ret(m_bufferSize >= m_virtualSize);
+	//m_bufferSize < bufferSize + offset
+	if( m_virtualSize + bufferLength > m_bufferSize )
 	{
-		uv_assert_err_ret(realloc((m_bufferSize + bufferLength > m_virtualSize) * m_growScalar + m_growConstant));
+		uv_assert_err_ret(realloc((m_virtualSize + bufferLength) * m_growScalar + m_growConstant));
 	}
 	uv_assert_err_ret(writeData(m_virtualSize, buffer, bufferLength));
 	m_virtualSize += bufferLength;
