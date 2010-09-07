@@ -519,19 +519,27 @@ uint32_t UVDFLIRTSignatureRawSequence::allocSize() const
 	return ret;
 }
 
-uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start) const
+uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start, uint32_t n) const
 {
 	//Room needed for termination
 	uint32_t ret = 2;
-	printf_flirt_debug("allocSizeFrom()\n");
-	hexdump(m_bytes, 0x40);
+	//printf_flirt_debug("allocSizeFrom()\n");
+	//hexdump(m_bytes, 0x40);
 	for( const_iterator iter = start; iter != const_end(); UV_DEBUG(iter.next()) )
 	{
-		printf_flirt_debug("iteration, offset: 0x%.8X, 0x%.2X\n", iter.m_cur, *iter.m_cur);
+		//printf_flirt_debug("iteration, offset: 0x%.8X, 0x%.2X\n", iter.m_cur, *iter.m_cur);
 		++ret;
-		if( (*iter).m_isReloc )
+		if( *iter.m_cur == SIGNATURE_ESCAPE_CHAR )
 		{
 			++ret;
+		}
+		if( n != npos )
+		{
+			--n;
+			if( n == 0 )
+			{
+				break;
+			}
 		}
 	}
 	return ret;
@@ -539,11 +547,16 @@ uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start) const
 
 uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *dest, const_iterator pos, uint32_t n) const
 {
+	//We need n to split and retain the leading node part
+
 	uint32_t size = 0;
 
-	size = allocSizeFrom(pos);
+	size = allocSizeFrom(pos, n);
+	//Should have at least 1 byte + 2 for terminate
+	//maybe 0 if we want empty seq in future
+	uv_assert_ret(size >= 3);
 	uv_assert_ret(!empty());
-	printf_flirt_debug("subseqTo, alloc size: 0x%.2X, seq: \n", size, toString().c_str());
+	printf_flirt_debug("subseqTo, alloc size: 0x%.2X, seq: %s, pos: 0x%.8X, n: 0x%.8X\n", size, toString().c_str(), pos.m_cur, n);
 	//Alloc
 	//Should we free dest->m_bytes?
 	uv_assert_ret(dest);
@@ -551,7 +564,15 @@ uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *de
 	uv_assert_ret(dest->m_bytes);
 	//Copy
 	memcpy(dest->m_bytes, pos.m_cur, size);
-		
+	//And properly terminate
+	dest->m_bytes[size - 2] = SIGNATURE_ESCAPE_CHAR;
+	dest->m_bytes[size - 1] = SIGNATURE_ESCAPED_CHAR_END;
+	
+	printf_flirt_debug("constructed subseq (len = 0x%.2X): %s\n", dest->size(), dest->toString().c_str());
+	if( n != npos )
+	{
+		uv_assert_ret(dest->size() == n);
+	}	
 	return UV_ERR_OK;
 }
 
