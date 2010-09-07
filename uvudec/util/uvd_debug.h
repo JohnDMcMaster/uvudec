@@ -70,6 +70,7 @@ uv_assert_err is always enabled
 /* Disable such messages if not debugging, probably signifigant binary size reduction, speed improvement */
 #define UV_DEBUG(x) x
 #define UV_ENTER()
+#define UV_CHECKED(x)
 
 #else /* ifdef NDEBUG */
 
@@ -104,6 +105,8 @@ void uv_enter(const char *file, uint32_t line, const char *func);
 //This was an old distinction
 #define UV_ERR		UV_DEBUG
 #define UV_ENTER() uv_enter(__FILE__, __LINE__, __FUNCTION__)
+//Only active on heavily checked debug builds
+#define UVD_CHECKED(x)				x
 
 #endif /* ifndef NDEBUG */
 
