@@ -152,7 +152,7 @@ public:
 
 protected:
 	uint32_t allocSize() const;
-	uint32_t allocSizeFrom(const_iterator start) const;
+	uint32_t allocSizeFrom(const_iterator start, uint32_t n) const;
 
 public:
 	static uint32_t npos;
