@@ -115,6 +115,9 @@ public:
 	//"number modules"
 	uv_err_t size(uint32_t *size);
 
+	//Debug dump of the DB like (but not exactly like) dumpsig would give
+	uv_err_t debugDump();
+
 public:
 	//The UVD FLIRT engine
 	//We do not own it

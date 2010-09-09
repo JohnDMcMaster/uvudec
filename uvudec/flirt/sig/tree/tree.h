@@ -73,11 +73,14 @@ public:
 
 	uv_err_t size(uint32_t *size);
 
+	uv_err_t debugDump(const std::string &prefix, uint32_t basicNodeIndex);
+
 public:
 	//This admitedly can be somewhat vague
 	//Its up to the definer to make sure these don't collide
 	//This code should NOT map these to current code objects, this should be handeled externally
 	//Or I guess if you want to agressivly report names, you just merge the collisions onto one object
+	//TODO: change this to reference list or similar that can also save an offset
 	std::vector<std::string> m_publicNames;
 	std::vector<UVDFLIRTSignatureReference> m_references;
 	/*
@@ -123,6 +126,7 @@ public:
 	uv_err_t compare(const UVDFLIRTSignatureTreeHashNode *second);
 
 	uv_err_t size(uint32_t *size);
+	uv_err_t debugDump(const std::string &prefix, uint32_t hashNodeIndex);
 
 public:
 	//Is this supposed to be sorted by anything?
@@ -151,6 +155,7 @@ public:
 	~UVDFLIRTSignatureTreeHashNodes();
 
 	uv_err_t insert(UVDFLIRTFunction *function);
+	uv_err_t debugDump(const std::string &prefix);
 
 public:
 	//Takes care of sorting itself
@@ -166,13 +171,14 @@ This implementation was done in the odd C/C++ style because it was the easiest t
 class UVDFLIRTSignatureTreeLeadingNode;
 struct UVDFLIRTSignatureLeadingNodeCompare
 {
-	bool operator()(const UVDFLIRTSignatureTreeLeadingNode *first, const UVDFLIRTSignatureTreeLeadingNode *second) const;
+	bool operator()(UVDFLIRTSignatureTreeLeadingNode *first, UVDFLIRTSignatureTreeLeadingNode *second) const;
 };
 class UVDFLIRTSignatureTreeLeadingNode
 {
 public:
 	//static int leadingChildrenComapre(UVDFLIRTSignatureTreeLeadingNode *l, UVDFLIRTSignatureTreeLeadingNode *r);
-	typedef std::set<UVDFLIRTSignatureTreeLeadingNode *, UVDFLIRTSignatureLeadingNodeCompare> LeadingChildrenSet;
+	//typedef std::set<UVDFLIRTSignatureTreeLeadingNode *, UVDFLIRTSignatureLeadingNodeCompare> LeadingChildrenSet;
+	typedef std::set<UVDFLIRTSignatureTreeLeadingNode *> LeadingChildrenSet;
 
 public:
 	UVDFLIRTSignatureTreeLeadingNode();
@@ -195,6 +201,8 @@ public:
 	//Create a new child node, splitting us at pos
 	//pos should not equal begin and will be the first node in the new tree
 	uv_err_t split(UVDFLIRTSignatureRawSequence::iterator pos);
+	
+	uv_err_t debugDump(const std::string &prefix);
 	
 public:
 	//For the current node

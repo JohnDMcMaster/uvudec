@@ -64,3 +64,29 @@ int UVDFLIRTSignatureTreeBasicNode::compare(const UVDFLIRTSignatureTreeBasicNode
 	return m_totalLength - second->m_totalLength;
 }
 
+uv_err_t UVDFLIRTSignatureTreeBasicNode::debugDump(const std::string &prefix, uint32_t basicNodeIndex)
+{
+	printf("%s%d) attributes:0x%.8X totalLength:0x%.4X", prefix.c_str(), basicNodeIndex, m_attributeFlags, m_totalLength);
+
+	//FIXME: this was implemented incorrectly in the core structure, fix print when its fixed
+	for( std::vector<std::string>::iterator iter = m_publicNames.begin(); iter != m_publicNames.end(); ++iter )
+	{
+		std::string cur = *iter;
+		
+		printf(" :0000 %s", cur.c_str());
+	}
+	for( std::vector<UVDFLIRTSignatureReference>::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
+	{
+		//Hmm wonder if this is safe
+		//const UVDFLIRTSignatureReference &reference = *iter;
+		UVDFLIRTSignatureReference reference = *iter;
+	
+		//FIXME: add attribute flag printing nicer
+		printf(" ^0x%.4X %s (0x%.8X)", reference.m_offset, reference.m_name.c_str(), reference.m_attributeFlags);
+	}
+
+	printf("\n");
+	
+	return UV_ERR_OK;
+}
+

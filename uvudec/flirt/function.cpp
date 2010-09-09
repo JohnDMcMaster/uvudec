@@ -55,6 +55,21 @@ bool UVDFLIRTSignatureRawSequence::const_iterator::deref::operator!=(const deref
 	return compare(other) != 0;
 }
 
+std::string UVDFLIRTSignatureRawSequence::const_iterator::deref::toString() const
+{
+	if( m_isReloc )
+	{
+		return ".";
+	}
+	else
+	{
+		char buff[3];
+
+		snprintf(buff, 3, "%02X", m_byte);
+		return std::string(buff);
+	}
+}
+
 /*
 UVDFLIRTSignatureRawSequence
 */
@@ -198,6 +213,34 @@ uv_err_t UVDFLIRTSignatureRawSequence::const_iterator::makeEnd()
 UVDFLIRTSignatureRawSequence::const_iterator UVDFLIRTSignatureRawSequence::const_iterator::getEnd(const UVDFLIRTSignatureRawSequence *seq)
 {
 	return const_iterator(seq, NULL);
+}
+
+std::string UVDFLIRTSignatureRawSequence::const_iterator::toString() const
+{
+	//Put paren around current seq pos
+	//if at end, just empty paren at end
+	std::string ret;
+	for( const_iterator iter = m_seq->const_begin(); ; )
+	{
+		if( iter == *this )
+		{
+			ret += "(";
+		}
+		if( iter != m_seq->const_end() )
+		{
+			ret += (*iter).toString();
+		}
+		if( iter == *this )
+		{
+			ret += ")";
+		}
+		if( iter == m_seq->const_end() )
+		{
+			break;
+		}
+		UV_DEBUG(iter.next());
+	}
+	return ret;
 }
 
 /*
@@ -556,7 +599,7 @@ uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *de
 	//maybe 0 if we want empty seq in future
 	uv_assert_ret(size >= 3);
 	uv_assert_ret(!empty());
-	printf_flirt_debug("subseqTo, alloc size: 0x%.2X, seq: %s, pos: 0x%.8X, n: 0x%.8X\n", size, toString().c_str(), pos.m_cur, n);
+	printf_flirt_debug("subseqTo, alloc size: 0x%.2X, seq: %s, pos: 0x%.8X (m_bytes: 0x%.8X), n: 0x%.8X\n", size, toString().c_str(), pos.m_cur, m_bytes, n);
 	//Alloc
 	//Should we free dest->m_bytes?
 	uv_assert_ret(dest);
@@ -590,12 +633,12 @@ uv_err_t UVDFLIRTSignatureRawSequence::copyTo(UVDFLIRTSignatureRawSequence *dest
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTSignatureRawSequence::matchPosition(const UVDFLIRTSignatureRawSequence *seq, const_iterator &otherStartEndIter, const_iterator &thisMatchPointIter) const
+uv_err_t UVDFLIRTSignatureRawSequence::differencePosition(const UVDFLIRTSignatureRawSequence *otherSeq, const_iterator &otherStartEndIter, const_iterator &thisMatchPointIter) const
 {
 	thisMatchPointIter = const_begin();
 	//It is expected seq should be longer or equal to our seq
 	//End position should be relative to 
-	while( otherStartEndIter != seq->const_end() && thisMatchPointIter != const_end() && (*otherStartEndIter) != (*thisMatchPointIter) )
+	while( otherStartEndIter != otherSeq->const_end() && thisMatchPointIter != const_end() && (*otherStartEndIter) == (*thisMatchPointIter) )
 	{
 		uv_assert_err_ret(otherStartEndIter.next());
 		uv_assert_err_ret(thisMatchPointIter.next());

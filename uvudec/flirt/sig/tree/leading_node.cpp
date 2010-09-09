@@ -15,7 +15,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDFLIRTSignatureTreeLeadingNode
 */
 
-bool UVDFLIRTSignatureLeadingNodeCompare::operator()(const UVDFLIRTSignatureTreeLeadingNode *first, const UVDFLIRTSignatureTreeLeadingNode *second) const
+/*
+bool UVDFLIRTSignatureLeadingNodeCompare::operator()(UVDFLIRTSignatureTreeLeadingNode *first, UVDFLIRTSignatureTreeLeadingNode *second) const
 {
 	if( first == second )
 	{
@@ -24,6 +25,7 @@ bool UVDFLIRTSignatureLeadingNodeCompare::operator()(const UVDFLIRTSignatureTree
 	//True if first strictly less than second
 	return first->m_bytes.compare(&second->m_bytes) > 0;
 }
+*/
 
 UVDFLIRTSignatureTreeLeadingNode::UVDFLIRTSignatureTreeLeadingNode()
 {
@@ -79,6 +81,8 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::fromSubsequence(const UVDFLIRTSignatu
 {
 	UVDFLIRTSignatureTreeLeadingNode *ret = NULL;
 	
+	printf_flirt_debug("new node from subsequence\n");
+
 	//Create new child node
 	ret = new UVDFLIRTSignatureTreeLeadingNode();
 	uv_assert_ret(ret);
@@ -94,25 +98,37 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::fromSubsequence(const UVDFLIRTSignatu
 uv_err_t UVDFLIRTSignatureTreeLeadingNode::split(UVDFLIRTSignatureRawSequence::iterator pos)
 {
 	UVDFLIRTSignatureTreeLeadingNode *child = NULL;
+	std::set<UVDFLIRTSignatureTreeLeadingNode *> temp;
+	//To assert hunt down a nasty infinite recursion error
+	uint32_t preSplitSize = 0;
 	
+	printf_flirt_debug("new node from split, orig node: %s\n", m_bytes.toString().c_str());
+	//Should not split at beginning
+	uv_assert_ret(pos.m_cur != m_bytes.m_bytes);
+	UVD_PRINT_STACK();
+	
+	preSplitSize = m_bytes.size();
 	//Create new child node
 	child = new UVDFLIRTSignatureTreeLeadingNode();
+	uv_assert_ret(child);
 	uv_assert_err_ret(m_bytes.subseqTo(&child->m_bytes, pos));
 	uv_assert_err_ret(m_bytes.truncate(pos));
 	
 	//transfer children to it
-	for( LeadingChildrenSet::iterator iter = m_leadingChildren.begin(); iter != m_leadingChildren.end(); ++iter )
-	{
-		UVDFLIRTSignatureTreeLeadingNode *ourChild = *iter;
-		
-		uv_assert_ret(ourChild);
-		//uv_assert_err_ret(child->insert(ourChild));
-		child->m_leadingChildren.insert(ourChild);
-	}
-	//Out with the old, in with the new
+	child->m_leadingChildren = m_leadingChildren;
 	m_leadingChildren.clear();
-	//FIXME
-	//uv_assert_err_ret(m_leadingChildren.insert(child));
+	child->m_crcNodes.m_nodes = m_crcNodes.m_nodes;
+	m_crcNodes.m_nodes.clear();
+	
+	printf_flirt_debug("split, orig new state: %s, child: %s\n", m_bytes.toString().c_str(), child->m_bytes.toString().c_str());
+	//We should be branching on this node, not creating children
+	uv_assert_ret(m_bytes.size() != 0);
+
+	//Out with the old, in with the new
+	m_leadingChildren.insert(child);
+
+	uv_assert_ret(preSplitSize != m_bytes.size());
+
 	
 	return UV_ERR_OK;
 }
@@ -126,9 +142,12 @@ class UVDFLIRTSignatureTreeLeadingNodeInserter
 public:
 	//Entry point
 	uv_err_t insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTFunction *function);
+	//When it is determinted node shares no bytes with current position
+	uv_err_t insertChildLeadingMatch(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
 	//Recursive case
 	uv_err_t insertSubseq(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
 
+public:
 	//The sequence we are trying to insert
 	UVDFLIRTSignatureRawSequence m_leadingSequence;
 	//Function the sequencei s from
@@ -140,14 +159,18 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTFunction *function)
 {
 	UVDFLIRTSignatureTreeLeadingNodeInserter inserter;
 
-	printf_flirt_debug("inserting function into db, size: %d, seq: %s\n", function->m_sequence.size(), function->m_sequence.toString().c_str());
+	UVD_PRINT_STACK();
+	printf_flirt_debug("Inserting function into db, size: %d, seq: %s\n", function->m_sequence.size(), function->m_sequence.toString().c_str());
 	
 	uv_assert_err_ret(inserter.insert(this, function));
+	printf_flirt_debug("function done\n\n");
 	return UV_ERR_OK;
 };
 
 uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTFunction *function)
 {
+	//TODO: we could add a special case for seq length <= 0x20 to use the input function instead
+	//Careful not to delete it upon cleanup (or double frees rather)
 	uint32_t leadingLength = 0;
 	
 	leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);	
@@ -155,13 +178,63 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insert(UVDFLIRTSignatureTreeL
 	
 	m_function = function;
 
-	//Before was considering walking this seq, maybe reimplement this if needed later
-	return UV_DEBUG(insertSubseq(rootNode, m_leadingSequence.begin()));
+	printf_flirt_debug("Second stage begin insert, lead seq (size = %d): %s\n", m_leadingSequence.size(), m_leadingSequence.toString().c_str());
+	uv_assert_ret(leadingLength == m_leadingSequence.size());
+	//Since root node has no sequence associated with it, we must bypass the prefix check
+	return UV_DEBUG(insertChildLeadingMatch(rootNode, m_leadingSequence.begin()));
+}
+
+uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertChildLeadingMatch(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition)
+{
+	UVDFLIRTSignatureTreeLeadingNode *childNode = NULL;
+
+	printf_flirt_debug("checking for this and input leading match on node 0x%08X\n", (int)node);
+	/*
+	If there are any matches below us, we only need to match the first byte and recurse
+	*/
+	for( UVDFLIRTSignatureTreeLeadingNode::LeadingChildrenSet::iterator iter = node->m_leadingChildren.begin(); iter != node->m_leadingChildren.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeLeadingNode *cur = *iter;
+		
+		uv_assert_ret(cur);
+		uv_assert_ret(cur != node);
+		//First byte should match
+		//We should be ga
+		if( (*cur->m_bytes.begin()) == (*sequencePosition) )
+		{
+			childNode = cur;
+			break;
+		}
+	}
+
+	//if we have a partial match, we should further find out place below
+	if( childNode )
+	{
+		printf_flirt_debug("matching child node 0x%08X, recursing\n", (int)childNode);
+		//Alternativly we could recurse, but since we already know what needs to be done, why bother
+		uv_assert_err_ret(insertSubseq(childNode, sequencePosition));
+	}
+	//No prefix match?  Branch here instead
+	else
+	{
+		printf_flirt_debug("no child prefix match on current node, initiating split on input function until end\n");
+
+		////static uv_err_t fromSubsequence(const UVDFLIRTSignatureRawSequence *seq, UVDFLIRTSignatureRawSequence::iterator pos, uint32_t n, UVDFLIRTSignatureTreeLeadingNode **out);
+		uv_assert_err_ret(node->fromSubsequence(&m_leadingSequence, sequencePosition, UVDFLIRTSignatureRawSequence::npos, &childNode));
+		uv_assert_ret(childNode);
+		node->m_leadingChildren.insert(childNode);
+
+		//Alternativly we could recurse, but since we already know what needs to be done, why bother
+		uv_assert_err_ret(childNode->m_crcNodes.insert(m_function));
+		//uv_assert_err_ret(insertSubseq(childNode, sequencePosition));
+	}
+	
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition)
 {
-	UVDFLIRTSignatureRawSequence::iterator thisBranchPoint;
+	UVDFLIRTSignatureRawSequence::iterator nodeBranchPoint;
 	
 	/*
 	Cases
@@ -175,10 +248,11 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 		Other is our new node
 	*/
 	
+	printf_flirt_debug("on node 0x%08X\n", (int)node);
 	//Start by finding how much of the sequence we share
 	//uv_err_t matchPosition(const UVDFLIRTSignatureRawSequence *other, const_iterator &otherStartEnd, const_iterator &thisMatchPoint) const;
-	uv_assert_err_ret(node->m_bytes.matchPosition(&m_leadingSequence, sequencePosition, thisBranchPoint));
-	
+	uv_assert_err_ret(node->m_bytes.differencePosition(&m_leadingSequence, sequencePosition, nodeBranchPoint));
+	printf_flirt_debug("difference, existing: %s, inserting: %s\n", sequencePosition.toString().c_str(), nodeBranchPoint.toString().c_str());
 	
 	/*
 	A partial match
@@ -186,24 +260,47 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 	Recursive
 	Case: our original node is longer
 	Ex
-		Node:  ABCA 232ABC
-		Func:  ABCA
-		           /\
-		            \Split
+		old Node:  ABCA 232ABC
+		new Func:  ABCA
+		               /\
+		                \Split
 	Ex
-		Node:  ABCA 232ABC
-		Func:  ABCA 993432
-		           /\
-		            \Split
-	Split original
+		old Node:  ABCA 232ABC
+		new Func:  ABCA 993432
+		               /\
+		                \Split
+	Split original if we are in an intermediate case
 	*/
-	if( thisBranchPoint != node->m_bytes.end() )
+	if( nodeBranchPoint != node->m_bytes.end() && nodeBranchPoint != node->m_bytes.begin() )
 	{
 		//UVDFLIRTSignatureTreeLeadingNode *newNode = NULL;
+		printf_flirt_debug("initiating split\n");
 		
-		uv_assert_err_ret(node->split(thisBranchPoint));
+		uv_assert_err_ret(node->split(nodeBranchPoint));
 		//We should only have a single child now of our new node
 		uv_assert_ret(node->m_leadingChildren.size() == 1);		
+	}
+
+	/*
+	Full tail match?
+	This is the (most common) terminal case
+	Either from having a 
+	
+	Ex
+		old Node:  ABCA232ABC
+		new Our:   ABCA232ABC
+	This also will happen if we split our current node because the seq in was smaller
+		See above
+		Ex
+			old Node:  ABCA 232ABC
+			new Func:  ABCA
+	*/
+	if( sequencePosition == m_leadingSequence.end() )
+	//if( nodeBranchPoint == node->m_bytes.end() && sequencePosition == m_leadingSequence.end() )
+	{
+		printf_flirt_debug("iniating hash insert\n");
+		//Add to our bucket
+		uv_assert_err_ret(node->m_crcNodes.insert(m_function));
 	}
 	/*
 	Ex
@@ -213,43 +310,17 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 		            \Split
 	Ex
 		Note: this case is now unimportant since above split if necessary
-			Watch out for use of thisBranchPoint though which is now invalid
+			Watch out for use of nodeBranchPoint though which is now invalid
 		Node:  ABCA 232ABC
 		Func:  ABCA 993432
 		           /\
 		            \Split
+		We may or may not have some matching bytes afer this
+		If so, we should recursive to that node
 	*/
-	if( sequencePosition != m_leadingSequence.end() )
-	{
-		UVDFLIRTSignatureTreeLeadingNode *childNode = NULL;
-
-		//No prefix match?  Branch here
-		////static uv_err_t fromSubsequence(const UVDFLIRTSignatureRawSequence *seq, UVDFLIRTSignatureRawSequence::iterator pos, uint32_t n, UVDFLIRTSignatureTreeLeadingNode **out);
-		uv_assert_err_ret(node->fromSubsequence(&m_leadingSequence, sequencePosition, UVDFLIRTSignatureRawSequence::npos, &childNode));
-		uv_assert_ret(childNode);
-		node->m_leadingChildren.insert(childNode);
-
-		//Alternativly we could recurse, but since we already know what needs to be done, why bother
-		uv_assert_err_ret(childNode->m_crcNodes.insert(m_function));
-		//uv_assert_err_ret(insertSubseq(childNode, sequencePosition));
-	}
-	/*
-	Full tail match?
-	This is the (most common) terminal case
-	Ex
-		Node:  ABCA232ABC
-		Our:   ABCA232ABC
-	This also will happen if we split our current node because the seq in was smaller
-		See above
-		Ex
-			Node:  ABCA 232ABC
-			Func:  ABCA
-	*/
-	//if( thisBranchPoint == node->m_bytes.end() && sequencePosition == m_leadingSequence.end() )
 	else
 	{
-		//Add to our bucket
-		uv_assert_err_ret(node->m_crcNodes.insert(m_function));
+		uv_assert_err_ret(insertChildLeadingMatch(node, sequencePosition));
 	}
 
 #if 0
@@ -269,12 +340,12 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 	{
 		UVDFLIRTSignatureTreeLeadingNode *newNode = NULL;
 		
-		uv_assert_err_ret(node->split(thisBranchPoint));
+		uv_assert_err_ret(node->split(nodeBranchPoint));
 		//We should only have a single child now of our new node
 		uv_assert_ret(node->m_leadingChildren.size() == 1);		
 		//And now add a second child
 		//static uv_err_t fromSubsequence(const UVDFLIRTSignatureRawSequence *seq, UVDFLIRTSignatureRawSequence::iterator pos, uint32_t n, UVDFLIRTSignatureTreeLeadingNode **out);
-		uv_assert_err_ret(node->fromSubsequence(&node->m_bytes, thisBranchPoint, UVDFLIRTSignatureRawSequence::npos, &newNode));
+		uv_assert_err_ret(node->fromSubsequence(&node->m_bytes, nodeBranchPoint, UVDFLIRTSignatureRawSequence::npos, &newNode));
 		uv_assert_ret(newNode);
 		node->m_leadingChildren.insert(newNode);
 
@@ -294,7 +365,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 			       /\
 			        \Split
 	*/
-	else if( thisBranchPoint == node->m_bytes.end() )
+	else if( nodeBranchPoint == node->m_bytes.end() )
 	{
 		/*
 		If any of hte children start with the same prefix, we are golden
@@ -338,6 +409,48 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 
 uv_err_t UVDFLIRTSignatureTreeLeadingNode::size(uint32_t *size)
 {
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureTreeLeadingNode::debugDump(const std::string &prefixIn)
+{
+	/*
+	Root
+		0422:
+			0) CRC: blah blah
+		ABC123:
+			
+			12:
+				0)
+				1)
+			AC:
+				0)
+	*/
+	
+	std::string prefix = prefixIn;
+	
+	//We should be holding something useful
+	//eh we might use this to debug the tree while being built
+	//uv_assert_ret(!m_crcNodes.empty() || !m_leadingChildren.empty());
+	
+	//Root node does not have any leading bytes, don't indent it and such
+	if( !m_bytes.empty() )
+	{
+		printf("%s%s (0x%08X):\n", prefix.c_str(), m_bytes.toString().c_str(), (int)this);
+		prefix += g_config->m_flirt.m_debugDumpTab;
+	}
+	
+	//Display shorter fellows first
+	uv_assert_err_ret(m_crcNodes.debugDump(prefix));
+	
+	//And now the longer fellows
+	for( LeadingChildrenSet::iterator iter = m_leadingChildren.begin(); iter != m_leadingChildren.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeLeadingNode *node = *iter;
+		
+		uv_assert_ret(node);
+		node->debugDump(prefix);
+	}
 	return UV_ERR_OK;
 }
 

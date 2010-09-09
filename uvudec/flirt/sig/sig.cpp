@@ -146,6 +146,7 @@ uv_err_t UVDPatLoaderCore::fromString(const std::string &in)
 		
 		//Okay, all the prelims are over, ready to roll
 		uv_assert_err_ret(fileLine(line));
+		uv_assert_err_ret(m_db->debugDump());
 	}
 	
 	return UV_ERR_OK;
@@ -278,6 +279,20 @@ uv_err_t UVDFLIRTSignatureDB::size(uint32_t *out)
 {
 	uv_assert_ret(out);
 	uv_assert_err_ret(m_tree->size(out));
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureDB::debugDump()
+{
+	if( m_tree )
+	{
+		printf("Signature DB tree (root = 0x%08X):\n", (int)m_tree);
+		uv_assert_err_ret(m_tree->debugDump(g_config->m_flirt.m_debugDumpTab));
+	}
+	else
+	{
+		printf("Missing tree!\n");
+	}
 	return UV_ERR_OK;
 }
 
