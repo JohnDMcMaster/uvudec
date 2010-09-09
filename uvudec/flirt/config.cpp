@@ -19,6 +19,7 @@ UVDConfigFLIRT::UVDConfigFLIRT()
 	m_outputFile = "/dev/stdout";
 
 	m_prefixUnderscores = 1;
+	m_debugDumpTab = "  ";
 }
 
 UVDConfigFLIRT::~UVDConfigFLIRT()
@@ -30,3 +31,4 @@ uv_err_t UVDConfigFLIRT::deinit()
 {
 	return UV_ERR_OK;
 }
+

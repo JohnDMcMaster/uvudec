@@ -50,6 +50,9 @@ public:
 	//File to write to
 	std::string m_outputFile;
 
+	//When debug dumping, what to append for an indent
+	std::string m_debugDumpTab;
+
 	//Haven't quite figured out why it does this yet
 	//Related to C++ mangling somehow?
 	uint32_t m_prefixUnderscores;

@@ -91,6 +91,8 @@ uv_err_t UVDFLIRT::patFiles2SigFile(const std::vector<std::string> &inputFiles, 
 	UVDFLIRTSignatureDB *db = NULL;
 	
 	uv_assert_err_ret(patFiles2SigDB(inputFiles, &db));
+	uv_assert_err_ret(db->debugDump());
+return UV_DEBUG(UV_ERR_GENERAL);
 	uv_assert_ret(db);
 	uv_assert_err_ret(db->writeToFile(outputFile));
 	delete db;
@@ -163,3 +165,4 @@ uv_err_t UVDFLIRT::getFLIRT(UVDFLIRT **out)
 
 	return UV_ERR_OK;
 }
+

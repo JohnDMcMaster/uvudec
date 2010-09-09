@@ -54,7 +54,7 @@ public:
 	//Since so much would break without a basic UVD engine, for now a basic UVD engine with no opcode caps is loaded
 	//The way those translations are done should prob be re-delegated anyway
 	static uv_err_t getFLIRT(UVDFLIRT **out);
-
+	
 protected:
 	//Find a capable analyzer
 	uv_err_t getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generator);

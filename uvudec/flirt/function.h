@@ -43,6 +43,7 @@ public:
 			int compare(const deref &other) const;
 			bool operator==(const deref &other) const;
 			bool operator!=(const deref &other) const;
+			std::string toString() const;
 		
 		public:
 			uint8_t m_isReloc;
@@ -58,10 +59,10 @@ public:
 		
 		int compare(const const_iterator &other) const;
 		bool operator==(const const_iterator &other) const;
-		bool operator!=(const const_iterator &other) const;
-		
+		bool operator!=(const const_iterator &other) const;		
 		//Only read for now
 		deref operator*();
+		std::string toString() const;
 
 		static const_iterator getEnd(const UVDFLIRTSignatureRawSequence *seq);
 	
@@ -126,13 +127,15 @@ public:
 	uint32_t size() const;
 	
 	/*
+	get first position where nodes differ
+		returned as an iter on each
 	thisMatchPoint and otherStartEnd returned
 	otherStartEnd: position to start on other as input
 	position is not inclusive
 		.begin(): no match
 		.end(): full match
 	*/
-	uv_err_t matchPosition(const UVDFLIRTSignatureRawSequence *other, const_iterator &otherStartEnd, const_iterator &thisMatchPoint) const;
+	uv_err_t differencePosition(const UVDFLIRTSignatureRawSequence *other, const_iterator &otherStartEnd, const_iterator &thisMatchPoint) const;
 
 	bool operator==(const UVDFLIRTSignatureRawSequence *other) const;
 	bool operator!=(const UVDFLIRTSignatureRawSequence *other) const;

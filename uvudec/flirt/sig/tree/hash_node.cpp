@@ -84,6 +84,21 @@ int UVDFLIRTSignatureTreeHashNode::compare(const UVDFLIRTSignatureTreeHashNode *
 	}
 }
 
+uv_err_t UVDFLIRTSignatureTreeHashNode::debugDump(const std::string &prefix, uint32_t hashNodeIndex)
+{
+	uint32_t basicNodeIndex = 0;
+	for( BasicSet::iterator iter = m_bucket.begin(); iter != m_bucket.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeBasicNode *basicNode = *iter;
+
+		printf("%s%d) CRC16:0x%.4X leadingLength:0x%.2X\n", prefix.c_str(), hashNodeIndex, m_crc16, m_leadingLength);
+		uv_assert_ret(basicNode);
+		uv_assert_err_ret(basicNode->debugDump(prefix + g_config->m_flirt.m_debugDumpTab, basicNodeIndex));
+		++basicNodeIndex;
+	}
+	return UV_ERR_OK;
+}
+
 /*
 UVDFLIRTSignatureTreeHashNodes
 */
@@ -117,4 +132,17 @@ uv_err_t UVDFLIRTSignatureTreeHashNodes::insert(UVDFLIRTFunction *function)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDFLIRTSignatureTreeHashNodes::debugDump(const std::string &prefix)
+{
+	uint32_t hashNodeIndex = 0;
+	for( UVDFLIRTSignatureTreeHashNodes::HashSet::iterator iter = m_nodes.begin(); iter != m_nodes.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeHashNode *hashNode = *iter;
+		
+		uv_assert_ret(hashNode);
+		uv_assert_err_ret(hashNode->debugDump(prefix, hashNodeIndex));
+		++hashNodeIndex;
+	}
+	return UV_ERR_OK;
+}
 
