@@ -53,6 +53,10 @@ uv_err_t UVDCompilerGCC::demangleByABI(const std::string &in, std::string &out)
 	int status = 0;
 	
 	buff = abi::__cxa_demangle(in.c_str(), buff, 0, &status);
+	if( status == -2 )
+	{
+		return UV_ERR_ARGS;
+	}
 	uv_assert_ret(status == 0);
 	uv_assert_ret(buff);
 	
