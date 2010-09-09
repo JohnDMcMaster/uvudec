@@ -344,7 +344,7 @@ std::string hexstr(const char *in, int sz)
 	std::string ret;
 	for (int i = 0; i < sz; ++i) {
 		char buff[3];
-		sprintf(buff, "%.2X", in[i]);
+		sprintf(buff, "%02X", in[i]);
 		ret += buff;
 	}
 	return ret;
@@ -465,7 +465,7 @@ void dump_tree()
 			n_node_bytes = read_byte();
 			//Only allowed 32 bytes
 			if (n_node_bytes > 0x20u)
-				err("Too many bytes\n");
+				err("Too many bytes, leading max 0x20, found 0x%02X\n", n_node_bytes);
 
 			cur_relocation_bitmask = 1 << (n_node_bytes - 1);
 
@@ -480,7 +480,7 @@ void dump_tree()
 				if ( cur_relocation_bitmask & relocation_bitmask)
 					printf("..");
 				else
-					printf("%.2X", read_byte());
+					printf("%02X", read_byte());
 				cur_relocation_bitmask >>= 1;
 			}
 			printf(":\n");
@@ -505,7 +505,7 @@ void dump_tree()
 				uint32_t ref_cur_offset = 0;
 								
 				total_len = bitshift_read();
-				printf_indented("%d. tree_block_len:0x%.2X a_crc16:0x%.4X total_len:0x%.4X", func_index, tree_block_len, a_crc16, total_len);
+				printf_indented("%d. tree_block_len:0x%02X a_crc16:0x%04X total_len:0x%04X", func_index, tree_block_len, a_crc16, total_len);
 				++func_index;
 			
 				//Loop for each reference
@@ -536,7 +536,7 @@ void dump_tree()
 					ref_cur_offset += delta;
 					if (ref_cur_offset == 0)
 						printf(" ");
-					printf(" %.4X:%s", ref_cur_offset, name.c_str());					
+					printf(" %04X:%s", ref_cur_offset, name.c_str());					
 				} while (read_flags & 1);
 				
 				//Not sure what this is
@@ -546,7 +546,7 @@ void dump_tree()
 				
 					first = bitshift_read();
 					second = read_byte();
-					printf(" (0x%.4X: 0x%.2X)", first, second);
+					printf(" (0x%04X: 0x%02X)", first, second);
 				}
 				
 				//Symbol linked references
@@ -580,7 +580,7 @@ int main(int argc, char **argv)
 		err("usage: sigread [signature file]\n");
 	init(argv[1]);
 	
-	printf("File size: 0x%.8X (%d)\n", g_file_size, g_file_size);
+	printf("File size: 0x%08X (%d)\n", g_file_size, g_file_size);
 	
 	header = (struct sig_header_t *)g_file_contents;
 	advance(sizeof(struct sig_header_t));
@@ -599,23 +599,23 @@ int main(int argc, char **argv)
 	if (header->version != 7)
 		err("version mismatch\n");
 		
-	printf("last (n_module) offest: 0x%.8X\n", offsetof(struct sig_header_t, n_modules));
+	printf("last (n_module) offest: 0x%08X\n", offsetof(struct sig_header_t, n_modules));
 	if (sizeof(struct sig_header_t) != 0x29)
-		err("sig_header_t wrong size: 0x%.8X\n", sizeof(struct sig_header_t));
+		err("sig_header_t wrong size: 0x%08X\n", sizeof(struct sig_header_t));
 		
-	printf("processor: %s (0x%.2X)\n", IDASigArchToString(header->processor).c_str(), header->processor);
-	printf("file_types: %s (0x%.8X)\n", IDASigFileToString(header->file_types).c_str(), header->file_types);
-	printf("OS_types: %s (0x%.4X)\n", IDASigOSToString(header->OS_types).c_str(), header->OS_types);
-	printf("app_types: %s (0x%.4X)\n", IDASigApplicationToString(header->app_types).c_str(), header->app_types);
-	printf("feature_flags: %s (0x%.2X)\n", IDASigFeaturesToString(header->feature_flags).c_str(), header->feature_flags);
-	printf("unknown (pad): 0x%.2X\n", header->pad);
-	printf("old_number_modules: 0x%.4X\n", header->old_number_modules);
-	printf("crc16: 0x%.4X\n", header->crc16);	
+	printf("processor: %s (0x%02X)\n", IDASigArchToString(header->processor).c_str(), header->processor);
+	printf("file_types: %s (0x%08X)\n", IDASigFileToString(header->file_types).c_str(), header->file_types);
+	printf("OS_types: %s (0x%04X)\n", IDASigOSToString(header->OS_types).c_str(), header->OS_types);
+	printf("app_types: %s (0x%04X)\n", IDASigApplicationToString(header->app_types).c_str(), header->app_types);
+	printf("feature_flags: %s (0x%02X)\n", IDASigFeaturesToString(header->feature_flags).c_str(), header->feature_flags);
+	printf("unknown (pad): 0x%02X\n", header->pad);
+	printf("old_number_modules: 0x%04X\n", header->old_number_modules);
+	printf("crc16: 0x%04X\n", header->crc16);	
 	//Make sure its null terminated
 	printf("ctype: %s\n", safestr(header->ctype, sizeof(header->ctype)).c_str());	
-	printf("library_name_sz: 0x%.2X\n", header->library_name_sz);	
-	printf("alt_ctype_crc: 0x%.4X\n", header->alt_ctype_crc);	
-	printf("n_modules: 0x%.8X (%d)\n", header->n_modules, header->n_modules);
+	printf("library_name_sz: 0x%02X\n", header->library_name_sz);	
+	printf("alt_ctype_crc: 0x%04X\n", header->alt_ctype_crc);	
+	printf("n_modules: 0x%08X (%d)\n", header->n_modules, header->n_modules);
 
 	//Name is immediatly after header
 	char library_name[256];
@@ -624,7 +624,7 @@ int main(int argc, char **argv)
 	advance(header->library_name_sz);
 	printf("library name: %s\n", library_name);
 		
-	printf("Root node at 0x%.8X\n", g_file_pos);
+	printf("Root node at 0x%08X\n", g_file_pos);
 	if (header->feature_flags & IDASIG__FEATURE__COMPRESSED)
 		decompress();
 	
