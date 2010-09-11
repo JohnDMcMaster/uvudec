@@ -133,11 +133,13 @@ uv_err_t UVDDataMemory::realloc(unsigned int bufferSize)
 
 uv_err_t UVDDataMemory::writeData(unsigned int offset, const char *buffer, unsigned int bufferSize)
 {
+	uint32_t thisSize = size();
+	
 	//Do we have enough space?
-	if( m_bufferSize < bufferSize + offset )
+	if( thisSize < bufferSize + offset )
 	{
-		printf_error("buffer availible (m_bufferSize): 0x%.8X, needed (bufferSize(0x%.8X) + offset(0x%.8X)): 0x%.8X\n",
-				m_bufferSize, bufferSize, offset, bufferSize + offset);
+		printf_error("buffer availible (thisSize): 0x%08X, needed (bufferSize(0x%08X) + offset(0x%08X)): 0x%08X\n",
+				thisSize, bufferSize, offset, bufferSize + offset);
 		return UV_DEBUG(UV_ERR_GENERAL);		
 	}
 	
@@ -152,18 +154,20 @@ uv_err_t UVDDataMemory::writeData(unsigned int offset, const char *buffer, unsig
 std::string UVDDataMemory::getSource()
 {
 	char buffer[64];
-	snprintf(buffer, 64, "0x%.8X:+0x%.8X", (unsigned int)m_buffer, (unsigned int)m_bufferSize);
+	snprintf(buffer, 64, "0x%08X:+0x%08X", (unsigned int)m_buffer, (unsigned int)m_bufferSize);
 	return std::string(buffer);
 }
 
 int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
-	if( offset > m_bufferSize )
+	uint32_t thisBufferSize = size();
+	//printf("read, offset: 0x%08X, dest buffer: 0x%08X, dest buffer size: 0x%08X, src buffer: 0x%08X, src buffer size: 0x%08X\n", offset, buffer, bufferSize, m_buffer, thisBufferSize);
+	if( offset > thisBufferSize )
 	{
 		return -1;
 	}
 	
-	unsigned int leftToRead = m_bufferSize - offset;
+	unsigned int leftToRead = thisBufferSize - offset;
 	if( leftToRead > bufferSize )
 	{
 		bufferSize = leftToRead;
@@ -175,16 +179,18 @@ int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSi
 
 uv_err_t UVDDataMemory::deepCopy(UVDData **out)
 {
+	//FIXME: this won't work as well for buffered version
 	UVDDataMemory *ret = NULL;
+	uint32_t thisSize = size();
 	
 	ret = new UVDDataMemory();
 	uv_assert_ret(ret);
 
-	ret->m_buffer = (char *)malloc(m_bufferSize);
+	ret->m_buffer = (char *)malloc(thisSize);
 	uv_assert_ret(ret->m_buffer);
 	uv_assert_ret(m_buffer);
-	memcpy(ret->m_buffer, m_buffer, m_bufferSize);
-	ret->m_bufferSize = m_bufferSize;
+	memcpy(ret->m_buffer, m_buffer, thisSize);
+	ret->m_bufferSize = thisSize;
 	
 	//We allocated this, must free it
 	ret->m_freeAtDestruction = true;
@@ -236,7 +242,7 @@ uv_err_t UVDBufferedDataMemory::operator+=(const std::string &other)
 {
 	if( m_bufferSize + other.size() > m_virtualSize )
 	{
-		uv_assert_err_ret(realloc((m_bufferSize + other.size() > m_virtualSize) * m_growScalar + m_growConstant));
+		uv_assert_err_ret(realloc((m_bufferSize + other.size()) * m_growScalar + m_growConstant));
 	}
 	uv_assert_err_ret(writeData(m_virtualSize, other.c_str(), other.size()));
 	m_virtualSize += other.size();
@@ -247,14 +253,21 @@ uv_err_t UVDBufferedDataMemory::operator+=(const std::string &other)
 
 uv_err_t UVDBufferedDataMemory::append(const char *buffer, uint32_t bufferLength)
 {
+	uint32_t needed = 0;
+	uint32_t originalSize = m_virtualSize;
+
 	uv_assert_ret(m_bufferSize >= m_virtualSize);
 	//m_bufferSize < bufferSize + offset
-	if( m_virtualSize + bufferLength > m_bufferSize )
+	//printf("needed: 0x%08X, m_bufferSize: 0x%08X, bufferLength: 0x%08X\n", needed, m_bufferSize, bufferLength);
+	needed = m_virtualSize + bufferLength;
+	if( needed > m_bufferSize )
 	{
-		uv_assert_err_ret(realloc((m_virtualSize + bufferLength) * m_growScalar + m_growConstant));
+		uint32_t reallocSize = needed * m_growScalar + m_growConstant;
+		uv_assert_err_ret(realloc(reallocSize));
 	}
-	uv_assert_err_ret(writeData(m_virtualSize, buffer, bufferLength));
+	uv_assert_ret(m_buffer);
 	m_virtualSize += bufferLength;
+	uv_assert_err_ret(writeData(originalSize, buffer, bufferLength));
 	uv_assert_ret(m_virtualSize <= m_bufferSize);
 
 	return UV_ERR_OK;
