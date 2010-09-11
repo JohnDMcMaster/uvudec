@@ -173,7 +173,7 @@ Applicable file format flags
 #define UVD__IDASIG__FILE__AIXAR						0x00800000
 
 //#define UVD__IDASIG__MAGIC							{'I', 'D', 'A', 'S', 'I', 'G'}
-#define UVD__IDASIG__MAGIC								"IDASIG"
+#define UVD__IDASIG__MAGIC								"IDASGN"
 #define UVD__IDASIG__MAGIC_SIZE							6
 
 /*

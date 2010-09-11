@@ -90,3 +90,10 @@ uv_err_t UVDFLIRTSignatureTreeBasicNode::debugDump(const std::string &prefix, ui
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDFLIRTSignatureTreeBasicNode::size(uint32_t *sizeOut)
+{
+	uv_assert_ret(sizeOut);
+	*sizeOut = m_publicNames.size();
+	return UV_ERR_OK;
+}
+

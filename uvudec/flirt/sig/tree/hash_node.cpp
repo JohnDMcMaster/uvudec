@@ -99,6 +99,20 @@ uv_err_t UVDFLIRTSignatureTreeHashNode::debugDump(const std::string &prefix, uin
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDFLIRTSignatureTreeHashNode::size(uint32_t *sizeOut)
+{
+	uv_assert_ret(sizeOut);
+	for( BasicSet::iterator iter = m_bucket.begin(); iter != m_bucket.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeBasicNode *basicNode = *iter;
+		uint32_t size = 0;
+		
+		uv_assert_err_ret(basicNode->size(&size));
+		*sizeOut += size;
+	}
+	return UV_ERR_OK;
+}
+
 /*
 UVDFLIRTSignatureTreeHashNodes
 */
