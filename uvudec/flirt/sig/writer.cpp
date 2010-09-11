@@ -311,24 +311,38 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 		for( UVDFLIRTSignatureTreeHashNode::BasicSet::iterator basicIter = hashNode->m_bucket.begin(); basicIter != hashNode->m_bucket.end(); ++basicIter )
 		{
 			UVDFLIRTSignatureTreeBasicNode *basicNode = *basicIter;
+			std::vector<UVDFLIRTSignatureReference> allReferences;
 			
 			uv_assert_ret(basicNode);
 			//total_len = bitshift_read();
 			uv_assert_err_ret(bitshiftAppend(basicNode->m_totalLength));
 
-			//Multiple public names are rare
-			//This may or may not be correct
-			//Public names are offset 0
+			allReferences = basicNode->m_references;
+			//Prepend the public names
 			for( std::vector<std::string>::iterator nameIter = basicNode->m_publicNames.begin(); nameIter != basicNode->m_publicNames.end(); ++nameIter )
 			{
-				std::string name = *nameIter;
+				UVDFLIRTSignatureReference ref;
+
+				//All refs in the file appear to have to be at 0 regargless of what they were in the .pat file
+				ref.m_offset = 0;
+				ref.m_name = *nameIter;
+				ref.m_attributeFlags = 0;
+
+				allReferences.insert(allReferences.begin(), ref);								
+			}
+
+			//Multiple public names need to be supported
+			//Public names are often offset 0, but often not in the case of multiple
+			for( std::vector<UVDFLIRTSignatureReference>::iterator refIter = allReferences.begin(); refIter != allReferences.end(); ++refIter )
+			{
+				UVDFLIRTSignatureReference ref = *refIter;
 				uint32_t flags = 0;
 
 				//Public names are at offset 0
-				uv_assert_err_ret(bitshiftAppend(0));
+				uv_assert_err_ret(bitshiftAppend(ref.m_offset));
 				
 				//Write string
-				for( std::string::iterator iterName = name.begin(); iterName != name.end(); ++iterName )
+				for( std::string::iterator iterName = ref.m_name.begin(); iterName != ref.m_name.end(); ++iterName )
 				{
 					char c = *iterName;
 					
@@ -348,7 +362,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 				#define UVD__IDASIG__NAME__MORE_BASIC					0x08
 				#define UVD__IDASIG__NAME__MORE_HASH					0x10
 				*/
-				if( (nameIter + 1) != basicNode->m_publicNames.end() )
+				if( (refIter + 1) != allReferences.end() )
 				{
 					flags |= UVD__IDASIG__NAME__MORE_NAMES;
 				}

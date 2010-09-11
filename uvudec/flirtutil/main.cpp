@@ -318,10 +318,12 @@ uv_err_t dump_tree()
 						read_flags = 0;
 					}
 					ref_cur_offset += delta;
+					/*
 					if( ref_cur_offset == 0 )
 					{
 						printf(" ");
 					}
+					*/
 					printf(" %04X:%s", ref_cur_offset, name.c_str());					
 				} while( read_flags & 1 );
 				
