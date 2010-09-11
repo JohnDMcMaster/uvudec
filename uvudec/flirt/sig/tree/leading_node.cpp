@@ -105,7 +105,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::split(UVDFLIRTSignatureRawSequence::i
 	printf_flirt_debug("new node from split, orig node: %s\n", m_bytes.toString().c_str());
 	//Should not split at beginning
 	uv_assert_ret(pos.m_cur != m_bytes.m_bytes);
-	UVD_PRINT_STACK();
+	//UVD_PRINT_STACK();
 	
 	preSplitSize = m_bytes.size();
 	//Create new child node
@@ -159,7 +159,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTFunction *function)
 {
 	UVDFLIRTSignatureTreeLeadingNodeInserter inserter;
 
-	UVD_PRINT_STACK();
+	//UVD_PRINT_STACK();
 	printf_flirt_debug("Inserting function into db, size: %d, seq: %s\n", function->m_sequence.size(), function->m_sequence.toString().c_str());
 	
 	uv_assert_err_ret(inserter.insert(this, function));
@@ -407,8 +407,30 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTSignatureTreeLeadingNode::size(uint32_t *size)
+uv_err_t UVDFLIRTSignatureTreeLeadingNode::size(uint32_t *sizeOut)
 {
+	uv_assert_ret(sizeOut);
+	
+	for( UVDFLIRTSignatureTreeHashNodes::HashSet::iterator iter = m_crcNodes.m_nodes.begin(); iter != m_crcNodes.m_nodes.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeHashNode *hashNode = *iter;
+		uint32_t size = 0;
+		
+		uv_assert_ret(hashNode);
+		uv_assert_err_ret(hashNode->size(&size));
+		*sizeOut += size;
+	}
+
+	for( LeadingChildrenSet::iterator iter = m_leadingChildren.begin(); iter != m_leadingChildren.end(); ++iter )
+	{
+		UVDFLIRTSignatureTreeLeadingNode *leadingNode = *iter;
+		uint32_t size = 0;
+
+		uv_assert_ret(leadingNode);
+		uv_assert_err_ret(leadingNode->size(&size));
+		*sizeOut += size;		
+	}
+
 	return UV_ERR_OK;
 }
 

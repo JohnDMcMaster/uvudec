@@ -61,6 +61,8 @@ public:
 	}  __attribute__((__packed__));
 	*/	
 	struct UVD_IDA_sig_header_t m_header;
+	//use _db->m_libraryName
+	//std::string m_libraryName;
 	UVDBufferedDataMemory m_tree;
 };
 

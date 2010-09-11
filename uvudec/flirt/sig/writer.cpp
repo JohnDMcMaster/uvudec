@@ -14,6 +14,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDFLIRTSignatureDBWriter::UVDFLIRTSignatureDBWriter(UVDFLIRTSignatureDB *db)
 {
 	m_db = db;
+	memset(&m_header, 0, sizeof(struct UVD_IDA_sig_header_t));
 }
 
 UVDFLIRTSignatureDBWriter::~UVDFLIRTSignatureDBWriter()
@@ -22,6 +23,7 @@ UVDFLIRTSignatureDBWriter::~UVDFLIRTSignatureDBWriter()
 
 uv_err_t UVDFLIRTSignatureDBWriter::bitshiftAppend(uint32_t data)
 {
+	printf_flirt_debug("0x%.8X\n", data);
 	/*
 	int bitshift_read()
 		uint32_t first = read_byte();
@@ -39,12 +41,12 @@ uv_err_t UVDFLIRTSignatureDBWriter::bitshiftAppend(uint32_t data)
 	{
 		//First byte is the high byte
 		byte = 0x80 | ((data & 0xFF00) >> 8);
-		uv_assert_err_ret(m_tree.appendByte(byte));
+		uv_assert_err_ret(uint8Append(byte));
 	}
 	else
 	{
 		byte = data & 0xFF;
-		uv_assert_err_ret(m_tree.appendByte(byte));
+		uv_assert_err_ret(uint8Append(byte));
 	}
 	
 	return UV_ERR_OK;
@@ -52,14 +54,15 @@ uv_err_t UVDFLIRTSignatureDBWriter::bitshiftAppend(uint32_t data)
 
 uv_err_t UVDFLIRTSignatureDBWriter::uint8Append(uint8_t in)
 {
+	printf_flirt_debug("0x%02X\n", in);
 	uv_assert_err_ret(m_tree.appendByte(in));
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDFLIRTSignatureDBWriter::uint16Append(uint16_t in)
 {
-	uv_assert_err_ret(m_tree.appendByte(in & 0xFF));
-	uv_assert_err_ret(m_tree.appendByte((in & 0xFF00) >> 8));
+	uv_assert_err_ret(uint8Append((in & 0xFF00) >> 8));
+	uv_assert_err_ret(uint8Append(in & 0xFF));
 	return UV_ERR_OK;
 }
 
@@ -101,6 +104,8 @@ uv_err_t UVDFLIRTSignatureDBWriter::updateHeader()
 
 	uint32_t numberFunctions = 0;
 	uv_assert_err_ret(m_db->size(&numberFunctions));
+	printf_flirt_debug("numberFunctions: 0x%08X\n", numberFunctions);
+	uv_assert_ret(numberFunctions != 0);
 	m_header.old_number_modules = numberFunctions;
 	m_header.n_modules = numberFunctions;
 
@@ -139,6 +144,8 @@ uv_err_t UVDFLIRTSignatureDBWriter::updateForWrite()
 //This is probably just the 32 bit write function, but the only 32 bit var was the mask
 uv_err_t UVDFLIRTSignatureDBWriter::constructRelocationBitmask(uint32_t nNodeBytes, uint32_t relocationBitmask)
 {
+	printf_flirt_debug("nNodeBytes:0x%08X, relocationBitmask:0x%08X\n", nNodeBytes, relocationBitmask);
+
 	if( nNodeBytes >= 0x10 )
 	{
 		/*
@@ -179,20 +186,21 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructRelocationBitmask(uint32_t nNodeByt
 			uv_assert_err_ret(uint8Append(byte));
 			uv_assert_err_ret(uint8Append(relocationBitmask & 0xFF));
 		}
-		else if( relocationBitmask < 0x800000 )
+		else if( relocationBitmask < 0x400000 )
 		{
 			uint8_t byte = 0;
 			
 			byte = ((relocationBitmask >> 16) & 0x7F) | 0xC0;
-			uv_assert_err_ret(uint8Append(byte));
-			byte = (relocationBitmask >> 8) & 0xFF;
 			uv_assert_err_ret(uint8Append(byte));
 			byte = relocationBitmask & 0xFFFF;
 			uv_assert_err_ret(uint16Append(byte));
 		}
 		else
 		{
-			uv_assert_err_ret(uint16Append((relocationBitmask >> 16) | 0xE0));
+			//Escape prefix
+			uv_assert_err_ret(uint8Append(0xE0));
+			//Followed by the bytes
+			uv_assert_err_ret(uint16Append(relocationBitmask >> 16));
 			uv_assert_err_ret(uint16Append(relocationBitmask & 0xFFFF));
 		}
 	}
@@ -213,13 +221,14 @@ uv_err_t UVDFLIRTSignatureDBWriter::getRelocationBitmask(UVDFLIRTSignatureTreeLe
 	uint32_t cur = 0;
 	uint32_t ret = 0;
 	
-	cur = 1;
+	cur = 1 << (node->m_bytes.size() - 1);
 	for( UVDFLIRTSignatureRawSequence::iterator iter = node->m_bytes.begin(); iter != node->m_bytes.end(); )
 	{
-		if( !(*iter).m_isReloc )
+		if( (*iter).m_isReloc )
 		{
-			uv_assert_err_ret(uint8Append((*iter).m_byte));
+			ret |= cur;
 		}
+		cur >>= 1;
 		uv_assert_err_ret(iter.next());
 	}
 	
@@ -239,12 +248,15 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructLeadingNodeItem(UVDFLIRTSignatureTr
 	
 	uv_assert_ret(nNodeBytes <= UVD_FLIRT_SIG_LEADING_LENGTH);
 	//n_node_bytes = read_byte();
+	printf_flirt_debug("nNodeBytes: 0x%02X, node: %s\n", nNodeBytes, node->m_bytes.toString().c_str());
 	uv_assert_err_ret(uint8Append(nNodeBytes));
 	
 	uv_assert_err_ret(getRelocationBitmask(node, &relocationBitmask));
+	printf_flirt_debug("relocation bitmask: 0x%08X\n", relocationBitmask);
 	uv_assert_err_ret(constructRelocationBitmask(nNodeBytes, relocationBitmask));
 	
 	//Dump all of the non-relocation bytes
+	printf_flirt_debug("non-relocation bytes\n");
 	for( UVDFLIRTSignatureRawSequence::iterator iter = node->m_bytes.begin(); iter != node->m_bytes.end(); )
 	{
 		if( !(*iter).m_isReloc )
@@ -392,6 +404,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::construct()
 	printf_flirt_debug("construct()\n");
 
 	uv_assert_err_ret(addRelocatableData((char *)&m_header, sizeof(m_header)));
+	uv_assert_err_ret(addRelocatableData((char *)m_db->m_libraryName.c_str(), m_db->m_libraryName.size()));
 	uv_assert_err_ret(constructTree());
 	uv_assert_err_ret(addRelocatableData(&m_tree));
 
