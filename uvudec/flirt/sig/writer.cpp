@@ -292,10 +292,12 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructLeadingNodeRecurse(UVDFLIRTSignatur
 
 uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadingNode *node)
 {
+	printf_flirt_debug("CRC nodes\n");
 	if( node->m_crcNodes.m_nodes.empty() )
 	{
 		return UV_ERR_OK;
 	}
+	printf_flirt_debug("CRC nodes start (0 children marker)\n");
 	uv_assert_err_ret(bitshiftAppend(0));
 
 	for( UVDFLIRTSignatureTreeHashNodes::HashSet::iterator hashIter = node->m_crcNodes.m_nodes.begin(); hashIter != node->m_crcNodes.m_nodes.end(); ++hashIter )
@@ -306,7 +308,9 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 		uint32_t a_crc16 = read16();
 		*/
 		uv_assert_ret(hashNode);
+		printf_flirt_debug("leading length: 0x%02X\n", hashNode->m_leadingLength);
 		uv_assert_err_ret(uint8Append(hashNode->m_leadingLength));
+		printf_flirt_debug("CRC16: 0x%02X\n", hashNode->m_crc16);
 		uv_assert_err_ret(uint16Append(hashNode->m_crc16));
 		for( UVDFLIRTSignatureTreeHashNode::BasicSet::iterator basicIter = hashNode->m_bucket.begin(); basicIter != hashNode->m_bucket.end(); ++basicIter )
 		{
@@ -339,9 +343,11 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 				uint32_t flags = 0;
 
 				//Public names are at offset 0
+				printf_flirt_debug("ref offset: 0x%04X\n", ref.m_offset);
 				uv_assert_err_ret(bitshiftAppend(ref.m_offset));
 				
 				//Write string
+				printf_flirt_debug("ref name: %s\n", ref.m_name.c_str());
 				for( std::string::iterator iterName = ref.m_name.begin(); iterName != ref.m_name.end(); ++iterName )
 				{
 					char c = *iterName;
@@ -378,10 +384,12 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 				{
 					flags |= UVD__IDASIG__NAME__MORE_HASH;
 				}
+				printf_flirt_debug("ref write flag: 0x%02X\n", flags);
 				uv_assert_err_ret(uint8Append(flags));				
 			}
 		}
 	}
+	printf_flirt_debug("crc nodes done\n");
 
 	return UV_ERR_OK;
 }
@@ -394,6 +402,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructLeadingNode(UVDFLIRTSignatureTreeLe
 	//If we have leaf leading nodes, we write 0
 
 	//Shortest should go first, so dump children first if they exist
+	printf_flirt_debug("node sub-content\n");
 	uv_assert_err_ret(constructCRCNode(node));
 	uv_assert_err_ret(constructLeadingNodeRecurse(node));
 
@@ -409,6 +418,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructTree()
 	//Its gotta start somewhere
 	printf_flirt_debug("Constructing tree w/ root node children: %d\n", m_db->m_tree->m_leadingChildren.size());
 	uv_assert_err_ret(constructLeadingNode(m_db->m_tree));
+	printf_flirt_debug("tree done\n");
 	
 	return UV_ERR_OK;
 }
