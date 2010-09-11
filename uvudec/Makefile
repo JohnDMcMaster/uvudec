@@ -2,7 +2,7 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-PHONY += uvudec obj2pat pat2sig lib doc cleanSub cleanSubCore installer dist distCore test gui
+PHONY += uvudec obj2pat pat2sig flirtutil lib doc cleanSub cleanSubCore installer dist distCore test gui
 
 ALL_TARGETS=lib
 # ALL_TARGETS += doc
@@ -20,6 +20,10 @@ endif
 
 ifeq ($(USING_PAT2SIG),Y)
 ALL_TARGETS += pat2sig
+endif
+
+ifeq ($(USING_FLIRTUTIL),Y)
+ALL_TARGETS += flirtutil
 endif
 
 ifeq ($(USING_GUI),Y)
@@ -46,6 +50,11 @@ endif
 ifeq ($(USING_PAT2SIG),Y)
 pat2sig:
 	cd pat2sig && $(MAKE)
+endif
+
+ifeq ($(USING_FLIRTUTIL),Y)
+flirtutil:
+	cd flirtutil && $(MAKE)
 endif
 
 ifeq ($(USING_GUI),Y)
