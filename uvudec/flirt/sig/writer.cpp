@@ -180,20 +180,20 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructRelocationBitmask(uint32_t nNodeByt
 		}
 		else if( relocationBitmask < 0x8000 )
 		{
-			uint8_t byte = 0;
-		
-			byte = ((relocationBitmask >> 8) & 0x7F) | 0x80;
-			uv_assert_err_ret(uint8Append(byte));
+			uv_assert_err_ret(uint8Append(((relocationBitmask >> 8) & 0x7F) | 0x80));
 			uv_assert_err_ret(uint8Append(relocationBitmask & 0xFF));
 		}
-		else if( relocationBitmask < 0x400000 )
+		else if( relocationBitmask < 0x40000000 )
 		{
-			uint8_t byte = 0;
+			/*
+			upper = ((first & 0x3F) << 8) + read_byte();
+			lower = read16();
+			*/
 			
-			byte = ((relocationBitmask >> 16) & 0x7F) | 0xC0;
-			uv_assert_err_ret(uint8Append(byte));
-			byte = relocationBitmask & 0xFFFF;
-			uv_assert_err_ret(uint16Append(byte));
+			//First byte is high order
+			uv_assert_err_ret(uint8Append(((relocationBitmask >> 24) & 0x7F) | 0xC0));
+			uv_assert_err_ret(uint8Append((relocationBitmask >> 16) & 0xFF));
+			uv_assert_err_ret(uint16Append(relocationBitmask & 0xFFFF));
 		}
 		else
 		{

@@ -184,7 +184,7 @@ int read_relocation_bitmask()
 		return ((first & 0x7F) << 8) + read_byte();
 	}
 	//0xC0 bit prefix
-	//Max val 0x3FFFFF
+	//Max val 0x3FFFFFFF
 	else if( (first & 0xE0) != 0xE0 )
 	{
 		upper = ((first & 0x3F) << 8) + read_byte();
