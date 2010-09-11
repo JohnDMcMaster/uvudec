@@ -15,7 +15,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDFLIRTSignatureTreeLeadingNode
 */
 
-/*
 bool UVDFLIRTSignatureLeadingNodeCompare::operator()(UVDFLIRTSignatureTreeLeadingNode *first, UVDFLIRTSignatureTreeLeadingNode *second) const
 {
 	if( first == second )
@@ -23,9 +22,8 @@ bool UVDFLIRTSignatureLeadingNodeCompare::operator()(UVDFLIRTSignatureTreeLeadin
 		return true;
 	}
 	//True if first strictly less than second
-	return first->m_bytes.compare(&second->m_bytes) > 0;
+	return first->m_bytes.compare(&second->m_bytes) < 0;
 }
-*/
 
 UVDFLIRTSignatureTreeLeadingNode::UVDFLIRTSignatureTreeLeadingNode()
 {

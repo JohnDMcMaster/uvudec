@@ -177,8 +177,8 @@ class UVDFLIRTSignatureTreeLeadingNode
 {
 public:
 	//static int leadingChildrenComapre(UVDFLIRTSignatureTreeLeadingNode *l, UVDFLIRTSignatureTreeLeadingNode *r);
-	//typedef std::set<UVDFLIRTSignatureTreeLeadingNode *, UVDFLIRTSignatureLeadingNodeCompare> LeadingChildrenSet;
-	typedef std::set<UVDFLIRTSignatureTreeLeadingNode *> LeadingChildrenSet;
+	typedef std::set<UVDFLIRTSignatureTreeLeadingNode *, UVDFLIRTSignatureLeadingNodeCompare> LeadingChildrenSet;
+	//typedef std::set<UVDFLIRTSignatureTreeLeadingNode *> LeadingChildrenSet;
 
 public:
 	UVDFLIRTSignatureTreeLeadingNode();
