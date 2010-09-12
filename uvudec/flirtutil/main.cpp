@@ -22,14 +22,16 @@ http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 #include <string>
 #include <stdint.h>
 
-#define ACTION_NONE				0
-#define ACTION_DECOMPRESS		1
-#define ACTION_COMPRESS			2
-#define ACTION_DUMP				3
+#define ACTION_NONE						0
+#define ACTION_DECOMPRESS				1
+#define ACTION_COMPRESS					2
+#define ACTION_DUMP						3
+#define ACTION_OBJECT					4
 
 #define PROP_ACTION_DECOMPRESS			"action.decompress"
 #define PROP_ACTION_COMPRESS			"action.compress"
 #define PROP_ACTION_DUMP				"action.dump"
+#define PROP_ACTION_OBJECT				"action.object"
 
 uint32_t g_action = ACTION_NONE;
 
@@ -489,9 +491,12 @@ uv_err_t versionPrintPrefixThunk()
 uv_err_t initProgConfig()
 {
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_DECOMPRESS, 0, "decompress", "decompress input files, placing in output (default: stdout)", 0, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_COMPRESS, 0, "compress", "compress input files, overwritting them unless output specified", 0, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_DUMP, 0, "dump", "dump input files, placing in output (default: stdout)", 0, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "dest file for data (default: stdout)", 1, argParser, false));
+	//uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_DECOMPRESS, 0, "decompress", "decompress input files, placing in output (default: stdout)", 0, argParser, false));
+	//uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_COMPRESS, 0, "compress", "compress input files, overwritting them unless output specified", 0, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_DUMP, 0, "dump", "dump input files, placing in output", 0, argParser, false));
+	//uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_OBJECT, 0, "object", "make best effort to convert input from .sig/.pat to ELF object", 0, argParser, false));
+	//uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_OBJECT, 0, "input-type", "specify input type instead of guessing by extension/magic", 0, argParser, false));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
@@ -545,6 +550,11 @@ uv_err_t uvmain(int argc, char **argv)
 			
 			uv_assert_err_ret(dumpFile(file));
 		}
+	}
+	else if( g_action == ACTION_OBJECT )
+	{
+		printf_error("object conversion unsupported\n");
+		goto error;
 	}
 	else if( g_action == ACTION_NONE )
 	{
