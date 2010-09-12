@@ -234,6 +234,11 @@ public:
 			UVDArgConfigHandler handler,
 			bool hasDefault);
 
+	//Add a plugin to be loaded
+	uv_err_t addPlugin(const std::string &pluginLibraryName);
+	uv_err_t appendPluginPath(const std::string &path);
+	uv_err_t prependPluginPath(const std::string &path);
+
 protected:
 	// ~/.uvudec file
 	//Should be called before parseMain()...move this into init()
@@ -401,6 +406,9 @@ public:
 	//The address ranges that should/shouldn't be analyzed
 	//Later might add in some other stuff like differentiating between addresses skipped for analysis and actually not present
 	UVDUint32RangePriorityList m_addressRangeValidity;
+
+	std::vector<std::string> m_plugins;
+	std::vector<std::string> m_pluginDirs;
 };
 
 //Default configuration options

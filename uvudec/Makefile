@@ -2,12 +2,14 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-PHONY += uvudec obj2pat pat2sig flirtutil lib doc cleanSub cleanSubCore installer dist distCore test gui
+PHONY += uvudec obj2pat pat2sig flirtutil lib doc cleanSub cleanSubCore installer dist distCore test gui plugin
 
 ALL_TARGETS=lib
 # ALL_TARGETS += doc
 CLEAN_DEPS=cleanSub
 
+# These get included twice, but should be small lightweight files and not an issue
+include Makefile.defaults
 include Makefile.configure
 
 ifeq ($(USING_UVUDEC),Y)
@@ -28,6 +30,10 @@ endif
 
 ifeq ($(USING_GUI),Y)
 ALL_TARGETS += gui
+endif
+
+ifeq ($(USING_PLUGIN),Y)
+ALL_TARGETS += plugin
 endif
 
 include Makefile.mk
@@ -60,6 +66,11 @@ endif
 ifeq ($(USING_GUI),Y)
 gui:
 	cd GUI && $(MAKE)
+endif
+
+ifeq ($(USING_PLUGIN),Y)
+plugin:
+	cd plugin && $(MAKE)
 endif
 
 dynamic:

@@ -37,9 +37,9 @@ Error classes
 Full success codes
 */
 #define UV_ERR_OK						0
-/* No more data to process */
+//No more data to process
 #define UV_ERR_DONE						1
-/* No error occured, but the item did not contain any data to generate output */
+//No error occured, but the item did not contain any data to generate output
 #define UV_ERR_BLANK					2
 
 /*

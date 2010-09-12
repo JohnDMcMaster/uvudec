@@ -1,6 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
@@ -9,6 +9,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_analysis_action.h"
 #include "uvd_GUI.h"
 #include "uvd_project.h"
+#include "uvd_core_event.h"
+#include "event/event.h"
+#include "event/events.h"
+#include "event/engine.h"
 
 UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	: QMainWindow(parent)
@@ -50,8 +54,54 @@ void UVDMainWindow::on_actionOpen_triggered()
 	UV_DEBUG(initializeProject(fileName.toStdString()));
 }
 
+static uv_err_t GUIUVDEventHandler(const UVDEvent *event, void *data)
+{
+	UVDMainWindow *mainWindow = (UVDMainWindow *)data;
+
+	uv_assert_ret(mainWindow);
+	uv_assert_err_ret(mainWindow->handleEvent(event));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::handleEvent(const UVDEvent *event)
+{
+	printf("GUI got an event\n");
+	if( event->m_type == UVD_EVENT_FUNCTION_CHANGED )
+	{
+		const UVDEventFunctionChanged *functionChanged = (const UVDEventFunctionChanged *)event;
+		std::string functionName;
+	
+		uv_assert_err_ret(functionChanged->m_function->getFunctionInstance()->getSymbolName(functionName));	
+
+		if( functionChanged->m_isDefined )
+		{
+			uv_assert_err_ret(newFunction(functionName));
+		}
+		else
+		{
+			uv_assert_err_ret(deleteFunction(functionName));
+		}
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::initializeUVDCallbacks()
+{
+	UVDEventEngine *eventEngine = m_project->m_uvd->m_eventEngine;
+	
+	uv_assert_ret(eventEngine);
+	uv_assert_err_ret(eventEngine->registerHandler(GUIUVDEventHandler, this, UVD_EVENT_HANDLER_PRIORITY_NORMAL));
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDMainWindow::beginAnalysis()
 {
+	/*
+	This is where the magic starts
+	*/
+
 	std::string output;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
@@ -73,7 +123,11 @@ uv_err_t UVDMainWindow::beginAnalysis()
 	uv_assert_ret(g_uvd);
 	m_project->m_uvd = uvd;
 
+	//Get our callbacks ready...
+	uv_assert_err_ret(initializeUVDCallbacks());
+	//Fire at will
 	uv_assert_err_ret(uvd->analyze());
+	//This should become less necessary as event system pushes events instead of rebuilding each time
 	uv_assert_err_ret(updateAllViews());	
 	
 	delete data;
@@ -81,16 +135,9 @@ uv_err_t UVDMainWindow::beginAnalysis()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDMainWindow::updateAllViews()
+uv_err_t UVDMainWindow::rebuildFunctionList()
 {
-	UVD *uvd = NULL;
-	UVDAnalyzer *analyzer = NULL;
-
-	uv_assert_ret(m_project);
-	uvd = m_project->m_uvd;
-	uv_assert_ret(uvd);
-	analyzer = uvd->m_analyzer;
-	uv_assert_ret(analyzer);
+	UVDAnalyzer *analyzer = m_project->m_uvd->m_analyzer;
 
 	//Save old selected?
 	//uv_assert_err_ret(updateFunctionList());
@@ -103,9 +150,39 @@ uv_err_t UVDMainWindow::updateAllViews()
 		
 		uv_assert_ret(binaryFunction);
 		uv_assert_err_ret(binaryFunction->getFunctionInstance()->getSymbolName(functionName));
-		m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
+		uv_assert_err_ret(newFunction(functionName));
 	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::newFunction(const std::string &functionName)
+{
+	printf("new func\n");
+	m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::deleteFunction(const std::string &functionName)
+{
+	//FIXME
+	//m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::updateAllViews()
+{
+	/*
+	UVD *uvd = NULL;
+	UVDAnalyzer *analyzer = NULL;
+
+	uv_assert_ret(m_project);
+	uvd = m_project->m_uvd;
+	uv_assert_ret(uvd);
+	analyzer = uvd->m_analyzer;
+	uv_assert_ret(analyzer);
+	*/
 	
+	//uv_assert_err_ret(rebuildFunctionList());
 	//uv_assert_err_ret(updateDisassemblyView());
 
 	return UV_ERR_OK;

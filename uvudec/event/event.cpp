@@ -4,13 +4,17 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include"uvd_analysis_action.h"
+#include "event/event.h"
+#include "event/events.h"
+#include <map>
 
-UVDAnalysisAction::UVDAnalysisAction()
+UVDEvent::UVDEvent()
+{
+	m_type = UVD_EVENT_UNKNOWN;
+}
+
+UVDEvent::~UVDEvent()
 {
 }
 
-UVDAnalysisAction::~UVDAnalysisAction()
-{
-}
 

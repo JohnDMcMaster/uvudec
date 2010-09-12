@@ -808,7 +808,6 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 {
 	char buff[256];
 	std::string sNameBlock;
-	UVDAnalyzedFunction analyzedFunction;
 	UVDAnalyzedMemoryLocation *memLoc = NULL;
 	UVDAnalyzedMemorySpace jumpedAddresses;
 

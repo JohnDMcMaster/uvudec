@@ -1,6 +1,6 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_error.h"
 #include <string>
 
+class UVDEvent;
 class UVDMainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -24,6 +25,14 @@ public:
 	uv_err_t initializeProject(const std::string fileName);
 	uv_err_t beginAnalysis();
 	uv_err_t updateAllViews();
+
+	uv_err_t newFunction(const std::string &functionName);
+	uv_err_t deleteFunction(const std::string &functionName);
+	uv_err_t handleEvent(const UVDEvent *event);
+
+protected:
+	uv_err_t rebuildFunctionList();
+	uv_err_t initializeUVDCallbacks();
 
 private slots:
 	void on_actionNew_triggered();

@@ -5,8 +5,14 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 /*
+FIXME
 These data structures are somewhat messed up
+Too much abstraction without enough knowledge about what was useful to abstract
 It has some artifacts from not strongly seperating current analysis from the analysis DB
+	and from playing around with some stuff near the beginning, such as the MD5s
+	these should not be stored in the function objects, but rather computed as needed if we want to dump the func db files
+It can probably be fixed now, but I haven't gotten around to it
+Mostly, once FLIRT integration is more advanced, it will become clearer how this should be laid out
 */
 
 /*

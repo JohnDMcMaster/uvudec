@@ -895,6 +895,23 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDConfig::addPlugin(const std::string &pluginLibraryName)
+{
+	m_plugins.push_back(pluginLibraryName);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::appendPluginPath(const std::string &path)
+{
+	m_pluginDirs.insert(m_pluginDirs.end(), path);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::prependPluginPath(const std::string &path)
+{
+	m_pluginDirs.insert(m_pluginDirs.begin(), path);
+	return UV_ERR_OK;
+}
 
 /*
 UVDParsedFunction
