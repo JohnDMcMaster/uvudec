@@ -4,13 +4,13 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include"uvd_analysis_action.h"
+#include "plugin/plugin.h"
+#include "util/io.h"
+#include "uvd.h"
 
-UVDAnalysisAction::UVDAnalysisAction()
+uv_err_t UVDPluginMain(UVD *uvd)
 {
-}
-
-UVDAnalysisAction::~UVDAnalysisAction()
-{
+	UVDPrint("Plugin loaded!\n");
+	return UV_ERR_OK;
 }
 

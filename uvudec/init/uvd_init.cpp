@@ -22,6 +22,7 @@ Do something instead like create a list of optional and required members, with p
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
+#include "event/engine.h"
 #include "uvd_debug.h"
 #include "uvd_error.h"
 #include "uvd_log.h"
@@ -120,6 +121,9 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	uv_assert_ret(m_config);
 	m_format = new UVDFormat();
 	uv_assert(m_format);
+	m_eventEngine = new UVDEventEngine();
+	uv_assert(m_eventEngine);
+	uv_assert_err_ret(m_eventEngine->init());
 
 	printf_debug("Initializing config...\n");
 	if( UV_FAILED(init_config()) )

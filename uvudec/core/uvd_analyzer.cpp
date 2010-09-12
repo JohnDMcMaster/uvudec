@@ -5,10 +5,12 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "event/engine.h"
 #include "uvd.h"
 #include "uvd_analysis_db.h"
 #include "uvd_analyzer.h"
 #include "uvd_binary_function.h"
+#include "uvd_core_event.h"
 #include <algorithm>
 #include <stdio.h>
 
@@ -655,6 +657,7 @@ uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 	UVDBinaryFunctionShared *functionShared = NULL;
 
 	uv_assert_ret(function);
+
 	//Register it as a found function
 	m_functions.insert(function);
 	
@@ -662,6 +665,12 @@ uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 	functionShared = function->m_shared;
 	uv_assert_ret(m_curDb);
 	uv_assert_err_ret(m_curDb->loadFunction(functionShared));
+
+	//Tell the world
+	UVDEventFunctionChanged functionChangedEvent;
+	functionChangedEvent.m_function = function;
+	functionChangedEvent.m_isDefined = true;
+	uv_assert_err_ret(m_uvd->m_eventEngine->emitEvent(&functionChangedEvent));
 
 	return UV_ERR_OK;
 }

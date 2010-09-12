@@ -1,16 +1,9 @@
-/*
+reml plugin
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
-*/
 
-#include"uvd_analysis_action.h"
-
-UVDAnalysisAction::UVDAnalysisAction()
-{
-}
-
-UVDAnalysisAction::~UVDAnalysisAction()
-{
-}
+See http://dkbza.org/idb2reml.html
+The only IDA like project interopability I might attempt
+This plugin should be able to load and dump to REML
 

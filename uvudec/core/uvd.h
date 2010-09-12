@@ -288,6 +288,7 @@ UV Decompiler engine
 Primary end user object
 */
 class UVDFLIRT;
+class UVDEventEngine;
 class UVD
 {
 public:
@@ -351,6 +352,7 @@ public:
 	
 		
 	//Given a function location, do analysis on the section to do actual decompiling
+	//FIXME: this code is nearly dead and should probably be removed
 	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction);
 	//uv_err_t analyzeFunction(UVDAnalyzedFunction &analyzedFunction);
 	//Since not all code is in a function, base implementation is on raw code
@@ -452,6 +454,9 @@ public:
 	
 	//Source of data to disassemble
 	UVDData *m_data;
+	
+	//For notifying plugins and such of analysis events
+	UVDEventEngine *m_eventEngine;
 
 protected:
 	//Segmented memory view instead of flat m_data view

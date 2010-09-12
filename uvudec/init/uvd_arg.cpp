@@ -234,6 +234,9 @@ static uv_err_t initSharedConfig()
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_USELESS_ASCII_ART, 0, "useless-ascii-art", "append nifty ascii art headers to output files", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_NAME, 0, "plugin", "load given library name as plugin", 1, argParser, false));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin search path", 1, argParser, false));
+	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin search path", 1, argParser, false));
 
 	return UV_ERR_OK;	
 }
@@ -562,7 +565,22 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			config->m_addressLabel = UVDArgToBool(firstArg);
 		}
 	}
-	//Unknown.  This is an error because this callback should have never been called
+	//Plugins
+	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_NAME )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		uv_assert_err_ret(config->addPlugin(firstArg));
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_APPEND_PATH )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		uv_assert_err_ret(config->appendPluginPath(firstArg));
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_PREPEND_PATH )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		uv_assert_err_ret(config->prependPluginPath(firstArg));
+	}
 	else
 	{
 		printf_error("Property not recognized in callback: %s\n", argConfig->m_propertyForm.c_str());

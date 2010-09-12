@@ -46,7 +46,7 @@ Moving towards DB based storage
 Each of these accomplish essentially same thing, but different way
 */
 
-//Called when function first discovered
+//FIXME: this code is nearly dead and should probably be removed
 uv_err_t UVD::analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction)
 {
 	uv_err_t rc = UV_ERR_GENERAL;

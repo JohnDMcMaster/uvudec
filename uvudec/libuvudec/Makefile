@@ -23,12 +23,15 @@ CXX_SRCS = 	\
 			$(CORE_DIR)/uvd_analysis.cpp \
 			$(CORE_DIR)/uvd_analysis_db.cpp \
 			$(CORE_DIR)/uvd_analyzer.cpp \
+			$(CORE_DIR)/uvd_core_event.cpp \
 			$(CORE_DIR)/uvd_iterator.cpp \
 			$(DATA_DIR)/uvd_data.cpp \
 			$(DATA_DIR)/uvd_data_chunk.cpp \
 			$(DATA_DIR)/uvd_data_file.cpp \
 			$(DATA_DIR)/uvd_data_memory.cpp \
 			$(DATA_DIR)/uvd_data_placeholder.cpp \
+			$(EVENT_DIR)/engine.cpp \
+			$(EVENT_DIR)/event.cpp \
 			$(ELF_DIR)/uvd_elf.cpp \
 			$(ELF_DIR)/uvd_elf_data.cpp \
 			$(ELF_DIR)/uvd_elf_header.cpp \
@@ -79,6 +82,7 @@ CXX_SRCS = 	\
 			$(INTERPRETER_DIR)/uvd_python_exec.cpp \
 			$(LANGUAGE_DIR)/uvd_format.cpp \
 			$(LANGUAGE_DIR)/uvd_language.cpp \
+			$(PLUGIN_DIR)/plugin.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_element.cpp \
 			$(RELOCATION_DIR)/uvd_relocation.cpp \
