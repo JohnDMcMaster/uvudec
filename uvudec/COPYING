@@ -5,9 +5,12 @@ All rights reserved unless otherwise noted.
 This project may be licensed under the Lesser General Public Licenes V3, or, at
 your discression, a later version.  See file GPL for details.  While originally
 I wanted this under BSD licensing, dependency projects made it difficult to
-effectivly write code for without being in murky waters.  LGPL is a good
-compromise anyway between someone taking this and being able to use it without
-giving back.
+effectivly write code for without being in murky waters.  Although this doesn't
+get around this and I haven't integrated those yet, LGPL is a good compromise
+anyway between someone taking this and being able to use it without
+giving back.  Plus, if I want to later integrate to those projects, I can
+easily switch over.  Most likely, I'll write plugins for them and drop the
+plugins if they somehow became an issue.
 Content files are licensed under Creative Commons by-nc-sa unless otherwise
 indicated.
 
