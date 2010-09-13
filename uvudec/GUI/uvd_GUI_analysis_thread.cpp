@@ -28,6 +28,7 @@ void UVDGUIAnalysisThread::run()
 	//int pthread_mutex_lock (pthread_mutex_t *__mutex)
 	m_active = TRUE;
 
+	printf("Analysis thread started\n");
 	while( m_active )
 	{
 		UV_DEBUG(runLoop());
