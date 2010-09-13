@@ -7,13 +7,14 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <QApplication>
 #include "uvd_GUI.h"
 
+QApplication *g_application = NULL;
+
 uv_err_t uvmain(int argc, char **argv, int *retOut)
 {
-	QApplication *application = NULL;
 	UVDMainWindow *mainWindow = NULL;
 
-	application = new QApplication(argc, argv);
-	uv_assert_ret(application);
+	g_application = new QApplication(argc, argv);
+	uv_assert_ret(g_application);
 	mainWindow = new UVDMainWindow();
 	uv_assert_ret(mainWindow);
 	mainWindow->m_argc = argc;
@@ -22,10 +23,10 @@ uv_err_t uvmain(int argc, char **argv, int *retOut)
 	uv_assert_err_ret(mainWindow->init());
 	
 	mainWindow->show();
-	*retOut = application->exec();
+	*retOut = g_application->exec();
 	
 	delete mainWindow;
-	delete application;
+	delete g_application;
 	
 	return UV_ERR_OK;
 }

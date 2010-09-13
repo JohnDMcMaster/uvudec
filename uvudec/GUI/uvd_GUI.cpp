@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "event/event.h"
 #include "event/events.h"
 #include "event/engine.h"
+#include "main.h"
 
 UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	: QMainWindow(parent)
@@ -253,8 +254,15 @@ void UVDMainWindow::on_actionClose_triggered()
 	printf("%s\n", __FUNCTION__);
 	
 	m_analysisThread.m_active = FALSE;
-	m_analysisThread.wait(100);
-	if( !m_analysisThread.isFinished() )
+	for( uint32_t i = 0; i < 100; ++i )
+	{
+		if( !m_analysisThread.isRunning() )
+		{
+			break;
+		}
+		m_analysisThread.wait(10);
+	}
+	if( m_analysisThread.isRunning() )
 	{
 		printf_error("Analysis thread is still running, getting it before it gets away\n");
 		m_analysisThread.terminate();
@@ -262,6 +270,9 @@ void UVDMainWindow::on_actionClose_triggered()
 	
 	delete m_project;
 	m_project = NULL;
+	
+	g_application->quit();
+	printf("close done\n");
 }
 
 void UVDMainWindow::on_actionAbout_triggered()
