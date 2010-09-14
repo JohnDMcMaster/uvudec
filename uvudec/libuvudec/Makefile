@@ -90,6 +90,7 @@ CXX_SRCS = 	\
 			$(RELOCATION_DIR)/uvd_relocation_manager.cpp \
 			$(RELOCATION_DIR)/uvd_relocation_writer.cpp \
 			$(RELOCATION_DIR)/uvd_simple_relocation_fixup.cpp \
+			$(UTIL_DIR)/io.cpp \
 			$(UTIL_DIR)/uvd_ascii_art.cpp \
 			$(UTIL_DIR)/uvd_benchmark.cpp \
 			$(UTIL_DIR)/uvd_debug.cpp \

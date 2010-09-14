@@ -709,8 +709,10 @@ uv_err_t UVD::decompile(std::string &output)
 
 	//Most of program time should be spent here
 	uv_assert_err_ret(analyze());
+	//Until we can do better
+	setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY);
 	//And print
-	uv_assert_err_ret(decompilePrint(output));
+	uv_assert_err_ret(printRangeCore(begin(), end(), output));
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
 	decompileBenchmark.stop();
@@ -722,7 +724,33 @@ uv_err_t UVD::decompile(std::string &output)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::decompilePrint(std::string &output)
+uv_err_t UVD::printRange(uv_addr_t start, uv_addr_t end, uint32_t destinationLanguage, std::string &output)
+{
+	return UV_DEBUG(UV_ERR_NOTIMPLEMENTED);
+}
+
+uv_err_t UVD::setDestinationLanguage(uint32_t destinationLanguage)
+{
+	UVDCompiler *compiler = NULL;
+
+	switch( destinationLanguage )
+	{
+	case UVD_LANGUAGE_ASSEMBLY:
+		compiler = new UVDCompilerAssembly();
+		break;
+	default:
+		printf_error("Unknown destination langauge: 0x%.4X (%d)\n", destinationLanguage, destinationLanguage);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	};
+	uv_assert_ret(compiler);
+	//Set a default compiler to generate code for
+	//How this is set will probably change drastically in the future
+	uv_assert_ret(m_format);
+	uv_assert_err_ret(m_format->setCompiler(compiler));
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::string &output)
 {
 	UVDIterator iter;
 	//UVDIterator iterEnd;
@@ -730,43 +758,6 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	int printNext = printPercentage;
 	uint32_t analyzedBytes = 0;
 	int verbose_old = 0;
-
-	{
-		UVDCompiler *compiler = NULL;
-
-		/*
-		{
-			uint32_t dataSize = 0;
-
-			uv_assert_ret(m_data);
-			dataSize = m_data->size();
-	
-			//Trivial case: nothing to analyze
-			//Eliminates special cases
-			if( dataSize == 0 )
-			{
-				return UV_ERR_OK;
-			}
-			printf_debug_level(UVD_DEBUG_PASSES, "Raw data size: 0x%x (%d)\n", dataSize, dataSize);
-		}
-		*/
-	
-		uint32_t destinationLanguage = UVD_LANGUAGE_ASSEMBLY;
-		switch( destinationLanguage )
-		{
-		case UVD_LANGUAGE_ASSEMBLY:
-			compiler = new UVDCompilerAssembly();
-			break;
-		default:
-			printf_error("Unknown destination langauge: 0x%.4X (%d)\n", destinationLanguage, destinationLanguage);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		};
-		uv_assert_ret(compiler);
-		//Set a default compiler to generate code for
-		//How this is set will probably change drastically in the future
-		uv_assert_ret(m_format);
-		uv_assert_err_ret(m_format->setCompiler(compiler));
-	}
 
 	uv_assert_ret(m_config);
 	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&analyzedBytes));
@@ -777,7 +768,7 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: printing...\n");
 	UVDBenchmark decompilePrintBenchmark;
 	decompilePrintBenchmark.start();
-	iter = begin();
+	iter = iterBegin;
 
 	//Due to the huge number of concatenations
 #ifdef USING_ROPE
@@ -786,7 +777,10 @@ uv_err_t UVD::decompilePrint(std::string &output)
 	output.clear();
 #endif //USING_ROPE
 	int iterations = 0;
-	while( iter != end() )
+	//FIXME: what if we misalign by accident and surpass?
+	//need to add some check for that
+	//maybe we should do <
+	while( iter != iterEnd )
 	{
 		std::string line;
 		uint32_t startPos = iter.getPosition();

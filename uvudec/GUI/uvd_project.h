@@ -1,7 +1,7 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under the terms of the LGPL V3 or later, see COPYING for details
+Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
 #ifndef UVD_PROJECT_H
@@ -11,6 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_types.h"
 #include <string>
 
+class UVDBinarySymbol;
 class UVDProject
 {
 public:
@@ -23,8 +24,10 @@ public:
 	uv_err_t setFileName(const std::string &fileName);
 
 public:
-	UVD *m_uvd;	
+	UVD *m_uvd;
 	std::string m_canonicalProjectFileName;
+	//Symbol, usually a function, we are displaying in the workspace
+	UVDBinarySymbol *m_symbolInFocus;
 };
 
 #endif

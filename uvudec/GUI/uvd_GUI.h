@@ -20,19 +20,24 @@ class UVDMainWindow : public QMainWindow
 
 public:
 	UVDMainWindow(QMainWindow *parent = 0);
+	~UVDMainWindow();
 	uv_err_t init();
 
 	uv_err_t initializeProject(const std::string fileName);
-	uv_err_t beginAnalysis();
 	uv_err_t updateAllViews();
 
-	uv_err_t newFunction(const std::string &functionName);
-	uv_err_t deleteFunction(const std::string &functionName);
-	uv_err_t handleEvent(const UVDEvent *event);
+	void closeEvent(QCloseEvent *event);
+
+	uv_err_t shutdown();
 
 protected:
 	uv_err_t rebuildFunctionList();
-	uv_err_t initializeUVDCallbacks();
+
+public slots:
+	uv_err_t newFunction(QString functionName);
+	uv_err_t deleteFunction(QString functionName);
+	void appendDisassembledLine(QString line);
+	void appendLogLine(QString line);
 
 private slots:
 	void on_actionNew_triggered();
@@ -41,8 +46,8 @@ private slots:
 	void on_actionSaveAs_triggered();
 	void on_actionPrint_triggered();
 	void on_actionClose_triggered();
-
 	void on_actionAbout_triggered();
+
 
 public:
 	Ui::UVDMainWindow m_mainWindow;
@@ -50,7 +55,7 @@ public:
 	QString m_projectFileNameDialogFilter;
 	
 	//Need to add some sort of thread safe queue object
-	UVDGUIAnalysisThread m_analysisThread;
+	UVDGUIAnalysisThread *m_analysisThread;
 	
 	//So we can pass options off to children later
 	int m_argc;

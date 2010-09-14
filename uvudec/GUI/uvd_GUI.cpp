@@ -1,7 +1,21 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under the terms of the LGPL V3 or later, see COPYING for details
+Licensed under the terms of the GPL V3 or later, see COPYING for details
+*/
+
+/*
+Using threads safely in Qt
+http://doc.qt.nokia.com/4.6/threads.html
+...cause guess and check wasn't cutting it with QTextEdit
+
+
+http://doc.qt.nokia.com/4.6/qcoreapplication.html#postEvent
+Posting events cross thread
+
+http://doc.qt.nokia.com/4.6/threads-qobject.html
+On the other hand, you can safely emit signals from your QThread::run() implementation, because signal emission is thread-safe.
+
 */
 
 #include <QtGui>
@@ -9,11 +23,23 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_analysis_action.h"
 #include "uvd_GUI.h"
 #include "uvd_project.h"
-#include "uvd_core_event.h"
-#include "event/event.h"
-#include "event/events.h"
-#include "event/engine.h"
+#include "uvd_language.h"
 #include "main.h"
+#include "util/io.h"
+#include "util/uvd_util.h"
+#include "uvd_debug.h"
+
+//#define ROLE_FUNCTION_LIST_FUNCTION		(Qt::UserRole + 0)
+
+#define ASSERT_THREAD() \
+	if( QThread::currentThread() == m_analysisThread ) \
+	{ \
+		printf_error("GUI operations in non-main thread\n"); \
+		UVD_PRINT_STACK(); \
+		UVD_BREAK(); \
+		exit(1); \
+	}
+
 
 UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	: QMainWindow(parent)
@@ -25,13 +51,37 @@ UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	m_mainWindow.setupUi(this);
 }
 
+UVDMainWindow::~UVDMainWindow()
+{
+	printf("Shutting down main window\n");
+}
+
 uv_err_t UVDMainWindow::init()
 {
+	//printf("mainwindow init, this: 0x%08X\n", this);
+
 	m_projectFileNameDialogFilter = tr("uvudec oject (*.upj);;All Files (*)");
+
+	//FIXME: this looks wrong, but its the best I could figure out from the error messages
+	//Maybe related to multithreading on QTextBlocks
+	//qRegisterMetaType("QTextBlock");
+	//qRegisterMetaType("QTextCursor");
 	
-	m_analysisThread.m_mainWindow = this;
-	uv_assert_err_ret(m_analysisThread.init());
+	//FIXME: this is an ugly hack for preventing some crashes until I figure how to fix them properly
+	//the original issue of closing properly should be fixed now, I should be able to fix this now
+	m_analysisThread = new UVDGUIAnalysisThread();
+	m_analysisThread->m_mainWindow = this;
+	uv_assert_err_ret(m_analysisThread->init());
+	m_analysisThread->m_mainWindow = this;
 	
+	UVDPrintf("Logging initialized");	
+
+	/*
+	Keep it idlying waiting
+	Also this will be used to handling printing, so start it early for uniform interface
+	*/
+	m_analysisThread->start();
+
 	return UV_ERR_OK;
 }
 
@@ -55,87 +105,6 @@ void UVDMainWindow::on_actionOpen_triggered()
 	UV_DEBUG(initializeProject(fileName.toStdString()));
 }
 
-static uv_err_t GUIUVDEventHandler(const UVDEvent *event, void *data)
-{
-	UVDMainWindow *mainWindow = (UVDMainWindow *)data;
-
-	uv_assert_ret(mainWindow);
-	uv_assert_err_ret(mainWindow->handleEvent(event));
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDMainWindow::handleEvent(const UVDEvent *event)
-{
-	printf("GUI got an event\n");
-	if( event->m_type == UVD_EVENT_FUNCTION_CHANGED )
-	{
-		const UVDEventFunctionChanged *functionChanged = (const UVDEventFunctionChanged *)event;
-		std::string functionName;
-	
-		uv_assert_err_ret(functionChanged->m_function->getFunctionInstance()->getSymbolName(functionName));	
-
-		if( functionChanged->m_isDefined )
-		{
-			uv_assert_err_ret(newFunction(functionName));
-		}
-		else
-		{
-			uv_assert_err_ret(deleteFunction(functionName));
-		}
-	}
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDMainWindow::initializeUVDCallbacks()
-{
-	UVDEventEngine *eventEngine = m_project->m_uvd->m_eventEngine;
-	
-	uv_assert_ret(eventEngine);
-	uv_assert_err_ret(eventEngine->registerHandler(GUIUVDEventHandler, this, UVD_EVENT_HANDLER_PRIORITY_NORMAL));
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDMainWindow::beginAnalysis()
-{
-	/*
-	This is where the magic starts
-	*/
-
-	std::string output;
-	UVD *uvd = NULL;
-	UVDData *data = NULL;
-
-	printf_debug_level(UVD_DEBUG_PASSES, "main: initializing data streams\n");
-
-	uv_assert_ret(g_config);
-	uv_assert_ret(!g_config->m_targetFileName.empty());
-
-	//Select input
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Initializing data stream on %s...\n", g_config->m_targetFileName.c_str());
-	uv_assert_err_ret(UVDDataFile::getUVDDataFile(&data, g_config->m_targetFileName));
-	uv_assert_ret(data);
-	
-	//Create a runTasksr engine active on that input
-	printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
-	uv_assert_err_ret(UVD::getUVD(&uvd, data));
-	uv_assert_ret(uvd);
-	uv_assert_ret(g_uvd);
-	m_project->m_uvd = uvd;
-
-	//Get our callbacks ready...
-	uv_assert_err_ret(initializeUVDCallbacks());
-	//Fire at will
-	uv_assert_err_ret(uvd->analyze());
-	//This should become less necessary as event system pushes events instead of rebuilding each time
-	uv_assert_err_ret(updateAllViews());	
-	
-	delete data;
-
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDMainWindow::rebuildFunctionList()
 {
 	UVDAnalyzer *analyzer = m_project->m_uvd->m_analyzer;
@@ -151,20 +120,22 @@ uv_err_t UVDMainWindow::rebuildFunctionList()
 		
 		uv_assert_ret(binaryFunction);
 		uv_assert_err_ret(binaryFunction->getFunctionInstance()->getSymbolName(functionName));
-		uv_assert_err_ret(newFunction(functionName));
+		uv_assert_err_ret(newFunction(QString::fromStdString(functionName)));
 	}
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDMainWindow::newFunction(const std::string &functionName)
+uv_err_t UVDMainWindow::newFunction(QString functionName)
 {
-	printf("new func\n");
-	m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
+	ASSERT_THREAD();
+	//printf("new func\n");
+	m_mainWindow.symbolsListWidget->addItem(functionName);
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDMainWindow::deleteFunction(const std::string &functionName)
+uv_err_t UVDMainWindow::deleteFunction(QString functionName)
 {
+	ASSERT_THREAD();
 	//FIXME
 	//m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
 	return UV_ERR_OK;
@@ -191,15 +162,40 @@ uv_err_t UVDMainWindow::updateAllViews()
 
 uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 {
-	m_project = new UVDProject();
-	uv_assert_ret(m_project);
+	UVDPrintf("Opening file: %s", fileName.c_str());	
 
+	m_project = new UVDProject();
+
+	uv_assert_ret(m_project);
 	uv_assert_err_ret(m_project->setFileName(fileName));
 	uv_assert_err_ret(m_project->init(m_argc, m_argv));
-	m_analysisThread.start();
-	m_analysisThread.queueAnalysis(new UVDAnalysisActionBegin());
+	//hmm not working
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembled(QString)),
+			this, SLOT(appendDisassembledLine(QString))));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
+			this, SLOT(newFunction(QString))));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(deleteFunction(QString)),
+			this, SLOT(deleteFunction(QString))));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(printLog(QString)),
+			this, SLOT(appendLogLine(QString))));
+	m_analysisThread->queueAnalysis(new UVDAnalysisActionBegin());
 
 	return UV_ERR_OK;
+}
+
+void UVDMainWindow::appendDisassembledLine(QString line)
+{
+//printf("appending line\n");
+	ASSERT_THREAD();
+	//QString qLine = QString::fromStdString(line);
+	m_mainWindow.disassemblyArea->appendPlainText(line);
+}
+
+void UVDMainWindow::appendLogLine(QString line)
+{
+printf_debug("");
+	ASSERT_THREAD();
+	m_mainWindow.plainTextEdit_log->appendPlainText(line);
 }
 
 void UVDMainWindow::on_actionSave_triggered()
@@ -249,28 +245,34 @@ void UVDMainWindow::on_actionPrint_triggered()
 	printf("%s\n", __FUNCTION__);
 }
 
-void UVDMainWindow::on_actionClose_triggered()
+uv_err_t UVDMainWindow::shutdown()
 {
-	printf("%s\n", __FUNCTION__);
-	
-	m_analysisThread.m_active = FALSE;
+	m_analysisThread->m_active = FALSE;
 	for( uint32_t i = 0; i < 100; ++i )
 	{
-		if( !m_analysisThread.isRunning() )
+		if( !m_analysisThread->isRunning() )
 		{
 			break;
 		}
-		m_analysisThread.wait(10);
+		m_analysisThread->wait(10);
 	}
-	if( m_analysisThread.isRunning() )
+	if( m_analysisThread->isRunning() )
 	{
-		printf_error("Analysis thread is still running, getting it before it gets away\n");
-		m_analysisThread.terminate();
+		printf_error("forcing termination of analysis thread\n");
+		m_analysisThread->terminate();
 	}
 	
 	delete m_project;
 	m_project = NULL;
+
+	return UV_ERR_OK;
+}
+
+void UVDMainWindow::on_actionClose_triggered()
+{
+	printf("%s\n", __FUNCTION__);
 	
+	UV_DEBUG(shutdown());	
 	g_application->quit();
 	printf("close done\n");
 }
@@ -282,7 +284,15 @@ void UVDMainWindow::on_actionAbout_triggered()
 	QMessageBox::about(this, tr("About uvudec GUI"),
 			tr("UVNet Universal Decompiler GUI\n"
 			"Copyright 2010 John McMaster\n"
-			"Licensed under the terms of the GPL V3+ or, at your option, a later version"
+			"Licensed under the terms of the GPL V3+\n"
+			"Thanks to Sean O'Sullivan through the Rensselaer Center For Open Source (RCOS) for supporting this project"
 			));
+}
+
+void UVDMainWindow::closeEvent(QCloseEvent *event)
+{
+	//Triggered on a window close event, such as the x being hit
+	printf("Close event\n");
+	UV_DEBUG(shutdown());
 }
 

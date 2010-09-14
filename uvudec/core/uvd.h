@@ -349,7 +349,13 @@ public:
 	Using what created the engine init
 	*/
 	uv_err_t decompile(std::string &output);
-	
+	//Intended for things like printing a function
+	uv_err_t printRange(uv_addr_t start, uv_addr_t end, uint32_t destinationLanguage, std::string &output);
+	//iterEnd is not inclusive
+	uv_err_t printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::string &output);
+	//What we will try to output when printing
+	//Used to format assembly output and such
+	uv_err_t setDestinationLanguage(uint32_t destinationLanguage);
 		
 	//Given a function location, do analysis on the section to do actual decompiling
 	//FIXME: this code is nearly dead and should probably be removed
@@ -403,9 +409,6 @@ public:
 	uv_err_t getDataSegments(std::vector<UVDMemorySegment *> &segments);
 
 protected:
-	//If not doing analysis only, prints the decompile results
-	uv_err_t decompilePrint(std::string &output);
-
 	//Vector at start, take each instruction, one at a time, then compute branches/calls
 	uv_err_t analyzeControlFlowLinear();
 	//Start at all (valid) vectors and find all branch points
@@ -453,9 +456,11 @@ public:
 	UVDFLIRT *m_flirt;
 	
 	//Source of data to disassemble
+	//We do not own this
 	UVDData *m_data;
 	
 	//For notifying plugins and such of analysis events
+	//We own this
 	UVDEventEngine *m_eventEngine;
 
 protected:

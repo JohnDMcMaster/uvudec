@@ -350,9 +350,12 @@ uv_err_t UVDAnalyzer::getAddressMax(uv_addr_t *out)
 {
 	uv_addr_t maxConfigAddress = 0;
 	uv_addr_t maxPhysicalAddress = 0;
+	UVDData *data = NULL;
 	
 	uv_assert_err_ret(m_uvd->m_config->getAddressMax(&maxConfigAddress));
-	uv_assert_err_ret(m_uvd->getData()->size(&maxPhysicalAddress));
+	data = m_uvd->getData();
+	uv_assert_ret(data);
+	uv_assert_err_ret(data->size(&maxPhysicalAddress));
 	//We got size, not end
 	--maxPhysicalAddress;
 	

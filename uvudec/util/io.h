@@ -11,15 +11,20 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 /*
 Print a string to all registered output callbacks
+A newline should NOT be appended
+It is assumed that a newline will be at the end
+	Heck, its an error if the string contains a newline at all
+	Undefined behavior if given
 */
-void UVDPrint(const std::string &s);
-void UVDPrintf(const char *format, ...);
+uv_err_t UVDPrint(const std::string &s);
+uv_err_t UVDPrintf(const char *format, ...);
 
-typedef void (*UVDPrintCallback)(const std::string &s);
+typedef uv_err_t (*UVDPrintCallback)(const std::string &s, void *data);
 /*
 No order of call is gauranteed
+A callback can only be registerd once
 */
-uv_err_t UVDRegisterPrintCallback(UVDPrintCallback callback);
+uv_err_t UVDRegisterPrintCallback(UVDPrintCallback callback, void *data);
 uv_err_t UVDUnregisterPrintCallback(UVDPrintCallback callback);
 
 #endif

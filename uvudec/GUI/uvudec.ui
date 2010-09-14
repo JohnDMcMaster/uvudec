@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>710</width>
-    <height>546</height>
+    <width>782</width>
+    <height>518</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -69,7 +69,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QTextBrowser" name="textBrowser_disassembly">
+       <widget class="QPlainTextEdit" name="disassemblyArea">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -87,7 +87,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTextBrowser" name="textBrowser_log">
+     <widget class="QPlainTextEdit" name="plainTextEdit_log">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -109,7 +109,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>710</width>
+     <width>782</width>
      <height>25</height>
     </rect>
    </property>

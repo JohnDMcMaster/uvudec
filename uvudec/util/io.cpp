@@ -5,37 +5,43 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "util/io.h"
+#include <map>
+#include <stdarg.h>
 
 //Default set sort is pointer order, which is what we need
-static std::set<UVDPrintCallback> g_printCallbacks;
+typedef std::map<UVDPrintCallback, void *> UVDPrintCallbacks;
+static UVDPrintCallbacks g_printCallbacks;
 
-void UVDPrint(const std::string &s)
+uv_err_t UVDPrint(const std::string &s)
 {
-	for( std::set<UVDPrintCallback>::iteartor iter = g_printCallbacks.begin(); iter != g_printCallbacks.end(); ++iter )
+	for( UVDPrintCallbacks::iterator iter = g_printCallbacks.begin(); iter != g_printCallbacks.end(); ++iter )
 	{
-		UVDPrintCallback callback = *iter;
+		UVDPrintCallback callback = (*iter).first;
 
-		uv_assert_ret(callback);
-		callback();
+		if( callback )
+		{
+			UV_DEBUG(callback(s, (*iter).second));
+		}
 	}
+	return UV_ERR_OK;
 }
 
-void UVDPrintf(const char *format, ...)
+uv_err_t UVDPrintf(const char *format, ...)
 {
 	va_list ap;
 	char buff[512];
 
 	va_start(ap, format);
-	vsprintf(buff, format, ap);
-	UVDPrint(buff);
+	vsnprintf(buff, sizeof(buff), format, ap);
+	uv_assert_err_ret(UVDPrint(buff));
 	va_end(ap);
 	
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDRegisterPrintCallback(UVDPrintCallback callback)
+uv_err_t UVDRegisterPrintCallback(UVDPrintCallback callback, void *data)
 {
-	g_printCallbacks.insert(callback);
+	g_printCallbacks[callback] = data;
 	return UV_ERR_OK;
 }
 
