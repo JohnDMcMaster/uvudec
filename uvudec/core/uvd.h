@@ -323,9 +323,9 @@ public:
 	//Printing related
 	UVDIterator begin();
 	UVDIterator begin(uint32_t offset);
-	UVDIterator begin(UVDData *data);
+	//UVDIterator begin(UVDData *data);
 	UVDIterator end();
-	UVDIterator end(UVDData *data);
+	//UVDIterator end(UVDData *data);
 	//Analysis related
 	UVDInstructionIterator instructionBegin();
 	UVDInstructionIterator instructionEnd();
