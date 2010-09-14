@@ -582,12 +582,14 @@ UVDIterator UVD::begin(uint32_t offset)
 	return iter;
 }
 
+/*
 UVDIterator UVD::begin(UVDData *data)
 {
 	UVDIterator iter = begin();
 	iter.m_data = data;
 	return iter;
 }
+*/
 
 UVDIterator UVD::end()
 {
@@ -603,12 +605,14 @@ UVDIterator UVD::end()
 	return iter;
 }
 
+/*
 UVDIterator UVD::end(UVDData *data)
 {
 	UVDIterator iter = end();
 	iter.m_data = data;
 	return iter;
 }
+*/
 
 UVDInstructionIterator UVD::instructionBegin()
 {
