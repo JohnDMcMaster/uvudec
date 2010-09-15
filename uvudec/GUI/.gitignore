@@ -1,3 +1,4 @@
 moc_uvd_GUI.cpp
+moc_uvd_GUI_analysis_thread.cpp
 ui_uvudec.h
 
