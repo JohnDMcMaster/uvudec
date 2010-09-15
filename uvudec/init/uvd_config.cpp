@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_arg_util.h"
 #include "uvd_arg_property.h"
 #include "uvd_config.h"
+#include "uvd_debug.h"
 #include "uvd_language.h"
 #include "uvd_log.h"
 #include "uvd_opcode.h"
@@ -800,6 +801,7 @@ void UVDConfig::clearVerboseAll()
 	m_verbose_processing = false;
 	m_verbose_analysis = false;
 	m_verbose_printing = false;
+	UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, false);
 }
 
 void UVDConfig::setVerboseAll()
@@ -810,6 +812,7 @@ void UVDConfig::setVerboseAll()
 	m_verbose_processing = true;
 	m_verbose_analysis = true;
 	m_verbose_printing = true;
+	UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, true);
 }
 
 uv_err_t UVDConfig::setConfigInterpreterLanguage(const std::string &in)
