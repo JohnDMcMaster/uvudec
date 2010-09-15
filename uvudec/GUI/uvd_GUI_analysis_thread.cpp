@@ -37,7 +37,6 @@ static uv_err_t printCallback(const std::string &in, void *data)
 
 uv_err_t UVDGUIAnalysisThread::printLogEntry(const std::string &in)
 {
-printf_debug("");
 	emit printLog(QString::fromStdString(in));
 	return UV_ERR_OK;
 }
@@ -212,7 +211,6 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 {
 	UVDIterator iter;
 	//UVDIterator iterEnd;
-	//uint32_t lineLimit = 40;
 
 	iter = iterBegin;
 
@@ -221,33 +219,46 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 	//maybe we should do <
 	while( iter != iterEnd )
 	{
-		char buff[256];
-		
+		char buff[256];		
 		std::string lineRaw;
 		std::string lineDone;
+		uint32_t maxOpcodeBytes = 4;
 
 		uv_assert_err_ret(iter.getCurrent(lineRaw));
+		uv_assert_ret(iter.m_data);
 
-		snprintf(buff, sizeof(buff), "0x%08X: %s", iter.getPosition(), lineRaw.c_str());
-		lineDone = buff;
+		//snprintf(buff, sizeof(buff), "%04X: %s", , lineRaw.c_str());
+
+		//opcode bytes
+		//printf("iter.m_instruction.m_inst_size: %d\n", iter.m_instruction.m_inst_size);
+		fflush(stdout);
+		lineDone += m_mainWindow->m_project->m_uvd->m_format->formatAddress(iter.getPosition());
+		//printf("line done w/ address: %s\n", lineDone.c_str());
+		lineDone += "  ";
+		for( uint32_t i = 0; i < iter.m_instruction.m_inst_size; ++i )
+		{
+			snprintf(buff, sizeof(buff), "%02X", (unsigned int)(unsigned char)iter.m_instruction.m_inst[i]);
+			lineDone += buff;
+			--maxOpcodeBytes;
+		}
+		while( maxOpcodeBytes )
+		{
+			lineDone += "  ";
+			--maxOpcodeBytes;
+		}
 		
-		//Eh no this still crashes it
-		//emit m_mainWindow.disassemblyArea->setPlainText(qLineDone);
+		//lineDone += ": ";
+		lineDone += "  ";
+		lineDone += lineRaw;
+		
+		
 		emit lineDisassembled(QString::fromStdString(lineDone));
-		//emit m_mainWindow->appendDisassembledLine(lineDone);
 
 		if( UV_FAILED(iter.next()) )
 		{
 			printf_debug("Failed to get next\n");
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-		/*
-		--lineLimit;
-		if( lineLimit == 0 )
-		{
-			break;
-		}
-		*/
 	}
 	return UV_ERR_OK;
 }

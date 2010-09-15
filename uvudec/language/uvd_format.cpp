@@ -61,13 +61,15 @@ std::string UVDFormat::formatAddress(uint32_t address)
 {
 	char formatter[32];
 	char buff[32];
+	const char *hexPrefix = "";
+	//const char *hexPrefix = "0x";
 	
 	if( !g_config )
 	{
 		return "";
 	}
 	
-	snprintf(formatter, 32, "0x%%.%dX", g_config->m_hex_addr_print_width);
+	snprintf(formatter, 32, "%s%%.%dX", hexPrefix, g_config->m_hex_addr_print_width);
 	snprintf(buff, 32, formatter, address);
 
 	return std::string(buff);

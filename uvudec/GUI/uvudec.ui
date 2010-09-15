@@ -82,6 +82,11 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Courier</family>
+         </font>
+        </property>
        </widget>
       </item>
      </layout>
