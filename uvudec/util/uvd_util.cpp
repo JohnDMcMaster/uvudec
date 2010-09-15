@@ -302,7 +302,7 @@ uv_err_t uvd_parse_func(const char *text, char **name, char **content)
 	uv_assert(name);
 	uv_assert(content);
 
-	printf_debug("uvd_parse_func, in: <%s>\n", text);
+	//printf_debug("uvd_parse_func, in: <%s>\n", text);
 
 	copy = strdup(text);
 	uv_assert_all(copy);

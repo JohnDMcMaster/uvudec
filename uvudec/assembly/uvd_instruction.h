@@ -69,7 +69,7 @@ public:
 	uv_err_t deinit();
 
 public:
-	std::vector<UVDOperand *> m_args;
+	std::vector<UVDOperand> m_args;
 };
 
 /*
@@ -343,7 +343,7 @@ public:
 
 	//Will return UV_ERR_DONE to indicate incomplete parsing of the operand due to out of data
 	uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
-			std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
+			std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand > &operands);
 
 public:
 
@@ -351,6 +351,7 @@ public:
 	uv_err_t print_disasm(char *buff, uint32_t buffsz);
 	uv_err_t print_disasm(std::string &s);
 	
+public:
 	/* Shared information for the primary instruction part such as a general description */
 	UVDInstructionShared *m_shared;
 	/* 
@@ -358,7 +359,7 @@ public:
 	Stored in Intel format, left to right
 	ie destination followed by first operand, second, etc
 	*/
-	std::vector<UVDOperand *> m_operands;	
+	std::vector<UVDOperand> m_operands;	
 	
 	/* offset in the source file */
 	uint32_t m_offset;
