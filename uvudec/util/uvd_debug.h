@@ -74,13 +74,20 @@ uv_assert_err is always enabled
 
 #else /* ifdef NDEBUG */
 
-#define UVD_DEBUG_TYPE_NONE				0x00000000
+#define UVD_DEBUG_TYPE_NONE							0x00000000
 //Main engine initializaiton and such
-#define UVD_DEBUG_TYPE_GENERAL			0x00000001
-#define UVD_DEBUG_TYPE_FLIRT			0x00000100
+#define UVD_DEBUG_TYPE_GENERAL						0x00000001
+//Iteration on instructions and assembly printing
+#define UVD_DEBUG_TYPE_ITERATOR						0x00000002
+//Config file parsing
+#define UVD_DEBUG_TYPE_UVD_ASM_CONFIG				0x00000003
+//Actual printing operations of instructions
+#define UVD_DEBUG_TYPE_UVD_PRINT					0x00000004
+//FLIRT related...will likely break this up into several parts
+#define UVD_DEBUG_TYPE_FLIRT						0x00000100
 //If your plugin needs to debug, chose something above this
-#define UVD_DEBUG_TYPE_PLUGIN_BASE		0x10000000
-#define UVD_DEBUG_TYPE_ALL				0xFFFFFFFF
+#define UVD_DEBUG_TYPE_PLUGIN_BASE					0x10000000
+#define UVD_DEBUG_TYPE_ALL							0xFFFFFFFF
 
 typedef uint32_t uvd_debug_flag_t;
 //Return error if type already registered
@@ -112,6 +119,7 @@ void uv_enter(const char *file, uint32_t line, const char *func);
 
 uv_err_t UVDDebugInit();
 uv_err_t UVDDebugDeinit();
+uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet);
 
 #define UVD_BREAK() do { __asm__("INT3"); } while( 0 )
 #define UVD_PRINT_STACK() uvd_print_trace(__FILE__, __LINE__, __FUNCTION__)
