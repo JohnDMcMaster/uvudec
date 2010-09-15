@@ -389,6 +389,7 @@ uv_err_t UVD::analyzeControlFlow()
 uv_err_t UVD::analyzeControlFlowLinear()
 {
 	UVDInstructionIterator iter;
+	UVDInstructionIterator iterEnd;
 	uint32_t printPercentage = 1;
 	uint32_t printNext = printPercentage;
 	uv_addr_t numberAnalyzedBytes = 0;
@@ -398,7 +399,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	uv_assert_ret(m_config);
 	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
-	iter = instructionBegin();
+	uv_assert_err_ret(instructionBegin(iter));
+	uv_assert_err_ret(instructionEnd(iterEnd));
 	for( ;; )
 	{
 		std::string action;
@@ -418,8 +420,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
 
 		//If we aren't at end, there should be more data
-		uv_assert_err_ret(iter.nextInstruction());
-		if( iter == instructionEnd() )
+		uv_assert_err_ret(iter.next());
+		if( iter == iterEnd )
 		{
 			printf_debug("disassemble: end");
 			break;

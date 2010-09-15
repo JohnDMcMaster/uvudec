@@ -568,18 +568,40 @@ UVDIterator UVD::begin()
 {
 	UVDIterator iter;
 	
-	UV_DEBUG(iter.init(this));
-	iter.m_data = m_data;
+	if( UV_FAILED(begin(iter)) )
+	{
+		UVD_PRINT_STACK();
+	}
 	return iter;
+}
+	
+uv_err_t UVD::begin(UVDIterator &iter)
+{
+	uv_assert_err_ret(iter.init(this));
+	iter.m_data = m_data;
+	return UV_ERR_OK;
 }
 
 UVDIterator UVD::begin(uint32_t offset)
 {
 	UVDIterator iter;
 	
-	UV_DEBUG(iter.init(this, offset, 0));
-	iter.m_data = m_data;
+	UV_DEBUG(begin(offset, iter));
 	return iter;
+}
+
+uv_err_t UVD::begin(uint32_t offset, UVDIterator &iter)
+{
+	uv_assert_err_ret(beginCore(offset, iter));
+	return UV_ERR_OK;;
+}
+
+uv_err_t UVD::beginCore(uint32_t offset, UVDIterator &out)
+{
+	uv_assert_err_ret(out.init(this, offset, 0));
+	out.m_data = m_data;
+
+	return UV_ERR_OK;
 }
 
 /*
@@ -593,16 +615,26 @@ UVDIterator UVD::begin(UVDData *data)
 
 UVDIterator UVD::end()
 {
+	UVDIterator iter;
+
+	UV_DEBUG(end(iter));
+	return iter;
+}
+
+uv_err_t UVD::end(UVDIterator &iter)
+{
 	//Pos is "next position"
 	//Size is first invalid position
-	UVDIterator iter;
+	//UVDIterator iter;
+	
+	uv_assert_err_ret(UVDIterator::getEnd(this, iter));
 	
 	//This will work fine unless we fill up the entire address space
-	UV_DEBUG(iter.init(this));
-	iter.m_data = m_data;
+	//UV_DEBUG(iter.init(this));
+	//iter.m_data = m_data;
 	//The key part
-	UV_DEBUG(iter.makeEnd());
-	return iter;
+	//UV_DEBUG(iter.makeEnd());
+	return UV_ERR_OK;
 }
 
 /*
@@ -617,22 +649,35 @@ UVDIterator UVD::end(UVDData *data)
 UVDInstructionIterator UVD::instructionBegin()
 {
 	UVDInstructionIterator iter;
-	
-	UV_DEBUG(iter.init(this));
-	iter.m_data = m_data;
-	return iter;	
+	UV_DEBUG(instructionBegin(iter));
+	return iter;
+}
+
+uv_err_t UVD::instructionBegin(UVDInstructionIterator &iter)
+{
+	//iter.m_data = m_data;
+	uv_assert_err_ret(iter.init(this));
+
+	return UV_ERR_OK;	
 }
 
 UVDInstructionIterator UVD::instructionEnd()
 {
 	UVDInstructionIterator iter;
-	
-	//This will work fine unless we fill up the entire address space
-	UV_DEBUG(iter.init(this));
-	iter.m_data = m_data;
-	//The key part
-	UV_DEBUG(iter.makeEnd());
+
+	UV_DEBUG(instructionEnd(iter));
 	return iter;
+}
+
+uv_err_t UVD::instructionEnd(UVDInstructionIterator &iter)
+{
+	//This will work fine unless we fill up the entire address space
+	//uv_assert_err_ret(iter.init(this));
+	//iter.m_data = m_data;
+	//The key part
+	//uv_assert_err_ret(iter.makeEnd());
+	uv_assert_err_ret(UVDInstructionIterator::getEnd(this, iter));
+	return UV_ERR_OK;
 }
 
 //FIXME: doesn't split
@@ -645,29 +690,22 @@ std::vector<std::string> split(const std::string &s, char delim)
 
 uv_err_t UVD::stringListAppend(UVDInstruction *inst, std::vector<std::string> &list)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	char buff[512];
 	
-	if( !inst )
-	{
-		return UV_DEBUG(rc);
-	}
+	uv_assert_ret(inst);
 	
 	printf_debug("printing disasm\n");
-	rc = inst->print_disasm(buff, 512);
+	uv_assert_err_ret(inst->print_disasm(buff, 512));
 	printf_debug("printed disasm\n");
-	if( UV_SUCCEEDED(rc) )
-	{
-		std::vector<std::string> toAppend;
+	std::vector<std::string> toAppend;
 
-		toAppend = split(std::string(buff), '\n', true);
-		for( std::vector<std::string>::size_type i = 0; i < toAppend.size(); ++i )
-		{
-			list.insert(list.end(), toAppend[i]);
-		}
+	toAppend = split(std::string(buff), '\n', true);
+	for( std::vector<std::string>::size_type i = 0; i < toAppend.size(); ++i )
+	{
+		list.insert(list.end(), toAppend[i]);
 	}
 	
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVD::createAnalysisDir(const std::string &file, const std::string &outputDir)
@@ -709,6 +747,10 @@ uv_err_t UVD::disassemble(std::string &output)
 uv_err_t UVD::decompile(std::string &output)
 {
 	UVDBenchmark decompileBenchmark;
+	UVDIterator iterBegin;
+	UVDIterator iterEnd;
+
+
 	decompileBenchmark.start();
 
 	//Most of program time should be spent here
@@ -716,7 +758,9 @@ uv_err_t UVD::decompile(std::string &output)
 	//Until we can do better
 	setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY);
 	//And print
-	uv_assert_err_ret(printRangeCore(begin(), end(), output));
+	uv_assert_err_ret(begin(iterBegin));
+	uv_assert_err_ret(end(iterEnd));
+	uv_assert_err_ret(printRangeCore(iterBegin, iterEnd, output));
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
 	decompileBenchmark.stop();
@@ -818,12 +862,7 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::st
 #endif //USING_ROPE
 				;				
 		printf_debug("\n");
-		if( UV_FAILED(iter.next()) )
-		{
-			printf_debug("Failed to get next\n");
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		//iter.debugPrint();
+		uv_assert_err_ret(iter.next());
 	}
 #ifdef USING_ROPE
 	output = outputRope.c_str();

@@ -204,11 +204,15 @@ UVDInstruction::~UVDInstruction()
 
 uv_err_t UVDInstruction::deinit()
 {
+	//printf("this UVDInstruction under deinit: 0x%08X, operands: 0x%02X\n", (int)this, m_operands.size());
+	//fflush(stdout);
+	/*
 	//m_shared is not owned by this as there can be n to 1, as is obviously not m_uvd
 	for( std::vector<UVDOperand *>::iterator iter = m_operands.begin(); iter != m_operands.end(); ++iter )
 	{
 		delete *iter;
 	}
+	*/
 	m_operands.clear();
 
 	return UV_ERR_OK;
@@ -279,10 +283,10 @@ uv_err_t UVDInstruction::print_disasm(char *buff, unsigned int buffsz)
 		printf_debug("Pre operand buff: <%s>\n", buff);
 		for( unsigned int i = 0; i < m_operands.size(); ++i )
 		{
-			UVDOperand *operand = m_operands[i];
+			UVDOperand &operand = m_operands[i];
 			unsigned int used = 0;
 
-			if( UV_FAILED(operand->print_disasm_operand(buff + pos, buffsz - pos, &used)) )
+			if( UV_FAILED(operand.print_disasm_operand(buff + pos, buffsz - pos, &used)) )
 			{
 				printf_debug("Buff so far: %s\n", buff);
 				UV_ERR(rc);
@@ -322,7 +326,7 @@ error:
 
 //Given an identified instruction operand, parse the next operand out of the remaining binary (data)
 uv_err_t UVDInstruction::parseOperands(UVDIteratorCommon *uvdIter,
-		std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand *> &operands)
+		std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand> &operands)
 {
 	UVDData *data = NULL;;
 	uv_assert_ret(m_uvd);
@@ -339,18 +343,18 @@ uv_err_t UVDInstruction::parseOperands(UVDIteratorCommon *uvdIter,
 	{
 		printf_debug("Loop op\n");
 		UVDOperandShared *op_shared = ops_shared[i];
-		UVDOperand *op = NULL;
+		UVDOperand op;
 		uv_err_t rcParse = UV_ERR_GENERAL;
 		
 		uv_assert_ret(op_shared);
 		
-		op = new UVDOperand();
-		uv_assert_ret(op);
-		op->m_instruction = this;
+		//op = new UVDOperand();
+		//uv_assert_ret(op);
+		op.m_instruction = this;
 		
-		op->m_shared = op_shared;
+		op.m_shared = op_shared;
 		
-		rcParse = op->parseOperand(uvdIter);
+		rcParse = op.parseOperand(uvdIter);
 		uv_assert_err_ret(rcParse);
 		//Truncated analysis?
 		if( rcParse == UV_ERR_DONE )
@@ -358,8 +362,8 @@ uv_err_t UVDInstruction::parseOperands(UVDIteratorCommon *uvdIter,
 			return UV_ERR_DONE;
 		}
 		
-		uv_assert_ret(op->m_shared);
-		printf_debug("Linked %s\n", op->m_shared->m_name.c_str());
+		uv_assert_ret(op.m_shared);
+		//printf_debug("Linked %s\n", op->m_shared->m_name.c_str());
 		
 		operands.push_back(op);
 	}
@@ -375,13 +379,13 @@ uv_err_t UVDInstruction::collectVariables(UVDVariableMap &environment)
 	
 	for( std::vector<UVDOperand *>::size_type i = 0; i < m_operands.size(); ++i )
 	{
-		UVDOperand *operand = m_operands[i];
+		UVDOperand &operand = m_operands[i];
 		std::string sKey;
 		UVDVarient vValue;
 		
-		uv_assert(operand);
+		//uv_assert(operand);
 	
-		uv_assert_err(operand->getVariable(sKey, vValue));
+		uv_assert_err(operand.getVariable(sKey, vValue));
 		if( !sKey.empty() )
 		{
 			environment[sKey] = vValue;

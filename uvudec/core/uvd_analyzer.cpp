@@ -385,6 +385,7 @@ uv_err_t UVDAnalyzer::nextValidAddress(uv_addr_t start, uv_addr_t *ret)
 	//No more valid addresses based on config?
 	if( rc == UV_ERR_DONE )
 	{
+printf("config says address 0x%04X is out of bounds\n", start);  
 		return UV_ERR_DONE;
 	}
 	//We may have also exceeded the practical file bounds

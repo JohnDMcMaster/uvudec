@@ -72,6 +72,10 @@ UVDOperand::~UVDOperand()
 
 uv_err_t UVDOperand::deinit()
 {
+	//printf("this UVDOperand under deinit: 0x%08X\n", (int)this);
+	fflush(stdout);
+	//FIXME: a test
+	m_shared = NULL;
 	if( m_shared )
 	{
 		switch( m_shared->m_type )
@@ -91,7 +95,7 @@ uv_err_t UVDOperand::parseOperand(UVDIteratorCommon *uvdIter)
 	UVDData *data = NULL;
 	UVD *uvd = NULL;
 	uv_err_t rcNextAddress = UV_ERR_GENERAL;
-	int read = -1;
+	uint8_t read = 0;
 
 	uv_assert_ret(m_instruction);
 	inst = m_instruction;
@@ -115,42 +119,37 @@ uv_err_t UVDOperand::parseOperand(UVDIteratorCommon *uvdIter)
 		switch(m_shared->m_immediate_size)
 		{
 		case 8:
-			read = data->read(uvdIter->m_nextPosition);	
-			uv_assert_ret(read >= 0);
-			m_ui8 = read;
-			rcNextAddress = uvdIter->nextValidExecutableAddress();
+			rcNextAddress = uvdIter->consumeCurrentExecutableAddress(&read);
 			uv_assert_err_ret(rcNextAddress);
 			if( rcNextAddress == UV_ERR_DONE )
 			{
 				//Premature termination
 				return UV_ERR_DONE;
 			}
+			m_ui8 = read;
 			
 			break;
 		case 16:
-			read = data->read(uvdIter->m_nextPosition);
-			uv_assert_ret(read >= 0);
-			m_ui16 = read << 8;
-			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
-			rcNextAddress = uvdIter->nextValidExecutableAddress();
+			rcNextAddress = uvdIter->consumeCurrentExecutableAddress(&read);
 			uv_assert_err_ret(rcNextAddress);
 			if( rcNextAddress == UV_ERR_DONE )
 			{
 				//Premature termination
 				return UV_ERR_DONE;
 			}
+			//printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			m_ui16 = read << 8;
 			
-			read = data->read(uvdIter->m_nextPosition);
-			uv_assert_ret(read >= 0);
-			m_ui16 += read;	
-			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
-			rcNextAddress = uvdIter->nextValidExecutableAddress();
+			rcNextAddress = uvdIter->consumeCurrentExecutableAddress(&read);
 			uv_assert_err_ret(rcNextAddress);
 			if( rcNextAddress == UV_ERR_DONE )
 			{
-				//Pre-mature termination
+				//Premature termination
 				return UV_ERR_DONE;
 			}
+			m_ui16 += read;	
+			
+			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
 
 			break;
 		default:
@@ -440,7 +439,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 				printf_debug("Memory shared name: %s, prefix: <%s>, suffix: <%s>\n", mem_shared->m_name.c_str(), 
 						mem_shared->m_print_prefix.c_str(), mem_shared->m_print_suffix.c_str());
 
-				mem_arg = m_func->m_args[0];
+				mem_arg = &m_func->m_args[0];
 				uv_assert(mem_arg);
 				uv_assert(mem_arg->m_shared);
 			
@@ -544,7 +543,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 					UVDOperand *uniaryOperand = NULL;
 					std::string uniaryString;
 					
-					uniaryOperand = m_func->m_args[0];
+					uniaryOperand = &m_func->m_args[0];
 					uv_assert_ret(uniaryOperand);
 					
 					uv_assert_err_ret(uniaryOperand->printDisassemblyOperand(uniaryString));
@@ -559,9 +558,9 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 					std::string lString;
 					std::string rString;
 					
-					lOperand = m_func->m_args[0];
+					lOperand = &m_func->m_args[0];
 					uv_assert_ret(lOperand);
-					rOperand = m_func->m_args[1];
+					rOperand = &m_func->m_args[1];
 					uv_assert_ret(rOperand);
 
 					uv_assert_err_ret(lOperand->printDisassemblyOperand(lString));
@@ -613,7 +612,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 					break;
 				}
 
-				op_arg = m_func->m_args[cur_arg_index];
+				op_arg = &m_func->m_args[cur_arg_index];
 				uv_assert(op_arg);
 				if( UV_FAILED(op_arg->print_disasm_operand(buff + pos, buffsz - pos, &last_usage)) )
 				{
@@ -768,10 +767,12 @@ UVDFunction::~UVDFunction()
 
 uv_err_t UVDFunction::deinit()
 {
+	/*
 	for( std::vector<UVDOperand *>::iterator iter = m_args.begin(); iter != m_args.end(); ++iter )
 	{
 		delete *iter;
 	}
+	*/
 	m_args.clear();
 
 	return UV_ERR_OK;
