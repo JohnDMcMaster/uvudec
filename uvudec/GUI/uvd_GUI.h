@@ -48,6 +48,7 @@ private slots:
 	void on_actionClose_triggered();
 	void on_actionAbout_triggered();
 
+	void on_symbolsListWidget_itemClicked(QListWidgetItem *item);
 
 public:
 	Ui::UVDMainWindow m_mainWindow;

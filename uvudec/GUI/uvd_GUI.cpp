@@ -102,7 +102,10 @@ void UVDMainWindow::on_actionOpen_triggered()
 	fileName = QFileDialog::getOpenFileName(this, tr("Open Project"),
 			DEFAULT_DECOMPILE_FILE,
 			m_projectFileNameDialogFilter);
-	UV_DEBUG(initializeProject(fileName.toStdString()));
+	if( !fileName.isEmpty() )
+	{
+		UV_DEBUG(initializeProject(fileName.toStdString()));
+	}
 }
 
 uv_err_t UVDMainWindow::rebuildFunctionList()
@@ -243,6 +246,15 @@ void UVDMainWindow::on_actionSaveAs_triggered()
 void UVDMainWindow::on_actionPrint_triggered()
 {
 	printf("%s\n", __FUNCTION__);
+}
+
+void UVDMainWindow::on_symbolsListWidget_itemClicked(QListWidgetItem *item)
+{
+	std::string text;
+	
+	text = item->text().toStdString();
+	
+	UVDPrintf("clicked on %s", text.c_str());
 }
 
 uv_err_t UVDMainWindow::shutdown()
