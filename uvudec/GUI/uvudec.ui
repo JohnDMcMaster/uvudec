@@ -87,6 +87,9 @@
           <family>Courier</family>
          </font>
         </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -104,6 +107,9 @@
         <width>16777215</width>
         <height>100</height>
        </size>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
       </property>
      </widget>
     </item>
