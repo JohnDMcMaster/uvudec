@@ -202,7 +202,6 @@ void UVDMainWindow::appendDisassembledLine(QString line)
 
 void UVDMainWindow::appendLogLine(QString line)
 {
-printf_debug("");
 	ASSERT_THREAD();
 	m_mainWindow.plainTextEdit_log->appendPlainText(line);
 }
