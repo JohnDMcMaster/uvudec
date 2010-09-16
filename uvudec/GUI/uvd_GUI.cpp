@@ -76,6 +76,9 @@ uv_err_t UVDMainWindow::init()
 	
 	UVDPrintf("Logging initialized");	
 
+	//Wonder if it will get angry if I never add the closing tag
+	//m_mainWindow.disassemblyArea->append("<body bgcolor=\"Silver\">");
+
 	/*
 	Keep it idlying waiting
 	Also this will be used to handling printing, so start it early for uniform interface
@@ -191,7 +194,10 @@ void UVDMainWindow::appendDisassembledLine(QString line)
 //printf("appending line\n");
 	ASSERT_THREAD();
 	//QString qLine = QString::fromStdString(line);
-	m_mainWindow.disassemblyArea->appendPlainText(line);
+	//m_mainWindow.disassemblyArea->appendPlainText(line);
+	//aparantly bold messed up the monospacing
+	//line = "<B>" + line + "</B>";
+	m_mainWindow.disassemblyArea->append(line);
 }
 
 void UVDMainWindow::appendLogLine(QString line)
