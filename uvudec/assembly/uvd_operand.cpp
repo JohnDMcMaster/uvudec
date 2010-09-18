@@ -205,8 +205,6 @@ error:
 
 uv_err_t UVDOperand::getVariable(std::string &name, UVDVarient &value)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
-
 	uv_assert_err_ret(m_shared);
 
 	switch( m_shared->m_type )
@@ -215,6 +213,8 @@ uv_err_t UVDOperand::getVariable(std::string &name, UVDVarient &value)
 	{
 		/*
 		Ignore for now...?
+		Value cannot be determinted by static analysis
+			Usually, and defintly not easily
 		Registers will get mapped seperately in a sort of VM
 		
 		std::string sName = op->m_shared->m_name;
@@ -263,14 +263,27 @@ uv_err_t UVDOperand::getVariable(std::string &name, UVDVarient &value)
 		break;
 	}
 	case UV_DISASM_DATA_FUNC:
+		//Recurse
+		//Only one of these should actually be coding (or it would be a seperate operand)
+		//really, funcs should only contain one operand anyway
+		//they were intended as a way of tagging vars
+		//When the UVD assembler engine is put into a plugin, core engine should use tags instead of funcs
+		for( std::vector<UVDOperand>::iterator iter = m_func->m_args.begin(); iter != m_func->m_args.end(); ++iter )
+		{
+			UVDOperand &operand = *iter;
+			
+			uv_assert_err_ret(operand.getVariable(name, value));
+			if( !name.empty() )
+			{
+				break;
+			}
+		}
 		break;
 	default:
 		break;
 	}
 
-	rc = UV_ERR_OK;
-
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 int g_fail_no_sym = 1;
@@ -288,7 +301,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 	uv_err_t rc = UV_ERR_GENERAL;
 	unsigned int pos = 0;
 	
-printf("printing operand\n");
+//printf("printing operand\n");
 
 	uv_assert(buff);
 	uv_assert(m_shared);
@@ -386,7 +399,7 @@ printf("printing operand\n");
 			}
 
 			snprintf(int_formatter, 8, "0x%%.%dX", printWidth);
-printf("int formatter: %s\n", int_formatter);
+//printf("int formatter: %s\n", int_formatter);
 		}
 		else
 		{
@@ -434,7 +447,7 @@ printf("int formatter: %s\n", int_formatter);
 			//Formatting information for a type of memory?
 			if( sym_value->m_type == UVD_SYMBOL_MEM )
 			{
-printf("mem symbol\n");
+//printf("mem symbol\n");
 				UVDMemoryShared *mem_shared = NULL;
 				std::string equiv_name;
 				UVDOperand *mem_arg = NULL;
