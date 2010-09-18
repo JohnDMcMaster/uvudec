@@ -258,6 +258,10 @@ public:
 	*/
 	uv_err_t getDataSegments(std::vector<UVDMemorySegment *> &segments);
 
+	//transer ownership of formatting object to us
+	//For outputting disassembly and decompiled formatting
+	uv_err_t setOutputFormatting(UVDFormat *format);
+
 protected:
 	//Vector at start, take each instruction, one at a time, then compute branches/calls
 	uv_err_t analyzeControlFlowLinear();
@@ -301,6 +305,7 @@ public:
 	//General configuration
 	UVDConfig *m_config;
 	//How to print data
+	//This should probably be moved to UVDConfig
 	UVDFormat *m_format;
 
 	UVDFLIRT *m_flirt;

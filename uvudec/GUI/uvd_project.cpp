@@ -10,6 +10,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include "uvd_init.h"
 #include "uvd_project.h"
 #include "uvd_util.h"
+#include "GUI/format.h"
 #include <jansson.h>
 
 class UVDProjectWriter
@@ -66,7 +67,6 @@ uv_err_t UVDProject::init(int argc, char **argv)
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
 	
 	//Early library initialization.  Logging and arg parsing structures
-	uv_assert_err_ret(UVDInit());
 	config = g_config;
 	uv_assert_ret(config);
 	
@@ -84,6 +84,12 @@ uv_err_t UVDProject::deinit()
 	uv_assert_err_ret(UVDDeinit());
 
 	return UV_ERR_OK;
+}
+
+UVDGUIFormat *UVDProject::getFormat()
+{
+	//TODO: add an assert here using C++ RTTI
+	return (UVDGUIFormat *)m_uvd->m_format;
 }
 
 /*

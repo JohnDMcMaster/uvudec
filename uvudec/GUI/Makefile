@@ -24,6 +24,7 @@ CC_SRCS =   \
 
 CXX_SRCS = 	\
 		$(GUI_DIR)/main.cpp \
+		$(GUI_DIR)/format.cpp \
 		$(GUI_DIR)/uvd_analysis_action.cpp \
 		$(GUI_DIR)/uvd_project.cpp \
 		$(GUI_DIR)/uvd_GUI.cpp \

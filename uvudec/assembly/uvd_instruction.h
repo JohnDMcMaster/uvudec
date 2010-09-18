@@ -107,8 +107,11 @@ public:
 	uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
 
 public:
-	/* Register, memory, immediate */
-	int m_type;
+	/*
+	Register, memory, immediate
+	UV_DISASM_DATA_*
+	*/
+	uint32_t m_type;
 
 	/*
 	Register: malloc'd register name

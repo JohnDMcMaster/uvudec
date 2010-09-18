@@ -41,10 +41,12 @@ public:
 
 signals:
 	//We finished disassembling the next line, line is the result
-	void lineDisassembled(QString name);
+	void lineDisassembledMonospaced(QString name);
+	void lineDisassembledHTML(QString name);
 	void newFunction(QString functionName);
 	void deleteFunction(QString functionName);
 	void printLog(QString line);
+	void setDisassemblyAreaActive(bool);
 
 protected:
 	uv_err_t getNextAction(UVDAnalysisAction **action);
