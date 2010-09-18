@@ -16,7 +16,6 @@ UVDGUIFormat::~UVDGUIFormat()
 
 uv_err_t UVDGUIFormat::formatAddress(uint32_t address, std::string &ret)
 {
-//printf("GUI format of address 0x%08X\n", address);
 	std::string plainAddress;
 	std::string anchor;
 	
