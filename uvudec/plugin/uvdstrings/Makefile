@@ -4,7 +4,7 @@
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
 ROOT_DIR=../..
-PLUGIN_NAME=uvstrings
+PLUGIN_NAME=uvdstrings
 
 CC_SRCS =   \
 
