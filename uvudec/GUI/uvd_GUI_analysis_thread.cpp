@@ -4,10 +4,12 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
+#include "uvd_benchmark.h"
 #include "uvd_GUI.h"
 #include "uvd_GUI_analysis_thread.h"
 #include "uvd_analysis_action.h"
 #include "util/io.h"
+#include "GUI/format.h"
 #include "uvd_language.h"
 #include "uvd_core_event.h"
 #include "event/event.h"
@@ -169,40 +171,24 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	m_mainWindow->m_project->m_uvd = uvd;
 
 	//Get our callbacks ready...
-	printf("initializing callbacks\n");
-	fflush(stdout);
 	uv_assert_err_ret(initializeUVDCallbacks());
+	UVDFormat *format = new UVDGUIFormat();
+	uv_assert_ret(format);
+	uv_assert_err_ret(uvd->setOutputFormatting(format));
+
 	//Fire at will
-	printf("analyzing\n");
-	fflush(stdout);
 	UVDPrintf("Analyzing");
 	uv_assert_err_ret(uvd->analyze());
 
-	printf("setting lang\n");
-	fflush(stdout);
 	uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
 
 	UVDPrintf("Disassembling");
-#if 0
-	std::string deadListing;
-	//FIXME: use the iterator directly so we don't waste time with the whole line
-	uv_assert_err_ret(uvd->printRangeCore(uvd->begin(), uvd->end(), deadListing));
-	QString deadListingQ = QString::fromStdString(deadListing);
-	//m_mainWindow.disassemblyArea->appendPlainText(deadListingQ);
-	//m_mainWindow.disassemblyArea->setPlainText(deadListingQ);
-	//Is this the correct way to do it?
-	//emit m_mainWindow.disassemblyArea->setPlainText(deadListingQ);
-	//std::vector<std::string> lines = split(const std::string &s, char delim, bool ret_blanks = true);
-
-	//This should become less necessary as event system pushes events instead of rebuilding each time
-	//uv_assert_err_ret(updateAllViews());	
-#endif
-
 	uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
 	
 	UVDPrintf("Initial analysis completed");
 
-	delete data;
+	//FIXME: we should make UVD own this
+	//delete data;
 
 	return UV_ERR_OK;
 }
@@ -211,28 +197,53 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 {
 	UVDIterator iter;
 	//UVDIterator iterEnd;
+	UVDBenchmark disassemblyTime;
+	std::string everything;
+	
+	disassemblyTime.start();
 
 	iter = iterBegin;
 
 	//FIXME: what if we misalign by accident and surpass?
 	//need to add some check for that
-	//maybe we should do <
+	//maybe we should implement <
+	//emit setDisassemblyAreaActive(false);
+	//printf("iterBegin: 0x%08X, iterEnd: 0x%08X\n", iterBegin.m_nextPosition, iterEnd.m_nextPosition);
 	while( iter != iterEnd )
 	{
-		char buff[256];		
+		char buff[256];
 		std::string lineRaw;
 		std::string lineDone;
 		uint32_t maxOpcodeBytes = 4;
+		std::string anchorName;
+		std::string lineAnchor;
+
+		/*
+		//For debugging
+		static int count = 0;
+		++count;
+		if( count >= 10 )
+		{
+		break;
+		}
+		*/
 
 		uv_assert_err_ret(iter.getCurrent(lineRaw));
 		uv_assert_ret(iter.m_data);
 
 		//snprintf(buff, sizeof(buff), "%04X: %s", , lineRaw.c_str());
+		
+		uv_assert_err_ret(m_mainWindow->m_project->getFormat()->addressToAnchorName(iter.getPosition(), anchorName));
+		lineAnchor = "<A name=\"" + anchorName + "\" />\n";
+		everything += lineAnchor;
 
 		//opcode bytes
 		//printf("iter.m_instruction.m_inst_size: %d\n", iter.m_instruction.m_inst_size);
-		fflush(stdout);
-		lineDone += m_mainWindow->m_project->m_uvd->m_format->formatAddress(iter.getPosition());
+		//fflush(stdout);
+		std::string formattedAddress;
+		//We should probably not format this as having a link to the address at the address isn't terribly useful
+		uv_assert_err_ret(m_mainWindow->m_project->m_uvd->m_format->formatAddress(iter.getPosition(), formattedAddress));
+		lineDone += formattedAddress;
 		//printf("line done w/ address: %s\n", lineDone.c_str());
 		lineDone += "  ";
 		for( uint32_t i = 0; i < iter.m_instruction.m_inst_size; ++i )
@@ -243,16 +254,21 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 		}
 		while( maxOpcodeBytes )
 		{
-			lineDone += "  ";
+			//lineDone += "  ";
+			lineDone += "&nbsp;&nbsp;";
 			--maxOpcodeBytes;
 		}
 		
 		//lineDone += ": ";
-		lineDone += "  ";
+		//lineDone += "  ";
+		lineDone += "&nbsp;&nbsp;";
 		lineDone += lineRaw;
+		//Monospaced
+		//See how much this helps w/ and w/o monospaced font
+		//lineDone = std::string("<TT>") + lineDone + "</TT>";
 		
-		
-		emit lineDisassembled(QString::fromStdString(lineDone));
+		//emit lineDisassembled(QString::fromStdString(lineDone));
+		everything += lineDone + "\n<BR />\n";
 
 		if( UV_FAILED(iter.next()) )
 		{
@@ -260,6 +276,12 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
+	//printf("emitting HTML of size %d\n%s\n", everything.size(), everything.c_str());
+	//emit lineDisassembledMonospaced(QString::fromStdString(everything));
+	emit lineDisassembledHTML(QString::fromStdString(everything));
+	disassemblyTime.stop();
+	printf_debug_level(UVD_DEBUG_PASSES, "disassembly time: %s\n", disassemblyTime.toString().c_str());
+	//emit setDisassemblyAreaActive(true);
 	return UV_ERR_OK;
 }
 

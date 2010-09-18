@@ -32,23 +32,27 @@ public:
 
 protected:
 	uv_err_t rebuildFunctionList();
+	uv_err_t assemblyDisplayTests();
 
 public slots:
 	uv_err_t newFunction(QString functionName);
 	uv_err_t deleteFunction(QString functionName);
-	void appendDisassembledLine(QString line);
-	void appendLogLine(QString line);
+	//Inserts a newline before the current text if the text area is not empty
+	uv_err_t appendDisassembledLine(QString line);
+	//Don't think this inserts a newline
+	uv_err_t appendDisassembledHTML(QString html);
+	uv_err_t appendLogLine(QString line);
 
 private slots:
-	void on_actionNew_triggered();
-	void on_actionOpen_triggered();
-	void on_actionSave_triggered();
-	void on_actionSaveAs_triggered();
-	void on_actionPrint_triggered();
-	void on_actionClose_triggered();
-	void on_actionAbout_triggered();
+	uv_err_t on_actionNew_triggered();
+	uv_err_t on_actionOpen_triggered();
+	uv_err_t on_actionSave_triggered();
+	uv_err_t on_actionSaveAs_triggered();
+	uv_err_t on_actionPrint_triggered();
+	uv_err_t on_actionClose_triggered();
+	uv_err_t on_actionAbout_triggered();
 
-	void on_symbolsListWidget_itemClicked(QListWidgetItem *item);
+	uv_err_t on_symbolsListWidget_itemClicked(QListWidgetItem *item);
 
 public:
 	Ui::UVDMainWindow m_mainWindow;

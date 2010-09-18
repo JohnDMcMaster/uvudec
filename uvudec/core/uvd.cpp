@@ -898,3 +898,15 @@ UVDData *UVD::getData()
 {
 	return m_data;
 }
+
+uv_err_t UVD::setOutputFormatting(UVDFormat *format)
+{
+	uv_assert_ret(format);
+
+	//We could consider moving some of the settings in if they are undefined by the new object if an old exists
+	delete m_format;
+	m_format = format;
+
+	return UV_ERR_OK;
+}
+

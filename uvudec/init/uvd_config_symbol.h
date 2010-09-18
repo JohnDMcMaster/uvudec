@@ -6,6 +6,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 /*
 These are config symbols
+
+FIXME FIXME FIXME
+Okay so this file is the reason why I switched from C to C++
+Without STL, the easiest way to make a symbol mapper was to shove a bunch of casting operations using a shared core
+Really, this is horrible code and could be replaced with some simple STL stuff (partially done here already) without much trouble
+Also, its named poorly since you'd expect UVDSymbol to be what instead became UVDBinarySymbol
 */
 
 #pragma once

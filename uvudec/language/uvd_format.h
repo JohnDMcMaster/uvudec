@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#pragma once
+#ifndef UVD_FORMAT_H
+#define UVD_FORMAT_H
 
 #include "uvd_compiler.h"
 
@@ -23,13 +24,13 @@ class UVDFormat
 {
 public:
 	UVDFormat();
-	~UVDFormat();
+	virtual ~UVDFormat();
 	
-	uv_err_t init();
-	uv_err_t deinit();
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 	
-	std::string formatAddress(uint32_t address);
-	std::string formatRegister(const std::string &reg);
+	virtual uv_err_t formatAddress(uint32_t address, std::string &out);
+	virtual uv_err_t formatRegister(const std::string &reg, std::string &out);
 	
 	//Set as new and delete old if necessary
 	//Ownership is transferred to this object
@@ -38,8 +39,12 @@ public:
 	void printFormatting();
 
 public:
+	//FIXME: add an object for a high level language (compiler) and a low level language (assembler)
 	//Output data has to be formatted to a given compiler
 	//Note this has nothing to do with with the compiler used to compile the code
 	//This is owned by this object
 	UVDCompiler *m_compiler;
 };
+
+#endif
+

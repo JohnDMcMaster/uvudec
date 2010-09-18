@@ -837,7 +837,9 @@ uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint
 		uv_assert_err_ret(value);
 		from = value->m_from;
 		
-		snprintf(buff, 256, "#\t%s", format->formatAddress(from).c_str());
+		std::string formattedAddress;
+		uv_assert_err_ret(format->formatAddress(from, formattedAddress));
+		snprintf(buff, 256, "#\t%s", formattedAddress.c_str());
 		m_indexBuffer.push_back(buff);
 	}
 	
@@ -910,7 +912,9 @@ uv_err_t UVDIterator::nextCalledSources(uint32_t startPosition)
 	
 	m_indexBuffer.insert(m_indexBuffer.end(), "\n");
 	m_indexBuffer.insert(m_indexBuffer.end(), "\n");
-	snprintf(buff, 256, "# FUNCTION START %s@ %s", sNameBlock.c_str(), m_uvd->m_format->formatAddress(startPosition).c_str());
+	std::string formattedAddress;
+	uv_assert_err_ret(m_uvd->m_format->formatAddress(startPosition, formattedAddress));
+	snprintf(buff, 256, "# FUNCTION START %s@ %s", sNameBlock.c_str(), formattedAddress.c_str());
 	m_indexBuffer.insert(m_indexBuffer.end(), buff);
 
 	//Print number of callees?
@@ -945,7 +949,9 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 
 	memLoc = (*(jumpedAddresses.find(startPosition))).second;
 			
-	snprintf(buff, 256, "# Jump destination %s@ %s", sNameBlock.c_str(), m_uvd->m_format->formatAddress(startPosition).c_str());
+	std::string formattedAddress;
+	uv_assert_err_ret(m_uvd->m_format->formatAddress(startPosition, formattedAddress));
+	snprintf(buff, 256, "# Jump destination %s@ %s", sNameBlock.c_str(), formattedAddress.c_str());
 	m_indexBuffer.push_back(buff);
 
 	//Print number of references?

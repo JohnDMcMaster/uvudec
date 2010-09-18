@@ -6,6 +6,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 
 #include <QApplication>
 #include "uvd_GUI.h"
+#include "uvd_init.h"
 
 QApplication *g_application = NULL;
 
@@ -20,6 +21,7 @@ uv_err_t uvmain(int argc, char **argv, int *retOut)
 	mainWindow->m_argc = argc;
 	mainWindow->m_argv = argv;
 
+	uv_assert_err_ret(UVDInit());
 	uv_assert_err_ret(mainWindow->init());
 	
 	mainWindow->show();

@@ -113,7 +113,7 @@ public:
 	#define UV_DISASM_DATA_IMMS					32
 	#define UV_DISASM_DATA_IMMU					33
 	*/
-	int m_operand_type;
+	unsigned int m_operand_type;
 	int m_num_bits;
 	union
 	{

@@ -12,6 +12,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include <string>
 
 class UVDBinarySymbol;
+class UVDGUIFormat;
 class UVDProject
 {
 public:
@@ -22,10 +23,13 @@ public:
 	uv_err_t init(int argc, char **argv);
 	uv_err_t deinit();
 	uv_err_t setFileName(const std::string &fileName);
+	
+	UVDGUIFormat *getFormat();
 
 public:
 	UVD *m_uvd;
 	std::string m_canonicalProjectFileName;
+	//std::string m_canonicalBinaryName;
 	//Symbol, usually a function, we are displaying in the workspace
 	UVDBinarySymbol *m_symbolInFocus;
 };

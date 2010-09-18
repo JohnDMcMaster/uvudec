@@ -288,7 +288,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 	uv_err_t rc = UV_ERR_GENERAL;
 	unsigned int pos = 0;
 	
-	UV_ENTER();
+printf("printing operand\n");
 
 	uv_assert(buff);
 	uv_assert(m_shared);
@@ -386,6 +386,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 			}
 
 			snprintf(int_formatter, 8, "0x%%.%dX", printWidth);
+printf("int formatter: %s\n", int_formatter);
 		}
 		else
 		{
@@ -409,6 +410,10 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 		pos += snprintf(buff, buffsz, format_string, g_config->m_asm_imm_prefix.c_str(), g_config->m_asm_imm_prefix_hex.c_str(), print_int, g_config->m_asm_imm_postfix_hex.c_str(), g_config->m_asm_imm_suffix.c_str());
 		break;
 	}
+	/*
+	CHECKME: there is commented out code where we use to recurse instead of manually printing junk again
+	Why aren't we recursing like we use to?  Was the prefix/postfix context the issue?
+	*/
 	case UV_DISASM_DATA_FUNC:
 	{
 		UVDSymbol *sym_value = NULL;
@@ -429,6 +434,7 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 			//Formatting information for a type of memory?
 			if( sym_value->m_type == UVD_SYMBOL_MEM )
 			{
+printf("mem symbol\n");
 				UVDMemoryShared *mem_shared = NULL;
 				std::string equiv_name;
 				UVDOperand *mem_arg = NULL;
@@ -478,8 +484,8 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 					/* Otherwise get info for that particular memory type */
 					else
 					{
+						std::string formattedAddress;
 						/* This is needed to ensure proper number of leading zeros */
-						char format_string[32];
 
 						printf_debug("Equiv: no\n");
 
@@ -495,12 +501,13 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 						
 						printf_debug("Immediate size: %d\n", mem_arg->m_shared->m_immediate_size);					
 						uv_assert(mem_arg->m_shared->m_immediate_size < 128);
-						snprintf(format_string, 32, "%%s%%.%dX", mem_arg->m_shared->m_immediate_size / 4);
-						printf_debug("format string: %s\n", format_string);
 						
 						uv_assert(pos < buffsz);
+						//XXX we are acess m_ui32, is this an x86 specific thing we should be careful of?
 						printf_debug("imm prefix hex: <%s>, ui32: %d, %X\n", g_config->m_asm_imm_prefix_hex.c_str(), mem_arg->m_ui32, mem_arg->m_ui32);
-						pos += snprintf(buff + pos, buffsz - pos, format_string, g_config->m_asm_imm_prefix_hex.c_str(), mem_arg->m_ui32);
+						//FIXME: if this is a relative address, we need to compute the correct virtual address
+						uv_assert_err_ret(g_uvd->m_format->formatAddress(mem_arg->m_ui32, formattedAddress));
+						pos += snprintf(buff + pos, buffsz - pos, "%s%s", g_config->m_asm_imm_prefix_hex.c_str(), formattedAddress.c_str());
 						uv_assert(pos < buffsz);
 
 						/*

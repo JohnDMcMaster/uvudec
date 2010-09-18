@@ -21,6 +21,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 #include <QtGui>
 
 #include "uvd_analysis_action.h"
+#include "project/uvd_file_extensions.h"
 #include "uvd_GUI.h"
 #include "uvd_project.h"
 #include "uvd_language.h"
@@ -76,11 +77,10 @@ uv_err_t UVDMainWindow::init()
 	
 	UVDPrintf("Logging initialized");	
 
-	//Wonder if it will get angry if I never add the closing tag
-	//m_mainWindow.disassemblyArea->append("<body bgcolor=\"Silver\">");
+	//uv_assert_err_ret(assemblyDisplayTests());
 
 	/*
-	Keep it idlying waiting
+	Keep it idly waiting
 	Also this will be used to handling printing, so start it early for uniform interface
 	*/
 	m_analysisThread->start();
@@ -88,27 +88,134 @@ uv_err_t UVDMainWindow::init()
 	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionNew_triggered()
+uv_err_t UVDMainWindow::assemblyDisplayTests()
+{
+	appendDisassembledLine("<A href=\"#anchor\">to anchor</A>");
+	appendDisassembledLine("some text<BR />on the next line!");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("");
+	appendDisassembledLine("lots of      spacing    ");
+	appendDisassembledLine("");
+	appendDisassembledLine("1234:          ABC");
+	appendDisassembledLine("safd asfd:     123");
+	appendDisassembledLine("<A name=\"anchor\">an anchor</A>");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("          some text");
+	appendDisassembledLine("yep       some text");
+
+
+	//eh BR showed up literally
+	appendDisassembledHTML("<BR>");
+	appendDisassembledLine("Lots of lines I'm cheating\nFrom a newline<BR>From a BR");
+
+
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("Begin HTML");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("some HTML yo");
+	appendDisassembledHTML("some HTML yo");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("               some HTML yo");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("glurb          some HTML yo");
+
+	//Doesn't work
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<TT>               some HTML with TT</TT>");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<TT>glurb          some HTML with TT</TT>");
+
+	//Doesn't work
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<CODE>               some HTML with CODE</CODE>");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<CODE>glurb          some HTML with CODE</CODE>");
+
+	//Okay this worked but it isn't my selected font
+	//What is Qt doing with append that makes it monospaced?
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<PRE>               some HTML with PRE</PRE>");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<PRE>glurb          some HTML with PRE</PRE>");
+
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledHTML("Begin post html append normal");
+	appendDisassembledHTML("<BR>");
+	appendDisassembledLine("<A href=\"#anchor\">to anchor</A>");
+	appendDisassembledLine("some text<BR />on the next line!");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("");
+	appendDisassembledLine("lots of      spacing    ");
+	appendDisassembledLine("");
+	appendDisassembledLine("1234:          ABC");
+	appendDisassembledLine("safd asfd:     123");
+	appendDisassembledLine("<A name=\"anchor\">an anchor</A>");
+	appendDisassembledLine("some text");
+	appendDisassembledLine("          some text");
+	appendDisassembledLine("yep       some text");
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::on_actionNew_triggered()
 {
 	printf("%s\n", __FUNCTION__);
 	
 	printf("adding an item\n");
 	m_mainWindow.symbolsListWidget->addItem(tr("An item!"));
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionOpen_triggered()
+uv_err_t UVDMainWindow::on_actionOpen_triggered()
 {
-	QString fileName;
+	/*
+	TODO
+	Figure out a nice way to distinguish between opening a project file and a binary
+	For now, assume if it doesn't end in
+	
+	Also, we will not do well if we are already initialized
+	*/
+
+	QString qFileName;
+	std::string fileName;
+	std::string projectFileName;
 	
 	printf("%s\n", __FUNCTION__);
 
-	fileName = QFileDialog::getOpenFileName(this, tr("Open Project"),
+	qFileName = QFileDialog::getOpenFileName(this, tr("Open Project"),
 			DEFAULT_DECOMPILE_FILE,
 			m_projectFileNameDialogFilter);
-	if( !fileName.isEmpty() )
+	//Blank if user didn't select anything
+	if( qFileName.isEmpty() )
 	{
-		UV_DEBUG(initializeProject(fileName.toStdString()));
+		return UV_ERR_OK;
 	}
+
+	fileName = qFileName.toStdString();
+	if( fileName.find(UVD_EXTENSION_PROJECT) != std::string::npos )
+	{
+		projectFileName = fileName;
+	}
+	else
+	{
+		//Assume a date source then
+		uv_assert_ret(g_config);
+		g_config->m_targetFileName = fileName;
+	}
+	
+	uv_assert_err_ret(initializeProject(projectFileName));
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDMainWindow::rebuildFunctionList()
@@ -176,45 +283,60 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 	uv_assert_err_ret(m_project->setFileName(fileName));
 	uv_assert_err_ret(m_project->init(m_argc, m_argv));
 	//hmm not working
-	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembled(QString)),
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembledMonospaced(QString)),
 			this, SLOT(appendDisassembledLine(QString))));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembledHTML(QString)),
+			this, SLOT(appendDisassembledHTML(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
 			this, SLOT(newFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(deleteFunction(QString)),
 			this, SLOT(deleteFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(printLog(QString)),
 			this, SLOT(appendLogLine(QString))));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(setDisassemblyAreaActive(bool)),
+			m_mainWindow.disassemblyArea, SLOT(setVisible(bool))));
 	m_analysisThread->queueAnalysis(new UVDAnalysisActionBegin());
 
 	return UV_ERR_OK;
 }
 
-void UVDMainWindow::appendDisassembledLine(QString line)
+uv_err_t UVDMainWindow::appendDisassembledLine(QString line)
 {
-//printf("appending line\n");
 	ASSERT_THREAD();
 	//QString qLine = QString::fromStdString(line);
 	//m_mainWindow.disassemblyArea->appendPlainText(line);
 	//aparantly bold messed up the monospacing
 	//line = "<B>" + line + "</B>";
+	//printf("appending: %s\n", line.toStdString().c_str());
 	m_mainWindow.disassemblyArea->append(line);
+	//Test to see if makes GUI more responsive
+	//nope, just took longer and less CPU used
+	//usleep(1000);
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::appendLogLine(QString line)
+uv_err_t UVDMainWindow::appendDisassembledHTML(QString html)
+{
+	ASSERT_THREAD();
+	//printf("appending HTML of size %d\n", html.size());
+	//FIXME: make this actually append and not actually insert at cursor
+	m_mainWindow.disassemblyArea->insertHtml(html);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::appendLogLine(QString line)
 {
 	ASSERT_THREAD();
 	m_mainWindow.plainTextEdit_log->appendPlainText(line);
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionSave_triggered()
+uv_err_t UVDMainWindow::on_actionSave_triggered()
 {
 	printf("%s\n", __FUNCTION__);
 
 	//TODO: gray out so we can't do this
-	if( !m_project )
-	{
-		return;
-	}
+	uv_assert_ret(m_project);
 
 	if( m_project->m_canonicalProjectFileName.empty() )
 	{
@@ -224,18 +346,16 @@ void UVDMainWindow::on_actionSave_triggered()
 	{
 		UV_DEBUG(m_project->doSave());
 	}
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionSaveAs_triggered()
+uv_err_t UVDMainWindow::on_actionSaveAs_triggered()
 {
 	QString fileName;
 
 	printf("%s\n", __FUNCTION__);
 
-	if( !m_project )
-	{
-		return;
-	}
+	uv_assert_ret(m_project);
 
 	//file:///opt/qtsdk-2010.04/qt/doc/html/tutorials-addressbook-part6.html
 	fileName = QFileDialog::getSaveFileName(this,
@@ -246,20 +366,23 @@ void UVDMainWindow::on_actionSaveAs_triggered()
 	m_project->setFileName(fileName.toStdString());
 
 	UV_DEBUG(m_project->doSave());
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionPrint_triggered()
+uv_err_t UVDMainWindow::on_actionPrint_triggered()
 {
 	printf("%s\n", __FUNCTION__);
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_symbolsListWidget_itemClicked(QListWidgetItem *item)
+uv_err_t UVDMainWindow::on_symbolsListWidget_itemClicked(QListWidgetItem *item)
 {
 	std::string text;
 	
 	text = item->text().toStdString();
 	
 	UVDPrintf("clicked on %s", text.c_str());
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDMainWindow::shutdown()
@@ -285,16 +408,17 @@ uv_err_t UVDMainWindow::shutdown()
 	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionClose_triggered()
+uv_err_t UVDMainWindow::on_actionClose_triggered()
 {
 	printf("%s\n", __FUNCTION__);
 	
 	UV_DEBUG(shutdown());	
 	g_application->quit();
 	printf("close done\n");
+	return UV_ERR_OK;
 }
 
-void UVDMainWindow::on_actionAbout_triggered()
+uv_err_t UVDMainWindow::on_actionAbout_triggered()
 {
 	printf("%s\n", __FUNCTION__);
 
@@ -304,6 +428,7 @@ void UVDMainWindow::on_actionAbout_triggered()
 			"Licensed under the terms of the GPL V3+\n"
 			"Thanks to Sean O'Sullivan through the Rensselaer Center For Open Source (RCOS) for supporting this project"
 			));
+	return UV_ERR_OK;
 }
 
 void UVDMainWindow::closeEvent(QCloseEvent *event)

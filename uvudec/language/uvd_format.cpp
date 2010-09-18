@@ -57,36 +57,44 @@ void printFormatting()
 #endif
 }
 
-std::string UVDFormat::formatAddress(uint32_t address)
+uv_err_t UVDFormat::formatAddress(uint32_t address, std::string &ret)
 {
 	char formatter[32];
 	char buff[32];
 	const char *hexPrefix = "";
 	//const char *hexPrefix = "0x";
 	
+printf("Core format of address 0x%08X\n", address);
+
 	if( !g_config )
 	{
-		return "";
+		ret = "";
+		return UV_ERR_OK;
 	}
 	
+	//Careful careful
+	//Easy to make crash here
 	snprintf(formatter, 32, "%s%%.%dX", hexPrefix, g_config->m_hex_addr_print_width);
 	snprintf(buff, 32, formatter, address);
+	ret = std::string(buff);
 
-	return std::string(buff);
+	return UV_ERR_OK;
 }
 
-std::string UVDFormat::formatRegister(const std::string &reg)
+uv_err_t UVDFormat::formatRegister(const std::string &reg, std::string &ret)
 {
 	char buff[32];
-	
+
 	if( !g_config )
 	{
-		return "";
+		ret = "";
+		return UV_ERR_OK;
 	}
-	
-	snprintf(buff, 32, "%s%s", g_config->m_reg_prefix.c_str(), reg.c_str());
 
-	return std::string(buff);
+	snprintf(buff, 32, "%s%s", g_config->m_reg_prefix.c_str(), reg.c_str());
+	ret = std::string(buff);
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDFormat::setCompiler(UVDCompiler *compiler)
