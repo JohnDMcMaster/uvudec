@@ -973,3 +973,8 @@ uv_err_t UVDInitConfig()
 	return UV_ERR_OK;
 }
 
+UVDConfig *UVDGetConfig()
+{
+	return g_config;
+}
+

@@ -432,6 +432,11 @@ uv_err_t UVDInitConfig();
 uv_err_t UVDInitConfigEarly();
 
 //Default configuration options
+//Deprecated, this will be removed as an exported symbol in the future
 extern UVDConfig *g_config;
+//Internal use only
+//Returns the singleton config instance
+//In future, we may (although unlikely for some time) allow multiple engines to be loaded with separate configs
+UVDConfig *UVDGetConfig();
 
 #endif
