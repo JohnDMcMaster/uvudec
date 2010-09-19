@@ -9,7 +9,11 @@ include Makefile.mk
 
 recurse:
 	for subMakefile in $(shell find -mindepth 2 -maxdepth 2 -name 'Makefile'); do \
-		cd $$(dirname $${subMakefile}) && $(MAKE) ; \
+		DIR=$$(dirname $${subMakefile}) ; \
+		echo "Got " $${subMakefile} ; \
+		echo "target: " $$DIR ; \
+		echo "cur dir " $$(pwd) ; \
+		(cd $$DIR && $(MAKE)) ||exit 1 ; \
 	done;
 
 

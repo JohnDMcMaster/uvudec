@@ -39,6 +39,7 @@ LIB_DIR=$(ROOT_DIR)/lib
 PLUGIN_LIB_DIR=$(LIB_DIR)/plugin
 
 # Libuvudec
+# TODO: these should all be removed as we move to absolute paths from the root uvd dir
 LIBUVUDEC_DIR=$(ROOT_DIR)/libuvudec
 ASSEMBLY_DIR=$(LIBUVUDEC_DIR)/assembly
 COMPILER_DIR=$(LIBUVUDEC_DIR)/compiler
@@ -55,6 +56,7 @@ LANGUAGE_DIR=$(LIBUVUDEC_DIR)/language
 PROJECT_DIR=$(LIBUVUDEC_DIR)/project
 RELOCATION_DIR=$(LIBUVUDEC_DIR)/relocation
 UTIL_DIR=$(LIBUVUDEC_DIR)/util
+LIB_PLUGIN_DIR=$(LIBUVUDEC_DIR)/plugin
 # Others
 GUI_DIR=$(ROOT_DIR)/GUI
 PLUGIN_DIR=$(ROOT_DIR)/plugin
@@ -154,8 +156,10 @@ endif
 
 ifeq ($(LINKAGE),static)
 OBJECT_LINKAGE_SUFFIX=_s
+FLAGS_SHARED += -DUVD_STATIC
 else
 OBJECT_LINKAGE_SUFFIX=_d
+FLAGS_SHARED += -DUVD_DYNAMIC
 endif
 OBJS = $(CC_SRCS:.c=$(OBJECT_LINKAGE_SUFFIX).o) $(CXX_SRCS:.cpp=$(OBJECT_LINKAGE_SUFFIX).o)
 

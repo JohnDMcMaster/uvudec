@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#pragma once
+#ifndef UVD_VERSION_H
+#define UVD_VERSION_H
 
 #include <string>
 #include <vector>
@@ -31,14 +32,19 @@ public:
 	std::string m_version;
 };
 
-class UVDSupportedVersion
+class UVDVersionRange
 {
 public:
-	UVDSupportedVersion();	
-	UVDSupportedVersion(UVDVersion min, UVDVersion max);	
+	UVDVersionRange();
+	UVDVersionRange(UVDVersion exact);	
+	UVDVersionRange(UVDVersion min, UVDVersion max);	
+	
+	bool matches(UVDVersion &given);
 	
 public:
+	//Inclusive
 	UVDVersion m_min;
+	//Exclusive, unless specified in min
 	UVDVersion m_max;
 };
 
@@ -47,4 +53,7 @@ To verify we have linked to a good library version if we are using dlsym() style
 */
 const char *UVDGetVersion();
 
-typedef std::vector<UVDSupportedVersion> UVDSupportedVersions;
+typedef std::vector<UVDVersionRange> UVDSupportedVersions;
+
+#endif
+

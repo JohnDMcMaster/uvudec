@@ -31,6 +31,11 @@ std::vector<std::string> UVDVersion::strVec()
 
 bool UVDVersion::compare(UVDVersion other)
 {
+	/*
+	This does not currently consider lettered versions
+	Rare and not important for now
+	*/
+	
 	std::vector<int> partsThis = intVec();
 	std::vector<int> partsOther = other.intVec();
 	
@@ -88,17 +93,29 @@ bool UVDVersion::operator>=(UVDVersion other)
 	return compare(other) >= 0;
 }
 
-UVDSupportedVersion::UVDSupportedVersion()
+UVDVersionRange::UVDVersionRange()
 {
 }
 
-UVDSupportedVersion::UVDSupportedVersion(UVDVersion min, UVDVersion max)
+UVDVersionRange::UVDVersionRange(UVDVersion exact)
+{
+	m_min = exact;
+	m_max = exact;
+}
+
+UVDVersionRange::UVDVersionRange(UVDVersion min, UVDVersion max)
 {
 	m_min = min;
 	m_max = max;
+}
+
+bool UVDVersionRange::matches(UVDVersion &given)
+{
+	return given >= m_min && given <= m_max;
 }
 
 const char *UVDGetVersion()
 {
 	return UVUDEC_VER_STRING;
 }
+

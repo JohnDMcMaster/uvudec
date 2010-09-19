@@ -898,21 +898,33 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDConfig::addPlugin(const std::string &pluginLibraryName)
+/*
+UVDPluginConfig
+*/
+
+UVDPluginConfig::UVDPluginConfig()
 {
-	m_plugins.push_back(pluginLibraryName);
+}
+
+UVDPluginConfig::~UVDPluginConfig()
+{
+}
+
+uv_err_t UVDPluginConfig::addPlugin(const std::string &pluginLibraryName)
+{
+	m_toLoad.push_back(pluginLibraryName);
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDConfig::appendPluginPath(const std::string &path)
+uv_err_t UVDPluginConfig::appendPluginPath(const std::string &path)
 {
-	m_pluginDirs.insert(m_pluginDirs.end(), path);
+	m_dirs.insert(m_dirs.end(), path);
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDConfig::prependPluginPath(const std::string &path)
+uv_err_t UVDPluginConfig::prependPluginPath(const std::string &path)
 {
-	m_pluginDirs.insert(m_pluginDirs.begin(), path);
+	m_dirs.insert(m_dirs.begin(), path);
 	return UV_ERR_OK;
 }
 
