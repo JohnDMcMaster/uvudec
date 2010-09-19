@@ -31,6 +31,7 @@ Do something instead like create a list of optional and required members, with p
 #include "uvd_address.h"
 #include "uvd_analysis.h"
 #include "uvd_benchmark.h"
+#include "uvd_config.h"
 #include "uvd_config_symbol.h"
 #include "uvd_data.h"
 #include "uvd_format.h"

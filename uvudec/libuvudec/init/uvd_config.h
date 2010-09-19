@@ -427,6 +427,10 @@ public:
 	UVDPluginConfig m_plugin;
 };
 
+//The following are internal use only
+uv_err_t UVDInitConfig();
+uv_err_t UVDInitConfigEarly();
+
 //Default configuration options
 extern UVDConfig *g_config;
 
