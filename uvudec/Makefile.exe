@@ -33,7 +33,12 @@ LDFLAGS += -static -static-libgcc -Wl,'-z nodefaultlib'
 else
 
 LIBS +=
-LDFLAGS +=
+# Hmm I guess it fixes up the correct paths automagically for us?
+# these paths are relative to the other dir
+# FIXME
+# ick well they are at the same level, so it just happens to work out
+LDFLAGS += -Wl,-rpath,$(LIB_DIR) -Wl,-rpath,$(PLUGIN_LIB_DIR)
+#LDFLAGS += -Wl,-rpath,../lib -Wl,-rpath,../lib/plugin
 
 endif
 

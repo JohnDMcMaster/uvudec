@@ -9,9 +9,14 @@
 # DEFINES += -DUVDPluginMain=UVDPluginMain$(PLUGIN_NAME)
 
 # TODO: substitute chars for underscores?
+# We wrap this with PLUGIN_NAME since current dur uses it as well
 ifdef PLUGIN_NAME
+ifndef LIB_NAME
 LIB_NAME=$(PLUGIN_NAME)
 endif
+endif
+
+THIS_LIB_DIR=$(PLUGIN_LIB_DIR)
 
 include $(ROOT_DIR)/Makefile.mk
 
