@@ -59,6 +59,7 @@ UTIL_DIR=$(LIBUVUDEC_DIR)/util
 GUI_DIR=$(ROOT_DIR)/GUI
 PLUGIN_DIR=$(ROOT_DIR)/plugin
 TESTING_DIR=$(ROOT_DIR)/testing
+UVUDEC_DIR=$(ROOT_DIR)/uvudec
 
 include $(ROOT_DIR)/Makefile.version
 
