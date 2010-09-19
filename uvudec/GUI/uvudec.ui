@@ -170,7 +170,7 @@
      <x>0</x>
      <y>0</y>
      <width>782</width>
-     <height>25</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -197,8 +197,15 @@
     <property name="title">
      <string>Options</string>
     </property>
+    <widget class="QMenu" name="menuPlugins">
+     <property name="title">
+      <string>Plugins</string>
+     </property>
+     <addaction name="actionOptions_2"/>
+     <addaction name="separator"/>
+    </widget>
     <addaction name="actionOptions"/>
-    <addaction name="actionPlugins"/>
+    <addaction name="menuPlugins"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOptions"/>
@@ -280,12 +287,12 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionPlugins">
+  <action name="actionOptions">
    <property name="text">
-    <string>Plugins</string>
+    <string>Options</string>
    </property>
   </action>
-  <action name="actionOptions">
+  <action name="actionOptions_2">
    <property name="text">
     <string>Options</string>
    </property>
