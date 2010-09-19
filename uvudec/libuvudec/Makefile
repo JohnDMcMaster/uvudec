@@ -19,6 +19,7 @@ CXX_SRCS = 	\
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(COMPILER_DIR)/uvd_compiler_assembly.cpp \
 			$(COMPILER_DIR)/uvd_compiler_gcc.cpp \
+			$(CORE_DIR)/architecture.cpp \
 			$(CORE_DIR)/uvd.cpp \
 			$(CORE_DIR)/uvd_analysis.cpp \
 			$(CORE_DIR)/uvd_analysis_db.cpp \

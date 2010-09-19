@@ -76,7 +76,8 @@ uv_err_t UVDPythonInterpreter::preparePythonProgram(const UVDInterpreterExpressi
 	We will probably eventually make it map to the most basic areas
 	*/
 
-	for( UVDSymbolMap::SymbolMapMap::iterator iter = g_uvd->m_symMap->m_map.begin(); iter != g_uvd->m_symMap->m_map.end(); ++iter )
+	for( UVDSymbolMap::SymbolMapMap::iterator iter = g_uvd->m_architecture->m_symMap->m_map.begin(); 
+			iter != g_uvd->m_architecture->m_symMap->m_map.end(); ++iter )
 	{
 		//std::string, UVDSymbol *
 		UVDMemoryShared *memoryShared = (UVDMemoryShared *)(*iter).second;	

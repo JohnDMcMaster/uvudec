@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_types.h"
 #include "uvd_format.h"
 #include "main.h"
+#include "core/architecture.h"
 #include <stdio.h>
 
 const char *uvd_data_str(int uvd_data)
@@ -439,8 +440,9 @@ uv_err_t UVDOperand::print_disasm_operand(char *buff, unsigned int buffsz, unsig
 		
 		//FIXME: global UVD ref
 		uv_assert_ret(g_uvd);
-		uv_assert_ret(g_uvd->m_symMap);
-		if( UV_SUCCEEDED(g_uvd->m_symMap->getSym(functionName, &sym_value)) )
+		uv_assert_ret(g_uvd->m_architecture);
+		uv_assert_ret(g_uvd->m_architecture->m_symMap);
+		if( UV_SUCCEEDED(g_uvd->m_architecture->m_symMap->getSym(functionName, &sym_value)) )
 		{
 			printf_debug("Got sym\n");
 			uv_assert(sym_value);

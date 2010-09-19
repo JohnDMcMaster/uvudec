@@ -23,6 +23,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_register.h"
 #include "uvd_config_symbol.h"
 #include "uvd_types.h"
+#include "core/architecture.h"
 
 //From linux/stringify.h
 #define __stringify_1(x)	#x
@@ -132,6 +133,7 @@ Primary end user object
 */
 class UVDFLIRT;
 class UVDEventEngine;
+class UVDArchitecture;
 class UVD
 {
 public:
@@ -271,36 +273,14 @@ protected:
 	uv_err_t suspectValidInstruction(uint32_t address, int *isValid);
 
 public:
-#ifdef USING_VECTORS
-	UVDCPU *m_CPU;
-#endif
-	//TODO: move to UVDCPU
-	//Lookup table for opcodes
-	//This in theory could be shared between multiple engines for the same arch
-	//But not much of an issue since only one instance is expected per run
-	UVDOpcodeLookupTable *m_opcodeTable;
-	//For special modifiers mostly for now (functions)
-	//Allows special mapping of addresses and others
-	UVDSymbolMap *m_symMap;
+	UVDArchitecture *m_architecture;
 	
-	//Used for advanced analysis
-	UVDConfigExpressionInterpreter *m_interpreter;
-		
-	/*
-	Architecture hint
-	Necessary for raw binary images
-	If an ELF file or similar that contains architecture info in it is given, 
-	it may be possible to determine this information dynamically
-	*/
-	int m_architecture;
-
 	UVDAnalyzer *m_analyzer;
 	
+	//hmm should be moved to uvd_analysis
 	//ROM data or other things that make these addresses non-disassemblable
 	//This should probably be moved to the analyzer
 	std::vector<UVDMemoryLocation> m_noncodingAddresses;
-	//Registers, mapped by name
-	std::map<std::string, UVDRegisterShared *> m_registers;
 
 	//General configuration
 	UVDConfig *m_config;
@@ -312,21 +292,19 @@ public:
 	
 	//Source of data to disassemble
 	//We do not own this
+	//...but we probably should
 	UVDData *m_data;
 	
 	//For notifying plugins and such of analysis events
 	//We own this
 	UVDEventEngine *m_eventEngine;
-
-protected:
-	//Segmented memory view instead of flat m_data view
-	//Most use of m_data should eventually be switched over to use this
-	//m_data really only works for simple embedded archs
-	UVDSegmentedMemory m_segmentedMemory;
 };
 
 //TODO: this is a hack, needs to be fixed
+//Deprecated
 extern UVD *g_uvd;
+//For internal use only
+UVD *UVDGetUVD();
 
 #endif
 
