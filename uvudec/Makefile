@@ -2,7 +2,7 @@
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
-PHONY += uvudec obj2pat pat2sig flirtutil lib doc cleanSub cleanSubCore installer dist distCore test gui plugin
+PHONY += uvudec obj2pat pat2sig flirtutil lib doc cleanSub cleanSubCore installer dist distCore test gui plugin uvudec
 
 ALL_TARGETS=lib
 # ALL_TARGETS += doc
@@ -44,8 +44,8 @@ include Makefile.mk
 PACKAGE=uvudec
 
 ifeq ($(USING_UVUDEC),Y)
-uvudec: lib
-	cd core && $(MAKE)
+uvudec:
+	cd uvudec && $(MAKE)
 endif
 
 ifeq ($(USING_OBJ2PAT),Y)
