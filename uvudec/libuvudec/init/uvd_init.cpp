@@ -39,6 +39,39 @@ Do something instead like create a list of optional and required members, with p
 #include "uvd_types.h"
 #include "uvd_cpu_vector.h"
 
+uv_err_t UVDInit()
+{
+	//Initially we log to console until a "real" log is setup which may be an actual file
+	//we don't know actual file because we haven't parsed args yet
+	uv_assert_err_ret(uv_log_init("/dev/stdout"));
+	uv_assert_err_ret(UVDInitConfigEarly());
+	uv_assert_err_ret(UVDDebugInit());
+	uv_assert_err_ret(UVDInitConfig());
+	printf_debug_level(UVD_DEBUG_PASSES, "UVDInit(): done\n");
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDDeinit()
+{
+	if( g_uvd )
+	{
+		delete g_uvd;
+		g_uvd = NULL;
+	}
+
+	//This won't get deleted by prev if it was global instance
+	if( g_config )
+	{
+		delete g_config;
+		g_config = NULL;
+	}
+
+	uv_assert_err_ret(UVDDebugDeinit());
+	uv_assert_err_ret(uv_log_deinit());
+
+	return UV_ERR_OK;
+}
+
 /*
 file: data file to target
 architecture: hint about what we are trying to disassemble
