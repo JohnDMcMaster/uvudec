@@ -569,17 +569,17 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_NAME )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->addPlugin(firstArg));
+		uv_assert_err_ret(config->m_plugin.addPlugin(firstArg));
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_APPEND_PATH )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->appendPluginPath(firstArg));
+		uv_assert_err_ret(config->m_plugin.appendPluginPath(firstArg));
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_PREPEND_PATH )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->prependPluginPath(firstArg));
+		uv_assert_err_ret(config->m_plugin.prependPluginPath(firstArg));
 	}
 	else
 	{

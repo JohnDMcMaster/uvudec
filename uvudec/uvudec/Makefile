@@ -7,7 +7,7 @@ EXE_NAME=$(UVUDEC_EXE)
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			$(CORE_DIR)/main.cpp \
+			$(UVUDEC_DIR)/main.cpp \
 
 # Why is this needed?
 USING_LIB_UVUDEC=Y
