@@ -38,31 +38,34 @@ BIN_DIR=$(ROOT_DIR)/bin
 LIB_DIR=$(ROOT_DIR)/lib
 PLUGIN_LIB_DIR=$(LIB_DIR)/plugin
 
-ASSEMBLY_DIR=$(ROOT_DIR)/assembly
-COMPILER_DIR=$(ROOT_DIR)/compiler
-CORE_DIR=$(ROOT_DIR)/core
-DATA_DIR=$(ROOT_DIR)/data
-ELF_DIR=$(ROOT_DIR)/elf
-EVENT_DIR=$(ROOT_DIR)/event
-FLIRT_DIR=$(ROOT_DIR)/flirt
+# Libuvudec
+LIBUVUDEC_DIR=$(ROOT_DIR)/libuvudec
+ASSEMBLY_DIR=$(LIBUVUDEC_DIR)/assembly
+COMPILER_DIR=$(LIBUVUDEC_DIR)/compiler
+CORE_DIR=$(LIBUVUDEC_DIR)/core
+DATA_DIR=$(LIBUVUDEC_DIR)/data
+ELF_DIR=$(LIBUVUDEC_DIR)/elf
+EVENT_DIR=$(LIBUVUDEC_DIR)/event
+FLIRT_DIR=$(LIBUVUDEC_DIR)/flirt
 FLIRT_BFD_DIR=$(FLIRT_DIR)/bfd
+HASH_DIR=$(LIBUVUDEC_DIR)/hash
+INIT_DIR=$(LIBUVUDEC_DIR)/init
+INTERPRETER_DIR=$(LIBUVUDEC_DIR)/interpreter
+LANGUAGE_DIR=$(LIBUVUDEC_DIR)/language
+PROJECT_DIR=$(LIBUVUDEC_DIR)/project
+RELOCATION_DIR=$(LIBUVUDEC_DIR)/relocation
+UTIL_DIR=$(LIBUVUDEC_DIR)/util
+# Others
 GUI_DIR=$(ROOT_DIR)/GUI
-HASH_DIR=$(ROOT_DIR)/hash
-INIT_DIR=$(ROOT_DIR)/init
-INTERPRETER_DIR=$(ROOT_DIR)/interpreter
-LANGUAGE_DIR=$(ROOT_DIR)/language
 PLUGIN_DIR=$(ROOT_DIR)/plugin
-PROJECT_DIR=$(ROOT_DIR)/project
-RELOCATION_DIR=$(ROOT_DIR)/relocation
 TESTING_DIR=$(ROOT_DIR)/testing
-UTIL_DIR=$(ROOT_DIR)/util
 
 include $(ROOT_DIR)/Makefile.version
 
 PACKAGE=uvudec
 
 # hmm include are kinda weird, all projects use <dir_name>/<file_name>.h, but we include all invidual dirs
-INCLUDES += -I. -I$(ROOT_DIR)
+INCLUDES += -I. -I$(ROOT_DIR) -I$(LIBUVUDEC_DIR)
 #for curDir in $(SOURCE_DIRS); do \
 #INCLUDES += " -I$${curDir}" ;\
 #done;
