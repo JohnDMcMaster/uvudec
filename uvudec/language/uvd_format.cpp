@@ -64,8 +64,6 @@ uv_err_t UVDFormat::formatAddress(uint32_t address, std::string &ret)
 	const char *hexPrefix = "";
 	//const char *hexPrefix = "0x";
 	
-printf("Core format of address 0x%08X\n", address);
-
 	if( !g_config )
 	{
 		ret = "";
