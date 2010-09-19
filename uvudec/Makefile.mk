@@ -35,7 +35,8 @@ include $(ROOT_DIR)/Makefile.defaults
 include $(ROOT_DIR)/Makefile.configure
 
 BIN_DIR=$(ROOT_DIR)/bin
-LIB_DIR=$(BIN_DIR)
+LIB_DIR=$(ROOT_DIR)/lib
+PLUGIN_LIB_DIR=$(LIB_DIR)/plugin
 
 ASSEMBLY_DIR=$(ROOT_DIR)/assembly
 COMPILER_DIR=$(ROOT_DIR)/compiler
@@ -181,10 +182,6 @@ all: $(ALL_TARGETS)
 
 $(BIN_DIR):
 	mkdir $(BIN_DIR)
-ifneq ($(LIB_DIR),$(BIN_DIR))
-$(LIB_DIR):
-	mkdir $(LIB_DIR)
-endif
 
 %$(OBJECT_LINKAGE_SUFFIX).o: %.c
 	$(CC) $(CCFLAGS) $< -o $@
