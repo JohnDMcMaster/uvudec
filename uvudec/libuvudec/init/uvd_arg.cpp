@@ -147,7 +147,7 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 	return UV_ERR_OK;
 }
 
-static uv_err_t initSharedConfig()
+uv_err_t UVDInitArgConfig()
 {
 	//Now add our arguments
 	
@@ -239,27 +239,6 @@ static uv_err_t initSharedConfig()
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin search path", 1, argParser, false));
 
 	return UV_ERR_OK;	
-}
-
-//Called before debugging initialized
-uv_err_t UVDInitConfigEarly()
-{
-	g_config = new UVDConfig();
-	uv_assert_ret(g_config);
-	uv_assert_err_ret(g_config->init());
-
-	return UV_ERR_OK;
-}
-
-//Called after debugging initialized
-uv_err_t UVDInitConfig()
-{
-	//libuvudec shared config
-	uv_assert_err_ret(initSharedConfig());
-	//Program specific config
-	//uv_assert_err_ret(initProgConfig());
-
-	return UV_ERR_OK;
 }
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)

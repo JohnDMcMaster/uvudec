@@ -951,3 +951,25 @@ uv_err_t UVDParsedFunction::deinit()
 	
 	return UV_ERR_OK;
 }
+
+//Called before debugging initialized
+uv_err_t UVDInitConfigEarly()
+{
+	g_config = new UVDConfig();
+	uv_assert_ret(g_config);
+	uv_assert_err_ret(g_config->init());
+
+	return UV_ERR_OK;
+}
+
+//Called after debugging initialized
+uv_err_t UVDInitConfig()
+{
+	//libuvudec shared config
+	uv_assert_err_ret(UVDInitArgConfig());
+	//Program specific config
+	//uv_assert_err_ret(initProgConfig());
+
+	return UV_ERR_OK;
+}
+
