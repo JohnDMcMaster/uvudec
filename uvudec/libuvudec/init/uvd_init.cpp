@@ -39,6 +39,7 @@ Do something instead like create a list of optional and required members, with p
 #include "uvd_register.h"
 #include "uvd_types.h"
 #include "uvd_cpu_vector.h"
+#include "core/architecture.h"
 
 uv_err_t UVDInit()
 {
@@ -108,7 +109,13 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	m_data = data;
-	m_architecture = architecture;
+	
+	//FIXME: replace this with a config based selection
+	//Must be able to feed into plugins
+	m_architecture = new UVDArchitecture();
+	uv_assert_ret(m_architecture);
+	
+	m_architecture->m_architecture = architecture;
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
 	UVDBenchmark engineInitBenchmark;
@@ -135,17 +142,17 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	uv_assert_err_ret(m_CPU->init());
 	*/
 
-	m_opcodeTable = new UVDOpcodeLookupTable();
+	m_architecture->m_opcodeTable = new UVDOpcodeLookupTable();
 	//printf_debug("Initializing opcode table, address: 0x%.8X\n", (unsigned int)m_opcodeTable);
-	uv_assert(m_opcodeTable);
+	uv_assert(m_architecture->m_opcodeTable);
 	//m_CPU->m_opcodeTable = m_opcodeTable;
 	
-	m_symMap = new UVDSymbolMap();
-	uv_assert(m_symMap);
-	uv_assert_err_ret(m_symMap->init());
+	m_architecture->m_symMap = new UVDSymbolMap();
+	uv_assert(m_architecture->m_symMap);
+	uv_assert_err_ret(m_architecture->m_symMap->init());
 	//m_interpreter = new UVDConfigExpressionInterpreter();
-	UVDConfigExpressionInterpreter::getConfigExpressionInterpreter(&m_interpreter);
-	uv_assert(m_interpreter);
+	UVDConfigExpressionInterpreter::getConfigExpressionInterpreter(&m_architecture->m_interpreter);
+	uv_assert(m_architecture->m_interpreter);
 	m_analyzer = new UVDAnalyzer();
 	uv_assert(m_analyzer);
 	m_analyzer->m_uvd = this;
@@ -255,7 +262,7 @@ uv_err_t UVD::init_config()
 		goto error;
 	}
 
-	if( UV_FAILED(m_opcodeTable->init_opcode(op_section)) )
+	if( UV_FAILED(m_architecture->m_opcodeTable->init_opcode(op_section)) )
 	{
 		UV_ERR(rc);
 		goto error;
@@ -780,8 +787,8 @@ uv_err_t UVD::init_memory(UVDConfigSection *mem_section)
 			//Link in source and dest address spaces
 			UVDSymbol *sym_temp = NULL;
 			memoryMapper->m_src_shared = memoryShared;
-			uv_assert_err(m_symMap->getSym(value_dst, &sym_temp));		
-			uv_assert(sym_temp);				
+			uv_assert_err(m_architecture->m_symMap->getSym(value_dst, &sym_temp));		
+			uv_assert(sym_temp);
 			memoryMapper->m_dst_shared = sym_temp->m_mem;
 
 			if( value_dst_min.empty() )
@@ -828,11 +835,11 @@ uv_err_t UVD::init_memory(UVDConfigSection *mem_section)
 			sym_temp->m_mem = memoryShared;
 			
 			printf_debug("Adding sym call\n");
-			uv_assert_err(m_symMap->setSym(memoryShared->m_name, sym_temp, NULL));		
+			uv_assert_err(m_architecture->m_symMap->setSym(memoryShared->m_name, sym_temp, NULL));		
 		}
 	}
 	
-	m_symMap->print();
+	m_architecture->m_symMap->print();
 
 	printf_debug("Memory init OK\n");
 
@@ -973,7 +980,7 @@ uv_err_t UVD::init_reg(UVDConfigSection *reg_section)
 			spaceAddress = strtol(func_content.c_str(), NULL, 0);
 			
 			//reg_shared->m_mem_addr = strtol(func_content.c_str(), NULL, 0);
-			uv_assert_err(m_symMap->getSym(func_name, &memoryShared));
+			uv_assert_err(m_architecture->m_symMap->getSym(func_name, &memoryShared));
 
 			/*
 			mem_loc.space = memoryShared;
@@ -990,7 +997,7 @@ uv_err_t UVD::init_reg(UVDConfigSection *reg_section)
 		}
 		
 		//Save for future use
-		m_registers[value_name] = reg_shared;
+		m_architecture->m_registers[value_name] = reg_shared;
 	}
 	
 	printf_debug("Register init OK\n");

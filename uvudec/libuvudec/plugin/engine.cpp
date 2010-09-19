@@ -81,7 +81,6 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path)
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
-
 	pluginMain = (UVDPlugin::PluginMain)dlsym(library, UVD_PLUGIN_MAIN_SYMBOL_STRING);
 	lastError = dlerror();
 	if( !pluginMain || lastError )

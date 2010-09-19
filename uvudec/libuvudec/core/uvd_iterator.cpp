@@ -32,6 +32,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_instruction.h"
 #include "uvd_types.h"
 #include "uvd_config_symbol.h"
+#include "core/architecture.h"
 
 UVDIteratorCommon::UVDIteratorCommon()
 {
@@ -446,8 +447,8 @@ uv_err_t UVDIteratorCommon::parseCurrentInstruction()
 	//Of course, if also we require operands, there will be issues
 	//But this doesn't mean we can't analyze the current byte
 	
-	uv_assert_ret(m_uvd->m_opcodeTable);
-	uv_assert_err_ret(m_uvd->m_opcodeTable->getElement(opcode, &element));
+	uv_assert_ret(m_uvd->m_architecture->m_opcodeTable);
+	uv_assert_err_ret(m_uvd->m_architecture->m_opcodeTable->getElement(opcode, &element));
 
 	if( element == NULL )
 	{

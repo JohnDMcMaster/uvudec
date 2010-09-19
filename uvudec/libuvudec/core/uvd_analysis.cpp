@@ -11,6 +11,7 @@ Things such as interpreting results and converting to generic structures
 
 #include "uvd.h"
 #include "uvd_analysis.h"
+#include "core/architecture.h"
 #include "uvd_benchmark.h"
 #include "uvd_util.h"
 
@@ -517,8 +518,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 
 			//About 0.03 sec per exec...need to speed it up
 			//Weird...cast didn't work to solve pointer incompatibility
-			uv_assert_ret(m_interpreter);
-			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+			uv_assert_ret(m_architecture->m_interpreter);
+			uv_assert_err_ret(m_architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
 			
 			uv_assert_err_ret(m_analyzer->analyzeCall(&iter.m_instruction, startPos, mapOut));
 			
@@ -548,8 +549,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 
 			//About 0.03 sec per exec...need to speed it up
 			//Weird...cast didn't work to solve pointer incompatibility
-			uv_assert_ret(m_interpreter);
-			uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+			uv_assert_ret(m_architecture->m_interpreter);
+			uv_assert_err_ret(m_architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
 
 			uv_assert_err_ret(m_analyzer->analyzeJump(&iter.m_instruction, startPos, mapOut));
 		}

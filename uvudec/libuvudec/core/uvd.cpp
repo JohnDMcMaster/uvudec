@@ -21,6 +21,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
+#include "core/architecture.h"
 #include "uvd_debug.h"
 #include "uvd_error.h"
 #include "uvd_log.h"
@@ -432,14 +433,10 @@ error:
 UVD::UVD()
 {
 	m_data = NULL;
-	m_opcodeTable = NULL;
 	m_architecture = 0;
-	m_interpreter = NULL;
 	m_analyzer = NULL;
 	m_format = NULL;
-	//m_CPU = NULL;
 	m_config = NULL;
-	m_symMap = NULL;
 }
 
 UVD::~UVD()
@@ -451,36 +448,12 @@ uv_err_t UVD::deinit()
 {
 	//m_data deallocated by UVD engine caller
 	
-	delete m_opcodeTable;
-	m_opcodeTable = NULL;
-
-	delete m_symMap;
-	m_symMap = NULL;
-
-	delete m_interpreter;
-	m_interpreter = NULL;
-
 	delete m_analyzer;
 	m_analyzer = NULL;
 
 	delete m_format;
 	m_format = NULL;
 
-	for( std::map<std::string, UVDRegisterShared *>::iterator iter = m_registers.begin(); iter != m_registers.end(); ++iter )
-	{
-		UVDRegisterShared *regShared = (*iter).second;
-
-		if( !regShared )
-		{
-			printf_warn("bad regShared entry\n");
-		}
-		else
-		{
-			delete regShared;
-		}
-	}
-	m_registers.clear();
-	
 	if( m_config != g_config )
 	{
 		delete m_config;
@@ -838,7 +811,7 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::st
 	
 	if( m_config->m_print_used )
 	{
-		m_opcodeTable->usedStats();
+		m_architecture->m_opcodeTable->usedStats();
 	}
 
 	decompilePrintBenchmark.stop();
@@ -875,5 +848,10 @@ uv_err_t UVD::setOutputFormatting(UVDFormat *format)
 	m_format = format;
 
 	return UV_ERR_OK;
+}
+
+UVD *UVDGetUVD()
+{
+	return g_uvd;
 }
 
