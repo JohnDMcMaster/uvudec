@@ -78,7 +78,7 @@ uv_err_t UVDDeinit()
 file: data file to target
 architecture: hint about what we are trying to disassemble
 */
-uv_err_t UVD::init(const std::string &file, int architecture)
+uv_err_t UVD::init(const std::string &file, const std::string &architecture)
 {
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	UVDData *data;
@@ -94,18 +94,26 @@ uv_err_t UVD::init(const std::string &file, int architecture)
 }
 
 //int init_count = 0;
-uv_err_t UVD::init(UVDData *data, int architecture)
+uv_err_t UVD::init(UVDData *data, const std::string &architecture)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	m_data = data;
 	
-	//FIXME: replace this with a config based selection
-	//Must be able to feed into plugins
-	//This should be a switch instead
-	//m_architecture->m_architecture = architecture;
-	m_architecture = new UVDDisasmArchitecture();
-	uv_assert_ret(m_architecture);
-	uv_assert_err_ret(m_architecture->init());
+	uv_assert_ret(m_config);
+	m_pluginEngine = &m_config->m_plugin.m_pluginEngine;
+	m_pluginEngine->m_uvd = this;
+
+	//printf("plugins to load: %d\n", m_config->m_plugin.m_toLoad.size());
+	for( std::vector<std::string>::iterator iter = m_config->m_plugin.m_toLoad.begin();
+			iter != m_config->m_plugin.m_toLoad.end(); ++iter )
+	{
+		std::string &pluginName = *iter;
+		
+		uv_assert_err_ret(m_pluginEngine->initPlugin(pluginName));
+	}
+	//printf("loaded plugins: %d\n", m_pluginEngine->m_loadedPlugins.size());
+
+	uv_assert_err_ret(initArchitecture(architecture));
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
 	UVDBenchmark engineInitBenchmark;
@@ -150,5 +158,66 @@ uv_err_t UVD::init(UVDData *data, int architecture)
 	rc = UV_ERR_OK;
 error:
 	return UV_DEBUG(rc);
+}
+
+uv_err_t UVD::initPlugins()
+{
+	//Load plugins as specified in config
+	for( std::vector<std::string>::iterator iter = m_config->m_plugin.m_toLoad.begin();
+			iter != m_config->m_plugin.m_toLoad.end(); ++iter )
+	{
+		const std::string &curPluginName = *iter;
+		
+		uv_assert_err_ret(m_config->m_plugin.m_pluginEngine.initPlugin(curPluginName));
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::initArchitecture(const std::string &architecture)
+{
+	//FIXME: replace this with a config based selection
+	//Must be able to feed into plugins
+	//This should be a switch instead
+	//m_architecture->m_architecture = architecture;
+	
+	//Iterate over all plugins until one accepts our input
+	for( std::map<std::string, UVDPlugin *>::iterator iter = m_pluginEngine->m_loadedPlugins.begin();
+		iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
+	{
+		UVDPlugin *plugin = (*iter).second;
+		uv_err_t rcTemp = UV_ERR_GENERAL;
+		
+		uv_assert_ret(plugin);
+		rcTemp = plugin->getArchitecture(m_data, architecture, &m_architecture);
+		if( rcTemp == UV_ERR_NOTSUPPORTED )
+		{
+			continue;
+		}
+		else if( UV_FAILED(rcTemp) )
+		{
+			printf_error("plugin %s failed to load architecture\n", (*iter).first.c_str());
+			continue;
+		}
+		else if( !m_architecture )
+		{
+			printf_error("plugin %s claimed successed but didn't set architecture\n", (*iter).first.c_str());
+			continue;
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	if( !m_architecture )
+	{
+		printf_error("could not find a suitable architecture module\n");
+		return UV_ERR_GENERAL;
+	}
+	
+	uv_assert_err_ret(m_architecture->init());
+
+	return UV_ERR_OK;
 }
 

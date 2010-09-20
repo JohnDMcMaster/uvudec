@@ -19,7 +19,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_data.h"
 #include "uvd_format.h"
 #include "uvd_instruction.h"
-#include "uvd_opcode.h"
 #include "uvd_register.h"
 #include "uvd_config_symbol.h"
 #include "uvd_types.h"
@@ -31,12 +30,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #define UVUDEC_VER_STRING 		__stringify(UVUDEC_VER_MAJOR) "." __stringify(UVUDEC_VER_MINOR) "." __stringify(UVUDEC_VER_PATCH)
 
-/* Used for opcode processing funcs */
-//static uvd_func opcode_map[256];
-/* on 8051, its a fairly starightforward map from numbers to opcode descriptions */
-//extern struct uv_inst_shared_t *opcode_structs[256];
-
-
+#if 0
 /*
 Primary actions
 */
@@ -54,18 +48,22 @@ references) can be used to figure things out
 Note that every func can be, in theory, written in a different language
 */
 #define UV_DISASM_ACTION_DETECT_Language		3
+#endif
 
 /*
 Options
 */
 
+#if 0
 uv_err_t uvd_init_equiv_mem(void);
 
 /* Global symbol management */
 uv_err_t uvd_set_sym(const std::string key, 
 		struct uvd_sym_t *value, struct uvd_sym_t **old_value);
 uv_err_t uvd_get_sym(const std::string key, struct uvd_sym_t **value);
+#endif
 
+#if 0
 //nasm style. Uses % in front of registers.  mov %src_reg, %dest_reg
 #define UV_DISASM_STYLE_ATT						1
 //masm style?.   MOV DEST_REG, SRC_REG
@@ -74,7 +72,9 @@ uv_err_t uvd_get_sym(const std::string key, struct uvd_sym_t **value);
 //extern int g_asm_style;
 //Print how instructions are derrived?
 //extern int g_deriv;
+#endif
 
+#if 0
 /*
 Options common to many different things we could do
 */
@@ -103,6 +103,7 @@ Maybe try to identify them and filter them out
 #define UV_DISASM_SUBACTION_NO_MEMORIC			0x0040
 //Use memorics, default 1
 //extern int g_memoric;
+#endif
 
 /*
 Language specific options
@@ -111,7 +112,7 @@ Language specific options
 Assembly language specific
 */
 //Use AT&T style assembly if not set, otherwise Intel
-#define UV_DISASM_SUBACTION_ASM_STYLE			0x0100
+//#define UV_DISASM_SUBACTION_ASM_STYLE			0x0100
 
 /*
 buffer: instruction buffer
@@ -149,10 +150,10 @@ public:
 	file: data file to target
 	architecture: hint about what we are trying to disassemble
 	*/
-	uv_err_t init(const std::string &file, int architecture = 0);
-	uv_err_t init(UVDData *data, int architecture = 0);
-	//Initialize the opcode tables
-	
+	uv_err_t init(const std::string &file, const std::string &architecture = "");
+	uv_err_t init(UVDData *data, const std::string &architecture = "");
+	uv_err_t initPlugins();
+	uv_err_t initArchitecture(const std::string &architecture);
 	uv_err_t deinit();
 
 	/*
@@ -276,6 +277,7 @@ public:
 	std::vector<UVDMemoryLocation> m_noncodingAddresses;
 
 	//General configuration
+	//This must be a pointer as its intialized before we initialize our UVD object
 	UVDConfig *m_config;
 	//How to print data
 	//This should probably be moved to UVDConfig
@@ -291,6 +293,10 @@ public:
 	//For notifying plugins and such of analysis events
 	//We own this
 	UVDEventEngine *m_eventEngine;
+	
+	//NOTE: plugin is part of config because it must have early init
+	//we put it here for convenience, we do not own it
+	UVDPluginEngine *m_pluginEngine;
 };
 
 //TODO: this is a hack, needs to be fixed

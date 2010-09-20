@@ -13,17 +13,12 @@ CXX_SRCS = 	\
 			$(ASSEMBLY_DIR)/uvd_cpu.cpp \
 			$(ASSEMBLY_DIR)/uvd_cpu_vector.cpp \
 			$(ASSEMBLY_DIR)/uvd_instruction.cpp \
-			$(ASSEMBLY_DIR)/uvd_opcode.cpp \
 			$(ASSEMBLY_DIR)/uvd_operand.cpp \
 			$(ASSEMBLY_DIR)/uvd_register.cpp \
-			$(ASSEMBLY_DIR)/uvd_disasm_operand.cpp \
-			$(ASSEMBLY_DIR)/uvd_disasm_instruction.cpp \
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(COMPILER_DIR)/uvd_compiler_assembly.cpp \
 			$(COMPILER_DIR)/uvd_compiler_gcc.cpp \
 			$(CORE_DIR)/architecture.cpp \
-			$(CORE_DIR)/disasm_architecture.cpp \
-			$(CORE_DIR)/disasm_architecture_init.cpp \
 			$(CORE_DIR)/uvd.cpp \
 			$(CORE_DIR)/uvd_analysis.cpp \
 			$(CORE_DIR)/uvd_analysis_db.cpp \

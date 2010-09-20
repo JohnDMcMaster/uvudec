@@ -44,35 +44,6 @@ Prints to global disassembly string return buffer (g_uv_disasm_ret_buff)
 */
 //There are some other weird index + offset types, need to do those
 
-//These are part of operands, which already have a name
-//Thus certain object such as that are uncessary
-class UVDDisasmOperandShared;
-class UVDDisasmFunctionShared
-//struct uv_disasm_func_shared_t
-{
-public:
-	UVDDisasmFunctionShared();
-	~UVDDisasmFunctionShared();
-	uv_err_t deinit();
-
-public:
-	std::vector<UVDDisasmOperandShared *> m_args;
-};
-
-class UVDDisasmOperand;
-class UVDOperand;
-class UVDDisasmFunction
-//struct uv_disasm_func_t
-{
-public:
-	UVDDisasmFunction();
-	~UVDDisasmFunction();
-	uv_err_t deinit();
-
-public:
-	//This needs to match type of UVDInstruction for recursive funcs to work correctly
-	std::vector<UVDOperand *> m_args;
-};
 
 /*
 An instruction with inherent data to that architecture
@@ -108,45 +79,6 @@ public:
 	//virtual uv_err_t getImmediateSize(uint32_t *immediateSizeOut) = 0;
 };
 
-class UVDDisasmOperandShared : public UVDOperandShared
-{
-public:
-	UVDDisasmOperandShared();
-	~UVDDisasmOperandShared();
-	uv_err_t deinit();
-
-	//Returns error if it isn't an immediate
-	//uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
-
-	static uv_err_t uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDDisasmOperandShared **op_shared_in);
-
-public:
-	/*
-	Register, memory, immediate
-	UV_DISASM_DATA_*
-	*/
-	uint32_t m_type;
-
-	/*
-	Register: malloc'd register name
-	Immediate: single integer (not a pointer) indicating size in bits
-		Try to phase out immediate defines
-	Memory:
-	*/
-	union
-	{
-		void *m_type_specific;
-		int m_immediate_size;
-		UVDDisasmFunctionShared *m_func;
-		/* struct uvd_reg_shared_t *m_reg; */
-	};
-
-	/* Symbolic name as defined in the .op file's USAGE field */
-	std::string m_name;
-	
-	//UVDOperandShared *m_next;
-
-};
 
 /*
 An instruction as parsed from a file
@@ -178,63 +110,6 @@ public:
 	UVDInstruction *m_instruction;
 };
 
-class UVDDisasmOperand : public UVDOperand
-{
-public:
-	UVDDisasmOperand();
-	~UVDDisasmOperand();
-	virtual uv_err_t init();
-	virtual uv_err_t deinit();
-
-	//Convenience cast
-	UVDDisasmOperandShared *getShared();
-
-	//uv_err_t uvd_parsed2opshared(const struct uvd_parsed_t *parsed_type, UVDOperandShared **op_shared_in);
-	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter);
-
-	virtual uv_err_t printDisassemblyOperand(std::string &out);
-	//uv_err_t print_disasm_operand(char *buff, unsigned int buffsz, unsigned int *buff_used_in);
-
-	//Get a variable mapping suitable for scripting
-	//If name returns empty, is not applicable
-	uv_err_t getVariable(std::string &name, UVDVarient &value);
-
-	//Does not have to be original size
-	//Must match signedness
-	uv_err_t getUI32Representation(uint32_t &i);
-	uv_err_t getI32Representation(int32_t &i);
-
-	//Created to give representations that might allow for binary to pratical value translations
-	//Ex: relative jump contains binary 3, but really is PC + 3 = say 123
-	uv_err_t getUI32RepresentationAdjusted(uint32_t &i);
-	uv_err_t getI32RepresentationAdjusted(int32_t &i);
-
-private:
-	/* 
-	Additional information for this operand, such as a value larger than simple field supports 
-	Interpretation is operand specific and determined by m_shared
-	
-	REG: std::string  to register name
-	IMMEDIATE: larger than sizeof(value): pointer to raw byte stream
-		Support for such data isn't planned in near future
-	*/
-	union
-	{
-		void *m_extra;
-		
-		UVDDisasmFunction *m_func;
-
-		/* Many operands are immediates of some time or another */
-		uint8_t m_ui8;
-		int8_t m_i8;
-
-		uint16_t m_ui16;
-		int16_t m_i16;
-
-		uint32_t m_ui32;
-		int32_t m_i32;
-	};
-};
 
 //Reserved for use with instruction prefixes
 class UVDPrefix
@@ -277,98 +152,6 @@ public:
 	virtual std::string getHumanReadableUsage();
 };
 
-class UVDDisasmInstructionShared : public UVDInstructionShared
-{
-public:
-	UVDDisasmInstructionShared();
-	~UVDDisasmInstructionShared();
-	
-	virtual uv_err_t init();
-	virtual uv_err_t deinit();
-
-	//For doing certain analysis shortcuts
-	//Means action is a single function with a single identifier as an argument
-	uv_err_t isImmediateOnlyFunction();
-	//identifier size in bits
-	uv_err_t getImmediateOnlyFunctionAttributes(/*std::string &func,
-			std::string &identifier, */uint32_t *identifierSizeBitsOut, uint32_t *immediateOffsetOut);
-
-	virtual std::string getHumanReadableUsage();
-
-	//Make ready instruction class
-	uv_err_t analyzeAction();
-
-private:
-	uv_err_t isImmediateOnlyFunctionCore();
-
-public:
-
-	//Primary descrpition of what it does
-	//imm32=<0x23456789> or <ESP>
-	/* The memoric */
-	std::string m_memoric;
- 	/* A longer text description */
-	std::string m_desc;
- 	/* Action script command */
-	std::string m_action;
-	
-	/* The following two will likely have to be redesigned, probably better to store one byte at a time */
-	/* Base opcode */
-	uint8_t m_opcode[MAX_OPCODE_SIZE];
-	/* How many bytes the opcode is */
-	uint32_t m_opcode_length;
-	/*
-	Including immediates, prefix, etc, how long 
-	Not valid for the following:
-		-Prefixes
-		-Extensions
-		We'll see if something else comes up
-	This will likely server as an estimate only
-	*/
-	uint32_t m_total_length;
-	/*
-	Some instructions are valid for a range of opcodes, but aren't aligned on nice bit masks 
-	So, just use this
-	Discontinuous opcodes should be specified in different structures
-	A range of 0 means only this instruction, 1 would indicate the next one as well, etc
-	*/
-	uint32_t m_opcode_range_offset;
-
-	/* 
-	This can be trickey.
-	Ex: branch not taken: 2 cycles, branch taken: 3 cycles
-	However, even an approx num for now could be useful
-	Use cpi hi and low to address the corner cases
-	*/
-	uint32_t m_cpi;
-	uint32_t m_cpi_low;
-	uint32_t m_cpi_hi;
-	
-	/* used to parse out from binary, head of usage linked list */
-	/*struct uv_inst_usage_t *usage;*/
-
-	/*
-	Instruction class 
-	If class is "prefix" or "extension", many of these fields do not hold meaningful values
-	*/
-	uint32_t m_inst_class;
-
-	/*
-	head of operand linked list 
-	Note that the usage information is part of the operands
-	*/
-	std::vector<UVDDisasmOperandShared *> m_operands;	
-
-	/* Information needed to recongize the instruction */
-	//struct uv_inst_parse_t *m_parse;
-
-	/* Configuration file line that it came from */
-	uint32_t m_config_line_syntax;
-	uint32_t m_config_line_usage;
-	
-	uv_err_t m_isImmediateOnlyFunction;
-};
-
 /*
 An instruction as parsed from a data source
 */
@@ -409,38 +192,6 @@ public:
 	std::vector<UVDPrefix> m_prefixes;
 };
 
-class UVDDisasmInstruction : public UVDInstruction
-{
-public:
-	UVDDisasmInstruction();
-	~UVDDisasmInstruction();
-	
-	virtual uv_err_t init();
-	virtual uv_err_t deinit();
-
-	UVDDisasmInstructionShared *getShared();
-
-	/* Prints a text description of the given instruction to the buffer */
-	//uv_err_t print_disasm(char *buff, uint32_t buffsz);
-	uv_err_t print_disasm(std::string &out);
-	
-	virtual uv_err_t analyzeControlFlow();
-
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
-
-	virtual uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
-			std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
-
-	//Hmm is this UVDDisasm specifc?
-	virtual uv_err_t collectVariables(UVDVariableMap &environment);
-
-	uv_err_t analyzeCall(uint32_t startPos, const UVDVariableMap &attributes);
-	uv_err_t analyzeJump(uint32_t startPos, const UVDVariableMap &attributes);
-
-public:	
-	//FIXME: this should be arch pointer, not uvd
-	UVD *m_uvd;
-};
 
 const char *uvd_data_str(int uvd_data);
 

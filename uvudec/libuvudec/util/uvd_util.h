@@ -4,6 +4,12 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+/*
+NOTE NOTE NOTE
+Thee are intended for libuvudec internal use only
+I will be testing integration of boost::filesystem and many of these funcs could disappear
+*/
+
 #ifndef UV_UTIL_H
 #define UV_UTIL_H
 
@@ -36,6 +42,14 @@ Put in namespace maybe and do some template magic?
 #ifndef uvd_max
 #define uvd_max(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) ret; if( _a < _b ) ret = _a; else ret = _b; ret;})
 #endif //uvd_max
+
+class UVDFileUtil
+{
+public:
+	//Returns just the file names
+	//static uv_err_t listDirectory(const std::string &dir);
+
+};
 
 std::string uv_basename(const std::string &file);
 std::string uv_dirname(const std::string &file);

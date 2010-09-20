@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDPlugin::UVDPlugin()
 {
 	m_hLibrary = NULL;
+	m_uvd = NULL;
 }
 
 UVDPlugin::~UVDPlugin()
@@ -20,8 +21,9 @@ UVDPlugin::~UVDPlugin()
 	}
 }
 
-uv_err_t UVDPlugin::init()
+uv_err_t UVDPlugin::init(UVD *uvd)
 {
+	m_uvd = uvd;
 	return UV_ERR_OK;
 }
 
@@ -30,19 +32,14 @@ uv_err_t UVDPlugin::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPlugin::initEntry()
-{
-	return UV_DEBUG(init());
-}
-
-uv_err_t UVDPlugin::deinitEntry()
-{
-	return UV_DEBUG(deinit());
-}
-
 uv_err_t UVDPlugin::getDependencies(PluginDependencies &out)
 {
 	out.clear();
 	return UV_ERR_OK;
+}
+
+uv_err_t UVDPlugin::getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out)
+{
+	return UV_ERR_NOTSUPPORTED;
 }
 

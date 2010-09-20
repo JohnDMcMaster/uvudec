@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #pragma once
 
-#include "uvd_instruction.h"
+#include "uvdasm/instruction.h"
 #include "uvd_types.h"
 #include "uvd_config_interpreter.h"
 

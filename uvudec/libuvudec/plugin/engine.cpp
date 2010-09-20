@@ -6,6 +6,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "plugin/engine.h"
 #include "plugin/plugin.h"
+#include "uvd.h"
+#include "uvd_config.h"
+#include <boost/filesystem.hpp>
 #include <dlfcn.h>
 
 UVDPluginEngine::UVDPluginEngine()
@@ -17,9 +20,41 @@ UVDPluginEngine::~UVDPluginEngine()
 {
 }
 	
-uv_err_t UVDPluginEngine::init(UVD *uvd)
+uv_err_t UVDPluginEngine::init(UVDConfig *config)
 {
-	m_uvd = uvd;
+	uv_assert_ret(config);
+	uv_assert_ret(config == g_config);
+	/*
+	Call all plugin mains
+	*/
+	/*
+	for dir in plugin dirs
+		find all .so files with plugin main symbol
+	*/
+	for( std::vector<std::string>::iterator iter = config->m_plugin.m_dirs.begin(); iter != config->m_plugin.m_dirs.end(); ++iter )
+	{
+		const std::string &pluginDir = *iter;
+		
+		for( boost::filesystem::directory_iterator iter(pluginDir);
+			iter != boost::filesystem::directory_iterator(); ++iter )
+		{
+			//Not necessarily canonical
+			std::string path;
+			
+			if( is_directory(iter->status()) )
+			{
+				continue;				
+			}
+			path = pluginDir + "/" + iter->path().filename();
+			
+			//Try loading it, ignoring errors since it might just be a text file or something
+			if( UV_FAILED(loadByPath(path, false)) )
+			{
+				//printf_warn("failed to load possible plugin: %s\n", path.c_str());
+			}
+		}		
+	}
+
 	return UV_ERR_OK;
 }
 
@@ -56,7 +91,7 @@ uv_err_t UVDPluginEngine::loadByName(const std::string &name)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPluginEngine::loadByPath(const std::string &path)
+uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 {
 	UVDPlugin *plugin = NULL;
 	void *library = NULL;
@@ -64,56 +99,105 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path)
 	const char *lastError = NULL;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	std::string name;
-		
+
 	//Clear errors
 	dlerror();
 	library = dlopen(path.c_str(), RTLD_LAZY);
 	lastError = dlerror();
 	if( !library || lastError )
 	{
-		//Maybe should be a warning?
-		//is there any reason why we'd lazily try to load a plugin only if it exists?
-		if( !lastError )
+		if( reportErrors )
 		{
-			lastError = "<UNKNOWN>";
+			//Maybe should be a warning?
+			//is there any reason why we'd lazily try to load a plugin only if it exists?
+			if( !lastError )
+			{
+				lastError = "<UNKNOWN>";
+			}
+			printf_error("%s: load library failed: %s\n", path.c_str(), lastError);
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-		printf_error("%s: load library failed: %s\n", path.c_str(), lastError);
-		return UV_DEBUG(UV_ERR_GENERAL);
+		else
+		{
+			return UV_ERR_GENERAL;
+		}
 	}
 	
 	pluginMain = (UVDPlugin::PluginMain)dlsym(library, UVD_PLUGIN_MAIN_SYMBOL_STRING);
 	lastError = dlerror();
 	if( !pluginMain || lastError )
 	{
-		if( !lastError )
+		if( reportErrors )
 		{
-			lastError = "<UNKNOWN>";
+			if( !lastError )
+			{
+				lastError = "<UNKNOWN>";
+			}
+			printf_error("plugin %s: failed to load main: %s\n", path.c_str(), lastError);
+			dlclose(library);
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-		printf_error("plugin %s: failed to load main: %s\n", path.c_str(), lastError);
-		dlclose(library);
-		return UV_DEBUG(UV_ERR_GENERAL);
+		else
+		{
+			dlclose(library);
+			return UV_ERR_GENERAL;
+		}
 	}
 	
 	//	typedef PluginMain uv_err_t (*)(UVD *uvd, UVDPlugin **out);
-	rcTemp = UV_DEBUG(pluginMain(m_uvd, &plugin));
+	UVDConfig *config = NULL;
+	if( m_uvd )
+	{
+		config = m_uvd->m_config;
+	}
+	else
+	{
+		uv_assert_ret(g_config);
+		config = g_config;
+	}
+	rcTemp = UV_DEBUG(pluginMain(config, &plugin));
 	if( UV_FAILED(rcTemp) )
 	{
-		printf_error("plugin %s: main failed\n", path.c_str());
-		dlclose(library);
-		return UV_DEBUG(UV_ERR_GENERAL);
+		if( reportErrors )
+		{
+			printf_error("plugin %s: main failed\n", path.c_str());
+			dlclose(library);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		else
+		{
+			dlclose(library);
+			return UV_ERR_GENERAL;
+		}
 	}
 	if( !plugin )
 	{
-		printf_error("plugin %s: didn't return a plugin object\n", path.c_str());
-		dlclose(library);
-		return UV_DEBUG(UV_ERR_GENERAL);
+		if( reportErrors )
+		{
+			printf_error("plugin %s: didn't return a plugin object\n", path.c_str());
+			dlclose(library);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		else
+		{
+			dlclose(library);
+			return UV_ERR_GENERAL;
+		}
 	}
 
 	rcTemp = UV_DEBUG(plugin->getName(name));
 	if( UV_FAILED(rcTemp) )
 	{
-		dlclose(library);
-		return UV_DEBUG(UV_ERR_GENERAL);
+		if( reportErrors )
+		{
+			dlclose(library);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		else
+		{
+			dlclose(library);
+			return UV_ERR_GENERAL;
+		}
 	}
 	
 	if( name.empty() )
@@ -124,13 +208,59 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path)
 		but it might cause issues later
 		refusing to load makes people stop being lazy
 		*/
-		printf_error("plugin %s: didn't provide a name\n", path.c_str());
-		dlclose(library);
-		return UV_DEBUG(UV_ERR_GENERAL);
+		if( reportErrors )
+		{
+			printf_error("plugin %s: didn't provide a name\n", path.c_str());
+			dlclose(library);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		else
+		{
+			dlclose(library);
+			return UV_ERR_GENERAL;
+		}
 	}
 	
 	plugin->m_hLibrary = library;
+	m_plugins[name] = plugin;
+	
 
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginEngine::initPlugin(const std::string &name)
+{
+	std::map<std::string, UVDPlugin *>::iterator iter = m_plugins.find(name);
+	UVDPlugin *plugin = NULL;
+
+	if( iter == m_plugins.end() )
+	{
+		printf_error("no plugin loaded named %s\n", name.c_str());
+	}
+	plugin = (*iter).second;
+	uv_assert_ret(plugin);
+	uv_assert_ret(m_uvd);
+	uv_assert_err_ret(plugin->init(m_uvd));
+	m_loadedPlugins[name] = plugin;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginEngine::deinitPlugin(const std::string &name)
+{
+	std::map<std::string, UVDPlugin *>::iterator iter = m_loadedPlugins.find(name);
+	UVDPlugin *plugin = NULL;
+
+	uv_assert_ret(iter != m_loadedPlugins.end());
+	plugin = (*iter).second;
+	uv_assert_ret(plugin);
+	if( UV_FAILED(plugin->deinit()) )
+	{
+		printf_error("failed to cleanly unload plugin %s\n", name.c_str());
+	}
+	
+	m_loadedPlugins.erase(iter);
+	
 	return UV_ERR_OK;
 }
 

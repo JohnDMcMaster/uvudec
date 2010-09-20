@@ -32,4 +32,16 @@ class UVDAnalysis
 {
 };
 
+#define UVD__FLOW_ANALYSIS__INVALID				0
+/*
+Default
+Iterate through each executable instruction one at a time
+*/
+#define UVD__FLOW_ANALYSIS__LINEAR				1
+/*
+Start at each vector and trace all possible branches
+May miss functions called through pointers
+*/
+#define UVD__FLOW_ANALYSIS__TRACE				2
+
 #endif

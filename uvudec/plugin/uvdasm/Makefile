@@ -9,8 +9,15 @@ PLUGIN_NAME=uvdasm
 CC_SRCS =   \
 
 CXX_SRCS = 	\
+			architecture.cpp \
+			architecture_init.cpp \
+			function.cpp \
+			instruction.cpp \
 			main.cpp \
-			plugin.cpp
+			operand.cpp \
+			opcode_table.cpp \
+			plugin.cpp \
+			util.cpp
 
 include ../Makefile.mk
 

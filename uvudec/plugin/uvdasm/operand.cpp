@@ -5,11 +5,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd.h"
-#include "uvd_instruction.h"
+#include "uvdasm/instruction.h"
 #include "uvd_types.h"
 #include "uvd_format.h"
+#include "uvdasm/operand.h"
+#include "uvdasm/util.h"
 #include "main.h"
-#include "core/architecture.h"
+#include "uvdasm/architecture.h"
 #include <stdio.h>
 
 const char *uvd_data_str(int uvd_data)
@@ -822,48 +824,6 @@ uv_err_t UVDDisasmOperand::getI32Representation(int32_t &i)
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
-	return UV_ERR_OK;
-}
-
-UVDDisasmFunctionShared::UVDDisasmFunctionShared()
-{
-}
-
-UVDDisasmFunctionShared::~UVDDisasmFunctionShared()
-{
-	deinit();
-}
-
-uv_err_t UVDDisasmFunctionShared::deinit()
-{
-	for( std::vector<UVDDisasmOperandShared *>::iterator iter = m_args.begin(); iter != m_args.end(); ++iter )
-	{
-		delete *iter;
-	}
-	m_args.clear();
-
-	return UV_ERR_OK;
-}
-
-UVDDisasmFunction::UVDDisasmFunction()
-{
-}
-
-UVDDisasmFunction::~UVDDisasmFunction()
-{
-	deinit();
-}
-
-uv_err_t UVDDisasmFunction::deinit()
-{
-	/*
-	for( std::vector<UVDOperand *>::iterator iter = m_args.begin(); iter != m_args.end(); ++iter )
-	{
-		delete *iter;
-	}
-	*/
-	m_args.clear();
-
 	return UV_ERR_OK;
 }
 
