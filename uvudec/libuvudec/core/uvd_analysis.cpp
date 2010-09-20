@@ -404,9 +404,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	uv_assert_err_ret(instructionEnd(iterEnd));
 	for( ;; )
 	{
-		std::string action;
 		uint32_t startPos = iter.getPosition();
-		uint32_t endPos = 0;
+		UVDInstruction *instruction = iter.m_instruction;
 		
 		if( numberAnalyzedBytes )
 		{
@@ -418,7 +417,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 			}
 		}
 
-		printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
+		//printf("\n\nAnalysis at: 0x%.8X\n", startPos);		
+		uv_assert_err_ret(instruction->analyzeControlFlow());
 
 		//If we aren't at end, there should be more data
 		uv_assert_err_ret(iter.next());
@@ -426,133 +426,6 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		{
 			printf_debug("disassemble: end");
 			break;
-		}
-		endPos = iter.getPosition();
-		
-		action = iter.m_instruction.m_shared->m_action;
-
-		printf_debug("Next instruction (start: 0x%.8X, end: 0x%.8X): %s\n", startPos, endPos, iter.m_instruction.m_shared->m_memoric.c_str());
-
-		/*
-		We must extract the symbols from this
-		A human can see that the function call contained a PC relative jump + 
-		
-		Assumptions for now
-		-All jumps are local symbols to a function, they should be created for completeness
-		-PC relative jumps may not need tinkering with for now if need to cut corners since they still work
-		
-		First goal would be to get easy symbols like so
-		NAME=LCALL
-		DESC=Long Call
-		USAGE=0x12,u16_0
-		SYNTAX=u16_0
-		ACTION=CALL(u16_0)
-
-
-		NAME=LJMP
-		DESC=Long Jump
-		USAGE=0x02,u16_0
-		SYNTAX=u16_0
-		ACTION=GOTO(u16_0)
-	
-		LJMP seems like a rare instruction that current analysis would probably mess up anyway 
-		(unless you are using a bad compiler anyway)
-		Haha I wrote the above and not too much to my surprise
-		I checked the Candela file and their assembler/compiler doesn't use AJMP
-		So I have the easy case
-
-		ACALL is also rare, but not uneard of
-		Suspect these to be assembly routines, defintly seems clustered
-		Or maybe spinning?
-		[mcmaster@gespenst uvudec]$ cat candela.asm |fgrep ACALL
-		ACALL #0x1111
-		ACALL #0x1108
-		ACALL #0x1100
-		ACALL #0x1402
-		ACALL #0x1502
-		ACALL #0x0818
-		ACALL #0x0824
-		ACALL #0x0830
-		ACALL #0x0835
-		ACALL #0xB110
-		ACALL #0x3131
-		ACALL #0xB124
-		ACALL #0xB132
-		ACALL #0xB100
-		ACALL #0xB101
-		ACALL #0xB104
-		ACALL #0xB101
-		ACALL #0xB105
-		ACALL #0xB140
-		ACALL #0xB141
-		ACALL #0xB152
-		ACALL #0x0EC3
-		ACALL #0xCED0
-		ACALL #0x5500
-		*/
-
-		printf_debug("Action: %s, type: %d\n", action.c_str(), iter.m_instruction.m_shared->m_inst_class);
-		//See if its a call instruction
-		if( iter.m_instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_CALL )
-		{
-			/*
-			NAME=ACALL
-			DESC=Absolute Call (page 3)
-			USAGE=0x71,u8_0
-			SYNTAX=u8_0
-			ACTION=CALL(%PC&0x1F00+u8_0+0x6000)
-			*/
-
-			UVDVariableMap environment;
-			UVDVariableMap mapOut;
-
-			uv_assert_err_ret(iter.m_instruction.collectVariables(environment));
-						
-			/*
-			Add iterator specific environment
-			*/
-
-			//Register environment
-			//PC/IP is current instruction location
-			environment["PC"] = UVDVarient(endPos);
-
-			//About 0.03 sec per exec...need to speed it up
-			//Weird...cast didn't work to solve pointer incompatibility
-			uv_assert_ret(m_architecture->m_interpreter);
-			uv_assert_err_ret(m_architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
-			
-			uv_assert_err_ret(m_analyzer->analyzeCall(&iter.m_instruction, startPos, mapOut));
-			
-		}
-		else if( iter.m_instruction.m_shared->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
-		{
-			/*
-			NAME=JNB
-			DESC=Jump if Bit Not Set
-			USAGE=0x30,u8_0,u8_1
-			SYNTAX=u8_0,u8_1
-			ACTION=GOTO(%PC+u8_1)
-			*/
-
-			UVDVariableMap environment;
-			UVDVariableMap mapOut;
-
-			uv_assert_err_ret(iter.m_instruction.collectVariables(environment));
-						
-			/*
-			Add iterator specific environment
-			*/
-
-			//Register environment
-			//PC/IP is current instruction location
-			environment["PC"] = UVDVarient(endPos);
-
-			//About 0.03 sec per exec...need to speed it up
-			//Weird...cast didn't work to solve pointer incompatibility
-			uv_assert_ret(m_architecture->m_interpreter);
-			uv_assert_err_ret(m_architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
-
-			uv_assert_err_ret(m_analyzer->analyzeJump(&iter.m_instruction, startPos, mapOut));
 		}
 	}
 

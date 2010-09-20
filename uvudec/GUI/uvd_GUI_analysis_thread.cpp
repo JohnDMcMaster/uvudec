@@ -246,9 +246,9 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 		lineDone += formattedAddress;
 		//printf("line done w/ address: %s\n", lineDone.c_str());
 		lineDone += "  ";
-		for( uint32_t i = 0; i < iter.m_instruction.m_inst_size; ++i )
+		for( uint32_t i = 0; i < iter.m_instruction->m_inst_size; ++i )
 		{
-			snprintf(buff, sizeof(buff), "%02X", (unsigned int)(unsigned char)iter.m_instruction.m_inst[i]);
+			snprintf(buff, sizeof(buff), "%02X", (unsigned int)(unsigned char)iter.m_instruction->m_inst[i]);
 			lineDone += buff;
 			--maxOpcodeBytes;
 		}

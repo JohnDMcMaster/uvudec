@@ -21,13 +21,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 Begin init related
 **********************/
 
-UVDOpcodeLookupTable::UVDOpcodeLookupTable()
+UVDDisasmOpcodeLookupTable::UVDDisasmOpcodeLookupTable()
 {
 	memset(m_lookupTable, 0, sizeof(m_lookupTable));
 	memset(m_lookupTable, 0, sizeof(m_lookupTableHits));
 }
 
-UVDOpcodeLookupTable::~UVDOpcodeLookupTable()
+UVDDisasmOpcodeLookupTable::~UVDDisasmOpcodeLookupTable()
 {
 	deinit();
 }
@@ -41,7 +41,7 @@ Otherwise, old opcode will be deleted
 A value of NULL indicates an non-coding opcode.  
 It will be an error to lookup an opcode with such a value
 */
-uv_err_t UVDOpcodeLookupTable::registerOpcode(unsigned char opcode, UVDOpcodeLookupElement newElement, UVDOpcodeLookupElement **oldElement)
+uv_err_t UVDDisasmOpcodeLookupTable::registerOpcode(unsigned char opcode, UVDDisasmInstructionShared newElement, UVDDisasmInstructionShared **oldElement)
 {
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
@@ -49,7 +49,7 @@ uv_err_t UVDOpcodeLookupTable::registerOpcode(unsigned char opcode, UVDOpcodeLoo
 /*
 TODO: branch to sub tables
 */
-void UVDOpcodeLookupTable::usageStats(void)
+void UVDDisasmOpcodeLookupTable::usageStats(void)
 {
 	int i = 0;
 	int used = 0;
@@ -70,7 +70,7 @@ void UVDOpcodeLookupTable::usageStats(void)
 	printf_debug("Used opcodes: %d, unused opcodes: %d\n", used, unused);
 }
 
-void UVDOpcodeLookupTable::usedStats(void)
+void UVDDisasmOpcodeLookupTable::usedStats(void)
 {
 	int i = 0;
 	int used = 0;
@@ -97,111 +97,11 @@ void UVDOpcodeLookupTable::usedStats(void)
 	printf_debug("Used opcodes: %d, unused opcodes: %d\n", used, unused);
 }
 
-uv_err_t UVDOperandShared::uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDOperandShared **op_shared_in)
-{
-	uv_err_t rc = UV_ERR_GENERAL;
-	UVDOperandShared *op_shared = NULL;
-
-	UV_ENTER();
-	
-	uv_assert(parsed_type);
-
-	if( !op_shared_in )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	if( parsed_type->m_operand_type == UV_DISASM_DATA_IMMS
-		|| parsed_type->m_operand_type == UV_DISASM_DATA_IMMU )
-	{
-		op_shared = new UVDOperandShared();
-		if( op_shared == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		/* Cur will be free'd soon and has other issues, so duplicate */
-		op_shared->m_name = parsed_type->m_name;
-		
-		op_shared->m_type = parsed_type->m_operand_type;
-							
-		op_shared->m_immediate_size = parsed_type->m_num_bits;
-		//inst_shared->m_total_length += op_shared->m_immediate_size / 8;			
-	}
-	else if( parsed_type->m_operand_type == UV_DISASM_DATA_REG )
-	{
-		printf_debug("Register: %s\n", parsed_type->m_name.c_str());
-				
-		op_shared = new UVDOperandShared();
-		if( op_shared == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		/* Cur will be free'd soon and has other issues, so duplicate */
-		op_shared->m_name = parsed_type->m_name;
-		op_shared->m_type = parsed_type->m_operand_type;
-	}
-	else if( parsed_type->m_operand_type == UV_DISASM_DATA_FUNC )
-	{
-		unsigned int i = 0;
-
-		op_shared = new UVDOperandShared();
-		if( op_shared == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		/* Cur will be free'd soon and has other issues, so duplicate */
-		op_shared->m_name = parsed_type->m_name;
-
-		op_shared->m_type = parsed_type->m_operand_type;
-		op_shared->m_immediate_size = parsed_type->m_num_bits;
-		op_shared->m_func = new UVDFunctionShared();
-		if( op_shared->m_func == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-
-		for( i = 0; i < parsed_type->m_func->m_args.size(); ++i )
-		{
-			UVDOperandShared *op_shared_local = NULL;
-			
-			/*
-			op_shared_local = new UVDOperandShared();
-			if( !sop_shared_local )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-			*/
-			if( UV_FAILED(UVDOperandShared::uvd_parsed2opshared(parsed_type->m_func->m_args[i], &op_shared_local)) )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-			uv_assert(op_shared_local);
-			op_shared->m_func->m_args.push_back(op_shared_local);
-		}
-	}
-	else
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	*op_shared_in = op_shared;
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
-}
-
 /*
 Opcodes are not allowed here as opposed to uvd_parse_syntax
 This function also recursivly calls itself to handle function arguments
 */
-uv_err_t UVDOpcodeLookupTable::uvd_parse_syntax_operand(UVDOperandShared **op_shared_in, const std::string cur)
+uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_syntax_operand(UVDDisasmOperandShared **op_shared_in, const std::string cur)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfigValue parsed_type;
@@ -223,7 +123,7 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_syntax_operand(UVDOperandShared **op_sh
 	}
 	
 	printf_debug("Parse syntax operand, converting to operand struct: %s\n", cur.c_str());
-	if( UV_FAILED(UVDOperandShared::uvd_parsed2opshared(&parsed_type, op_shared_in)) )
+	if( UV_FAILED(UVDDisasmOperandShared::uvd_parsed2opshared(&parsed_type, op_shared_in)) )
 	{
 		UV_ERR(rc);
 		goto error;
@@ -250,7 +150,7 @@ How the instruction looks during assembly
 	-Setup operand structures as all of them appear during syntax
 SYNTAX=RAM_INT(u8_0),u8_1
 */
-uv_err_t UVDOpcodeLookupTable::uvd_parse_syntax(UVDInstructionShared *inst_shared, const std::string value_syntax)
+uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_syntax(UVDDisasmInstructionShared *inst_shared, const std::string value_syntax)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::vector<std::string> syntaxParts;
@@ -289,7 +189,7 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_syntax(UVDInstructionShared *inst_share
 		//uv_assert(parsed_type);
 		printf_debug("Current syntax part, post parse: %s\n", cur.c_str());
 
-		UVDOperandShared *op_shared = NULL;
+		UVDDisasmOperandShared *op_shared = NULL;
 
 		if( UV_FAILED(uvd_parse_syntax_operand(&op_shared, cur)) )
 		{
@@ -309,12 +209,12 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVDOpcodeLookupTable::uvd_match_syntax_usage_core(std::vector<UVDOperandShared *> op_shareds,
+uv_err_t UVDDisasmOpcodeLookupTable::uvd_match_syntax_usage_core(std::vector<UVDDisasmOperandShared *> op_shareds,
 		UVDConfigValue *parsed_type, 
-		UVDOperandShared **op_shared_out)
+		UVDDisasmOperandShared **op_shared_out)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	UVDOperandShared *op_shared = NULL;
+	UVDDisasmOperandShared *op_shared = NULL;
 
 	UV_ENTER();
 
@@ -376,9 +276,9 @@ error:
 	return rc;
 }
 
-uv_err_t UVDOpcodeLookupTable::uvd_match_syntax_usage(UVDInstructionShared *inst_shared,
+uv_err_t UVDDisasmOpcodeLookupTable::uvd_match_syntax_usage(UVDDisasmInstructionShared *inst_shared,
 		UVDConfigValue *parsed_type, 
-		UVDOperandShared **op_shared_out)
+		UVDDisasmOperandShared **op_shared_out)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
@@ -410,7 +310,7 @@ The main job of this field is to
 -Map immediates to arguments as seen in an assembler
 -Figure out how long the entire instruction is so the next instruction class can be deciphered
 */
-uv_err_t UVDOpcodeLookupTable::uvd_parse_usage(UVDInstructionShared *inst_shared, const std::string value_usage)
+uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared *inst_shared, const std::string value_usage)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	//Ignore for now...
@@ -434,7 +334,7 @@ uv_err_t UVDOpcodeLookupTable::uvd_parse_usage(UVDInstructionShared *inst_shared
 	{
 		std::string cur;
 		/* Iterate over the fields already setup by usage */
-		UVDOperandShared *op_shared = NULL;
+		UVDDisasmOperandShared *op_shared = NULL;
 		UVDConfigValue parsed_type;
 
 		cur = usage_parts[cur_usage_parts];
@@ -531,7 +431,7 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVDOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
+uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	unsigned int cur_line = 0;
@@ -561,7 +461,7 @@ uv_err_t UVDOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		std::string value_action;
 		std::string value_cycles;
 		std::string value_name;
-		UVDInstructionShared *inst_shared = NULL;
+		UVDDisasmInstructionShared *inst_shared = NULL;
 		int primary_opcode = 0;
 
 		
@@ -665,7 +565,7 @@ uv_err_t UVDOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			break;
 		}		
 
-		inst_shared = new UVDInstructionShared();
+		inst_shared = new UVDDisasmInstructionShared();
 		if( !inst_shared )
 		{
 			UV_ERR(rc);
@@ -777,7 +677,7 @@ error:
 } 
 
 
-uv_err_t UVDOpcodeLookupTable::init(UVDConfigSection *op_section)
+uv_err_t UVDDisasmOpcodeLookupTable::init(UVDConfigSection *op_section)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
@@ -799,7 +699,7 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVDOpcodeLookupTable::deinit(void)
+uv_err_t UVDDisasmOpcodeLookupTable::deinit(void)
 {
 	for( unsigned i = 0; i < sizeof(m_lookupTable) / sizeof(m_lookupTable[0]); ++i )
 	{
@@ -809,7 +709,7 @@ uv_err_t UVDOpcodeLookupTable::deinit(void)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDOpcodeLookupTable::getElement(unsigned int index, UVDOpcodeLookupElement **element)
+uv_err_t UVDDisasmOpcodeLookupTable::getElement(unsigned int index, UVDDisasmInstructionShared **element)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 

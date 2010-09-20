@@ -47,11 +47,11 @@ public:
 };
 
 //Must be extended to next byte
-class UVDOpcodeLookupTable;
+class UVDDisasmOpcodeLookupTable;
 class UVDOpcodeLookupElementExtension : public UVDOpcodeLookupElement
 {
 public:
-	UVDOpcodeLookupTable *m_next;
+	UVDDisasmOpcodeLookupTable *m_next;
 };
 
 //Instruction prefix
@@ -84,13 +84,13 @@ Should be ultimatly loaded from an opcode file
 */
 
 //This may change back to its own class in the future
-#define UVDOpcodeLookupElement UVDInstructionShared
+//#define UVDOpcodeLookupElement UVDDisasmInstructionShared
 
-class UVDOpcodeLookupTable
+class UVDDisasmOpcodeLookupTable
 {
 public:
-	UVDOpcodeLookupTable();
-	~UVDOpcodeLookupTable();
+	UVDDisasmOpcodeLookupTable();
+	~UVDDisasmOpcodeLookupTable();
 	
 	/*
 	Register a lookup for opcode to return newElement
@@ -101,7 +101,7 @@ public:
 	A value of NULL indicates an non-coding opcode.  
 	It will be an error to lookup an opcode with such a value
 	*/
-	uv_err_t registerOpcode(unsigned char opcode, UVDOpcodeLookupElement newElement, UVDOpcodeLookupElement **oldElement = NULL);
+	uv_err_t registerOpcode(unsigned char opcode, UVDDisasmInstructionShared newElement, UVDDisasmInstructionShared **oldElement = NULL);
 
 	/*
 	Show statistics about how much of the table is active
@@ -116,7 +116,7 @@ public:
 	Opcodes are not allowed here as opposed to uvd_parse_syntax
 	This function also recursivly calls itself to handle function arguments
 	*/
-	uv_err_t uvd_parse_syntax_operand(UVDOperandShared **op_shared_in, const std::string cur);
+	uv_err_t uvd_parse_syntax_operand(UVDDisasmOperandShared **op_shared_in, const std::string cur);
 
 	/* 
 	Syntax
@@ -133,15 +133,15 @@ public:
 		-Not have to be in the same order as the USAGE
 		-Setup operand structures as all of them appear during syntax
 	*/
-	uv_err_t uvd_parse_syntax(UVDInstructionShared *inst_shared, const std::string value_syntax);
+	uv_err_t uvd_parse_syntax(UVDDisasmInstructionShared *inst_shared, const std::string value_syntax);
 
-	uv_err_t uvd_match_syntax_usage_core(std::vector<UVDOperandShared *>op_shareds,
+	uv_err_t uvd_match_syntax_usage_core(std::vector<UVDDisasmOperandShared *>op_shareds,
 			UVDConfigValue *parsed_type, 
-			UVDOperandShared **op_shared_out);
+			UVDDisasmOperandShared **op_shared_out);
 
-	uv_err_t uvd_match_syntax_usage(UVDInstructionShared *inst_shared,
+	uv_err_t uvd_match_syntax_usage(UVDDisasmInstructionShared *inst_shared,
 			UVDConfigValue *parsed_type, 
-			UVDOperandShared **op_shared_out);
+			UVDDisasmOperandShared **op_shared_out);
 
 
 	/* 
@@ -152,17 +152,17 @@ public:
 	-Map immediates to arguments as seen in an assembler
 	-Figure out how long the entire instruction is so the next instruction class can be deciphered
 	*/
-	uv_err_t uvd_parse_usage(UVDInstructionShared *inst_shared, const std::string value_usage);
+	uv_err_t uvd_parse_usage(UVDDisasmInstructionShared *inst_shared, const std::string value_usage);
 
 	uv_err_t init(UVDConfigSection *op_section);
 	uv_err_t deinit(void);
 	uv_err_t init_opcode(UVDConfigSection *op_section);
-	uv_err_t getElement(unsigned int index, UVDOpcodeLookupElement **element);
+	uv_err_t getElement(unsigned int index, UVDDisasmInstructionShared **element);
 	
 	
 public:
 	//Change this to a map?
-	UVDOpcodeLookupElement *m_lookupTable[0x100];
+	UVDDisasmInstructionShared *m_lookupTable[0x100];
 	unsigned int m_lookupTableHits[0x100];
 
 	UVDConfigExpressionInterpreter *m_interpreter;

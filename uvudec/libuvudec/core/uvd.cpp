@@ -630,16 +630,18 @@ std::vector<std::string> split(const std::string &s, char delim)
 
 uv_err_t UVD::stringListAppend(UVDInstruction *inst, std::vector<std::string> &list)
 {
-	char buff[512];
+	//eh this is odd
+	//I don't think an instruction can print multiple lines
+	std::string instructionLines;
 	
 	uv_assert_ret(inst);
 	
 	printf_debug("printing disasm\n");
-	uv_assert_err_ret(inst->print_disasm(buff, 512));
+	uv_assert_err_ret(inst->print_disasm(instructionLines));
 	printf_debug("printed disasm\n");
 	std::vector<std::string> toAppend;
 
-	toAppend = split(std::string(buff), '\n', true);
+	toAppend = split(instructionLines, '\n', true);
 	for( std::vector<std::string>::size_type i = 0; i < toAppend.size(); ++i )
 	{
 		list.insert(list.end(), toAppend[i]);
@@ -809,10 +811,13 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::st
 	outputRope.clear();
 #endif //USING_ROPE
 	
+	/*
+	drop for now during architecture abstraction
 	if( m_config->m_print_used )
 	{
 		m_architecture->m_opcodeTable->usedStats();
 	}
+	*/
 
 	decompilePrintBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile print time (%d records): %s\n", iterations, decompilePrintBenchmark.toString().c_str());
