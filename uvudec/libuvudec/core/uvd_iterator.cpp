@@ -36,6 +36,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDIteratorCommon::UVDIteratorCommon()
 {
+	m_instruction = NULL;
 	m_uvd = NULL;
 	m_data = NULL;
 	m_nextPosition = 0;
@@ -379,139 +380,7 @@ uv_err_t UVDIteratorCommon::addWarning(const std::string &lineRaw)
 
 uv_err_t UVDIteratorCommon::parseCurrentInstruction()
 {
-	/*
-	Gets the next logical print group
-	These all should be associated with a small peice of data, such as a single instruction
-	Ex: an address on line above + call count + disassembled instruction
-	Note that we can safely assume the current address is valid, but no addresses after it
-	*/
-	uv_err_t rcTemp = UV_ERR_GENERAL;
-	UVDInstructionShared *inst_shared = NULL;
-	uv_addr_t startPosition = 0;
-	//UVDData *data = m_uvd->m_data;
-	//UVDData *data = m_data;
-	UVDOpcodeLookupElement *element = NULL;
-	uint8_t opcode = 0;
-	UVD *uvd = NULL;
-	uv_addr_t absoluteMaxAddress = 0;
-		
-	printf_debug("\n");
-	printf_debug("m_nextPosition: 0x%.8X\n", m_nextPosition);
-	
-	//Reduce errors from stale data
-	m_instruction = UVDInstruction();
-	
-	uvd = m_uvd;
-	uv_assert_ret(uvd);
-	
-	//We are starting a new instruction, reset
-	m_currentSize = 0;
-	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
-	
-	//Hmm seems we should never branch here
-	//Lets see if we can prove it or at least comment to as why
-//printf("m_nextPosition 0x%04X <= absoluteMaxAddress 0x%04X\n", m_nextPosition, absoluteMaxAddress);
-	uv_assert_ret(m_nextPosition <= absoluteMaxAddress);
-	/*
-	if( m_nextPosition > absoluteMaxAddress )
-	{
-		*this = m_uvd->end();
-		return UV_ERR_DONE;
-	}
-	*/
-	
-	//Used to get delta for copying the data we just iterated over
-	startPosition = m_nextPosition;
-
-	//We should be garaunteed a valid address at current position by definition
-	rcTemp = consumeCurrentExecutableAddress(&opcode);
-	uv_assert_err_ret(rcTemp);
-	uv_assert_ret(rcTemp != UV_ERR_DONE);
-	//uv_assert_err_ret(data->readData(m_nextPosition, (char *)&opcode));	
-	printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", m_nextPosition, m_currentSize, opcode);
-	
-	/*
-	//Go to next position
-	uv_err_t rcNextAddress = UV_ERR_GENERAL;
-	rcNextAddress = nextValidExecutableAddress();
-	uv_assert_err_ret(rcNextAddress);
-	This would trucate printing the last instruction
-	if( rcNextAddress == UV_ERR_DONE )
-	{
-		return UV_ERR_DONE;
-	}
-	*/
-	//printf_debug("post nextValidExecutableAddress: start: 0x%.4X, next time: 0x%.4X and is end: %d\n", startPosition, m_nextPosition, m_isEnd);
-	uv_assert_ret(m_nextPosition > startPosition/* || m_isEnd*/);
-	//If we get UV_ERR_DONE,
-	//Of course, if also we require operands, there will be issues
-	//But this doesn't mean we can't analyze the current byte
-	
-	uv_assert_ret(m_uvd->m_architecture->m_opcodeTable);
-	uv_assert_err_ret(m_uvd->m_architecture->m_opcodeTable->getElement(opcode, &element));
-
-	if( element == NULL )
-	{
-		if( m_uvd->m_config->m_haltOnTruncatedInstruction )
-		{
-			printf_debug("Undefined instruction: 0x%.2X\n", opcode);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		//XXX add something more descriptive
-		uv_assert_err_ret(addWarning("Undefined instruction"));
-		return UV_ERR_OK;
-	}
-	//XXX: this may change in the future to be less direct
-	inst_shared = element;
-	printf_debug("Memoric: %s\n", inst_shared->m_memoric.c_str());
-	
-	m_instruction.m_offset = startPosition;
-	m_instruction.m_shared = inst_shared;
-	m_instruction.m_uvd = m_uvd;
-
-	/*
-	Setup extension structs
-	There should be a perfect matching between each of these and the shared structs
-	*/
-	/* Since operand and shared operand structs are linked list, we can setup the entire structure by passing in the first elements */
-	rcTemp = m_instruction.parseOperands(this, m_instruction.m_shared->m_operands, m_instruction.m_operands);
-	uv_assert_err_ret(rcTemp);
-	//Truncated analysis?
-	if( rcTemp == UV_ERR_DONE )
-	{
-		//Did we request a half or should we comment and continue to best of our abilities?
-		if( m_uvd->m_config->m_haltOnTruncatedInstruction )
-		{
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		//FIXME: add a more usefule error message with offsets, how many bytes short, etc
-		uv_assert_err_ret(addWarning("Insufficient data to process instruction"));
-		return UV_ERR_OK;
-	}
-
-	printf_debug("m_nextPosition, initial: %d, final: %d\n", startPosition, m_nextPosition);
-
-	uv_assert_ret(m_currentSize);
-	m_instruction.m_inst_size = m_currentSize;
-	//For now these should match
-	//XXX However, things like intel opcode extensions bytes will make this check invalid in the future
-	if( m_instruction.m_inst_size != m_instruction.m_shared->m_total_length )
-	{
-		printf_error("Instruction size: %d, shared size: %d\n", m_instruction.m_inst_size, m_instruction.m_shared->m_total_length);
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	
-	//We now know the actual size, read the data we just iterated over
-	//This will always be valid since we are just storing a shadow copy of the instruction bytes
-	//We could alternativly create a UVDData object referring to the source binary file
-	uv_assert_ret(m_data);
-	uv_assert_err_ret(m_data->readData(m_instruction.m_offset, m_instruction.m_inst, m_instruction.m_inst_size));
-
-	printf_debug("m_nextPosition about to rollback, initial: %d, final: %d\n", startPosition, m_nextPosition);
-	//This is suppose to be parse only, do not actually advance as we use to do
-	m_nextPosition = startPosition;
-
-	return UV_ERR_OK;
+	return UV_DEBUG(m_uvd->m_architecture->parseCurrentInstruction(*this));
 }	
 
 /*
@@ -724,7 +593,7 @@ uv_err_t UVDIterator::makeEnd()
 	m_indexBuffer.clear();
 	m_positionIndex = 0;
 	//To try to fix some errors I'm having
-	m_instruction = UVDInstruction();
+	//m_instruction = UVDInstruction();
 	return UV_ERR_OK;
 }
 
@@ -779,7 +648,7 @@ uv_err_t UVDIterator::nextCore()
 	{
 		return UV_ERR_OK;
 	}
-	uv_assert_ret(m_instruction.m_inst_size);
+	uv_assert_ret(m_instruction->m_inst_size);
 
 	if( g_config->m_addressLabel )
 	{
@@ -804,7 +673,7 @@ uv_err_t UVDIterator::nextCore()
 	//Best to have data follow analysis
 	//Instruction is fully parsed now
 	//Convert to necessary string values
-	uv_assert_err_ret(m_uvd->stringListAppend(&m_instruction, m_indexBuffer));
+	uv_assert_err_ret(m_uvd->stringListAppend(m_instruction, m_indexBuffer));
 	printf_debug("Generated string list, size: %d\n", m_indexBuffer.size());
 
 	benchmark.stop();

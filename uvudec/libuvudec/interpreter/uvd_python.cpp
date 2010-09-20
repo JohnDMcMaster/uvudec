@@ -75,7 +75,7 @@ uv_err_t UVDPythonInterpreter::preparePythonProgram(const UVDInterpreterExpressi
 	Just return the value as is, its a tag used for printing prefixes and such, does not affect function input...currently
 	We will probably eventually make it map to the most basic areas
 	*/
-
+#if 0
 	for( UVDSymbolMap::SymbolMapMap::iterator iter = g_uvd->m_architecture->m_symMap->m_map.begin(); 
 			iter != g_uvd->m_architecture->m_symMap->m_map.end(); ++iter )
 	{
@@ -88,6 +88,13 @@ uv_err_t UVDPythonInterpreter::preparePythonProgram(const UVDInterpreterExpressi
 		//printf("first name: %s\n", (*iter).first.c_str());
 		//printf("obj name: %s\n", memoryShared->m_name.c_str());
 		addressSpaceName = (*iter).first;
+#endif
+	std::vector<std::string> addressSpaceNames;
+	g_uvd->m_architecture->getAddresssSpaceNames(addressSpaceNames);
+	for( std::vector<std::string>::iterator iter = addressSpaceNames.begin(); iter != addressSpaceNames.end(); ++iter )
+	{
+		std::string addressSpaceName = *iter;
+		
 		sPythonProgram +=
 			std::string("def ") + addressSpaceName + "(address):\n"
 				"\treturn address\n"
@@ -98,6 +105,8 @@ uv_err_t UVDPythonInterpreter::preparePythonProgram(const UVDInterpreterExpressi
 	Main expression
 	*/
 	sPythonProgram += exp.m_sExpression + "\n";	
+
+	//printf("going to exec\n%s\n", sPythonProgram.c_str());
 
 	return UV_ERR_OK;
 }

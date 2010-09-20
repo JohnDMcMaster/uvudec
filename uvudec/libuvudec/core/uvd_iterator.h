@@ -98,7 +98,8 @@ public:
 	uint32_t m_currentSize;
 	//Last parsed instruction
 	//Valid until nextInstruction() is called again
-	UVDInstruction m_instruction;
+	//This may result in this being NULL if we aren't at a coding address
+	UVDInstruction *m_instruction;
 
 protected:	
 	//Object we are iterating on
@@ -113,6 +114,7 @@ protected:
 /*
 Output printing iterator
 */
+class UVDAnalyzedMemoryLocation;
 class UVDIterator : public UVDIteratorCommon
 {
 public:

@@ -46,30 +46,32 @@ Prints to global disassembly string return buffer (g_uv_disasm_ret_buff)
 
 //These are part of operands, which already have a name
 //Thus certain object such as that are uncessary
-class UVDOperandShared;
-class UVDFunctionShared
+class UVDDisasmOperandShared;
+class UVDDisasmFunctionShared
 //struct uv_disasm_func_shared_t
 {
 public:
-	UVDFunctionShared();
-	~UVDFunctionShared();
+	UVDDisasmFunctionShared();
+	~UVDDisasmFunctionShared();
 	uv_err_t deinit();
 
 public:
-	std::vector<UVDOperandShared *> m_args;
+	std::vector<UVDDisasmOperandShared *> m_args;
 };
 
+class UVDDisasmOperand;
 class UVDOperand;
-class UVDFunction
+class UVDDisasmFunction
 //struct uv_disasm_func_t
 {
 public:
-	UVDFunction();
-	~UVDFunction();
+	UVDDisasmFunction();
+	~UVDDisasmFunction();
 	uv_err_t deinit();
 
 public:
-	std::vector<UVDOperand> m_args;
+	//This needs to match type of UVDInstruction for recursive funcs to work correctly
+	std::vector<UVDOperand *> m_args;
 };
 
 /*
@@ -99,12 +101,24 @@ class UVDOperandShared
 public:
 	UVDOperandShared();
 	~UVDOperandShared();
-	uv_err_t deinit();
-
-	static uv_err_t uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDOperandShared **op_shared_in);
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 
 	//Returns error if it isn't an immediate
-	uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
+	//virtual uv_err_t getImmediateSize(uint32_t *immediateSizeOut) = 0;
+};
+
+class UVDDisasmOperandShared : public UVDOperandShared
+{
+public:
+	UVDDisasmOperandShared();
+	~UVDDisasmOperandShared();
+	uv_err_t deinit();
+
+	//Returns error if it isn't an immediate
+	//uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
+
+	static uv_err_t uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDDisasmOperandShared **op_shared_in);
 
 public:
 	/*
@@ -123,7 +137,7 @@ public:
 	{
 		void *m_type_specific;
 		int m_immediate_size;
-		UVDFunctionShared *m_func;
+		UVDDisasmFunctionShared *m_func;
 		/* struct uvd_reg_shared_t *m_reg; */
 	};
 
@@ -136,26 +150,50 @@ public:
 
 /*
 An instruction as parsed from a file
-Replacement for uv_inst_operand_t
+Hmm actually maybe we can keep this class non-virtual and do all virtual process in the shared class
+Keep the void *data member
 */
 class UVD;
 class UVDInstruction;
 class UVDIteratorCommon;
 class UVDOperand
-//struct uv_inst_operand_t
 {
 public:
 	UVDOperand();
-	~UVDOperand();
-	uv_err_t deinit();
+	virtual ~UVDOperand();
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 
 	//Will return UV_ERR_DONE to indicate incomplete parsing of the operand due to out of data
-	uv_err_t parseOperand(UVDIteratorCommon *uvdIter);
+	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter) = 0;
 
-	uv_err_t uvd_parsed2opshared(const struct uvd_parsed_t *parsed_type, UVDOperandShared **op_shared_in);
 	//Append to given string
-	uv_err_t printDisassemblyOperand(std::string &out);
-	uv_err_t print_disasm_operand(char *buff, unsigned int buffsz, unsigned int *buff_used_in);
+	virtual uv_err_t printDisassemblyOperand(std::string &out) = 0;
+
+public:	
+	//Type, name, etc
+	//We do not own this
+	UVDOperandShared *m_shared;
+	//The instruction this operand belongs to, we do not own it, it owns us
+	UVDInstruction *m_instruction;
+};
+
+class UVDDisasmOperand : public UVDOperand
+{
+public:
+	UVDDisasmOperand();
+	~UVDDisasmOperand();
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
+
+	//Convenience cast
+	UVDDisasmOperandShared *getShared();
+
+	//uv_err_t uvd_parsed2opshared(const struct uvd_parsed_t *parsed_type, UVDOperandShared **op_shared_in);
+	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter);
+
+	virtual uv_err_t printDisassemblyOperand(std::string &out);
+	//uv_err_t print_disasm_operand(char *buff, unsigned int buffsz, unsigned int *buff_used_in);
 
 	//Get a variable mapping suitable for scripting
 	//If name returns empty, is not applicable
@@ -171,20 +209,6 @@ public:
 	uv_err_t getUI32RepresentationAdjusted(uint32_t &i);
 	uv_err_t getI32RepresentationAdjusted(int32_t &i);
 
-public:
-
-	/* Decomposition is hard, don't deal with for now
-	//<imm32=>0x23456789
-	const std::string loc_decomp_pre;
-	//%ebp<(r=5)>
-	const std::string loc_decomp_post;
-	*/
-	
-	/* Type, name, etc */
-	UVDOperandShared *m_shared;
-	//The instruction this operand belongs to, we do not own it, it owns us
-	UVDInstruction *m_instruction;
-	
 private:
 	/* 
 	Additional information for this operand, such as a value larger than simple field supports 
@@ -198,7 +222,7 @@ private:
 	{
 		void *m_extra;
 		
-		UVDFunction *m_func;
+		UVDDisasmFunction *m_func;
 
 		/* Many operands are immediates of some time or another */
 		uint8_t m_ui8;
@@ -245,19 +269,34 @@ class UVDInstructionShared
 {
 public:
 	UVDInstructionShared();
-	~UVDInstructionShared();
-	uv_err_t deinit();
+	virtual ~UVDInstructionShared();
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 
 	//Like would be in developer manual
-	std::string getHumanReadableUsage();
-	//Make ready instruction class
-	uv_err_t analyzeAction();
+	virtual std::string getHumanReadableUsage();
+};
+
+class UVDDisasmInstructionShared : public UVDInstructionShared
+{
+public:
+	UVDDisasmInstructionShared();
+	~UVDDisasmInstructionShared();
+	
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
+
 	//For doing certain analysis shortcuts
 	//Means action is a single function with a single identifier as an argument
 	uv_err_t isImmediateOnlyFunction();
 	//identifier size in bits
 	uv_err_t getImmediateOnlyFunctionAttributes(/*std::string &func,
 			std::string &identifier, */uint32_t *identifierSizeBitsOut, uint32_t *immediateOffsetOut);
+
+	virtual std::string getHumanReadableUsage();
+
+	//Make ready instruction class
+	uv_err_t analyzeAction();
 
 private:
 	uv_err_t isImmediateOnlyFunctionCore();
@@ -318,7 +357,7 @@ public:
 	head of operand linked list 
 	Note that the usage information is part of the operands
 	*/
-	std::vector<UVDOperandShared *> m_operands;	
+	std::vector<UVDDisasmOperandShared *> m_operands;	
 
 	/* Information needed to recongize the instruction */
 	//struct uv_inst_parse_t *m_parse;
@@ -330,7 +369,6 @@ public:
 	uv_err_t m_isImmediateOnlyFunction;
 };
 
-
 /*
 An instruction as parsed from a data source
 */
@@ -339,21 +377,17 @@ class UVDInstruction
 {
 public:
 	UVDInstruction();
-	~UVDInstruction();
-	uv_err_t deinit();
+	virtual ~UVDInstruction();
+	//eh why is there no init?
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
 
-	uv_err_t collectVariables(UVDVariableMap &environment);
+	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon) = 0;
 
-	//Will return UV_ERR_DONE to indicate incomplete parsing of the operand due to out of data
-	uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
-			std::vector<UVDOperandShared *> ops_shared, std::vector<UVDOperand > &operands);
+	virtual uv_err_t print_disasm(std::string &s) = 0;
+	//Give as many hints to our analyzer as possible based on what this instruction does
+	virtual uv_err_t analyzeControlFlow() = 0;
 
-public:
-
-	/* Prints a text description of the given instruction to the buffer */
-	uv_err_t print_disasm(char *buff, uint32_t buffsz);
-	uv_err_t print_disasm(std::string &s);
-	
 public:
 	/* Shared information for the primary instruction part such as a general description */
 	UVDInstructionShared *m_shared;
@@ -362,7 +396,7 @@ public:
 	Stored in Intel format, left to right
 	ie destination followed by first operand, second, etc
 	*/
-	std::vector<UVDOperand> m_operands;	
+	std::vector<UVDOperand *> m_operands;	
 	
 	/* offset in the source file */
 	uint32_t m_offset;
@@ -373,10 +407,42 @@ public:
 	
 	/* 8051 does not use prefixes */
 	std::vector<UVDPrefix> m_prefixes;
+};
+
+class UVDDisasmInstruction : public UVDInstruction
+{
+public:
+	UVDDisasmInstruction();
+	~UVDDisasmInstruction();
 	
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
+
+	UVDDisasmInstructionShared *getShared();
+
+	/* Prints a text description of the given instruction to the buffer */
+	//uv_err_t print_disasm(char *buff, uint32_t buffsz);
+	uv_err_t print_disasm(std::string &out);
+	
+	virtual uv_err_t analyzeControlFlow();
+
+	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
+
+	virtual uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
+			std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
+
+	//Hmm is this UVDDisasm specifc?
+	virtual uv_err_t collectVariables(UVDVariableMap &environment);
+
+	uv_err_t analyzeCall(uint32_t startPos, const UVDVariableMap &attributes);
+	uv_err_t analyzeJump(uint32_t startPos, const UVDVariableMap &attributes);
+
+public:	
+	//FIXME: this should be arch pointer, not uvd
 	UVD *m_uvd;
 };
 
 const char *uvd_data_str(int uvd_data);
 
 #endif
+

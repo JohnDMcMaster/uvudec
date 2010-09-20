@@ -152,13 +152,6 @@ public:
 	uv_err_t init(const std::string &file, int architecture = 0);
 	uv_err_t init(UVDData *data, int architecture = 0);
 	//Initialize the opcode tables
-	uv_err_t init_config();
-	//uv_err_t opcodeDeinit();
-	uv_err_t init_misc(UVDConfigSection *misc_section);
-	uv_err_t init_memory(UVDConfigSection *mem_section);
-	uv_err_t init_reg(UVDConfigSection *reg_section);
-	uv_err_t init_prefix(UVDConfigSection *pre_section);
-	uv_err_t init_vectors(UVDConfigSection *section);
 	
 	uv_err_t deinit();
 

@@ -178,9 +178,6 @@ public:
 	uv_err_t insertCallReference(uv_addr_t targetAddress, uv_addr_t from);
 	uv_err_t insertJumpReference(uv_addr_t targetAddress, uv_addr_t from);
 	
-	void updateCache(uint32_t address, const UVDVariableMap &analysisResult);
-	uv_err_t readCache(uint32_t address, UVDVariableMap &analysisResult);
-
 	uv_err_t getAddresses(UVDAnalyzedMemorySpace &addresses, uint32_t type = UVD_MEMORY_REFERENCE_NONE);
 	uv_err_t getAddresses(UVDAnalyzedMemoryLocations &locations, uint32_t type = UVD_MEMORY_REFERENCE_NONE);
 
@@ -202,8 +199,8 @@ public:
 	uv_err_t mapSymbols();
 
 	//After interpreting these instructions, add to analysis DB info based on mined attributes
-	uv_err_t analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
-	uv_err_t analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
+	//uv_err_t analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
+	//uv_err_t analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes);
 
 	uv_err_t assignDefaultSymbolNames();
 	uv_err_t identifyKnownFunctions();
@@ -236,8 +233,6 @@ public:
 	//String data addresses
 	UVDAnalyzedMemorySpace m_stringAddresses;
 	
-	std::map<uint32_t, UVDVariableMap> m_analysisCache;
-
 #if USING_PREVIOUS_ANALYSIS
 	//Database of previous analysis
 	UVDAnalysisDBConcentrator *m_db;

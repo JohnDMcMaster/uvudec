@@ -28,8 +28,49 @@ public:
 
 	virtual uv_err_t init();	
 	virtual uv_err_t deinit();	
+	
+	//Allocate an instruction object compatbile with this architecture
+	virtual uv_err_t getInstruction(UVDInstruction **out) = 0;
+
+	//virtual uv_err_t getOpcodeLookupTable();
+	
+	//FIXME: this is a hack until the address spaces can be standardized into this arch object
+	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names) = 0;
+
+	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon) = 0;
+};
+
+/*
+Configuration file based architecture
+*/
+class UVDDisasmArchitecture : public UVDArchitecture
+{
+public:
+	UVDDisasmArchitecture();
+	virtual ~UVDDisasmArchitecture();
+
+	virtual uv_err_t init();	
+	uv_err_t init_config();
+	//uv_err_t opcodeDeinit();
+	uv_err_t init_misc(UVDConfigSection *misc_section);
+	uv_err_t init_memory(UVDConfigSection *mem_section);
+	uv_err_t init_reg(UVDConfigSection *reg_section);
+	uv_err_t init_prefix(UVDConfigSection *pre_section);
+	uv_err_t init_vectors(UVDConfigSection *section);
+	virtual uv_err_t deinit();	
+
+	virtual uv_err_t getInstruction(UVDInstruction **out);
+
+	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names);
+
+	void updateCache(uint32_t address, const UVDVariableMap &analysisResult);
+	uv_err_t readCache(uint32_t address, UVDVariableMap &analysisResult);
+
+	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
 
 public:	
+	std::map<uint32_t, UVDVariableMap> m_analysisCache;
+
 #ifdef USING_VECTORS
 	UVDCPU *m_CPU;
 #endif
@@ -37,7 +78,7 @@ public:
 	//Lookup table for opcodes
 	//This in theory could be shared between multiple engines for the same arch
 	//But not much of an issue since only one instance is expected per run
-	UVDOpcodeLookupTable *m_opcodeTable;
+	UVDDisasmOpcodeLookupTable *m_opcodeTable;
 	//For special modifiers mostly for now (functions)
 	//Allows special mapping of addresses and others
 	UVDSymbolMap *m_symMap;

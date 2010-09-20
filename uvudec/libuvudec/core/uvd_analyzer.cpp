@@ -477,22 +477,6 @@ uv_err_t UVDAnalyzer::nextValidExecutableAddress(uv_addr_t start, uint32_t *ret)
 	return UV_ERR_OK;
 }
 
-void UVDAnalyzer::updateCache(uint32_t address, const UVDVariableMap &analysisResult)
-{
-	printf_debug("Caching analysis of address %d\n", address);
-	m_analysisCache[address] = analysisResult;
-}
-
-uv_err_t UVDAnalyzer::readCache(uint32_t address, UVDVariableMap &analysisResult)
-{
-	if( m_analysisCache.find(address) == m_analysisCache.end() )
-	{
-		return UV_ERR_GENERAL;
-	}
-	analysisResult = m_analysisCache[address];
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDAnalyzer::insertReference(uint32_t targetAddress, uint32_t from, uint32_t type)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -723,85 +707,6 @@ uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targ
 	//We found a match, good to go
 	uv_assert_ret(functionOut);
 	*functionOut = functionToOutput;
-	return UV_ERR_OK;
-}
-
-#define BASIC_SYMBOL_ANALYSIS			
-
-uv_err_t UVDAnalyzer::analyzeCall(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
-{
-	std::string sAddr;
-	uint32_t targetAddress = 0;
-
-	uv_assert_ret(attributes.find(SCRIPT_KEY_CALL) != attributes.end());
-	(*attributes.find(SCRIPT_KEY_CALL)).second.getString(sAddr);
-	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
-	
-	uv_assert_err_ret(insertCallReference(targetAddress, startPos));
-	//uv_assert_err(insertReference(targetAddress, startPos, ));
-	updateCache(startPos, attributes);
-
-#ifdef BASIC_SYMBOL_ANALYSIS
-	/*
-	Only simple versions can be parsed for now
-	Must have a single immediate as the target value with no calculation required
-	*/
-	uv_assert_ret(instruction);
-	uv_assert_ret(instruction->m_shared);
-	if( UV_SUCCEEDED(instruction->m_shared->isImmediateOnlyFunction()) )
-	{
-		uint32_t relocatableDataSizeBits = 0;
-		uint32_t relocationPos = 0;
-		uint32_t immediateOffset = 0;
-
-		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits, &immediateOffset));
-
-		relocationPos = startPos + immediateOffset;
-
-		//We know the location of a call symbol relocation
-		//uv_assert_ret(m_symbolManager);
-		uv_assert_err_ret(m_symbolManager.addAbsoluteFunctionRelocationByBits(targetAddress,
-				relocationPos, relocatableDataSizeBits));
-	}
-#endif
-
-	return UV_ERR_OK;
-}
-
-#undef BASIC_SYMBOL_ANALYSIS
-
-uv_err_t UVDAnalyzer::analyzeJump(UVDInstruction *instruction, uint32_t startPos, const UVDVariableMap &attributes)
-{
-	std::string sAddr;
-	uint32_t targetAddress = 0;
-
-	uv_assert_ret(attributes.find(SCRIPT_KEY_JUMP) != attributes.end());
-	(*attributes.find(SCRIPT_KEY_JUMP)).second.getString(sAddr);
-	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
-	
-	uv_assert_err_ret(insertJumpReference(targetAddress, startPos));
-	updateCache(startPos, attributes);
-
-#ifdef BASIC_SYMBOL_ANALYSIS			
-	uv_assert_ret(instruction);
-	uv_assert_ret(instruction->m_shared);
-	if( UV_SUCCEEDED(instruction->m_shared->isImmediateOnlyFunction()) )
-	{
-		uint32_t relocatableDataSizeBits = 0;
-		uint32_t relocationPos = 0;
-		uint32_t immediateOffset = 0;
-
-		uv_assert_err_ret(instruction->m_shared->getImmediateOnlyFunctionAttributes(&relocatableDataSizeBits, &immediateOffset));
-
-		relocationPos = startPos + immediateOffset;
-
-		//We know the location of a jump symbol relocation
-		//uv_assert_ret(m_symbolManager);
-		uv_assert_err_ret(m_symbolManager.addAbsoluteLabelRelocationByBits(targetAddress,
-				relocationPos, relocatableDataSizeBits));
-	}
-#endif
-
 	return UV_ERR_OK;
 }
 
