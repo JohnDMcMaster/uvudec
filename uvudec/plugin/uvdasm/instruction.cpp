@@ -4,9 +4,9 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-
 #include "uvd.h"
-#include "uvd_instruction.h"
+#include "uvdasm/architecture.h"
+#include "uvdasm/instruction.h"
 #include "uvd_types.h"
 #include "uvd_format.h"
 #include "uvd_util.h"

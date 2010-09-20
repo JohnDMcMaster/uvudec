@@ -7,6 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "core/architecture.h"
 #include "uvd_util.h"
 #include "uvd.h"
+#include "uvdasm/architecture.h"
 
 //Initialize the opcode tables
 uv_err_t UVDDisasmArchitecture::init_config()
@@ -26,7 +27,7 @@ uv_err_t UVDDisasmArchitecture::init_config()
 	UV_ENTER();
 
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(UVDConfig::uvd_read_sections(g_config->m_architectureFileName, &sections, &n_sections)) )
+	if( UV_FAILED(UVDAsmUtil::uvd_read_sections(g_config->m_architectureFileName, &sections, &n_sections)) )
 	{
 		printf_error("Could not read config file: %s\n", g_config->m_architectureFileName.c_str());
 		UV_ERR(rc);

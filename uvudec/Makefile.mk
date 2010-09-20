@@ -119,6 +119,12 @@ LIBS += -lbfd -lopcodes -liberty
 endif
 
 
+# Boost
+ifeq ($(LINKAGE),static)
+else
+LIBS += -lboost_system -lboost_filesystem
+endif
+
 
 ifeq ($(USING_LIBZ),Y)
 ifeq ($(LINKAGE),static)

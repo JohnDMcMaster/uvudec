@@ -18,6 +18,7 @@ The plugins are just staticaly linked in is all
 */
 class UVD;
 class UVDPlugin;
+class UVDConfig;
 class UVDPluginEngine
 {
 public:
@@ -26,8 +27,11 @@ public:
 	~UVDPluginEngine();
 	
 	//Including finding all of the plugins in our config search path
-	uv_err_t init(UVD *uvd);
+	//they will have their main's called to initialize argument structures
+	uv_err_t init(UVDConfig *config);
 	uv_err_t deinit();
+	
+	//Loading: makes it ready for use (calls UVDPluginMain), but will not activate it (no plugin->init())
 	
 	//Try to find a plugin library matching given name and OS specific junk
 	//eg: uvdasm might try to find libuvdasm.so on Linux
@@ -36,7 +40,12 @@ public:
 	//Load plugin at given path
 	//needs an exported symbol called UVDPluginMain
 	//Obviously this will error under a static build
-	uv_err_t loadByPath(const std::string &path);
+	uv_err_t loadByPath(const std::string &path, bool reportErrors = true);
+	
+	//This actually activates a plugin for use
+	//Error if the plugin was not previously loaded
+	uv_err_t initPlugin(const std::string &name);
+	uv_err_t deinitPlugin(const std::string &name);
 	
 protected:
 	//Initialize statically linked plugins
@@ -45,6 +54,8 @@ protected:
 public:
 	//We might want to map this from something like the plugin name
 	std::map<std::string, UVDPlugin *> m_plugins;
+	std::map<std::string, UVDPlugin *> m_loadedPlugins;
+	//WARNING: this won't get set until later
 	UVD *m_uvd;
 };
 

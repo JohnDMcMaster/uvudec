@@ -17,6 +17,8 @@ endif
 endif
 
 THIS_LIB_DIR=$(PLUGIN_LIB_DIR)
+# Creates duplicate plugin loading
+CREATE_LIB_LINKS=N
 
 include $(ROOT_DIR)/Makefile.mk
 

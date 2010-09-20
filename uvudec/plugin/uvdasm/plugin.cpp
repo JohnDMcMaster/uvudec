@@ -4,6 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvdasm/architecture.h"
 #include "uvdasm/plugin.h"
 #include "core/uvd.h"
 
@@ -30,6 +31,13 @@ uv_err_t UVDDisassemblerPlugin::getDescription(std::string &out)
 uv_err_t UVDDisassemblerPlugin::getVersion(UVDVersion &out)
 {
 	out.m_version = UVUDEC_VER_STRING;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDDisassemblerPlugin::getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out)
+{
+	*out = new UVDDisasmArchitecture();
+	uv_assert_ret(*out);
 	return UV_ERR_OK;
 }
 

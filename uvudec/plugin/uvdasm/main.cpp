@@ -10,12 +10,16 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "util/uvd_version.h"
 #include "uvdasm/plugin.h"
 
-uv_err_t UVD_PLUGIN_MAIN_SYMBOL(UVD *uvd, UVDPlugin **out)
+extern "C"
 {
-	UVDPrint("Plugin loaded!\n");
+	uv_err_t UVD_PLUGIN_MAIN_SYMBOL(UVDConfig *config, UVDPlugin **out)
+	{
+		UVDPrint("Plugin main entry!\n");
+		*out = new UVDDisassemblerPlugin();
 	
-	*out = new UVDDisassemblerPlugin();
+		//initialize arg structures here...
 	
-	return UV_ERR_OK;
+		return UV_ERR_OK;
+	}
 }
 

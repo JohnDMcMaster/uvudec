@@ -179,6 +179,7 @@ uv_err_t uvmain(int argc, char **argv)
 	
 	//Early library initialization.  Logging and arg parsing structures
 	uv_assert_err_ret(UVDInit());
+
 	config = g_config;
 	uv_assert_ret(config);
 	//Early local initialization

@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_types.h"
 #include "uvd_util.h"
 #include "uvd_version.h"
+#include "core/uvd_analysis.h"
 #include <vector>
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);

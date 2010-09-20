@@ -11,15 +11,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_types.h"
-#include "uvd_opcode.h"
+#include "uvdasm/instruction.h"
+#include "uvdasm/opcode_table.h"
 #include <string>
 #include <vector>
 #include <string.h>
 #include <stdio.h>
-
-/**********************
-Begin init related
-**********************/
 
 UVDDisasmOpcodeLookupTable::UVDDisasmOpcodeLookupTable()
 {

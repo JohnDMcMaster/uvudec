@@ -437,6 +437,7 @@ UVD::UVD()
 	m_analyzer = NULL;
 	m_format = NULL;
 	m_config = NULL;
+	m_pluginEngine = NULL;
 }
 
 UVD::~UVD()
