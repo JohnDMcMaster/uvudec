@@ -14,10 +14,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_util.h"
 #include "uvd_version.h"
 #include "core/uvd_analysis.h"
+#include "plugin/engine.h"
 #include <vector>
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
-static void version(void);
+static void UVDPrintVersion(void);
 
 UVDArgConfig::UVDArgConfig()
 {
@@ -271,7 +272,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_VERSION )
 	{
-		version();
+		UVDPrintVersion();
 		return UV_ERR_DONE;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_USELESS_ASCII_ART )
@@ -570,34 +571,43 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	return UV_ERR_OK;
 }
 
-#if 0
-uv_err_t argParserDefault(UVDArgConfig &argConfig, std::vector<std::string> argumentArguments)
-{
-	/*
-	Note this is internal error, we should have matched it up earlier
-	*/
-	printf_error("Unknown option: <%s>\n", cur_arg);
-	UVDHelp();
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
-#endif
-
-static void version(void)
+static void UVDPrintVersion()
 {
 	if( g_config && g_config->versionPrintPrefixThunk )
 	{
 		g_config->versionPrintPrefixThunk();
 	}
 	printf_help("libuvudec version %s\n", UVDGetVersion());
-	printf_help("Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>\n");
+	printf_help("Copyright 2009-2010 John McMaster <JohnDMcMaster@gmail.com>\n");
 	printf_help("Portions copyright GNU (MD5 implementation)\n");
 }
 
-static void usage()
+static uv_err_t UVDPrintLoadedPlugins()
+{
+	UVDPluginEngine *pluginEngine = &g_config->m_plugin.m_pluginEngine;
+
+	printf_help("Loaded plugins (%d / %d):\n", pluginEngine->m_loadedPlugins.size(), pluginEngine->m_plugins.size());
+
+	for( std::map<std::string, UVDPlugin *>::iterator iter = pluginEngine->m_loadedPlugins.begin(); iter != pluginEngine->m_loadedPlugins.end(); ++iter )
+	{
+		UVDPlugin *plugin = (*iter).second;
+		std::string name;
+	
+		uv_assert_ret(plugin);
+		uv_assert_err_ret(plugin->getName(name));
+		printf("\t%s\n", name.c_str());
+	}
+
+	return UV_ERR_OK;
+}
+
+static uv_err_t UVDPrintUsage()
 {
 	const char *program_name = "";
 	
-	if( g_config && g_config->m_argv )
+	uv_assert_ret(g_config);
+	
+	if( g_config->m_argv )
 	{
 		program_name = g_config->m_argv[0];
 	}
@@ -609,11 +619,7 @@ static void usage()
 	{
 		const UVDArgConfig *argConfig = g_config->m_configArgs[i];
 		
-		if( !argConfig )
-		{
-			printf_error("bad argConfig\n");
-			return;
-		}
+		uv_assert_ret(argConfig);
 		
 		printf_help("--%s (%s): %s\n", argConfig->m_longForm.c_str(), argConfig->m_propertyForm.c_str(), argConfig->m_helpMessage.c_str());
 		if( !argConfig->m_helpMessageExtra.empty() )
@@ -621,10 +627,16 @@ static void usage()
 			printf_help("%s", argConfig->m_helpMessageExtra.c_str());
 		}
 	}
+	
+	printf_help("\n");
+	UVDPrintLoadedPlugins();
+	
+	return UV_ERR_OK;
 }
 
 void UVDHelp()
 {
-	version();
-	usage();
+	UVDPrintVersion();
+	UVDPrintUsage();
 }
+

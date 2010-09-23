@@ -19,6 +19,7 @@ public:
 	virtual uv_err_t getName(std::string &out);
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
+	virtual uv_err_t getAuthor(std::string &out);
 	virtual uv_err_t getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out);
 };
 

@@ -16,6 +16,8 @@ LIB_NAME=$(PLUGIN_NAME)
 endif
 endif
 
+FLAGS_SHARED += -DUVD_PLUGIN_NAME='"'$(PLUGIN_NAME)'"'
+
 THIS_LIB_DIR=$(PLUGIN_LIB_DIR)
 # Creates duplicate plugin loading
 CREATE_LIB_LINKS=N

@@ -15,8 +15,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //Entry point for a loaded plugin to register itself
 #define UVD_PLUGIN_MAIN_SYMBOL					UVDPluginMain
 #define UVD_PLUGIN_MAIN_SYMBOL_STRING			"UVDPluginMain"
-#define UVD_PLUGIN_MAIN_MANGLED_SYMBOL			UVDPluginMain
-#define UVD_PLUGIN_MAIN_MANGLED_SYMBOL_STRING	"UVDPluginMain"
+//This isn't really for use
+//#define UVD_PLUGIN_MAIN_MANGLED_SYMBOL			_Z13UVDPluginMainP9UVDConfigPP9UVDPlugin
+#define UVD_PLUGIN_MAIN_MANGLED_SYMBOL_STRING	"_Z13UVDPluginMainP9UVDConfigPP9UVDPlugin"
 
 /*
 Unless otherwise specified, no functions need to be called on the parent UVDPlugin class if overriden
@@ -49,11 +50,22 @@ public:
 	UVDPlugin();
 	virtual ~UVDPlugin();
 	
-	//Make the plugin active
-	virtual uv_err_t init(UVD *uvd);
+	/*
+	Make the plugin active
+	This is the difference between producing the plugin in UVDMain which just makes it availible
+	Do not assume any UVD engines are active yet
+	This is done early on so can add argument structs and such
+	*/
+	virtual uv_err_t init(UVDConfig *config);
 	//Deactivate w/e the plugin does
-	virtual uv_err_t deinit();
-	//Top level wrappers so subclasses don't have to do ugly super stuff
+	virtual uv_err_t deinit(UVDConfig *config);
+
+	/*
+	Called upon UVD::init(), not UVDInit()
+	was init(UVD *uvd)
+	*/
+	virtual uv_err_t onUVDInit(UVD *uvd);
+	virtual uv_err_t onUVDDeinit(UVD *uvd);
 
 	/*
 	Note the following may be called before init()
@@ -61,12 +73,22 @@ public:
 	//Terse name to identify the plugin
 	//No spaces, use [a-z][A-Z][0-9][-]
 	virtual uv_err_t getName(std::string &out) = 0;
-	//Human readable description
+	//Human readable one liner description of what it does
 	virtual uv_err_t getDescription(std::string &out) = 0;	
+	//One liner contact info of who wrote it
+	//Should be in form like "John McMaster <JohnDMcMaster@gmail.com>"
+	//If more than one, put in comma separated list
+	virtual uv_err_t getAuthor(std::string &out) = 0;	
 	//Should be obvious enough
 	virtual uv_err_t getVersion(UVDVersion &out) = 0;
-	//If we require another plugin loaded, get it
-	//Default is not dependencies
+	/*
+	If we require another plugin loaded, get it
+	Default is no dependencies
+	
+	WARNING: if you rely on symbols exposed at the library level by other plugins,
+	we will not be able to cleanly load them!
+	You will have to LD_PRELOAD them or something and they will not be officially supported
+	*/
 	virtual uv_err_t getDependencies(PluginDependencies &out);
 	/*
 	If we deem appropriete, load architecture
@@ -81,8 +103,14 @@ public:
 public:
 	//returned by dlopen()
 	void *m_hLibrary;
-	//This will be set upon UVD engine initialization
-	//Since plugins are loaded before even arguments are parsed, no UVD exists at that time
+	/*
+	This will be set upon UVD engine initialization
+	Since plugins are loaded before even arguments are parsed, no UVD exists at that time
+
+	WARNING
+	It is unlikely, but possible we might in the future allow multiple UVD engines availible at once
+	More likely they will have to be different application instances
+	*/
 	UVD *m_uvd;
 };
 
