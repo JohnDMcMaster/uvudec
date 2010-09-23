@@ -21,13 +21,23 @@ UVDPlugin::~UVDPlugin()
 	}
 }
 
-uv_err_t UVDPlugin::init(UVD *uvd)
+uv_err_t UVDPlugin::init(UVDConfig *config)
+{
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPlugin::deinit(UVDConfig *config)
+{
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPlugin::onUVDInit(UVD *uvd)
 {
 	m_uvd = uvd;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPlugin::deinit()
+uv_err_t UVDPlugin::onUVDDeinit(UVD *uvd)
 {
 	return UV_ERR_OK;
 }

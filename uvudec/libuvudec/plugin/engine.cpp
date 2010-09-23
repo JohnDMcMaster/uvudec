@@ -31,7 +31,8 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 	for dir in plugin dirs
 		find all .so files with plugin main symbol
 	*/
-	for( std::vector<std::string>::iterator iter = config->m_plugin.m_dirs.begin(); iter != config->m_plugin.m_dirs.end(); ++iter )
+	for( std::vector<std::string>::iterator iter = config->m_plugin.m_dirs.begin();
+			iter != config->m_plugin.m_dirs.end(); ++iter )
 	{
 		const std::string &pluginDir = *iter;
 		
@@ -53,6 +54,17 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 				//printf_warn("failed to load possible plugin: %s\n", path.c_str());
 			}
 		}		
+	}
+	
+	/*
+	And initialize those plugins that should be initially loaded
+	*/
+	for( std::vector<std::string>::iterator iter = config->m_plugin.m_toLoad.begin();
+			iter != config->m_plugin.m_toLoad.end(); ++iter )
+	{
+		const std::string &toInit = *iter;
+		
+		uv_assert_err_ret(initPlugin(toInit));		
 	}
 
 	return UV_ERR_OK;
@@ -122,25 +134,34 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 			return UV_ERR_GENERAL;
 		}
 	}
-	
-	pluginMain = (UVDPlugin::PluginMain)dlsym(library, UVD_PLUGIN_MAIN_SYMBOL_STRING);
+
+	/*
+	Prefer mangled symbol since its more type safe
+	*/
+	pluginMain = (UVDPlugin::PluginMain)dlsym(library, UVD_PLUGIN_MAIN_MANGLED_SYMBOL_STRING);
 	lastError = dlerror();
 	if( !pluginMain || lastError )
 	{
-		if( reportErrors )
+		//But settle for the extern'd symbol if they do that for w/e reason
+		pluginMain = (UVDPlugin::PluginMain)dlsym(library, UVD_PLUGIN_MAIN_SYMBOL_STRING);
+		lastError = dlerror();
+		if( !pluginMain || lastError )
 		{
-			if( !lastError )
+			if( reportErrors )
 			{
-				lastError = "<UNKNOWN>";
+				if( !lastError )
+				{
+					lastError = "<UNKNOWN>";
+				}
+				printf_error("plugin %s: failed to load main: %s\n", path.c_str(), lastError);
+				dlclose(library);
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
-			printf_error("plugin %s: failed to load main: %s\n", path.c_str(), lastError);
-			dlclose(library);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		else
-		{
-			dlclose(library);
-			return UV_ERR_GENERAL;
+			else
+			{
+				dlclose(library);
+				return UV_ERR_GENERAL;
+			}
 		}
 	}
 	
@@ -239,8 +260,7 @@ uv_err_t UVDPluginEngine::initPlugin(const std::string &name)
 	}
 	plugin = (*iter).second;
 	uv_assert_ret(plugin);
-	uv_assert_ret(m_uvd);
-	uv_assert_err_ret(plugin->init(m_uvd));
+	uv_assert_err_ret(plugin->init(g_config));
 	m_loadedPlugins[name] = plugin;
 
 	return UV_ERR_OK;
@@ -254,7 +274,7 @@ uv_err_t UVDPluginEngine::deinitPlugin(const std::string &name)
 	uv_assert_ret(iter != m_loadedPlugins.end());
 	plugin = (*iter).second;
 	uv_assert_ret(plugin);
-	if( UV_FAILED(plugin->deinit()) )
+	if( UV_FAILED(plugin->deinit(g_config)) )
 	{
 		printf_error("failed to cleanly unload plugin %s\n", name.c_str());
 	}

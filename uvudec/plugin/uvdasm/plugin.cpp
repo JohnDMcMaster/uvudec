@@ -34,6 +34,12 @@ uv_err_t UVDDisassemblerPlugin::getVersion(UVDVersion &out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDDisassemblerPlugin::getAuthor(std::string &out)
+{
+	out = "John McMaster <JohnDMcMaster@gmail.com>";
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDDisassemblerPlugin::getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out)
 {
 	*out = new UVDDisasmArchitecture();
