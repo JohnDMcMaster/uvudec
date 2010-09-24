@@ -11,62 +11,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_data.h"
 #include "uvd_types.h"
 
-/* Internal RAM */
-#define UV_DISASM_MEM_RAM_INT			1
-/* External RAM */
-#define UV_DISASM_MEM_RAM_EXT			2
-/* Some sort of read only memory */
-#define UV_DISASM_MEM_RAM_ROM			3
-/* Flash storage */
-#define UV_DISASM_MEM_RAM_FLASH			4
-
-/* Capabilities */
-/* Read */
-#define UV_DISASM_MEM_R					0x01
-/* Write */
-#define UV_DISASM_MEM_W					0x02
-/* Execute */
-#define UV_DISASM_MEM_X					0x04
-/* Nonvalitile */
-#define UV_DISASM_MEM_NV				0x08
-
-/*
-Often times memory one memory space will intersect with another
-Controls mapping of spaces
-Mapping size must line up: if not, will assume error for now.
-	Will change if a needed exception arises
-	Ex: Bit in main address space corresponds to ZFLAG
-	Could map to intermediate BRAM and then to the flag to avoid issue of byte to single bit
-
-Ex:
-	Mapping from 8-51 bit RAM to main address space
-	Source
-		BRAM (Bit RAM)
-		8 bytes, 64 bits total
-		word size: 1
-		start address: 0
-		end address: 63
-	Dest
-		IRAM (Internal RAM)
-		8 bytes, 64 biits total
-		word size: 8
-		start adddress: 32
-		end address: 39
-Ex:
-	Mapping 8051 direct addressing to main IRAM
-	Source
-		Direct addressing
-		128 bytes
-		word size: 8
-		start address: 0
-		end address: 0x7F
-	Dest
-		Indirect addressing space (or could use instead a main phsyiscal memory)
-		256 bytes
-		word size: 8
-		start address: 0
-		end address: 0xFF
-*/
 class UVDMemoryShared;
 class UVDMemorySharedMapper
 {
