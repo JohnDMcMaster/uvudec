@@ -1,9 +1,7 @@
-python plugin
+strings plugin
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
-To execute python commands from within uvudec
-This will take some work, don't expect it for a while
-Going to use swig to generate an API
-
+A python interpreter wrapper
+Intended for use in the uvdasm plugin

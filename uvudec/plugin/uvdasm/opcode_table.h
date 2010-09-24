@@ -4,87 +4,19 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#pragma once
+#ifndef UVDASM_OPCODE_TABLE_H
+#define UVDASM_OPCODE_TABLE_H
 
 #include "uvdasm/instruction.h"
+#include "uvdasm/interpreter.h"
 #include "uvd_types.h"
-#include "uvd_config_interpreter.h"
 
 #include <string>
 
-#if 0
-class UVDOpcodePrefix
-{
-public:
-};
-
-class UVDOpcodePostfix
-{
-public:
-};
-
-class UVDOpcode
-{
-public:
-	uv_err_t uvd_opcode_init(void);
-	uv_err_t uvd_opcode_deinit(void);
-};
-
-/*
-What a bytecode can represent
-Base class
-*/
-class UVDOpcodeLookupElement
-{
-public:
-};
-
-//An opcode byte
-class UVDOpcodeLookupElementOpcode : public UVDOpcodeLookupElement
-{
-public:
-	UVDOpcode *m_opcode;
-};
-
-//Must be extended to next byte
-class UVDDisasmOpcodeLookupTable;
-class UVDOpcodeLookupElementExtension : public UVDOpcodeLookupElement
-{
-public:
-	UVDDisasmOpcodeLookupTable *m_next;
-};
-
-//Instruction prefix
-class UVDOpcodeLookupElementPrefix : public UVDOpcodeLookupElement
-{
-public:
-	UVDOpcodePrefix *m_prefix;
-};
-
-//Instruction postfix
-//Encountered any of these yet?
-class UVDOpcodeLookupElementPostfix : public UVDOpcodeLookupElement
-{
-public:
-	UVDOpcodePostfix *m_postfix;
-};
-
-/*
-//Not encoded
-//Usually just represent with NULL
-class UVDOpcodeLookupElementInvalid : public UVDOpcodeLookupElement
-{
-public:
-};
-*/
-#endif
 /*
 Byte based lookup table
 Should be ultimatly loaded from an opcode file
 */
-
-//This may change back to its own class in the future
-//#define UVDOpcodeLookupElement UVDDisasmInstructionShared
 
 class UVDDisasmOpcodeLookupTable
 {
@@ -169,3 +101,6 @@ public:
 };
 
 extern int g_error_opcode_repeat;
+
+#endif
+

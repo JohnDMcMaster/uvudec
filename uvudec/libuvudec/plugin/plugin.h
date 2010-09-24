@@ -7,6 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef PLUGIN_PLUGIN_H
 #define PLUGIN_PLUGIN_H
 
+#include "uvd_arg.h"
 #include "uvd_types.h"
 #include "uvd_version.h"
 #include <set>
@@ -99,6 +100,21 @@ public:
 	Note that we could support multiple archs in the plugin, we just return the best one
 	*/
 	virtual uv_err_t getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out);
+
+	//Plugins should register through here
+	uv_err_t registerArgument(const std::string &propertyForm,
+			char shortForm, std::string longForm, 
+			std::string helpMessage,
+			uint32_t numberExpectedValues,
+			UVDArgConfigHandler handler,
+			bool hasDefault);
+	uv_err_t registerArgument(const std::string &propertyForm,
+			char shortForm, std::string longForm, 
+			std::string helpMessage,
+			std::string helpMessageExtra,
+			uint32_t numberExpectedValues,
+			UVDArgConfigHandler handler,
+			bool hasDefault);
 
 public:
 	//returned by dlopen()

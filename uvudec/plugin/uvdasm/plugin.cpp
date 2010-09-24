@@ -8,39 +8,49 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdasm/plugin.h"
 #include "core/uvd.h"
 
-UVDDisassemblerPlugin::UVDDisassemblerPlugin()
+UVDAsmPlugin *g_asmPlugin = NULL;
+
+UVDAsmPlugin::UVDAsmPlugin()
+{
+	g_asmPlugin = this;
+}
+
+UVDAsmPlugin::~UVDAsmPlugin()
 {
 }
 
-UVDDisassemblerPlugin::~UVDDisassemblerPlugin()
+uv_err_t UVDAsmPlugin::init(UVDConfig *config)
 {
+	uv_assert_err_ret(UVDPlugin::init(config));
+	uv_assert_err_ret(m_config.init(config));
+	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisassemblerPlugin::getName(std::string &out)
+uv_err_t UVDAsmPlugin::getName(std::string &out)
 {
 	out = "uvdasm";
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisassemblerPlugin::getDescription(std::string &out)
+uv_err_t UVDAsmPlugin::getDescription(std::string &out)
 {
 	out = "Configuration file based assembly engine";
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisassemblerPlugin::getVersion(UVDVersion &out)
+uv_err_t UVDAsmPlugin::getVersion(UVDVersion &out)
 {
 	out.m_version = UVUDEC_VER_STRING;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisassemblerPlugin::getAuthor(std::string &out)
+uv_err_t UVDAsmPlugin::getAuthor(std::string &out)
 {
 	out = "John McMaster <JohnDMcMaster@gmail.com>";
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisassemblerPlugin::getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out)
+uv_err_t UVDAsmPlugin::getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out)
 {
 	*out = new UVDDisasmArchitecture();
 	uv_assert_ret(*out);

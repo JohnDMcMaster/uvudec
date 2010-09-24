@@ -31,9 +31,6 @@ UVDConfig::UVDConfig()
 	m_sDebugFile = UVD_OPTION_FILE_STDOUT;
 	//m_pDebugFile = NULL;
 
-	m_configInterpreterLanguage = UVD_LANGUAGE_UNKNOWN;
-	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_UNKNOWN;
-
 	m_analysisOnly = false;
 	m_uselessASCIIArt = false;
 	m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__LINEAR;
@@ -134,9 +131,6 @@ uv_err_t UVDConfig::init()
 	//By default assume all addresses are potential analysis areas
 	m_addressRangeValidity.m_default = UVD_ADDRESS_ANALYSIS_INCLUDE;
 	
-	m_configInterpreterLanguage = UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT;
-	m_configInterpreterLanguageInterface = UVD_CONFIG_INTERPRETER_LANGUAGE_INTERFACE_DEFAULT;
-
 	uv_assert_err_ret(m_symbols.init());
 	
 	//Load user defined defaults
@@ -484,68 +478,22 @@ void UVDConfig::setVerboseAll()
 	UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, true);
 }
 
-uv_err_t UVDConfig::setConfigInterpreterLanguage(const std::string &in)
-{
-	//To make selection pre-processable
-	if( false )
-	{
-	}
-#ifdef USING_LUA
-	else if( in == "lua" )
-	{
-		m_configInterpreterLanguage = UVD_LANGUAGE_LUA;
-	}
-#endif //USING_LUA
-#ifdef USING_PYTHON
-	else if( in == "python" )
-	{
-		m_configInterpreterLanguage = UVD_LANGUAGE_PYTHON;
-	}
-#endif //USING_PYTHON
-#ifdef USING_JAVASCRIPT
-	else if( in == "javascript" )
-	{
-		m_configInterpreterLanguage = UVD_LANGUAGE_JAVASCRIPT;
-	}
-#endif //USING_PYTHON
-	else
-	{
-		printf_error("unknown language: <%s>\n", in.c_str());
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDConfig::setConfigInterpreterLanguageInterface(const std::string &in)
-{
-	if( in == "exec" )
-	{
-		m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_EXEC;
-	}
-	else if( in == "api" || in == "API" )
-	{
-		m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_API;
-	}
-	else
-	{
-		printf_error("unknown language interface: <%s>\n", in.c_str());
-		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		char shortForm, std::string longForm, 
 		std::string helpMessage,
 		uint32_t numberExpectedValues,
 		UVDArgConfigHandler handler,
-		bool hasDefault)
+		bool hasDefault,
+		const std::string &plugin)
 {
-	UVDArgConfig *argConfig = NULL;
-	
-	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, numberExpectedValues, handler, hasDefault);
-	uv_assert_ret(argConfig);
-	g_config->m_configArgs.push_back(argConfig);
+	uv_assert_err_ret(registerArgument(propertyForm,
+			shortForm, longForm, 
+			helpMessage,
+			"",
+			numberExpectedValues,
+			handler,
+			hasDefault,
+			plugin));
 
 	return UV_ERR_OK;
 }
@@ -556,13 +504,29 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		std::string helpMessageExtra,
 		uint32_t numberExpectedValues,
 		UVDArgConfigHandler handler,
-		bool hasDefault)
+		bool hasDefault,
+		const std::string &plugin)
 {
 	UVDArgConfig *argConfig = NULL;
 		
-	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
+	/*
+	FIXME: migrate all argument instantiation to these funcs and make UVDArgConfig have a single constructor
+	*/
+	if( helpMessageExtra.empty() )
+	{
+		argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, numberExpectedValues, handler, hasDefault);
+	}
+	else
+	{
+		argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
+	}
 	uv_assert_ret(argConfig);
 	g_config->m_configArgs.push_back(argConfig);
+
+	if( !plugin.empty() )
+	{
+		g_config->m_plugin.m_pluginEngine.m_pluginArgMap[argConfig] = plugin;
+	}
 
 	return UV_ERR_OK;
 }

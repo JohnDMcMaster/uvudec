@@ -167,56 +167,10 @@ uv_err_t UVDInitArgConfig()
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_PRINTING, 0, "verbose-printing", "selectivly debugging print routine", 1, argParser, true));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true));
 	
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ARCH_FILE, 0, "arch-file", "architecture/CPU module file", 1, argParser, true));
-	//Config file processing
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_CONFIG_LANGUAGE, 0, "config-language",
-			"default config interpreter language (plugins may require specific)", 
-			""
-#ifdef USING_LUA
-			"\tlua: use Lua"
-#if UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT == UVD_LANGUAGE_LUA
-				" (default)"
-#endif
-				"\n"
-#endif //USING_LUA
-#ifdef USING_PYTHON
-			"\tpython: use Python"
-#if UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT == UVD_LANGUAGE_PYTHON
-				" (default)"
-#endif
-				"\n"
-#endif //USING_PYTHON
-#ifdef USING_JAVASCRIPT
-			"\tjavascript: use javascript"
-#if UVD_CONFIG_INTERPRETER_LANGUAGE_DEFAULT == UVD_LANGUAGE_JAVASCRIPT
-				" (default)"
-#endif
-				"\n"
-#endif //USING_JAVASCRIPT
-			,
-			1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_CONFIG_LANGUAGE_INTERFACE, 0, "config-language-interface",
-			"how to access a specifc interpreter (options as availible)", 
-			"\texec: execute interpreter, parse results"
-#if UVD_CONFIG_INTERPRETER_LANGUAGE_INTERFACE_DEFAULT == UVD_LANGUAGE_INTERFACE_EXEC
-				" (default)"
-#endif
-				"\n"
-			"\tAPI: use binary API to interpreter"
-#if UVD_CONFIG_INTERPRETER_LANGUAGE_INTERFACE_DEFAULT == UVD_LANGUAGE_INTERFACE_API
-				" (default)"
-#endif
-				"\n",
-			1, argParser, true));
-	
 	
 	//Analysis target related
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE, 0, "addr-exclude", "exclusion address range (, or - separated)", 1, argParser, false));
-	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE_MIN, 0, "addr-include-min", "minimum analysis address", 1, argParser, false));
-	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE_MAX, 0, "addr-include-max", "maximum analysis address", 1, argParser, false));
-	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE_MIN, 0, "addr-exclude-min", "minimum exclusion address", 1, argParser, false));
-	//g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE_MAX, 0, "addr-exclude-max", "maximum exclusion address", 1, argParser, false));
 	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS, 0, "analysis-address", "only output analysis data for specified address", 1, argParser, false));
 
 	//Analysis
@@ -376,36 +330,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		config->m_architectureFileName = firstArg;
-	}
-	/*
-	Startup configuration
-	TODO: add a config file path var
-	*/
-	else if( argConfig->m_propertyForm == UVD_PROP_CONFIG_LANGUAGE )
-	{
-		uv_err_t rc = UV_ERR_GENERAL;
-		
-		uv_assert_ret(!argumentArguments.empty());
-		
-		rc = UV_DEBUG(config->setConfigInterpreterLanguage(firstArg));
-		if( UV_FAILED(rc) )
-		{
-			UVDHelp();
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_CONFIG_LANGUAGE_INTERFACE )
-	{
-		uv_err_t rc = UV_ERR_GENERAL;
-
-		uv_assert_ret(argumentArguments.size() == 1);
-		
-		rc = UV_DEBUG(config->setConfigInterpreterLanguageInterface(firstArg));
-		if( UV_FAILED(rc) )
-		{
-			UVDHelp();
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
 	}
 	/*
 	Analysis target specific
@@ -588,6 +512,8 @@ static uv_err_t UVDPrintLoadedPlugins()
 
 	printf_help("Loaded plugins (%d / %d):\n", pluginEngine->m_loadedPlugins.size(), pluginEngine->m_plugins.size());
 
+	/*
+	//We print args, so this list is somewhat useless, maybe as a single liner?
 	for( std::map<std::string, UVDPlugin *>::iterator iter = pluginEngine->m_loadedPlugins.begin(); iter != pluginEngine->m_loadedPlugins.end(); ++iter )
 	{
 		UVDPlugin *plugin = (*iter).second;
@@ -597,15 +523,30 @@ static uv_err_t UVDPrintLoadedPlugins()
 		uv_assert_err_ret(plugin->getName(name));
 		printf("\t%s\n", name.c_str());
 	}
+	*/
 
+	return UV_ERR_OK;
+}
+
+uv_err_t printArg(UVDArgConfig *argConfig, const std::string &indent)
+{
+	printf_help("%s--%s (%s): %s\n",
+			indent.c_str(), argConfig->m_longForm.c_str(), argConfig->m_propertyForm.c_str(),
+			argConfig->m_helpMessage.c_str());
+	if( !argConfig->m_helpMessageExtra.empty() )
+	{
+		printf_help("%s%s", indent.c_str(), argConfig->m_helpMessageExtra.c_str());
+	}
 	return UV_ERR_OK;
 }
 
 static uv_err_t UVDPrintUsage()
 {
 	const char *program_name = "";
+	UVDPluginEngine *pluginEngine = NULL;
 	
 	uv_assert_ret(g_config);
+	pluginEngine = &g_config->m_plugin.m_pluginEngine;
 	
 	if( g_config->m_argv )
 	{
@@ -617,19 +558,48 @@ static uv_err_t UVDPrintUsage()
 	printf_help("Args:\n");
 	for( std::vector<UVDArgConfig>::size_type i = 0; i < g_config->m_configArgs.size(); ++i )
 	{
-		const UVDArgConfig *argConfig = g_config->m_configArgs[i];
+		UVDArgConfig *argConfig = g_config->m_configArgs[i];
 		
 		uv_assert_ret(argConfig);
 		
-		printf_help("--%s (%s): %s\n", argConfig->m_longForm.c_str(), argConfig->m_propertyForm.c_str(), argConfig->m_helpMessage.c_str());
-		if( !argConfig->m_helpMessageExtra.empty() )
+		//Print main config first
+		if( pluginEngine->m_pluginArgMap.find(argConfig) == pluginEngine->m_pluginArgMap.end() )
 		{
-			printf_help("%s", argConfig->m_helpMessageExtra.c_str());
+			uv_assert_err_ret(printArg(argConfig, ""));
 		}
 	}
 	
 	printf_help("\n");
 	UVDPrintLoadedPlugins();
+
+	//Now do it by plugin type
+	//this isn't terribly efficient, but who cares we should only have a handful of plugins
+	for( std::map<std::string, UVDPlugin *>::iterator iter = pluginEngine->m_loadedPlugins.begin();
+			iter != pluginEngine->m_loadedPlugins.end(); ++iter )
+	{	
+		UVDPlugin *plugin = (*iter).second;
+		std::string pluginName = (*iter).first;
+		
+		uv_assert_ret(plugin);
+		printf_help("\n");
+		printf_help("Plugin %s:\n", pluginName.c_str());
+		
+		for( std::map<UVDArgConfig *, std::string>::iterator iter = pluginEngine->m_pluginArgMap.begin();
+				iter != pluginEngine->m_pluginArgMap.end(); ++iter )
+		{
+			UVDArgConfig *argConfig = (*iter).first;
+			std::string currentPluginName = (*iter).second;
+			
+			uv_assert_ret(argConfig);
+			
+			if( pluginName == currentPluginName )
+			{
+				uv_assert_err_ret(printArg(argConfig, ""));
+			}
+		}
+	}
+	
+	printf_help("\n");
 	
 	return UV_ERR_OK;
 }

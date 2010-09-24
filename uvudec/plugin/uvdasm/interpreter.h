@@ -38,6 +38,7 @@ public:
 	UVDConfigExpressionInterpreter *m_configExpressionInterpreter;
 };
 
+class UVDAsmPlugin;
 class UVDConfigExpressionInterpreter
 {
 public:
@@ -88,5 +89,6 @@ public:
 	-Allows multi-pass analysis
 	*/
 	std::map<uint32_t, UVDVariableMap> m_interpretCache;
+	UVDAsmPlugin *m_plugin;
 };
 

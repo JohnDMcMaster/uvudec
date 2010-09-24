@@ -11,8 +11,10 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 			architecture.cpp \
 			architecture_init.cpp \
+			config.cpp \
 			function.cpp \
 			instruction.cpp \
+			interpreter.cpp \
 			main.cpp \
 			operand.cpp \
 			opcode_table.cpp \

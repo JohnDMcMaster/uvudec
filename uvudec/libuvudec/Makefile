@@ -67,7 +67,6 @@ CXX_SRCS = 	\
 			$(INIT_DIR)/uvd_arg.cpp \
 			$(INIT_DIR)/uvd_arg_util.cpp \
 			$(INIT_DIR)/uvd_config.cpp \
-			$(INIT_DIR)/uvd_config_interpreter.cpp \
 			$(INIT_DIR)/uvd_config_symbol.cpp \
 			$(INIT_DIR)/uvd_config_symbols.cpp \
 			$(INIT_DIR)/uvd_init.cpp \

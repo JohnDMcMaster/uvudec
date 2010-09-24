@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_util.h"
 #include "uvd_config.h"
-#include "uvd_config_interpreter.h"
+#include "uvdasm/interpreter.h"
 #include "uvd_language.h"
 
 
@@ -255,14 +255,13 @@ uv_err_t UVDConfigExpressionInterpreter::interpret(const UVDConfigExpression *ex
 uv_err_t UVDConfigExpressionInterpreter::getConfigExpressionInterpreter(UVDConfigExpressionInterpreter **interpreter_in)
 {
 	UVDConfigExpressionInterpreter *interpreter = NULL;
-	
 	//Select the embedded interpreter we are going to use
 	int selectedInterpreter = 0;
 	int selectedInterpreterInterface = 0;
 	
-	uv_assert_ret(g_config);
-	selectedInterpreter = g_config->m_configInterpreterLanguage;
-	selectedInterpreterInterface = g_config->m_configInterpreterLanguageInterface;
+	uv_assert_ret(g_asmConfig);
+	selectedInterpreter = g_asmConfig->m_configInterpreterLanguage;
+	selectedInterpreterInterface = g_asmConfig->m_configInterpreterLanguageInterface;
 	switch( selectedInterpreter )
 	{
 #ifdef USING_PYTHON
