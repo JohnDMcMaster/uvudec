@@ -84,7 +84,7 @@ public:
 	Ex: 8051 direct addresses IRAM @ F0 is B register
 	Should these be address space mappings instead?
 	*/
-	std::map<uint32_t, std::string> m_synonyms;
+	std::map<uv_addr_t, std::string> m_synonyms;
 	/*
 	Does this map to something more absolute?
 	If so, address that this is mapped to
@@ -98,6 +98,32 @@ public:
 	Start address bit offet from above
 	unsigned int mapped_start_addr_bit_offset;
 	*/
+};
+
+/*
+An address resolved to an address space
+Fully specifies the address within the architecture
+*/
+class UVDAddressRange;
+class UVDAddress
+{
+public:
+	UVDAddress();
+	UVDAddress(uv_addr_t addr, UVDAddressSpace *space = NULL);
+	
+	bool intersects(const UVDAddressRange &range) const;
+
+	//By minimum address
+	int compare(const UVDAddress *other) const;	
+	bool operator<(const UVDAddress *other) const;
+	bool operator>(const UVDAddress *other) const;
+	bool operator==(const UVDAddress *other) const;
+
+public:
+	//Address space
+	UVDAddressSpace *m_space;
+	//Address
+	uv_addr_t m_addr;
 };
 
 /*
@@ -119,9 +145,9 @@ public:
 	bool operator==(const UVDAddressRange *other) const;
 
 public:
-	/* Address space */
+	//Address space
 	UVDAddressSpace *m_space;
-	/* Address */
+	//Address
 	uv_addr_t m_min_addr;
 	uv_addr_t m_max_addr;
 };

@@ -121,6 +121,59 @@ uv_err_t UVDAddressSpace::getEquivMemName(uint32_t addr, std::string &name)
 	return UV_ERR_OK;
 }
 
+/*
+UVDAddress
+*/
+
+UVDAddress::UVDAddress()
+{
+	m_space = NULL;
+	m_addr = 0;
+}
+
+UVDAddress::UVDAddress(uv_addr_t addr, UVDAddressSpace *space)
+{
+	m_space = space;
+	m_addr = addr;
+}
+
+bool UVDAddress::intersects(const UVDAddressRange &range) const
+{
+	return UVDAddressRange(m_addr, m_addr, m_space).intersects(range);
+}
+
+//By minimum address
+int UVDAddress::compare(const UVDAddress *other) const
+{
+	//Checked builds only
+	if( other == NULL )
+	{
+		return 1;
+	}
+	
+	//We assume they are in the same address space or the comparison doesn't make sense
+	return m_addr - other->m_addr;
+}
+
+bool UVDAddress::operator<(const UVDAddress *other) const
+{
+	return compare(other) < 0;
+}
+
+bool UVDAddress::operator>(const UVDAddress *other) const
+{
+	return compare(other) > 0;
+}
+
+bool UVDAddress::operator==(const UVDAddress *other) const
+{
+	return compare(other) == 0;
+}
+
+/*
+UVDAddressRange
+*/
+
 UVDAddressRange::UVDAddressRange()
 {
 	m_min_addr = 0;
@@ -128,14 +181,14 @@ UVDAddressRange::UVDAddressRange()
 	m_space = NULL;
 }
 
-UVDAddressRange::UVDAddressRange(uv_addrt_t min_addr)
+UVDAddressRange::UVDAddressRange(uv_addr_t min_addr)
 {
 	m_min_addr = min_addr;
 	m_max_addr = min_addr;
 	m_space = NULL;
 }
 
-UVDAddressRange::UVDAddressRange(uv_addrt_t min_addr, uv_addrt_t max_addr, UVDAddressSpace *space)
+UVDAddressRange::UVDAddressRange(uv_addr_t min_addr, uv_addr_t max_addr, UVDAddressSpace *space)
 {
 	m_min_addr = min_addr;
 	m_max_addr = max_addr;
