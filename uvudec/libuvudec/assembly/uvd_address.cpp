@@ -7,70 +7,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_address.h"
 
-#if 0
-UVDAddressSpaceMapper::UVDAddressSpaceMapper()
-{
-	m_src_shared = NULL;
-	m_dst_shared = NULL;
-	
-	m_src_min_addr = 0;
-	m_src_max_addr = 0;
-	m_dst_min_addr = 0;
-	m_dst_max_addr = 0;
-}
-
-uv_err_t UVDAddressSpaceMapper::finalizeConfig()
-{
-	//Sizes in bits
-	//In future may allow for slight descrepency between source and dest, but for now must be same
-	uint32_t src_data_size = 0;
-	uint32_t dst_data_size = 0;
-	
-	printf_debug("initial src; min: %d, max: %d\n", m_src_min_addr, m_src_max_addr);
-	printf_debug("initial dst; min: %d, max: %d\n", m_dst_min_addr, m_dst_max_addr);
-
-	/*
-	For source, assume full range if not specified
-	This is because we usually will map to a larger space
-	*/
-	if( m_src_max_addr == 0 )
-	{
-		m_src_max_addr = m_src_shared->m_max_addr;
-	}
-	
-	uv_assert_ret(m_src_min_addr <= m_src_max_addr);
-	uv_assert_ret(m_src_shared);
-	uv_assert_ret(m_dst_shared);
-	uv_assert_ret(m_src_shared->m_word_size);
-	uv_assert_ret(m_dst_shared->m_word_size);
-	src_data_size = (m_src_max_addr - m_src_min_addr + 1) * m_src_shared->m_word_size;
-	
-	//If destination address is 0, assume not mapped
-	if( m_dst_max_addr != 0 )
-	{
-		uv_assert_ret(m_dst_min_addr <= m_dst_max_addr);
-		uv_assert_ret(m_dst_shared);
-	}
-	else
-	{
-		//Assume equal then
-		//Set max addr to min + sizeof(src) / word size
-		m_dst_max_addr = m_dst_min_addr + src_data_size / m_dst_shared->m_word_size - 1;
-		//Assume equal then
-	}
-
-	//Make sure in the end they are equal
-	dst_data_size = (m_dst_max_addr - m_dst_min_addr + 1) * m_dst_shared->m_word_size;
-	printf_debug("final src; min: %d, max: %d\n", m_src_min_addr, m_src_max_addr);
-	printf_debug("final dst; min: %d, max: %d\n", m_dst_min_addr, m_dst_max_addr);
-	printf_debug("word; src : %d, dst: %d\n", m_src_shared->m_word_size, m_dst_shared->m_word_size);
-	printf_debug("size; src: %d, dst: %d\n", src_data_size, dst_data_size);
-	uv_assert_ret(src_data_size == dst_data_size);
-
-	return UV_ERR_OK;
-}
-#endif
-
 /*
 UVDAddressSpace
 */
@@ -238,5 +174,22 @@ bool UVDAddressRange::operator>(const UVDAddressRange *other) const
 bool UVDAddressRange::operator==(const UVDAddressRange *other) const
 {
 	return compare(other) == 0;
+}
+
+/*
+UVDAddressSpaces
+*/
+
+UVDAddressSpaces::UVDAddressSpaces()
+{
+}
+
+UVDAddressSpaces::~UVDAddressSpaces()
+{
+	for( std::vector<UVDAddressSpace *>::iterator iter = m_addressSpaces.begin();
+			iter != m_addressSpaces.end(); ++iter )
+	{
+		delete *iter;
+	}
 }
 

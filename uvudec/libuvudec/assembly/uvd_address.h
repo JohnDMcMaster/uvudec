@@ -12,33 +12,58 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //uv_addr_t is somewhat arbitrarily defined in here
 #include "uvd_types.h"
 
-//XXX: shouldn't this extend UVDAddressSpace so we can use the two transparently?
-//Currently this seems only for uvdasm plugin p
-#if 0
+/*
+An address resolved to an address space
+Fully specifies the address within the architecture
+*/
+class UVDAddressRange;
 class UVDAddressSpace;
-class UVDAddressSpaceMapper
+class UVDAddress
 {
 public:
-	UVDAddressSpaceMapper();
+	UVDAddress();
+	UVDAddress(uv_addr_t addr, UVDAddressSpace *space = NULL);
 	
-	uv_err_t finalizeConfig();
-	
+	bool intersects(const UVDAddressRange &range) const;
+
+	//By minimum address
+	int compare(const UVDAddress *other) const;	
+	bool operator<(const UVDAddress *other) const;
+	bool operator>(const UVDAddress *other) const;
+	bool operator==(const UVDAddress *other) const;
+
 public:
-	//Other address space
-	//These are not owned by this object, only mapped
-	UVDAddressSpace *m_dst_shared;
-	UVDAddressSpace *m_src_shared;
-	
-	//Source memory
-	//Start map address
-	uint32_t m_src_min_addr;
-	//Stop map address
-	uint32_t m_src_max_addr;
-	//Destination memory
-	uint32_t m_dst_min_addr;
-	uint32_t m_dst_max_addr;
+	//Address space
+	UVDAddressSpace *m_space;
+	//Address
+	uv_addr_t m_addr;
 };
-#endif
+
+/*
+A fully qualified memory range
+*/
+class UVDAddressRange
+{
+public:
+	UVDAddressRange();
+	UVDAddressRange(uv_addr_t min_addr);
+	UVDAddressRange(uv_addr_t min_addr, uv_addr_t max_addr, UVDAddressSpace *space = NULL);
+	bool intersects(const UVDAddressRange &other) const;
+
+	//By minimum address
+	static int compareStatic(const UVDAddressRange *l, const UVDAddressRange *r);	
+	int compare(const UVDAddressRange *other) const;	
+	bool operator<(const UVDAddressRange *other) const;
+	bool operator>(const UVDAddressRange *other) const;
+	bool operator==(const UVDAddressRange *other) const;
+
+public:
+	//Address space
+	UVDAddressSpace *m_space;
+	//Address
+	uv_addr_t m_min_addr;
+	uv_addr_t m_max_addr;
+};
 
 //Shared information about an address space
 class UVDAddressSpace
@@ -101,55 +126,17 @@ public:
 };
 
 /*
-An address resolved to an address space
-Fully specifies the address within the architecture
+An entire set of address spaces, like might be found in a complete architecture
 */
-class UVDAddressRange;
-class UVDAddress
+class UVDAddressSpaces
 {
 public:
-	UVDAddress();
-	UVDAddress(uv_addr_t addr, UVDAddressSpace *space = NULL);
-	
-	bool intersects(const UVDAddressRange &range) const;
-
-	//By minimum address
-	int compare(const UVDAddress *other) const;	
-	bool operator<(const UVDAddress *other) const;
-	bool operator>(const UVDAddress *other) const;
-	bool operator==(const UVDAddress *other) const;
+	UVDAddressSpaces();
+	~UVDAddressSpaces();
 
 public:
-	//Address space
-	UVDAddressSpace *m_space;
-	//Address
-	uv_addr_t m_addr;
-};
-
-/*
-A fully qualified memory range
-*/
-class UVDAddressRange
-{
-public:
-	UVDAddressRange();
-	UVDAddressRange(uv_addr_t min_addr);
-	UVDAddressRange(uv_addr_t min_addr, uv_addr_t max_addr, UVDAddressSpace *space = NULL);
-	bool intersects(const UVDAddressRange &other) const;
-
-	//By minimum address
-	static int compareStatic(const UVDAddressRange *l, const UVDAddressRange *r);	
-	int compare(const UVDAddressRange *other) const;	
-	bool operator<(const UVDAddressRange *other) const;
-	bool operator>(const UVDAddressRange *other) const;
-	bool operator==(const UVDAddressRange *other) const;
-
-public:
-	//Address space
-	UVDAddressSpace *m_space;
-	//Address
-	uv_addr_t m_min_addr;
-	uv_addr_t m_max_addr;
+	//We own these
+	std::vector<UVDAddressSpace *> m_addressSpaces;
 };
 
 #endif
