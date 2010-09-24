@@ -9,21 +9,25 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <string>
 #include "uvd_data.h"
+//uv_addr_t is somewhat arbitrarily defined in here
 #include "uvd_types.h"
 
-class UVDMemoryShared;
-class UVDMemorySharedMapper
+//XXX: shouldn't this extend UVDAddressSpace so we can use the two transparently?
+//Currently this seems only for uvdasm plugin p
+#if 0
+class UVDAddressSpace;
+class UVDAddressSpaceMapper
 {
 public:
-	UVDMemorySharedMapper();
+	UVDAddressSpaceMapper();
 	
 	uv_err_t finalizeConfig();
 	
 public:
 	//Other address space
 	//These are not owned by this object, only mapped
-	UVDMemoryShared *m_dst_shared;
-	UVDMemoryShared *m_src_shared;
+	UVDAddressSpace *m_dst_shared;
+	UVDAddressSpace *m_src_shared;
 	
 	//Source memory
 	//Start map address
@@ -34,14 +38,14 @@ public:
 	uint32_t m_dst_min_addr;
 	uint32_t m_dst_max_addr;
 };
+#endif
 
 //Shared information about an address space
-class UVDMemoryShared
-//struct uv_disasm_mem_shared_t
+class UVDAddressSpace
 {
 public:
-	UVDMemoryShared();
-	~UVDMemoryShared();
+	UVDAddressSpace();
+	~UVDAddressSpace();
 	uv_err_t deinit();
 	
 	uv_err_t setEquivMemName(uint32_t addr, const std::string &name);
@@ -83,8 +87,9 @@ public:
 	/*
 	Does this map to something more absolute?
 	If so, address that this is mapped to
+	FIXME: implement this with polymorphism instead
 	*/
-	std::vector<UVDMemorySharedMapper *> m_mappers;
+	//std::vector<UVDAddressSpaceMapper *> m_mappers;
 	/*
 	struct uv_disasm_mem_shared_t *mapped;
 	Start address, in target address space words
@@ -94,69 +99,31 @@ public:
 	*/
 };
 
-class UVDMemoryLocation
+/*
+A fully qualified memory range
+*/
+class UVDAddressRange
 {
 public:
-	UVDMemoryLocation();
-	//UVDMemoryLocation(UVDMemoryLocation *other);
-	//UVDMemoryLocation(const UVDMemoryLocation &other);
-	UVDMemoryLocation(unsigned int min_addr);
-	UVDMemoryLocation(unsigned int min_addr, unsigned int max_addr, UVDMemoryShared *space = NULL);
-	bool intersects(UVDMemoryLocation other) const;
+	UVDAddressRange();
+	UVDAddressRange(unsigned int min_addr);
+	UVDAddressRange(unsigned int min_addr, unsigned int max_addr, UVDAddressSpace *space = NULL);
+	bool intersects(UVDAddressRange other) const;
 
 	//By minimum address
-	static int compareStatic(const UVDMemoryLocation *l, const UVDMemoryLocation *r);	
-	int compare(const UVDMemoryLocation *other) const;	
-	bool operator<(const UVDMemoryLocation *other) const;
-	bool operator>(const UVDMemoryLocation *other) const;
-	bool operator==(const UVDMemoryLocation *other) const;
+	static int compareStatic(const UVDAddressRange *l, const UVDAddressRange *r);	
+	int compare(const UVDAddressRange *other) const;	
+	bool operator<(const UVDAddressRange *other) const;
+	bool operator>(const UVDAddressRange *other) const;
+	bool operator==(const UVDAddressRange *other) const;
 
 public:
 	/* Address space */
-	UVDMemoryShared *m_space;
+	UVDAddressSpace *m_space;
 	/* Address */
 	uint32_t m_min_addr;
 	uint32_t m_max_addr;
 };
 
-#if 0
-/*
-This is for virtual memory segments as opposed to above that deal with physical address spaces
-For now, assume all segments hold valid data of some sort
-Later, add flags and such
-	Capabilities of a physical address space probably should ovveride those of any virtual segment?
-Currently need some basic idea of what segments are active for determing total program size for progress bars
-*/
-class UVDMemorySegment
-{
-public:
-	UVDMemorySegment();
-	~UVDMemorySegment();
-
-public:
-	//Where the data starts
-	uv_addr_t m_start;
-	//The data held at this address
-	UVDData *m_data;
-};
 #endif
 
-#if 0
-//Virtual memory space
-class UVDSegmentedMemory
-{
-public:
-	UVDSegmentedMemory();
-	~UVDSegmentedMemory();
-	
-public:
-	/*
-	The machine may or may not support actual segments (ie might really be a paged system)
-	This more refers to how the address space layout logUVDSegmentedMemoryically is discontiguous with programs loading data at various addresses
-	Rename later if needed
-	*/
-	std::vector<UVDMemorySegment *> m_segments;
-};
-#endif
-
-#endif

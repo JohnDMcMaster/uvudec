@@ -112,9 +112,6 @@ uv_err_t UVDConfig::parseUserConfig()
 	return UV_ERR_OK;
 }
 
-//disasm->m_noncodingAddresses = g_noncodingAddresses;
-//std::vector<UVDMemoryLocation> g_noncodingAddresses;
-
 uv_err_t UVDConfig::processParseMain()
 {
 	//Make sure we are logging to correct target now that we have parsed args

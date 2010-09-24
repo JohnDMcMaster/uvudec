@@ -205,10 +205,10 @@ public:
 		
 	//Given a function location, do analysis on the section to do actual decompiling
 	//FIXME: this code is nearly dead and should probably be removed
-	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction);
+	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryRange *memLoc, UVDAnalyzedFunction &analyzedFunction);
 	//uv_err_t analyzeFunction(UVDAnalyzedFunction &analyzedFunction);
 	//Since not all code is in a function, base implementation is on raw code
-	//uv_err_t analyzeCode(UVDAnalyzedMemoryLocation memLoc, UVDAnalyzedCode &analyzedCode);
+	//uv_err_t analyzeCode(UVDAnalyzedMemoryRange memLoc, UVDAnalyzedCode &analyzedCode);
 	//Core code analysis function
 	//Structure should be pre-set with data before entry
 	uv_err_t analyzeCode(UVDAnalyzedCode &UVDAnalyzedCode);
@@ -218,7 +218,7 @@ public:
 	uv_err_t constructBlocks();
 	uv_err_t mapSymbols();
 	uv_err_t constructFunctionBlocks(UVDAnalyzedBlock *superblock);
-	uv_err_t constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &superblockLocations, UVDAnalyzedMemoryLocations::iterator &iterSuperblock);
+	uv_err_t constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &superblockLocations, UVDAnalyzedMemoryRanges::iterator &iterSuperblock);
 	uv_err_t analyzeControlFlow();
 	//Analyze control structures: if, else, etc
 	uv_err_t analyzeBlock(UVDAnalyzedBlock *block);
@@ -274,7 +274,7 @@ public:
 	//hmm should be moved to uvd_analysis
 	//ROM data or other things that make these addresses non-disassemblable
 	//This should probably be moved to the analyzer
-	std::vector<UVDMemoryLocation> m_noncodingAddresses;
+	std::vector<UVDAddressRange> m_noncodingAddresses;
 
 	//General configuration
 	//This must be a pointer as its intialized before we initialize our UVD object

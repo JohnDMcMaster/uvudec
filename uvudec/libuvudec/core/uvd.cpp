@@ -48,7 +48,7 @@ Each of these accomplish essentially same thing, but different way
 */
 
 //FIXME: this code is nearly dead and should probably be removed
-uv_err_t UVD::analyzeNewFunction(const UVDAnalyzedMemoryLocation *memLoc, UVDAnalyzedFunction &analyzedFunction)
+uv_err_t UVD::analyzeNewFunction(const UVDAnalyzedMemoryRange *memLoc, UVDAnalyzedFunction &analyzedFunction)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDAnalyzedCode *analyzedCode = NULL;
@@ -172,7 +172,7 @@ uv_err_t UVD::analyzeStrings()
 	unsigned int minStringSize = 3;
 	//How far apart clusters should be to collect them
 	unsigned int maxClusterSpacing = 3;
-	UVDAnalyzedMemoryLocations startCluster;
+	UVDAnalyzedMemoryRanges startCluster;
 	*/
 	
 	UV_ENTER();
@@ -213,7 +213,7 @@ uv_err_t UVD::analyzeStrings()
 		//Goes one beyond locations
 		if( endAddr - i >= minClusterSize )
 		{
-			startCluster.push_back(UVDAnalyzedMemoryLocation(i, endAddr));
+			startCluster.push_back(UVDAnalyzedMemoryRange(i, endAddr));
 		}
 		
 		i = j;
@@ -223,7 +223,7 @@ uv_err_t UVD::analyzeStrings()
 	//For now assume non-coding addresses are ROM data since thats primary motiviation to exclude them
 	for( unsigned int i = 0; i < m_noncodingAddresses.size(); ++i )
 	{
-		UVDMemoryLocation memLoc = m_noncodingAddresses[i];
+		UVDAddressRange memLoc = m_noncodingAddresses[i];
 		//Do a C string table analysis
 		for( unsigned int i = memLoc.m_min_addr; i < memLoc.m_max_addr; )
 		{
@@ -250,7 +250,7 @@ uv_err_t UVD::analyzeStrings()
 
 					//Just insert one reference to each string for now
 					//A map
-					m_analyzer->m_stringAddresses[i] = new UVDAnalyzedMemoryLocation(i, endAddr);
+					m_analyzer->m_stringAddresses[i] = new UVDAnalyzedMemoryRange(i, endAddr);
 					m_analyzer->m_stringAddresses[i]->insertReference(i, UVD_MEMORY_REFERENCE_CONSTANT | UVD_MEMORY_REFERENCE_STRING);
 					break;
 				}
@@ -308,7 +308,7 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 }
 
 /*
-static int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryLocation *l, UVDAnalyzedMemoryLocation *r)
+static int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryRange *l, UVDAnalyzedMemoryRange *r)
 {
 	if( l == r )
 	{
@@ -330,7 +330,7 @@ static int UVDAnalyzedMemorySpaceSorter(UVDAnalyzedMemoryLocation *l, UVDAnalyze
 }
 */
 
-uv_err_t memorySpaceToMemoryLocations(const UVDAnalyzedMemorySpace &space, UVDAnalyzedMemoryLocations& ret)
+uv_err_t memorySpaceToMemoryLocations(const UVDAnalyzedMemorySpace &space, UVDAnalyzedMemoryRanges& ret)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
@@ -340,7 +340,7 @@ uv_err_t memorySpaceToMemoryLocations(const UVDAnalyzedMemorySpace &space, UVDAn
 	//std::copy(ret.begin(), space.begin(), space.end());
 	for( UVDAnalyzedMemorySpace::const_iterator iter = space.begin(); iter != space.end(); ++iter )
 	{
-		UVDAnalyzedMemoryLocation *memoryLocation = (*iter).second;
+		UVDAnalyzedMemoryRange *memoryLocation = (*iter).second;
 		uv_assert(memoryLocation);
 		ret.push_back(memoryLocation);
 	}
@@ -355,7 +355,7 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVD::constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &superblockLocations, UVDAnalyzedMemoryLocations::iterator &iterSuperblock)
+uv_err_t UVD::constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &superblockLocations, UVDAnalyzedMemoryRanges::iterator &iterSuperblock)
 {
 	//Commented out because its not being used?  What about labeling?
 	return UV_ERR_OK;
@@ -377,7 +377,7 @@ uv_err_t UVD::constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemor
 	//Skip ahead to where the superblock is
 	while( iterSuperblock != superblockLocations.end() )
 	{
-		UVDAnalyzedMemoryLocation *memoryCalled = *iterSuperblock;
+		UVDAnalyzedMemoryRange *memoryCalled = *iterSuperblock;
 		uv_assert(memoryCalled);
 
 		//Do we have at least func start address?
@@ -391,7 +391,7 @@ uv_err_t UVD::constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemor
 	//Loop for all called locations in this block
 	for( ; iterSuperblock != superblockLocations.end(); ++iterSuperblock )
 	{
-		UVDAnalyzedMemoryLocation *memoryJumped = *iterSuperblock;		
+		UVDAnalyzedMemoryRange *memoryJumped = *iterSuperblock;		
 		uint32_t jumpedBlockEnd = 0;
 		
 		uv_assert(memoryJumped);

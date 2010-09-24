@@ -41,8 +41,8 @@ public:
 
 	std::string toString();
 	
-	uv_err_t getValue(UVDMemoryShared **memoryShared);
-	uv_err_t setValue(UVDMemoryShared *memoryShared);
+	uv_err_t getValue(UVDAddressSpace **memoryShared);
+	uv_err_t setValue(UVDAddressSpace *memoryShared);
 	uv_err_t getValue(UVDOperator **oper);
 	uv_err_t setValue(UVDOperator *oper);
 
@@ -57,7 +57,7 @@ public:
 		unsigned int m_varient;
 	*/
 		//Memory type
-		UVDMemoryShared *m_mem;
+		UVDAddressSpace *m_mem;
 		UVDOperator *m_operator;
 	//};
 };
@@ -70,11 +70,11 @@ public:
 	uv_err_t init();
 	
 	uv_err_t setSym(const std::string &key, UVDSymbol *sym, UVDSymbol **old = NULL);
-	uv_err_t setSym(const std::string &key, UVDMemoryShared *mem_sym);
+	uv_err_t setSym(const std::string &key, UVDAddressSpace *mem_sym);
 	uv_err_t setSym(const std::string &key, UVDOperator *operatorSymbol);
 
 	uv_err_t getSym(const std::string &key, UVDSymbol **sym);
-	uv_err_t getSym(const std::string &key, UVDMemoryShared **mem_sym);
+	uv_err_t getSym(const std::string &key, UVDAddressSpace **mem_sym);
 	uv_err_t getSym(const std::string &key, UVDOperator **operatorSymbol);
 
 	void print();

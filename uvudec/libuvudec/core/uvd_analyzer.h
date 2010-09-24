@@ -51,20 +51,20 @@ public:
 	uint32_t m_from;
 };
 
-typedef std::map<uint32_t, UVDMemoryReference *> UVDAnalyzedMemoryLocationReferences;
+typedef std::map<uint32_t, UVDMemoryReference *> UVDAnalyzedMemoryRangeReferences;
 
 /*
 Each memory location must keep track of references to itself to know what sort of branching we should expect
 */
-class UVDAnalyzedMemoryLocation : public UVDMemoryLocation
+class UVDAnalyzedMemoryRange : public UVDAddressRange
 {
 public:
-	UVDAnalyzedMemoryLocation();
-	UVDAnalyzedMemoryLocation(unsigned int min_addr);
-	UVDAnalyzedMemoryLocation(unsigned int min_addr, unsigned int max_addr,
-			UVDMemoryShared *space = NULL);
-	//UVDAnalyzedMemoryLocation(uint32_t referenceCount);
-	~UVDAnalyzedMemoryLocation();
+	UVDAnalyzedMemoryRange();
+	UVDAnalyzedMemoryRange(unsigned int min_addr);
+	UVDAnalyzedMemoryRange(unsigned int min_addr, unsigned int max_addr,
+			UVDAddressSpace *space = NULL);
+	//UVDAnalyzedMemoryRange(uint32_t referenceCount);
+	~UVDAnalyzedMemoryRange();
 	uv_err_t deinit();
 
 	uv_err_t insertReference(uint32_t from, uint32_t type);
@@ -72,11 +72,11 @@ public:
 	//Query bitmask of reference types
 	uint32_t getReferenceTypes();
 	
-	uv_err_t getReferences(UVDAnalyzedMemoryLocationReferences &references, uint32_t type);
+	uv_err_t getReferences(UVDAnalyzedMemoryRangeReferences &references, uint32_t type);
 	
 public:
 	//How many times a reference has been made to this location
-	UVDAnalyzedMemoryLocationReferences m_references;
+	UVDAnalyzedMemoryRangeReferences m_references;
 	//uint32_t m_referenceCount;
 };
 
@@ -148,9 +148,9 @@ public:
 };
 
 //Map between an address and information regarding it
-//TODO: make a compare method to key to UVDMemoryLocation instead 
-typedef std::map<uint32_t, UVDAnalyzedMemoryLocation *> UVDAnalyzedMemorySpace;
-typedef std::vector<UVDAnalyzedMemoryLocation *> UVDAnalyzedMemoryLocations;
+//TODO: make a compare method to key to UVDAddressRange instead 
+typedef std::map<uint32_t, UVDAnalyzedMemoryRange *> UVDAnalyzedMemorySpace;
+typedef std::vector<UVDAnalyzedMemoryRange *> UVDAnalyzedMemoryRanges;
 class UVDInstruction;
 //Holds data that resulted from binary analysis or advanced hints from user
 class UVDAnalyzer
@@ -179,7 +179,7 @@ public:
 	uv_err_t insertJumpReference(uv_addr_t targetAddress, uv_addr_t from);
 	
 	uv_err_t getAddresses(UVDAnalyzedMemorySpace &addresses, uint32_t type = UVD_MEMORY_REFERENCE_NONE);
-	uv_err_t getAddresses(UVDAnalyzedMemoryLocations &locations, uint32_t type = UVD_MEMORY_REFERENCE_NONE);
+	uv_err_t getAddresses(UVDAnalyzedMemoryRanges &locations, uint32_t type = UVD_MEMORY_REFERENCE_NONE);
 
 	//For destinations, not sources
 	uv_err_t getCalledAddresses(UVDAnalyzedMemorySpace &calledAddresses);

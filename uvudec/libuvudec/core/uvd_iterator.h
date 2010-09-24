@@ -114,7 +114,7 @@ protected:
 /*
 Output printing iterator
 */
-class UVDAnalyzedMemoryLocation;
+class UVDAnalyzedMemoryRange;
 class UVDIterator : public UVDIteratorCommon
 {
 public:
@@ -146,7 +146,7 @@ public:
 	//Current iterator position/status
 	//void debugPrint() const;
 	//Print a (tabbed) list of memory locations for current address based on type given
-	uv_err_t printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint32_t type);
+	uv_err_t printReferenceList(UVDAnalyzedMemoryRange *memLoc, uint32_t type);
 
 	uv_err_t nextAddressLabel(uint32_t startPosition);
 	uv_err_t nextAddressComment(uint32_t startPosition);

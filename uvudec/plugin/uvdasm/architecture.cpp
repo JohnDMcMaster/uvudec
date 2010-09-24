@@ -129,7 +129,7 @@ uv_err_t UVDDisasmArchitecture::getAddresssSpaceNames(std::vector<std::string> &
 			iter != m_symMap->m_map.end(); ++iter )
 	{
 		//std::string, UVDSymbol *
-		UVDMemoryShared *memoryShared = (UVDMemoryShared *)(*iter).second;	
+		UVDAddressSpace *memoryShared = (UVDAddressSpace *)(*iter).second;	
 		std::string addressSpaceName;
 		
 		uv_assert_ret(memoryShared);

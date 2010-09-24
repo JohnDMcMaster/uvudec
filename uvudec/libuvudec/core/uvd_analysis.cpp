@@ -19,9 +19,9 @@ int g_filterPostRet;
 
 int g_analyzeOtherFunctionJump;
 
-static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &space, UVDAnalyzedMemoryLocations::iterator &iter, uint32_t types, bool curAddressLegal = false);
+static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &space, UVDAnalyzedMemoryRanges::iterator &iter, uint32_t types, bool curAddressLegal = false);
 
-static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryLocations &space, UVDAnalyzedMemoryLocations::iterator &iter, uint32_t types, bool curAddressLegal)
+static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &space, UVDAnalyzedMemoryRanges::iterator &iter, uint32_t types, bool curAddressLegal)
 {
 	uint32_t superblockMaxAddress = 0;
 	uv_addr_t absoluteMaxAddress = 0;
@@ -39,7 +39,7 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 
 	for( ; iter != space.end(); ++iter )
 	{
-		UVDAnalyzedMemoryLocation *referencedMemory = *iter;
+		UVDAnalyzedMemoryRange *referencedMemory = *iter;
 
 		uv_assert_ret(referencedMemory);
 
@@ -92,16 +92,16 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	//Need sorted list, convert from map stuff
-	//UVDAnalyzedMemoryLocations calledLocations;
+	//UVDAnalyzedMemoryRanges calledLocations;
 	uint32_t superblockMinAddress = 0;
 	uint32_t superblockMaxAddress = 0;
-	UVDAnalyzedMemoryLocations jumpedLocations;
+	UVDAnalyzedMemoryRanges jumpedLocations;
 	UVDAnalyzedBlock *functionBlock = NULL;
 	
 	//Addresses that are (directly?) referened in some way
-	UVDAnalyzedMemoryLocations referencedAddresses;
-	UVDAnalyzedMemoryLocations::iterator iterAddresses;
-	UVDAnalyzedMemoryLocations::iterator iterJumped;
+	UVDAnalyzedMemoryRanges referencedAddresses;
+	UVDAnalyzedMemoryRanges::iterator iterAddresses;
+	UVDAnalyzedMemoryRanges::iterator iterJumped;
 	//UVDAnalyzedMemorySpace jumpedAddresses;
 	//UVDAnalyzedMemorySpace calledAddresses;
 
@@ -152,8 +152,8 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 
 	while( iterAddresses != referencedAddresses.end() )
 	{
-		UVDAnalyzedMemoryLocations::iterator iterNextAddress = iterAddresses;
-		UVDAnalyzedMemoryLocation *referencedMemory = *iterAddresses;
+		UVDAnalyzedMemoryRanges::iterator iterNextAddress = iterAddresses;
+		UVDAnalyzedMemoryRange *referencedMemory = *iterAddresses;
 		uint32_t functionBlockStart = 0;
 		uint32_t functionBlockEnd = 0;
 
@@ -167,7 +167,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 
 		if( iterNextAddress != referencedAddresses.end() )
 		{
-			UVDAnalyzedMemoryLocation *nextReferencedMemory = *iterNextAddress;
+			UVDAnalyzedMemoryRange *nextReferencedMemory = *iterNextAddress;
 			
 			uv_assert_ret(nextReferencedMemory);
 			//Even if overlapping function, min address should always advance

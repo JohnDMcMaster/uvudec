@@ -557,7 +557,7 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 			//Formatting information for a type of memory?
 			if( sym_value->m_type == UVD_SYMBOL_MEM )
 			{
-				UVDMemoryShared *mem_shared = NULL;
+				UVDAddressSpace *mem_shared = NULL;
 				std::string equiv_name;
 				UVDDisasmOperand *memArg = NULL;
 				UVDDisasmOperandShared *memArgShared = NULL;
@@ -586,7 +586,7 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 				*/
 				else if( memArgShared->m_type == UV_DISASM_DATA_IMMU )
 				{
-					//UVDMemoryShared *mem_loc = NULL;
+					//UVDAddressSpace *mem_loc = NULL;
 					//UVDSymbol *sym_temp = NULL;
 					std::string equiv_name;
 

@@ -23,6 +23,6 @@ public:
 	
 	/* If this is a memory mapped register, describes where and what type */
 	//uint32_t m_mem_addr;
-	//UVDMemoryShared *m_mem; 
+	//UVDAddressSpace *m_mem; 
 };
 
