@@ -128,21 +128,21 @@ UVDAddressRange::UVDAddressRange()
 	m_space = NULL;
 }
 
-UVDAddressRange::UVDAddressRange(unsigned int min_addr)
+UVDAddressRange::UVDAddressRange(uv_addrt_t min_addr)
 {
 	m_min_addr = min_addr;
 	m_max_addr = min_addr;
 	m_space = NULL;
 }
 
-UVDAddressRange::UVDAddressRange(unsigned int min_addr, unsigned int max_addr, UVDAddressSpace *space)
+UVDAddressRange::UVDAddressRange(uv_addrt_t min_addr, uv_addrt_t max_addr, UVDAddressSpace *space)
 {
 	m_min_addr = min_addr;
 	m_max_addr = max_addr;
 	m_space = space;
 }
 
-bool UVDAddressRange::intersects(UVDAddressRange other) const
+bool UVDAddressRange::intersects(const UVDAddressRange &other) const
 {
 	//A aaaa B abababa A bbbbb B
 	return (other.m_min_addr <= m_max_addr && other.m_max_addr >= m_min_addr)
