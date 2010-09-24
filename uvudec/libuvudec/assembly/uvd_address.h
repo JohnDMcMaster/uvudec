@@ -52,31 +52,32 @@ public:
 	uv_err_t getEquivMemName(uint32_t addr, std::string &name);
 	
 public:
-	/* short name */
+	//short name
 	std::string m_name;
-	/* longer description */
+	//longer description
 	std::string m_desc;
-	/* EPROM, RAM, etc.  Defines prefixed with UV_DISASM_MEM_ */
-	unsigned int m_type;
-	/* Valid addresses */
-	unsigned int m_min_addr;
-	unsigned int m_max_addr;
-	/* Used for output */
+	//EPROM, RAM, etc.  Defines prefixed with UV_DISASM_MEM_
+	uint32_t m_type;
+	//Valid addresses
+	uv_addr_t m_min_addr;
+	uv_addr_t m_max_addr;
+	//Used for output
 	std::string m_print_prefix;
 	std::string m_print_suffix;
 	/*
 	Capabilities, how the memory behaves as a whole.  Read, write, etc
 	Does not include policy based capabilities such as process 1 cannot write to address 0x1234
 	*/
-	unsigned int m_cap;
+	uint32_t m_cap;
 	
 	/*
 	Minimum amount of memory that can be transferred in bits
-	Note that single bits is observed on processors such as 8051
+	Each address moves forward in the address space this much
+	Note that single bit is observed on processors such as 8051
 	Might also be useful for CPU flags
 	*/
-	unsigned int m_word_size;
-	unsigned int m_word_alignment;
+	uint32_t m_word_size;
+	uint32_t m_word_alignment;
 	
 	/*
 	Address synonyms
@@ -106,9 +107,9 @@ class UVDAddressRange
 {
 public:
 	UVDAddressRange();
-	UVDAddressRange(unsigned int min_addr);
-	UVDAddressRange(unsigned int min_addr, unsigned int max_addr, UVDAddressSpace *space = NULL);
-	bool intersects(UVDAddressRange other) const;
+	UVDAddressRange(uv_addr_t min_addr);
+	UVDAddressRange(uv_addr_t min_addr, uv_addr_t max_addr, UVDAddressSpace *space = NULL);
+	bool intersects(const UVDAddressRange &other) const;
 
 	//By minimum address
 	static int compareStatic(const UVDAddressRange *l, const UVDAddressRange *r);	
@@ -121,8 +122,8 @@ public:
 	/* Address space */
 	UVDAddressSpace *m_space;
 	/* Address */
-	uint32_t m_min_addr;
-	uint32_t m_max_addr;
+	uv_addr_t m_min_addr;
+	uv_addr_t m_max_addr;
 };
 
 #endif
