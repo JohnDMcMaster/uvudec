@@ -11,7 +11,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <set>
 #include <string>
 #include <vector>
-#include "interpreter/uvd_interpreter.h"
 #include "uvd_arg.h"
 #include "uvd_instruction.h"
 #include "uvd_priority_list.h"
@@ -150,22 +149,21 @@ public:
 	void setVerboseAll();
 	void clearVerboseAll();
 
-	uv_err_t setConfigInterpreterLanguageInterface(const std::string &in);
-	uv_err_t setConfigInterpreterLanguage(const std::string &in);
-
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
-			bool hasDefault);
+			bool hasDefault,
+			const std::string &plugin = "");
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
 			std::string helpMessageExtra,
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
-			bool hasDefault);
+			bool hasDefault,
+			const std::string &plugin = "");
 
 protected:
 	// ~/.uvudec file
@@ -213,10 +211,6 @@ public:
 	std::string m_relocatableFileSuffix;
 	std::string m_elfFileSuffix;
 
-	//Default interpreter to use for script files
-	uint32_t m_configInterpreterLanguage;
-	uint32_t m_configInterpreterLanguageInterface;
-	
 	//Configuration option parsing
 	//Could bet set from command line, interactive shell, or a file
 	std::vector<UVDArgConfig *> m_configArgs;

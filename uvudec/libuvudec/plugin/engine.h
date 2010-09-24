@@ -19,6 +19,7 @@ The plugins are just staticaly linked in is all
 class UVD;
 class UVDPlugin;
 class UVDConfig;
+class UVDArgConfig;
 class UVDPluginEngine
 {
 public:
@@ -55,6 +56,7 @@ public:
 	//We might want to map this from something like the plugin name
 	std::map<std::string, UVDPlugin *> m_plugins;
 	std::map<std::string, UVDPlugin *> m_loadedPlugins;
+	std::map<UVDArgConfig *, std::string> m_pluginArgMap;
 	//WARNING: this won't get set until later
 	UVD *m_uvd;
 };

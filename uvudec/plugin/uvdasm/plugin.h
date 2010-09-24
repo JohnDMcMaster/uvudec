@@ -9,19 +9,26 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "plugin/plugin.h"
 #include "uvd_types.h"
+#include "uvdasm/config.h"
 
-class UVDDisassemblerPlugin : public UVDPlugin
+class UVDAsmPlugin : public UVDPlugin
 {
 public:
-	UVDDisassemblerPlugin();
-	~UVDDisassemblerPlugin();
+	UVDAsmPlugin();
+	~UVDAsmPlugin();
+	virtual uv_err_t init(UVDConfig *config);
 
 	virtual uv_err_t getName(std::string &out);
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
 	virtual uv_err_t getAuthor(std::string &out);
 	virtual uv_err_t getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out);
+
+public:
+	UVDAsmConfig m_config;
 };
+
+extern UVDAsmPlugin *g_asmPlugin;
 
 #endif
 
