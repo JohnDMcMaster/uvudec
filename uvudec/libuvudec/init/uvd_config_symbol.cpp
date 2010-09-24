@@ -74,7 +74,7 @@ std::string UVDSymbol::toString()
 	return ret;
 }
 
-uv_err_t UVDSymbol::getValue(UVDMemoryShared **memoryShared)
+uv_err_t UVDSymbol::getValue(UVDAddressSpace **memoryShared)
 {
 	uv_assert_ret(memoryShared);
 	uv_assert_ret(m_type == UVD_SYMBOL_MEM);
@@ -82,7 +82,7 @@ uv_err_t UVDSymbol::getValue(UVDMemoryShared **memoryShared)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDSymbol::setValue(UVDMemoryShared *memoryShared)
+uv_err_t UVDSymbol::setValue(UVDAddressSpace *memoryShared)
 {
 	uv_assert_ret(memoryShared);
 	m_mem = memoryShared;
@@ -142,7 +142,7 @@ uv_err_t UVDSymbolMap::setSym(const std::string &key, UVDSymbol *sym, UVDSymbol 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDSymbolMap::setSym(const std::string &key, UVDMemoryShared *mem_sym)
+uv_err_t UVDSymbolMap::setSym(const std::string &key, UVDAddressSpace *mem_sym)
 {
 	UVDSymbol *sym = NULL;
 	
@@ -181,7 +181,7 @@ uv_err_t UVDSymbolMap::getSym(const std::string &key, UVDSymbol **sym)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDSymbolMap::getSym(const std::string &key, UVDMemoryShared **memorySymbol)
+uv_err_t UVDSymbolMap::getSym(const std::string &key, UVDAddressSpace **memorySymbol)
 {
 	UVDSymbol *symbol = NULL;
 

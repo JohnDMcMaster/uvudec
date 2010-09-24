@@ -20,28 +20,28 @@ UVDMemoryReference::UVDMemoryReference()
 	m_from = 0;
 }
 
-UVDAnalyzedMemoryLocation::UVDAnalyzedMemoryLocation()
+UVDAnalyzedMemoryRange::UVDAnalyzedMemoryRange()
 {
 }
 
-UVDAnalyzedMemoryLocation::UVDAnalyzedMemoryLocation(unsigned int min_addr) 
-		: UVDMemoryLocation(min_addr)
+UVDAnalyzedMemoryRange::UVDAnalyzedMemoryRange(unsigned int min_addr) 
+		: UVDAddressRange(min_addr)
 {
 }
 
-UVDAnalyzedMemoryLocation::UVDAnalyzedMemoryLocation(unsigned int min_addr, unsigned int max_addr, UVDMemoryShared *space) 
-		: UVDMemoryLocation(min_addr, max_addr, space)
+UVDAnalyzedMemoryRange::UVDAnalyzedMemoryRange(unsigned int min_addr, unsigned int max_addr, UVDAddressSpace *space) 
+		: UVDAddressRange(min_addr, max_addr, space)
 {
 }
 
-UVDAnalyzedMemoryLocation::~UVDAnalyzedMemoryLocation()
+UVDAnalyzedMemoryRange::~UVDAnalyzedMemoryRange()
 {
 	deinit();
 }
 
-uv_err_t UVDAnalyzedMemoryLocation::deinit()
+uv_err_t UVDAnalyzedMemoryRange::deinit()
 {
-	for( UVDAnalyzedMemoryLocationReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
+	for( UVDAnalyzedMemoryRangeReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
 	{
 		delete (*iter).second;
 	}
@@ -50,7 +50,7 @@ uv_err_t UVDAnalyzedMemoryLocation::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAnalyzedMemoryLocation::insertReference(uint32_t from, uint32_t type)
+uv_err_t UVDAnalyzedMemoryRange::insertReference(uint32_t from, uint32_t type)
 {
 	/*
 	FIXME: this code has been superseded by some more advanced code
@@ -84,15 +84,15 @@ uv_err_t UVDAnalyzedMemoryLocation::insertReference(uint32_t from, uint32_t type
 	return UV_ERR_OK;
 }
 
-uint32_t UVDAnalyzedMemoryLocation::getReferenceCount()
+uint32_t UVDAnalyzedMemoryRange::getReferenceCount()
 {
 	return m_references.size();
 }
 
-uint32_t UVDAnalyzedMemoryLocation::getReferenceTypes()
+uint32_t UVDAnalyzedMemoryRange::getReferenceTypes()
 {
 	uint32_t ret = UVD_MEMORY_REFERENCE_NONE;
-	for( UVDAnalyzedMemoryLocationReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
+	for( UVDAnalyzedMemoryRangeReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
 	{
 		//uint32_t key = (*iter).first;
 		UVDMemoryReference *value = (*iter).second;
@@ -109,9 +109,9 @@ uint32_t UVDAnalyzedMemoryLocation::getReferenceTypes()
 	return ret;
 }
 
-uv_err_t UVDAnalyzedMemoryLocation::getReferences(UVDAnalyzedMemoryLocationReferences &references, uint32_t type)
+uv_err_t UVDAnalyzedMemoryRange::getReferences(UVDAnalyzedMemoryRangeReferences &references, uint32_t type)
 {
-	for( UVDAnalyzedMemoryLocationReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
+	for( UVDAnalyzedMemoryRangeReferences::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
 	{
 		uint32_t key = (*iter).first;
 		UVDMemoryReference *value = (*iter).second;
@@ -408,12 +408,12 @@ uv_err_t UVDAnalyzer::nextCodingAddress(uv_addr_t start, uint32_t *ret)
 	{
 		uint32_t last = cur;
 		
-		for( std::vector<UVDMemoryLocation>::iterator iter = m_uvd->m_noncodingAddresses.begin();
+		for( std::vector<UVDAddressRange>::iterator iter = m_uvd->m_noncodingAddresses.begin();
 				iter != m_uvd->m_noncodingAddresses.end(); ++iter )
 		{
-			UVDMemoryLocation mem = *iter;
+			UVDAddressRange mem = *iter;
 			
-			if( mem.intersects(UVDMemoryLocation(cur)) )
+			if( mem.intersects(UVDAddressRange(cur)) )
 			{
 				//Are we out of addresses?
 				if( mem.m_max_addr == UVD_ADDR_MAX )
@@ -480,14 +480,14 @@ uv_err_t UVDAnalyzer::nextValidExecutableAddress(uv_addr_t start, uint32_t *ret)
 uv_err_t UVDAnalyzer::insertReference(uint32_t targetAddress, uint32_t from, uint32_t type)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	UVDAnalyzedMemoryLocation *analyzedMemoryLocation = NULL;
+	UVDAnalyzedMemoryRange *analyzedMemoryLocation = NULL;
 
 	printf_debug("UVDAnalyzer: inserting reference to 0x%.8X from 0x%.8X of type %d\n", targetAddress, from, type);
 
 	//Ensure analyzed location existance
 	if( m_referencedAddresses.find(targetAddress) == m_referencedAddresses.end() )
 	{
-		analyzedMemoryLocation = new UVDAnalyzedMemoryLocation();
+		analyzedMemoryLocation = new UVDAnalyzedMemoryRange();
 		
 		uv_assert(analyzedMemoryLocation);
 		//These are somewhat fuzzy at this point, we just know it includes this
@@ -536,7 +536,7 @@ uv_err_t UVDAnalyzer::getAddresses(UVDAnalyzedMemorySpace &addresses, uint32_t t
 	
 	for( UVDAnalyzedMemorySpace::iterator iter = m_referencedAddresses.begin(); iter != m_referencedAddresses.end(); ++iter )
 	{
-		UVDAnalyzedMemoryLocation *memoryLocation = NULL;
+		UVDAnalyzedMemoryRange *memoryLocation = NULL;
 		uint32_t types = 0;
 		
 		memoryLocation = (*iter).second;
@@ -553,17 +553,17 @@ uv_err_t UVDAnalyzer::getAddresses(UVDAnalyzedMemorySpace &addresses, uint32_t t
 	return UV_ERR_OK;
 }
 
-bool sortCheck(UVDAnalyzedMemoryLocation *l, UVDAnalyzedMemoryLocation *r)
+bool sortCheck(UVDAnalyzedMemoryRange *l, UVDAnalyzedMemoryRange *r)
 {
-	return UVDMemoryLocation::compareStatic(l, r) >= 0;
+	return UVDAddressRange::compareStatic(l, r) >= 0;
 } 
 
-void sort(UVDAnalyzedMemoryLocations &locations)
+void sort(UVDAnalyzedMemoryRanges &locations)
 {
 	std::sort(locations.begin(), locations.end(), sortCheck);
 }
 
-uv_err_t UVDAnalyzer::getAddresses(UVDAnalyzedMemoryLocations &addresses, uint32_t type)
+uv_err_t UVDAnalyzer::getAddresses(UVDAnalyzedMemoryRanges &addresses, uint32_t type)
 {
 	UVDAnalyzedMemorySpace space;
 	addresses.clear();

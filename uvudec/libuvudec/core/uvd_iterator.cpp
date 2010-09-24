@@ -496,7 +496,7 @@ uv_err_t UVDIterator::initialProcessStringTable()
 
 	for( UVDAnalyzedMemorySpace::iterator iter = analyzer->m_stringAddresses.begin(); iter != analyzer->m_stringAddresses.end(); ++iter )
 	{
-		UVDAnalyzedMemoryLocation *mem = (*iter).second;
+		UVDAnalyzedMemoryRange *mem = (*iter).second;
 		std::string sData;
 		std::vector<std::string> lines;
 		
@@ -682,9 +682,9 @@ uv_err_t UVDIterator::nextCore()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint32_t type)
+uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryRange *memLoc, uint32_t type)
 {
-	UVDAnalyzedMemoryLocationReferences references;
+	UVDAnalyzedMemoryRangeReferences references;
 	char buff[256];
 	UVD *uvd = NULL;
 	UVDFormat *format = NULL;
@@ -698,7 +698,7 @@ uv_err_t UVDIterator::printReferenceList(UVDAnalyzedMemoryLocation *memLoc, uint
 	//FIXME: should this be call source?
 	uv_assert_err_ret(memLoc->getReferences(references, type));
 
-	for( UVDAnalyzedMemoryLocationReferences::iterator iter = references.begin(); iter != references.end(); ++iter )
+	for( UVDAnalyzedMemoryRangeReferences::iterator iter = references.begin(); iter != references.end(); ++iter )
 	{
 		//uint32_t key = (*iter).first;
 		UVDMemoryReference *value = (*iter).second;
@@ -761,7 +761,7 @@ uv_err_t UVDIterator::nextCalledSources(uint32_t startPosition)
 	char buff[256];
 	std::string sNameBlock;
 	UVDAnalyzedFunction analyzedFunction;
-	UVDAnalyzedMemoryLocation *memLoc = NULL;
+	UVDAnalyzedMemoryRange *memLoc = NULL;
 	UVDAnalyzedMemorySpace calledAddresses;
 
 	uv_assert_err_ret(m_uvd->m_analyzer->getCalledAddresses(calledAddresses));
@@ -807,7 +807,7 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 {
 	char buff[256];
 	std::string sNameBlock;
-	UVDAnalyzedMemoryLocation *memLoc = NULL;
+	UVDAnalyzedMemoryRange *memLoc = NULL;
 	UVDAnalyzedMemorySpace jumpedAddresses;
 
 	uv_assert_err_ret(m_uvd->m_analyzer->getJumpedAddresses(jumpedAddresses));

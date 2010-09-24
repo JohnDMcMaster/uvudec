@@ -320,9 +320,9 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		std::string value_word_size;
 		std::string value_word_alignment;
 		std::vector<std::string> memoryMappingEntries;
-		//std::vector<UVDMemorySharedMapper *> memoryMappingEntries;
+		//std::vector<UVDAddressSpaceMapper *> memoryMappingEntries;
 		
-		UVDMemoryShared *memoryShared = NULL;
+		UVDAddressSpace *memoryShared = NULL;
 		//Mapping addresses
 		std::vector< std::vector<std::string> > memoryMappingEntriesParts;
 
@@ -418,7 +418,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			goto error;
 		}
 
-		memoryShared = new UVDMemoryShared();
+		memoryShared = new UVDAddressSpace();
 		uv_assert_all(memoryShared);
 
 		printf_debug("Allocated new memory, new: 0x%.8X\n", (unsigned int)memoryShared);	
@@ -589,12 +589,13 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			memoryShared->m_word_alignment = memoryShared->m_word_size;
 		}
 		
-		
+#if 0
+		//FIXME: this code has been deactivated since it wasn't being used and memory architecture rewritten
 		uv_assert_err_ret(splitConfigLinesVector(memoryMappingEntries, "MAPPING_DST=", memoryMappingEntriesParts));
 		//Loop for each mapping
 		for( std::vector< std::vector<std::string> >::size_type i = 0; i < memoryMappingEntriesParts.size(); ++i )
 		{
-			UVDMemorySharedMapper *memoryMapper = NULL;
+			UVDAddressSpaceMapper *memoryMapper = NULL;
 			std::vector<std::string> lastMappingEntry = memoryMappingEntriesParts[i];
 			
 			uv_assert_ret(lastMappingEntry.size() >= 1);
@@ -630,7 +631,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 					
 					value_dst = value;
 					
-					memoryMapper = new UVDMemorySharedMapper();
+					memoryMapper = new UVDAddressSpaceMapper();
 					uv_assert(memoryMapper);
 					memoryShared->m_mappers.push_back(memoryMapper);
 				}
@@ -694,6 +695,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			//Perform fixup and fix bad ranges
 			uv_assert_err(memoryMapper->finalizeConfig());
 		}
+#endif
 
 		/* Print formating */
 		memoryShared->m_print_prefix = value_prefix;
@@ -844,8 +846,7 @@ uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
 		{
 			std::string func_name;
 			std::string func_content;
-			UVDMemoryShared *memoryShared = NULL;
-			//UVDMemoryLocation *mem_loc = NULL;			
+			UVDAddressSpace *memoryShared = NULL;
 			std::string spaceName;
 			uint32_t spaceAddress = 0;
 			
@@ -858,11 +859,6 @@ uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
 			//reg_shared->m_mem_addr = strtol(func_content.c_str(), NULL, 0);
 			uv_assert_err(m_symMap->getSym(func_name, &memoryShared));
 
-			/*
-			mem_loc.space = memoryShared;
-			mem_loc.min_addr = reg_shared->m_mem_addr;
-			mem_loc.max_addr = mem_loc.min_addr + reg_shared->m_size - 1;
-			*/
 			/* Register the register as an equivilent memory location */
 			uv_assert_err(memoryShared->setEquivMemName(spaceAddress, value_name));
 		}
