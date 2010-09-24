@@ -183,6 +183,7 @@ bool UVDMemoryLocation::operator==(const UVDMemoryLocation *other) const
 UVDMemorySegment
 */
 
+#if 0
 UVDMemorySegment::UVDMemorySegment()
 {
 	m_start = 0;
@@ -192,7 +193,9 @@ UVDMemorySegment::UVDMemorySegment()
 UVDMemorySegment::~UVDMemorySegment()
 {
 }
+#endif
 
+#if 0
 /*
 UVDSegmentedMemory
 */
@@ -204,3 +207,5 @@ UVDSegmentedMemory::UVDSegmentedMemory()
 UVDSegmentedMemory::~UVDSegmentedMemory()
 {
 }
+#endif
+

@@ -72,7 +72,7 @@ protected:
 	//Segmented memory view instead of flat m_data view
 	//Most use of m_data should eventually be switched over to use this
 	//m_data really only works for simple embedded archs
-	UVDSegmentedMemory m_segmentedMemory;
+	//UVDSegmentedMemory m_segmentedMemory;
 };
 
 #endif

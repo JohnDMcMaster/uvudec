@@ -95,7 +95,6 @@ public:
 };
 
 class UVDMemoryLocation
-//struct uv_disasm_mem_loc_t
 {
 public:
 	UVDMemoryLocation();
@@ -120,14 +119,7 @@ public:
 	uint32_t m_max_addr;
 };
 
-/*
-struct uv_disasm_mem_tag_t
-{
-	struct uv_disasm_mem_loc_t mem_loc;
-	struct uv_disasm_mem_tag_t *next;
-};
-*/
-
+#if 0
 /*
 This is for virtual memory segments as opposed to above that deal with physical address spaces
 For now, assume all segments hold valid data of some sort
@@ -147,7 +139,9 @@ public:
 	//The data held at this address
 	UVDData *m_data;
 };
+#endif
 
+#if 0
 //Virtual memory space
 class UVDSegmentedMemory
 {
@@ -163,5 +157,6 @@ public:
 	*/
 	std::vector<UVDMemorySegment *> m_segments;
 };
+#endif
 
 #endif
