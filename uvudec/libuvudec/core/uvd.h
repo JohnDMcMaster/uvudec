@@ -252,7 +252,7 @@ public:
 	Each segment contains a peice of data at a certain virtual memory offset
 	FIXME: this is a placeholder and just returns a simple version for now
 	*/
-	uv_err_t getDataSegments(std::vector<UVDMemorySegment *> &segments);
+	//uv_err_t getDataSegments(std::vector<UVDMemorySegment *> &segments);
 
 	//transer ownership of formatting object to us
 	//For outputting disassembly and decompiled formatting
