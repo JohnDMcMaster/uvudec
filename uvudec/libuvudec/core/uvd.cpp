@@ -47,6 +47,7 @@ Moving towards DB based storage
 Each of these accomplish essentially same thing, but different way
 */
 
+#if 0
 //FIXME: this code is nearly dead and should probably be removed
 uv_err_t UVD::analyzeNewFunction(const UVDAnalyzedMemoryRange *memLoc, UVDAnalyzedFunction &analyzedFunction)
 {
@@ -89,6 +90,7 @@ uv_err_t UVD::analyzeNewFunction(const UVDAnalyzedMemoryRange *memLoc, UVDAnalyz
 error:
 	return UV_DEBUG(rc);
 }
+#endif
 
 //Second pass used to create for DB storage
 //Block contains analyzed code
@@ -154,10 +156,12 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	return UV_ERR_OK;
 }
 
+#if 0
 uv_err_t UVD::analyzeCode(UVDAnalyzedCode &analyzedCode)
 {
 	return UV_ERR_OK;
 }
+#endif
 
 uv_err_t UVD::analyzeStrings()
 {

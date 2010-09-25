@@ -87,6 +87,7 @@ public:
 	uv_addr_t m_min_addr;
 	uv_addr_t m_max_addr;
 	//Used for output
+	//XXX: this is policy, separate it out
 	std::string m_print_prefix;
 	std::string m_print_suffix;
 	/*

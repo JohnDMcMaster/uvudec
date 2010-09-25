@@ -772,7 +772,7 @@ uv_err_t UVDIterator::nextCalledSources(uint32_t startPosition)
 
 	memLoc = (*(calledAddresses.find(startPosition))).second;
 	
-	uv_assert_err_ret(m_uvd->analyzeNewFunction(memLoc, analyzedFunction));
+	//uv_assert_err_ret(m_uvd->analyzeNewFunction(memLoc, analyzedFunction));
 
 	//empty name indicates no data
 	if( !analyzedFunction.m_sName.empty() )
