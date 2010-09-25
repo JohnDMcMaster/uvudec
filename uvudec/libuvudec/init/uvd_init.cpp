@@ -10,36 +10,10 @@ This is probably the file most needing cleanup in the project
 Do something instead like create a list of optional and required members, with pointers if necessary for easy setup
 */
 
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
-#include <assert.h>
-#include <sys/stat.h>
-#include <vector>
-#include <algorithm>
-#include "event/engine.h"
-#include "uvd_debug.h"
-#include "uvd_error.h"
-#include "uvd_log.h"
-#include "uvd_util.h"
 #include "uvd.h"
-#include "uvd_address.h"
-#include "uvd_analysis.h"
+#include "uvd_log.h"
 #include "uvd_benchmark.h"
-#include "uvd_config.h"
-#include "uvd_config_symbol.h"
-#include "uvd_data.h"
-#include "uvd_format.h"
-#include "uvd_instruction.h"
-#include "uvd_register.h"
-#include "uvd_types.h"
-#include "uvd_cpu_vector.h"
-#include "core/architecture.h"
+#include "event/engine.h"
 
 uv_err_t UVDInit()
 {

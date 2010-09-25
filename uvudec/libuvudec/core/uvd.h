@@ -205,13 +205,12 @@ public:
 		
 	//Given a function location, do analysis on the section to do actual decompiling
 	//FIXME: this code is nearly dead and should probably be removed
-	uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryRange *memLoc, UVDAnalyzedFunction &analyzedFunction);
+	//uv_err_t analyzeNewFunction(const UVDAnalyzedMemoryRange *memLoc, UVDAnalyzedFunction &analyzedFunction);
 	//uv_err_t analyzeFunction(UVDAnalyzedFunction &analyzedFunction);
 	//Since not all code is in a function, base implementation is on raw code
 	//uv_err_t analyzeCode(UVDAnalyzedMemoryRange memLoc, UVDAnalyzedCode &analyzedCode);
 	//Core code analysis function
 	//Structure should be pre-set with data before entry
-	uv_err_t analyzeCode(UVDAnalyzedCode &UVDAnalyzedCode);
 	uv_err_t analyzeConstData();
 	uv_err_t analyzeStrings();
 	uv_err_t constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut);

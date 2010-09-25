@@ -32,6 +32,7 @@ class UVD;
 class UVDConfig;
 class UVDArchitecture;
 class UVDData;
+class UVDObject;
 class UVDPlugin
 {
 public:
@@ -91,15 +92,6 @@ public:
 	You will have to LD_PRELOAD them or something and they will not be officially supported
 	*/
 	virtual uv_err_t getDependencies(PluginDependencies &out);
-	/*
-	If we deem appropriete, load architecture
-	Returns UV_ERR_NOTSUPPORTED if we can't support the data format
-		such as a plugin that doesn't support architectures
-	Since many of the formats will be binary, we should specify the correct plugin instead of spamming
-	since it will be difficult/impossible to tell what architecture it is simply from the binary
-	Note that we could support multiple archs in the plugin, we just return the best one
-	*/
-	virtual uv_err_t getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out);
 
 	//Plugins should register through here
 	uv_err_t registerArgument(const std::string &propertyForm,
@@ -115,6 +107,24 @@ public:
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
 			bool hasDefault);
+
+	/*
+	Plugin core functionality
+	*/
+
+	/*
+	If we deem appropriete, load architecture
+	Returns UV_ERR_NOTSUPPORTED if we can't support the data format
+		such as a plugin that doesn't support architectures
+	Since many of the formats will be binary, we should specify the correct plugin instead of spamming
+	since it will be difficult/impossible to tell what architecture it is simply from the binary
+	Note that we could support multiple archs in the plugin, we just return the best one
+	*/
+	virtual uv_err_t getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out);
+	/*
+	Binary format wrapper
+	*/
+	virtual uv_err_t getObject(const UVDData *data, const std::string &architecture, UVDObject **out);
 
 public:
 	//returned by dlopen()

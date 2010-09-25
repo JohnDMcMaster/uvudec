@@ -83,6 +83,8 @@ CXX_SRCS = 	\
 			$(LANGUAGE_DIR)/uvd_language.cpp \
 			$(LIB_PLUGIN_DIR)/engine.cpp \
 			$(LIB_PLUGIN_DIR)/plugin.cpp \
+			$(LIBUVUDEC_DIR)/object/binary.cpp \
+			$(LIBUVUDEC_DIR)/object/object.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_element.cpp \
 			$(RELOCATION_DIR)/uvd_relocation.cpp \
