@@ -21,7 +21,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
-#include "core/architecture.h"
+#include "architecture/architecture.h"
 #include "uvd_debug.h"
 #include "uvd_error.h"
 #include "uvd_log.h"

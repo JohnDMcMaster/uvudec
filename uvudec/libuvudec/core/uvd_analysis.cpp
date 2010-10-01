@@ -11,7 +11,7 @@ Things such as interpreting results and converting to generic structures
 
 #include "uvd.h"
 #include "uvd_analysis.h"
-#include "core/architecture.h"
+#include "architecture/architecture.h"
 #include "uvd_benchmark.h"
 #include "uvd_util.h"
 

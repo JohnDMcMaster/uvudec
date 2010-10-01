@@ -22,7 +22,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_register.h"
 #include "uvd_config_symbol.h"
 #include "uvd_types.h"
-#include "core/architecture.h"
+#include "architecture/architecture.h"
 
 //From linux/stringify.h
 #define __stringify_1(x)	#x

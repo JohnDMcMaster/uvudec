@@ -7,6 +7,7 @@ LIB_NAME=$(LIB_UVUDEC)
 CC_SRCS =   \
 
 CXX_SRCS = 	\
+			$(LIBUVUDEC_DIR)/architecture/architecture.cpp \
 			$(ASSEMBLY_DIR)/uvd_address.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_function.cpp \
 			$(ASSEMBLY_DIR)/uvd_binary_symbol.cpp \
@@ -18,7 +19,6 @@ CXX_SRCS = 	\
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(COMPILER_DIR)/uvd_compiler_assembly.cpp \
 			$(COMPILER_DIR)/uvd_compiler_gcc.cpp \
-			$(CORE_DIR)/architecture.cpp \
 			$(CORE_DIR)/uvd.cpp \
 			$(CORE_DIR)/uvd_analysis.cpp \
 			$(CORE_DIR)/uvd_analysis_db.cpp \
