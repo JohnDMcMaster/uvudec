@@ -9,7 +9,17 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <string>
 #include "uvd_types.h"
-#include "uvd_interpreted_instruction.h"
+#include "uvdasm/interpreter/instruction.h"
+
+//Resultant address from a call routine
+#define SCRIPT_KEY_CALL				"CALL_ADDRESS"
+//Resultant address from a jump
+#define SCRIPT_KEY_JUMP				"JUMP_ADDRESS"
+//Resultant data from arithmetic
+//This requires non-static analysis
+//#define SCRIPT_KEY_ARITMETIC		"ARIMETIC"
+//An alternative representation of an address
+#define SCRIPT_KEY_SYMBOL			"ADDRESS_SYMBOL"
 
 /*
 A compiled expression to be passed into an interpreter

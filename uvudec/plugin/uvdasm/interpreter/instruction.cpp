@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_interpreted_instruction.h"
+#include "uvdasm/interpreter/instruction.h"
+#include "uvdasm/interpreter/interpreter.h"
 
 /*
 UVDInterpretedInstruction

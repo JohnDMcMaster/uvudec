@@ -7,6 +7,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_INTERPRETED_INSTRUCTION_H
 #define UVD_INTERPRETED_INSTRUCTION_H
 
+#include "uvd_types.h"
+
 /*
 For extracting results after running an instruction through the interpreter
 */

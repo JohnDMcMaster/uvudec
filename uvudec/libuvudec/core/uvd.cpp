@@ -31,7 +31,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_analysis.h"
 #include "uvd_benchmark.h"
 #include "uvd_compiler_assembly.h"
-#include "uvd_config_symbol.h"
 #include "uvd_data.h"
 #include "uvd_format.h"
 #include "uvd_instruction.h"

@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #pragma once
 
 #include "uvd_types.h"
-#include "interpreter/uvd_interpreter.h"
+#include "uvdasm/interpreter/interpreter.h"
 
 #include <string>
 

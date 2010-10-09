@@ -68,23 +68,12 @@ CXX_SRCS = 	\
 			$(INIT_DIR)/uvd_arg.cpp \
 			$(INIT_DIR)/uvd_arg_util.cpp \
 			$(INIT_DIR)/uvd_config.cpp \
-			$(INIT_DIR)/uvd_config_symbol.cpp \
 			$(INIT_DIR)/uvd_config_symbols.cpp \
 			$(INIT_DIR)/uvd_init.cpp \
-			$(INTERPRETER_DIR)/uvd_interpreter.cpp \
-			$(INTERPRETER_DIR)/uvd_javascript.cpp \
-			$(INTERPRETER_DIR)/uvd_javascript_spiderape.cpp \
-			$(INTERPRETER_DIR)/uvd_javascript_spidermonkey.cpp \
-			$(INTERPRETER_DIR)/uvd_lua.cpp \
-			$(INTERPRETER_DIR)/uvd_operator.cpp \
-			$(INTERPRETER_DIR)/uvd_python.cpp \
-			$(INTERPRETER_DIR)/uvd_python_api.cpp \
-			$(INTERPRETER_DIR)/uvd_python_exec.cpp \
 			$(LANGUAGE_DIR)/uvd_format.cpp \
 			$(LANGUAGE_DIR)/uvd_language.cpp \
 			$(LIB_PLUGIN_DIR)/engine.cpp \
 			$(LIB_PLUGIN_DIR)/plugin.cpp \
-			$(LIBUVUDEC_DIR)/object/binary.cpp \
 			$(LIBUVUDEC_DIR)/object/object.cpp \
 			$(LIBUVUDEC_DIR)/object/section.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \

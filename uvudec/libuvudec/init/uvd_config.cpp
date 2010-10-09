@@ -4,7 +4,6 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "interpreter/uvd_python.h"
 #include "uvd_arg_util.h"
 #include "uvd_arg_property.h"
 #include "uvd_config.h"
