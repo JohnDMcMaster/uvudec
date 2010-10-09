@@ -503,7 +503,6 @@ static void UVDPrintVersion()
 	}
 	printf_help("libuvudec version %s\n", UVDGetVersion());
 	printf_help("Copyright 2009-2010 John McMaster <JohnDMcMaster@gmail.com>\n");
-	printf_help("Portions copyright GNU (MD5 implementation)\n");
 }
 
 static uv_err_t UVDPrintLoadedPlugins()
