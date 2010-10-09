@@ -74,12 +74,12 @@ uv_err_t UVDConfigExpressionInterpreterTemplate<T>::init()
 }
 
 #ifdef USING_JAVASCRIPT
-#include "interpreter/uvd_javascript.h"
+#include "uvdasm/interpreter/javascript.h"
 typedef UVDConfigExpressionInterpreterTemplate<UVDJavascriptInterpreter> UVDJavascriptConfigExpressionInterpreter;
 #endif //USING_JAVASCRIPT
 
 #ifdef USING_PYTHON
-#include "interpreter/uvd_python.h"
+#include "uvdasm/interpreter/python.h"
 #ifdef USING_PYTHON_API
 typedef UVDConfigExpressionInterpreterTemplate<UVDPythonAPIInterpreter> UVDPythonConfigExpressionAPIInterpreter;
 #endif
@@ -89,7 +89,7 @@ typedef UVDConfigExpressionInterpreterTemplate<UVDPythonExecInterpreter> UVDPyth
 #endif //USING_PYTHON
 
 #ifdef USING_LUA
-#include "interpreter/uvd_lua.h"
+#include "uvdasm/interpreter/lua.h"
 typedef UVDConfigExpressionInterpreterTemplate<UVDLuaInterpreter> UVDLuaConfigExpressionInterpreter;
 #endif //USING_LUA
 

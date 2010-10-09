@@ -11,9 +11,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <vector>
 #include "uvd.h"
 #include "uvd_util.h"
-#include "uvd_python.h"
+#include "uvdasm/interpreter/python.h"
 #include "uvd_config.h"
-#include "uvd_config_symbol.h"
+#include "uvdasm/config_symbol.h"
 #include "uvd_address.h"
 #include "core/runtime.h"
 

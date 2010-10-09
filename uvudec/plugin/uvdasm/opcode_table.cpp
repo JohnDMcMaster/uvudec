@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_util.h"
 #include "uvd_address.h"
 #include "uvd_config.h"
-#include "uvd_config_symbol.h"
+#include "uvdasm/config_symbol.h"
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_types.h"

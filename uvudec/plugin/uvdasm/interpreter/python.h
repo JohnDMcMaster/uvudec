@@ -10,7 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifdef USING_PYTHON
 
 #include "config.h"
-#include "uvd_interpreter.h"
+#include "uvdasm/interpreter/interpreter.h"
 
 class UVDPythonInterpreter : public UVDInterpreter
 {

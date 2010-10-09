@@ -11,7 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <vector>
 #include "python2.6/Python.h"
 #include "uvd_util.h"
-#include "uvd_python.h"
+#include "uvdasm/interpreter/python.h"
 #include "uvd_config.h"
 
 UVDPythonAPIInterpreter::UVDPythonAPIInterpreter()

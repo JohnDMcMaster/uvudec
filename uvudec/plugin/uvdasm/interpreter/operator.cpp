@@ -5,7 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd_types.h"
-#include "uvd_operator.h"
+#include "uvdasm/interpreter/operator.h"
 #include <string>
 
 UVDOperator::UVDOperator()

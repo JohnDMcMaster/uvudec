@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string>
 #include <vector>
 #include "uvd_util.h"
-#include "uvd_python.h"
+#include "uvdasm/interpreter/python.h"
 #include "uvd_config.h"
 
 UVDPythonExecInterpreter::UVDPythonExecInterpreter()

@@ -19,7 +19,7 @@ Also, its named poorly since you'd expect UVDSymbol to be what instead became UV
 #include <string>
 #include <map>
 #include "uvd_address.h"
-#include "uvd_operator.h"
+#include "uvdasm/interpreter/operator.h"
 
 /* Symbol is not referenced */
 #define UVD_SYMBOL_UNKNOWN			0

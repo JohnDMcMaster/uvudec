@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "architecture/architecture.h"
 #include "uvdasm/util.h"
 #include "uvdasm/opcode_table.h"
+#include "uvdasm/config_symbol.h"
 
 /*
 Configuration file based architecture

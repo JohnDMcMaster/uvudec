@@ -18,16 +18,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "plugin/plugin.h"
 #include "plugin/engine.h"
 
-//Resultant address from a call routine
-#define SCRIPT_KEY_CALL				"CALL_ADDRESS"
-//Resultant address from a jump
-#define SCRIPT_KEY_JUMP				"JUMP_ADDRESS"
-//Resultant data from arithmetic
-//This requires non-static analysis
-//#define SCRIPT_KEY_ARITMETIC		"ARIMETIC"
-//An alternative representation of an address
-#define SCRIPT_KEY_SYMBOL			"ADDRESS_SYMBOL"
-
 /*
 To control whether addresses are analyzed or not
 Some more specialized types might be added later if necessary

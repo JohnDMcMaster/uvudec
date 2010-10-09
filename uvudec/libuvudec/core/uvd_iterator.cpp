@@ -31,7 +31,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_format.h"
 #include "uvd_instruction.h"
 #include "uvd_types.h"
-#include "uvd_config_symbol.h"
 #include "architecture/architecture.h"
 #include "core/runtime.h"
 

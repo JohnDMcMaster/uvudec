@@ -8,8 +8,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_CORE_ARCHITECTURE_H
 
 #include "uvd_types.h"
-//#include "uvd_instruction.h"
-#include "uvd_config_symbol.h"
 #include "uvd_register.h"
 #include "uvd_instruction.h"
 
