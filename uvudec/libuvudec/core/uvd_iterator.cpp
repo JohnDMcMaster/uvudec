@@ -33,12 +33,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_types.h"
 #include "uvd_config_symbol.h"
 #include "architecture/architecture.h"
+#include "core/runtime.h"
 
 UVDIteratorCommon::UVDIteratorCommon()
 {
 	m_instruction = NULL;
 	m_uvd = NULL;
-	m_data = NULL;
+	m_addressSpace = NULL;
 	m_nextPosition = 0;
 	//m_isEnd = FALSE;
 	m_currentSize = 0;
@@ -62,30 +63,22 @@ UVDIteratorCommon::~UVDIteratorCommon()
 	UV_DEBUG(deinit());
 }
 
-uv_err_t UVDIteratorCommon::init(UVD *uvd)
+uv_err_t UVDIteratorCommon::init(UVD *uvd, UVDAddressSpace *addressSpace)
 {
-	uv_addr_t absoluteMinAddress = 0;
-	//m_isEnd = FALSE;
-	m_currentSize = 0;
-
 	uv_assert_ret(uvd);
-	uv_assert_ret(uvd->m_data);
-	m_uvd = uvd;
-	m_data = uvd->m_data;
-
-	uv_assert_ret(m_uvd);
-	uv_assert_ret(m_uvd->m_analyzer);
-	uv_assert_err_ret(m_uvd->m_analyzer->getAddressMin(&absoluteMinAddress));
+	uv_assert_ret(addressSpace);	
 	
-	return UV_DEBUG(init(uvd, absoluteMinAddress));
+	return UV_DEBUG(init(uvd, UVDAddress(addressSpace->m_min_addr, addressSpace)));
 }
 
-uv_err_t UVDIteratorCommon::init(UVD *disassembler, uv_addr_t position)
+uv_err_t UVDIteratorCommon::init(UVD *uvd, UVDAddress address)
 {
 	//m_isEnd = FALSE;
 	m_currentSize = 0;
-	m_uvd = disassembler;
-	m_nextPosition = position;
+	m_addressSpace = address.m_space;
+	uv_assert_ret(m_addressSpace);
+	m_uvd = uvd;
+	m_nextPosition = address.m_addr;
 	m_initialProcess = FALSE;
 	uv_assert_err_ret(prime());
 	return UV_ERR_OK;
@@ -118,7 +111,7 @@ uv_err_t UVDIteratorCommon::prime()
 
 uv_err_t UVDIteratorCommon::deinit()
 {
-	m_data = NULL;
+	m_addressSpace = NULL;
 	m_uvd = NULL;
 	return UV_ERR_OK;
 }
@@ -338,7 +331,8 @@ uv_err_t UVDIteratorCommon::nextValidExecutableAddressIncludingCurrent()
 	uv_err_t rcNextAddress = UV_ERR_GENERAL;
 	
 	//FIXME: look into considerations for an instruction split across areas, which probably doesn't make sense
-	rcNextAddress = m_uvd->m_analyzer->nextValidExecutableAddress(m_nextPosition, &m_nextPosition);
+	uv_assert_ret(m_addressSpace);
+	rcNextAddress = m_addressSpace->nextValidExecutableAddress(m_nextPosition, &m_nextPosition);
 	uv_assert_err_ret(rcNextAddress);
 	if( rcNextAddress == UV_ERR_DONE )
 	{
@@ -363,7 +357,7 @@ uv_err_t UVDIteratorCommon::consumeCurrentExecutableAddress(uint8_t *out)
 	}
 
 //UVD_PRINT_STACK();	
-	uv_assert_err_ret(m_data->readData(m_nextPosition, (char *)out));	
+	uv_assert_err_ret(m_addressSpace->m_data->readData(m_nextPosition, (char *)out));	
 	++m_currentSize;
 	//We don't care if next address leads to end
 	//Current address was valid and it is up to next call to return done if required
@@ -380,7 +374,7 @@ uv_err_t UVDIteratorCommon::addWarning(const std::string &lineRaw)
 
 uv_err_t UVDIteratorCommon::parseCurrentInstruction()
 {
-	return UV_DEBUG(m_uvd->m_architecture->parseCurrentInstruction(*this));
+	return UV_DEBUG(m_uvd->m_runtime->m_architecture->parseCurrentInstruction(*this));
 }	
 
 /*
@@ -396,16 +390,16 @@ UVDIterator::~UVDIterator()
 {
 }
 
-uv_err_t UVDIterator::init(UVD *uvd)
+uv_err_t UVDIterator::init(UVD *uvd, UVDAddressSpace *addressSpace)
 {
-	uv_assert_err_ret(UVDIteratorCommon::init(uvd));
+	uv_assert_err_ret(UVDIteratorCommon::init(uvd, addressSpace));
 	m_positionIndex = 0;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::init(UVD *disassembler, uv_addr_t position, uint32_t index)
+uv_err_t UVDIterator::init(UVD *uvd, UVDAddress address, uint32_t index)
 {
-	uv_assert_err_ret(UVDIteratorCommon::init(disassembler, position));
+	uv_assert_err_ret(UVDIteratorCommon::init(uvd, address));
 	m_positionIndex = index;
 	return UV_ERR_OK;
 }
@@ -492,7 +486,8 @@ uv_err_t UVDIterator::initialProcessStringTable()
 	snprintf(szBuff, 256, "# String table:");
 	m_indexBuffer.push_back(szBuff);
 
-	uv_assert_ret(m_data);
+	uv_assert_ret(m_addressSpace);
+	uv_assert_ret(m_addressSpace->m_data);
 
 	for( UVDAnalyzedMemorySpace::iterator iter = analyzer->m_stringAddresses.begin(); iter != analyzer->m_stringAddresses.end(); ++iter )
 	{
@@ -501,7 +496,7 @@ uv_err_t UVDIterator::initialProcessStringTable()
 		std::vector<std::string> lines;
 		
 		//Read a string
-		m_data->read(mem->m_min_addr, sData, mem->m_max_addr - mem->m_min_addr);
+		m_addressSpace->m_data->read(mem->m_min_addr, sData, mem->m_max_addr - mem->m_min_addr);
 
 		
 		lines = split(sData, '\n', true);

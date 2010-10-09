@@ -19,6 +19,7 @@ CXX_SRCS = 	\
 			$(COMPILER_DIR)/uvd_compiler.cpp \
 			$(COMPILER_DIR)/uvd_compiler_assembly.cpp \
 			$(COMPILER_DIR)/uvd_compiler_gcc.cpp \
+			$(CORE_DIR)/runtime.cpp \
 			$(CORE_DIR)/uvd.cpp \
 			$(CORE_DIR)/uvd_analysis.cpp \
 			$(CORE_DIR)/uvd_analysis_db.cpp \
@@ -85,6 +86,7 @@ CXX_SRCS = 	\
 			$(LIB_PLUGIN_DIR)/plugin.cpp \
 			$(LIBUVUDEC_DIR)/object/binary.cpp \
 			$(LIBUVUDEC_DIR)/object/object.cpp \
+			$(LIBUVUDEC_DIR)/object/section.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_data.cpp \
 			$(RELOCATION_DIR)/uvd_relocatable_element.cpp \
 			$(RELOCATION_DIR)/uvd_relocation.cpp \

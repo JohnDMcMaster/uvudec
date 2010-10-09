@@ -14,6 +14,7 @@ Things such as interpreting results and converting to generic structures
 #include "architecture/architecture.h"
 #include "uvd_benchmark.h"
 #include "uvd_util.h"
+#include "core/runtime.h"
 
 int g_filterPostRet;
 
@@ -27,7 +28,7 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 	uv_addr_t absoluteMaxAddress = 0;
 	
 	uv_assert_ret(g_config);
-	uv_assert_err_ret(g_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
+	uv_assert_err_ret(superblock->m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
 
 	uv_assert_ret(superblock);
 	uv_assert_err_ret(superblock->getMaxAddress(superblockMaxAddress));
@@ -105,13 +106,14 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 	//UVDAnalyzedMemorySpace jumpedAddresses;
 	//UVDAnalyzedMemorySpace calledAddresses;
 
-	UVDAnalysisDBArchive *curDb = NULL;
-	
+	UVDAnalysisDBArchive *curDb = NULL;	
 	uv_addr_t absoluteMaxAddress = 0;
+	UVDAddressSpace *space = superblock->m_addressSpace;
 	
 	uv_assert_ret(m_config);
+	uv_assert_ret(space);
 
-	uv_assert_err_ret(m_analyzer->getAddressMax(&absoluteMaxAddress));
+	uv_assert_err_ret(superblock->m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
 
 	printf_debug("\n");
 	printf_debug("\n");
@@ -194,7 +196,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		It will be trimmed down later if we find we have taken too much
 		Bad data could be a jumped location after our func, ROM data, ISR, function pointer target, w/e
 		*/
-		uv_assert_err_ret(constructBlock(functionBlockStart, functionBlockEnd, &functionBlock));
+		uv_assert_err_ret(constructBlock(UVDAddressRange(functionBlockStart, functionBlockEnd, space), &functionBlock));
 		uv_assert_ret(functionBlock);
 		superblock->m_blocks.push_back(functionBlock);
 		
@@ -276,18 +278,21 @@ uv_err_t UVD::constructBlocks()
 	UVDAnalyzedBlock *superblock = NULL;
 	uv_addr_t absoluteMaxAddress = 0;
 	uv_addr_t absoluteMinAddress = 0;
+	UVDAddressSpace *addressSpace = NULL;
 	
 	printf_debug("\n");
 	printf_debug_level(UVD_DEBUG_PASSES, "uvd: block analysis...\n");
 	UVDBenchmark blockAnalysisBenchmark;
 	blockAnalysisBenchmark.start();
 
+	uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
+
 	uv_assert_ret(m_config);
-	uv_assert_err_ret(m_analyzer->getAddressMin(&absoluteMinAddress));
-	uv_assert_err_ret(m_analyzer->getAddressMax(&absoluteMaxAddress));
+	uv_assert_err_ret(addressSpace->getMinValidAddress(&absoluteMinAddress));
+	uv_assert_err_ret(addressSpace->getMaxValidAddress(&absoluteMaxAddress));
 	
 	//Highest level block: entire program
-	uv_assert_err(constructBlock(absoluteMinAddress, absoluteMaxAddress, &superblock));
+	uv_assert_err(constructBlock(UVDAddressRange(absoluteMinAddress, absoluteMaxAddress, addressSpace), &superblock));
 	m_analyzer->m_block = superblock;
 
 	//Find functions, add them as sub blocks
@@ -397,11 +402,11 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis linear\n");
 
-	uv_assert_ret(m_config);
-	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&numberAnalyzedBytes));
-
 	uv_assert_err_ret(instructionBegin(iter));
 	uv_assert_err_ret(instructionEnd(iterEnd));
+	uv_assert_ret(m_config);
+	uv_assert_err_ret(iter.m_addressSpace->getNumberAnalyzedBytes(&numberAnalyzedBytes));
+
 	for( ;; )
 	{
 		uint32_t startPos = iter.getPosition();

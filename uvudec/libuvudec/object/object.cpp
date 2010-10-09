@@ -6,3 +6,24 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "object/object.h"
 
+UVDObject::UVDObject()
+{
+	m_data = NULL;
+}
+
+UVDObject::~UVDObject()
+{
+	delete m_data;
+	for( std::vector<UVDSection *>::iterator iter = m_sections.begin();
+			iter != m_sections.end(); ++iter )
+	{
+		delete *iter;
+	}
+}
+	
+uv_err_t UVDObject::init(UVDData *data)
+{
+	m_data = data;
+	return UV_ERR_OK;
+}
+

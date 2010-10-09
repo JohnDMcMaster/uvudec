@@ -135,6 +135,8 @@ Primary end user object
 class UVDFLIRT;
 class UVDEventEngine;
 class UVDArchitecture;
+class UVDObject;
+class UVDRuntime;
 class UVD
 {
 public:
@@ -148,24 +150,29 @@ public:
 
 	/*
 	file: data file to target
+	object: hint about the file format
 	architecture: hint about what we are trying to disassemble
 	*/
-	uv_err_t init(const std::string &file, const std::string &architecture = "");
-	uv_err_t init(UVDData *data, const std::string &architecture = "");
+	uv_err_t init(const std::string &file, const std::string &object = "", const std::string &architecture = "");
+	uv_err_t init(UVDData *data, const std::string &object = "", const std::string &architecture = "");
+	uv_err_t initEarly();
 	uv_err_t initPlugins();
-	uv_err_t initArchitecture(const std::string &architecture);
+	uv_err_t initObject(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out);
+	uv_err_t initArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out);
+	//Core version with a pre-supplied object and architecture
+	uv_err_t init(UVDObject *object, UVDArchitecture *architecture);
 	uv_err_t deinit();
 
 	/*
 	Iterator functions
 	*/
 	//Printing related
+	//These try to guess the primary executable address space
 	UVDIterator begin();
 	uv_err_t begin(UVDIterator &iter);
-	UVDIterator begin(uint32_t offset);
-	uv_err_t begin(uint32_t offset, UVDIterator &iter);
-	//Error checked, but less convenient
-	uv_err_t beginCore(uint32_t offset, UVDIterator &out);	
+	
+	UVDIterator begin(uv_addr_t offset);
+	uv_err_t begin(UVDAddress address, UVDIterator &iter);
 	//UVDIterator begin(UVDData *data);
 	UVDIterator end();
 	uv_err_t end(UVDIterator &iter);
@@ -213,7 +220,7 @@ public:
 	//Structure should be pre-set with data before entry
 	uv_err_t analyzeConstData();
 	uv_err_t analyzeStrings();
-	uv_err_t constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut);
+	uv_err_t constructBlock(UVDAddressRange addressRange, UVDAnalyzedBlock **blockOut);
 	uv_err_t constructBlocks();
 	uv_err_t mapSymbols();
 	uv_err_t constructFunctionBlocks(UVDAnalyzedBlock *superblock);
@@ -244,7 +251,7 @@ public:
 	//uv_err_t setFile(const std::string &file);	
 	//uv_err_t setData(UVData *data);
 	//I think this was implemented to fix a bug of some sort...in truth is does nothing since it doesn't do standard error checking
-	UVDData *getData();
+	//UVDData *getData();
 	/*
 	In more complicated architectures, data may not be simply from 0 to end
 	Preparations for later analysis allowing virtual addresses and such
@@ -266,28 +273,26 @@ protected:
 	uv_err_t suspectValidInstruction(uint32_t address, int *isValid);
 
 public:
-	UVDArchitecture *m_architecture;
+	//Object format, architecture, debuggers, etc
+	UVDRuntime *m_runtime;
 	
 	UVDAnalyzer *m_analyzer;
 	
-	//hmm should be moved to uvd_analysis
+	//hmm should be moved to UVDAnalyzer
 	//ROM data or other things that make these addresses non-disassemblable
 	//This should probably be moved to the analyzer
-	std::vector<UVDAddressRange> m_noncodingAddresses;
+	//actually these are currently never added to
+	//std::vector<UVDAddressRange> m_noncodingAddresses;
 
 	//General configuration
 	//This must be a pointer as its intialized before we initialize our UVD object
 	UVDConfig *m_config;
 	//How to print data
-	//This should probably be moved to UVDConfig
+	//This is active code as opposed to UVDConfig that just defines formatting parameters
 	UVDFormat *m_format;
 
+	//Library recognition engine
 	UVDFLIRT *m_flirt;
-	
-	//Source of data to disassemble
-	//We do not own this
-	//...but we probably should
-	UVDData *m_data;
 	
 	//For notifying plugins and such of analysis events
 	//We own this
@@ -302,6 +307,7 @@ public:
 //Deprecated
 extern UVD *g_uvd;
 //For internal use only
+//We may not always be singleton
 UVD *UVDGetUVD();
 
 #endif

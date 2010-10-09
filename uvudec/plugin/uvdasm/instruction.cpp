@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdasm/architecture.h"
 #include "uvdasm/instruction.h"
 #include "uvd_types.h"
+#include "core/runtime.h"
 #include "uvd_format.h"
 #include "uvd_util.h"
 #include "main.h"
@@ -296,7 +297,7 @@ uv_err_t UVDDisasmInstruction::parseOperands(UVDIteratorCommon *uvdIter,
 {
 	UVDData *data = NULL;;
 	uv_assert_ret(m_uvd);
-	data = m_uvd->getData();
+	data = uvdIter->m_addressSpace->m_data;
 	uv_assert_ret(data);
 	
 	//uv_assert(instruction);
@@ -370,7 +371,7 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 	UVDDisasmArchitecture *architecture = NULL;
 
 	followingPos = m_offset + m_inst_size;
-	architecture = (UVDDisasmArchitecture *)m_uvd->m_architecture;
+	architecture = (UVDDisasmArchitecture *)m_uvd->m_runtime->m_architecture;
 
 	action = getShared()->m_action;
 
@@ -508,7 +509,7 @@ uv_err_t UVDDisasmInstruction::analyzeCall(uint32_t startPos, const UVDVariableM
 	uint32_t targetAddress = 0;
 	UVDDisasmArchitecture *architecture = NULL;
  	
- 	architecture = (UVDDisasmArchitecture *)g_uvd->m_architecture;
+ 	architecture = (UVDDisasmArchitecture *)g_uvd->m_runtime->m_architecture;
 	uv_assert_ret(attributes.find(SCRIPT_KEY_CALL) != attributes.end());
 	(*attributes.find(SCRIPT_KEY_CALL)).second.getString(sAddr);
 	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
@@ -555,7 +556,7 @@ uv_err_t UVDDisasmInstruction::analyzeJump(uint32_t startPos, const UVDVariableM
 	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
 	
 	uv_assert_err_ret(g_uvd->m_analyzer->insertJumpReference(targetAddress, startPos));
-	((UVDDisasmArchitecture *)(g_uvd->m_architecture))->updateCache(startPos, attributes);
+	((UVDDisasmArchitecture *)(g_uvd->m_runtime->m_architecture))->updateCache(startPos, attributes);
 
 #ifdef BASIC_SYMBOL_ANALYSIS			
 	uv_assert_ret(instruction);
@@ -598,18 +599,18 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	UVD *uvd = NULL;
 	uv_addr_t absoluteMaxAddress = 0;
 	UVDDisasmArchitecture *architecture = NULL;
-		
 	printf_debug("\n");
+		
 	printf_debug("m_nextPosition: 0x%.8X\n", iterCommon.m_nextPosition);
 		
 	uvd = g_uvd;
 	m_uvd = uvd;
 	uv_assert_ret(uvd);
-	architecture = (UVDDisasmArchitecture *)uvd->m_architecture;
+	architecture = (UVDDisasmArchitecture *)uvd->m_runtime->m_architecture;
 	
 	//We are starting a new instruction, reset
 	iterCommon.m_currentSize = 0;
-	uv_assert_err_ret(g_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));
+	uv_assert_err_ret(iterCommon.m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
 	
 	//Hmm seems we should never branch here
 	//Lets see if we can prove it or at least comment to as why
@@ -706,7 +707,7 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	//This will always be valid since we are just storing a shadow copy of the instruction bytes
 	//We could alternativly create a UVDData object referring to the source binary file
 	//uv_assert_ret(m_data);
-	uv_assert_err_ret(g_uvd->m_data->readData(m_offset, m_inst, m_inst_size));
+	uv_assert_err_ret(iterCommon.m_addressSpace->m_data->readData(m_offset, m_inst, m_inst_size));
 
 	printf_debug("m_nextPosition about to rollback, initial: %d, final: %d\n", startPosition, iterCommon.m_nextPosition);
 	//This is suppose to be parse only, do not actually advance as we use to do

@@ -54,6 +54,8 @@ public:
 	
 	//FIXME: this is analysis specific...should it be here?
 	//If this is a symbol in our currently analyzed data, the address it presides at 
+	//Also, is there the possibility that a symbol could have differing values depending on the address space?
+	//Or should a symbol be specific to an address space?
 	uv_err_t getSymbolAddress(uint32_t *symbolAddress);
 	uv_err_t setSymbolAddress(uint32_t symbolAddress);
 	/*

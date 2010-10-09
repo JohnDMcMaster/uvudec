@@ -8,6 +8,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_ITERATOR_H
 #define UVD_ITERATOR_H
 
+#include "uvd_types.h"
+
 /*
 Used for keeping track of position when outputting files
 Position is suppose to be the offset in a file
@@ -16,12 +18,13 @@ Could keep internal or external cache of what is to come on that line
 and generate all indexes at once
 */
 class UVD;
+class UVDAddressSpace;
 class UVDIteratorCommon
 {
 public:
 	//uv_err_t init(UVD *disassembler, uint32_t position = g_addr_min, uint32_t index = 0);
-	virtual uv_err_t init(UVD *disassembler);
-	virtual uv_err_t init(UVD *disassembler, uv_addr_t position);
+	virtual uv_err_t init(UVD *uvd, UVDAddressSpace *addressSpace);
+	virtual uv_err_t init(UVD *uvd, UVDAddress address);
 	virtual uv_err_t deinit();
 	virtual ~UVDIteratorCommon();
 	
@@ -82,16 +85,24 @@ protected:
 	uv_err_t prime();
 
 public:
-	//Source of data to disassemble
-	//Usually equal to m_uvd.m_data, but may be a smaller segment for finer analysis
-	//We do NOT own this, it must be deleted by the user
-	//Is this still needed?  Now favoring generating appropriete iters and having funcs pass in start and end iters
-	UVDData *m_data;
+	/*
+	Source of data to disassemble
+	Usually equal to m_uvd.m_data, but may be a smaller segment for finer analysis
+	We do NOT own this, it must be deleted by the user
+	Is this still needed?  Now favoring generating appropriete iters and having funcs pass in start and end iters
+	XXX
+	What we actually should have is a list of memory areas to iterate over
+	Forget list, give a single area and they can iterate over their mult areas if needed
+	Do a wrapper multi-iterater if really want it and keep that functionality separate
+	/*/
+	//UVDData *m_data;
+	UVDAddressSpace *m_addressSpace;
 
 	//Next position in file to check
 	//FIXME FIXME FIXME
 	//FIXME: this is now being used as current position
-	uint32_t m_nextPosition;
+	//Also combine with m_addressSpace to form a UVDAddress m_address
+	uv_addr_t m_nextPosition;
 	//How many bytes we consumed to create currently analyzed instruction
 	//Think this is actually more used to calculate instruction size than actual iteration
 	//Maybe we should move it to a next() helper object
@@ -120,8 +131,8 @@ class UVDIterator : public UVDIteratorCommon
 public:
 	UVDIterator();
 	~UVDIterator();
-	virtual uv_err_t init(UVD *disassembler);
-	virtual uv_err_t init(UVD *disassembler, uv_addr_t position, uint32_t index);
+	virtual uv_err_t init(UVD *uvd, UVDAddressSpace *memorySpace);
+	virtual uv_err_t init(UVD *uvd, UVDAddress address, uint32_t index);
 	
 	UVDIterator operator++();
 	//Original reason for differentiation

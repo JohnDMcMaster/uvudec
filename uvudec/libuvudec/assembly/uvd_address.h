@@ -73,16 +73,40 @@ public:
 	~UVDAddressSpace();
 	uv_err_t deinit();
 	
-	uv_err_t setEquivMemName(uint32_t addr, const std::string &name);
-	uv_err_t getEquivMemName(uint32_t addr, std::string &name);
+	uv_err_t setEquivMemName(uv_addr_t addr, const std::string &name);
+	uv_err_t getEquivMemName(uv_addr_t addr, std::string &name);
 	
+	//Next valid address capable of having any sort of analysis on it
+	uv_err_t nextValidAddress(uv_addr_t start, uv_addr_t *ret);
+	//Like above, but also must be a canidate for an executable area
+	uv_err_t nextValidExecutableAddress(uv_addr_t start, uv_addr_t *ret);
+	//Force a rebuild of the internal database
+	//uv_err_t rebuildDb();
+	//Only based on coding list, not any other validity
+	//Used internally by nextValidExecutionAddress()
+	uv_err_t nextCodingAddress(uv_addr_t start, uv_addr_t *ret);
+
+	//How many bytes we have to analyze in total
+	//Based on size of program and analysis exclusions
+	uv_err_t getNumberAnalyzedBytes(uint32_t *analyzedBytesOut);
+	//Actual allowable address limits, not just what config says
+	uv_err_t getMinValidAddress(uv_addr_t *out);
+	uv_err_t getMaxValidAddress(uv_addr_t *out);
+
+	/*
+	Returns an address spaced with data mapped onto this one
+	Callee owns the returned object
+	*/
+	//uv_err_t remap(UVDAddressSpace **out);	
+	//uv_err_t remap(uv_addr_t minAddress, uv_addr_t maxAddress, UVDAddressSpace **out);	
+
 public:
 	//short name
 	std::string m_name;
 	//longer description
 	std::string m_desc;
 	//EPROM, RAM, etc.  Defines prefixed with UV_DISASM_MEM_
-	uint32_t m_type;
+	//uint32_t m_type;
 	//Valid addresses
 	uv_addr_t m_min_addr;
 	uv_addr_t m_max_addr;
@@ -93,8 +117,15 @@ public:
 	/*
 	Capabilities, how the memory behaves as a whole.  Read, write, etc
 	Does not include policy based capabilities such as process 1 cannot write to address 0x1234
+	TODO: change this to 3 tristate variables
 	*/
-	uint32_t m_cap;
+	//uint32_t m_cap;
+	uvd_tri_t m_R;
+	uvd_tri_t m_W;
+	uvd_tri_t m_X;
+	//Non-volatile
+	//If the power is turned off, does the data persist?
+	uvd_tri_t m_NV;
 	
 	/*
 	Minimum amount of memory that can be transferred in bits
@@ -124,6 +155,15 @@ public:
 	Start address bit offet from above
 	unsigned int mapped_start_addr_bit_offset;
 	*/
+	
+	/*
+	If we have have a live feed on this data (ROM, being debugged, etc), given here
+	We own this
+	FIXME: we need to provide a mapped version that is consistent with the address mappings
+	This is currently treated as a raw pointer to the space
+	ie it will break if we are using virtual addressing
+	*/
+	UVDData *m_data;
 };
 
 /*

@@ -7,6 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_binary_symbol.h"
 #include "uvd_binary_function.h"
 #include "uvd_util.h"
+#include "core/runtime.h"
 #include "uvd.h"
 #include <stdio.h>
 #include <string.h>
@@ -682,8 +683,8 @@ uv_err_t UVDBinarySymbolManager::analyzedSymbolName(uint32_t symbolAddress, int 
 {
 	std::string dataSource;
 	
-	uv_assert_ret(m_analyzer->m_uvd->m_data);
-	dataSource = uv_basename(m_analyzer->m_uvd->m_data->getSource());
+	uv_assert_ret(m_analyzer->m_uvd->m_runtime->m_object->m_data);
+	dataSource = uv_basename(m_analyzer->m_uvd->m_runtime->m_object->m_data->getSource());
 	uv_assert_err_ret(analyzedSymbolName(dataSource, symbolAddress, symbolType, symbolName));
 
 	return UV_ERR_OK;

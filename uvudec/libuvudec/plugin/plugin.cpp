@@ -49,12 +49,12 @@ uv_err_t UVDPlugin::getDependencies(PluginDependencies &out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPlugin::getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out)
+uv_err_t UVDPlugin::getArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out)
 {
 	return UV_ERR_NOTSUPPORTED;
 }
 
-uv_err_t UVDPlugin::getObject(const UVDData *data, const std::string &architecture, UVDObject **out)
+uv_err_t UVDPlugin::getObject(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out)
 {
 	return UV_ERR_NOTSUPPORTED;
 }

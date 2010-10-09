@@ -6,56 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd_address.h"
-
-/*
-UVDAddressSpace
-*/
-
-UVDAddressSpace::UVDAddressSpace()
-{
-	m_type = 0;
-	m_min_addr = 0;
-	m_max_addr = 0;
-	m_cap = 0;
-	m_word_size = 0;
-	m_word_alignment = 0;
-}
-
-UVDAddressSpace::~UVDAddressSpace()
-{
-	deinit();
-}
-
-uv_err_t UVDAddressSpace::deinit()
-{
-	m_synonyms.clear();
-	/*
-	for( std::vector<UVDAddressSpaceMapper *>::iterator iter = m_mappers.begin(); iter != m_mappers.end(); ++iter )
-	{
-		delete *iter;
-	}
-	m_mappers.clear();
-	*/
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDAddressSpace::setEquivMemName(uint32_t addr, const std::string &name)
-{
-	printf_debug("setEquivMemName: %s(0x%.8X) = %s\n", m_name.c_str(), addr, name.c_str());
-	m_synonyms[addr] = name;
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDAddressSpace::getEquivMemName(uint32_t addr, std::string &name)
-{
-	if( m_synonyms.find(addr) == m_synonyms.end() )
-	{
-		return UV_ERR_GENERAL;
-	}
-	name = m_synonyms[addr];
-	return UV_ERR_OK;
-}
+#include "uvd.h"
 
 /*
 UVDAddress
@@ -175,6 +126,248 @@ bool UVDAddressRange::operator==(const UVDAddressRange *other) const
 {
 	return compare(other) == 0;
 }
+
+/*
+UVDAddressSpace
+*/
+
+UVDAddressSpace::UVDAddressSpace()
+{
+	//m_type = 0;
+	m_min_addr = 0;
+	m_max_addr = 0;
+	m_R = 0;
+	m_W = 0;
+	m_X = 0;
+	m_word_size = 0;
+	m_word_alignment = 0;
+	m_data = NULL;
+}
+
+UVDAddressSpace::~UVDAddressSpace()
+{
+	deinit();
+}
+
+uv_err_t UVDAddressSpace::deinit()
+{
+	m_synonyms.clear();
+	/*
+	for( std::vector<UVDAddressSpaceMapper *>::iterator iter = m_mappers.begin(); iter != m_mappers.end(); ++iter )
+	{
+		delete *iter;
+	}
+	m_mappers.clear();
+	*/
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::setEquivMemName(uint32_t addr, const std::string &name)
+{
+	printf_debug("setEquivMemName: %s(0x%.8X) = %s\n", m_name.c_str(), addr, name.c_str());
+	m_synonyms[addr] = name;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::getEquivMemName(uint32_t addr, std::string &name)
+{
+	if( m_synonyms.find(addr) == m_synonyms.end() )
+	{
+		return UV_ERR_GENERAL;
+	}
+	name = m_synonyms[addr];
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::getNumberAnalyzedBytes(uint32_t *analyzedBytesOut)
+{
+	uv_addr_t minAddress = 0;
+	uv_addr_t maxAddress = 0;
+
+	uv_assert_err_ret(getMinValidAddress(&minAddress));
+	uv_assert_err_ret(getMaxValidAddress(&maxAddress));
+	uv_assert_ret(minAddress <= maxAddress);
+	//printf_debug("Analyzed bytes range: 0x%.8X-0x%.8X\n", minAddress, maxAddress);
+
+	uv_assert_ret(analyzedBytesOut);
+	*analyzedBytesOut = maxAddress - minAddress + 1;
+	
+	//uv_assert_ret(analyzedBytesOut);
+	//*analyzedBytesOut = 1;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::getMinValidAddress(uv_addr_t *out)
+{
+	//Since we assume for now that the executable is 0 to size - 1, min address here is the min address
+	return UV_DEBUG(g_uvd->m_config->getAddressMin(out));
+}
+
+uv_err_t UVDAddressSpace::getMaxValidAddress(uv_addr_t *out)
+{
+	uv_addr_t maxConfigAddress = 0;
+	uv_addr_t maxPhysicalAddress = 0;
+	
+	uv_assert_err_ret(g_uvd->m_config->getAddressMax(&maxConfigAddress));
+	uv_assert_ret(m_data);
+	uv_assert_err_ret(m_data->size(&maxPhysicalAddress));
+	//We got size, not end
+	--maxPhysicalAddress;
+	
+	//Return the lower of the two
+	uv_assert_ret(out);
+	if( maxPhysicalAddress <= maxConfigAddress )
+	{
+		*out = maxPhysicalAddress;
+	}
+	else
+	{
+		*out = maxConfigAddress;
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::nextValidAddress(uv_addr_t start, uv_addr_t *ret)
+{
+	uv_addr_t configRet = 0;
+	uv_addr_t addressMax = 0;
+	uv_err_t rc = UV_ERR_GENERAL;
+
+	uv_assert_err_ret(getMaxValidAddress(&addressMax));
+	rc = g_uvd->m_config->nextValidAddress(start, &configRet);
+	uv_assert_err_ret(rc);
+	
+	//No more valid addresses based on config?
+	if( rc == UV_ERR_DONE )
+	{
+		//printf("config says address 0x%04X is out of bounds\n", start);  
+		return UV_ERR_DONE;
+	}
+	//We may have also exceeded the practical file bounds
+	if( configRet > addressMax )
+	{
+		return UV_ERR_DONE;
+	}
+
+	//Seems like its still a valid address
+	*ret = configRet;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::nextCodingAddress(uv_addr_t start, uint32_t *ret)
+{
+	uint32_t cur = start;
+	
+	for( ;; )
+	{
+		uint32_t last = cur;
+		
+#if 0
+		for( std::vector<UVDAddressRange>::iterator iter = m_uvd->m_noncodingAddresses.begin();
+				iter != m_uvd->m_noncodingAddresses.end(); ++iter )
+		{
+			UVDAddressRange mem = *iter;
+			
+			if( mem.intersects(UVDAddressRange(cur)) )
+			{
+				//Are we out of addresses?
+				if( mem.m_max_addr == UVD_ADDR_MAX )
+				{
+					return UV_ERR_DONE;
+				}
+				
+				//We will keep intersecting until the end of this block, advance past
+				cur = mem.m_max_addr + 1;
+				break;
+			}
+		}
+#endif
+		
+		//Done if we stopped hitting non-coding addresses
+		if( last == cur )
+		{
+			break;
+		}
+	}
+	
+	*ret = cur;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::nextValidExecutableAddress(uv_addr_t start, uint32_t *ret)
+{
+	uv_addr_t cur = start;
+	
+	//Number of non-coding addresses is expected to be small at this point
+	//Better algorithm later if necessary
+	for( ;; )
+	{
+		//Keep iterating as long as another memory region matches
+		uv_addr_t last = cur;
+		uv_err_t rc = UV_ERR_GENERAL;
+		
+		//Filter based on generic invalid addresses
+		rc = nextValidAddress(cur, &cur);
+		uv_assert_err_ret(rc);
+		if( rc == UV_ERR_DONE )
+		{
+			return UV_ERR_DONE;
+		}
+
+		//Then filter based on regions found to be non-coding
+		rc = nextCodingAddress(cur, &cur);
+		uv_assert_err_ret(rc);
+		if( rc == UV_ERR_DONE )
+		{
+			return UV_ERR_DONE;
+		}
+		
+		//If we didn't find any more advancements, break
+		if( cur == last )
+		{
+			break;
+		}
+	}
+
+	return UV_ERR_OK;
+}
+
+#if 0
+uv_err_t UVDAddressSpace::remap(UVDAddressSpace **out)
+{
+	return UV_DEBUG(remap(m_min_addr, m_max_addr, out));
+}
+
+uv_err_t UVDAddressSpace::remap(uv_addr_t minAddress, uv_addr_t maxAddress, UVDAddressSpace **out)
+{
+	UVDAddressSpace *addressSpace = NULL;
+	UVDDataChunk *data = NULL;
+	
+	addressSpace = new UVDAddressSpace();
+	uv_assert_ret(addressSpace);
+	//Default to copying junk over
+	//This calls copy constructor of the std::string I think...
+	*addressSpace = *this;
+	
+	//The important part, remap the data
+	data = new UVDDataChunk();
+	uv_assert_ret(data);
+	uv_assert_err_ret(data->init(m_data, minAddress, maxAddress));
+	addressSpace->m_data = data;
+	
+	//And adjust our bounds
+	//Callee can change it if its a non-trivial virtula mapping
+	addressSpace->m_min_addr = 0;
+	addressSpace->m_max_addr = maxAddress - minAddress;
+	
+	uv_assert_ret(out);
+	*out = addressSpace;
+	return UV_ERR_OK;
+}
+#endif
 
 /*
 UVDAddressSpaces

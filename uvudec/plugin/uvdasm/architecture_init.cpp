@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd.h"
 #include "uvdasm/architecture.h"
 
+#if 0
 /* Internal RAM */
 #define UV_DISASM_MEM_RAM_INT			1
 /* External RAM */
@@ -27,6 +28,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UV_DISASM_MEM_X					0x04
 /* Nonvalitile */
 #define UV_DISASM_MEM_NV				0x08
+#endif
 
 /*
 Often times memory one memory space will intersect with another
@@ -267,7 +269,7 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	
 	if( value_name.empty() )
 	{
-		printf("MCU name not present\n");
+		printf_error("MCU name not present\n");
 		UV_ERR(rc);
 		goto error;
 	}
@@ -397,7 +399,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			}
 			else
 			{
-				printf("Invalid key: %s\n", key.c_str());
+				printf_error("Invalid key: %s\n", key.c_str());
 				UV_ERR(rc);
 				goto error;
 			}
@@ -454,7 +456,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			unsigned int n_parts = 0;
 			unsigned int i = 0;
 			
-			memoryShared->m_cap = 0;
+			//memoryShared->m_cap = 0;
 			parts = uv_split_core(value_cap.c_str(), ',', &n_parts, 1);
 			for( i = 0; i < n_parts; ++i )
 			{
@@ -462,19 +464,22 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 				
 				if( part == "R" )
 				{
-					memoryShared->m_cap |= UV_DISASM_MEM_R;
+					memoryShared->m_R |= UVD_TRI_TRUE;
 				}
 				else if( part == "W" )
 				{
-					memoryShared->m_cap |= UV_DISASM_MEM_W;
+					memoryShared->m_W |= UVD_TRI_TRUE;
 				}
 				else if( part == "X" )
 				{
-					memoryShared->m_cap |= UV_DISASM_MEM_X;
+					memoryShared->m_X |= UVD_TRI_TRUE;
 				}
+				//Eh this is vague, we should get rid of it
 				else if( part == "NV" )
 				{
-					memoryShared->m_cap |= UV_DISASM_MEM_NV;
+					//memoryShared->m_cap |= UV_DISASM_MEM_NV;
+					memoryShared->m_R |= UVD_TRI_TRUE;
+					memoryShared->m_X |= UVD_TRI_TRUE;
 				}
 				else
 				{
@@ -490,6 +495,9 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			Need to decide how much I should differentiate memory types.
 			Ex: could knowing its DRAM vs SRAM help at all during analysis?
 			If programmer could eaisly program without knowing which, it might not be worth differentiating
+			
+			Execute guesses are sloppy since memory technology has nothing to do with capabilities
+			Don't rely on them
 			*/
 			
 			/* Temporary: read and write, unitialized at start */
@@ -498,8 +506,10 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 					|| value_type == "DRAM"
 					|| value_type == "SDRAM" )
 			{
-				memoryShared->m_cap = UV_DISASM_MEM_R 
-						| UV_DISASM_MEM_W;
+				memoryShared->m_R = UVD_TRI_TRUE;
+				memoryShared->m_W = UVD_TRI_TRUE;
+				memoryShared->m_X = UVD_TRI_UNKNOWN;
+				memoryShared->m_NV = UVD_TRI_FALSE;
 			}
 			/* Read only, initialized at start */
 			/* ROM is often used for execution/is allowed, should this be defined here by default? */
@@ -512,30 +522,28 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 					*/
 					|| value_type == "EEPROM" )
 			{
-				memoryShared->m_cap = UV_DISASM_MEM_R 
-						| UV_DISASM_MEM_X
-						| UV_DISASM_MEM_NV;
+				memoryShared->m_R |= UVD_TRI_TRUE;
+				memoryShared->m_W |= UVD_TRI_FALSE;
+				memoryShared->m_X |= UVD_TRI_UNKNOWN;
+				memoryShared->m_NV = UVD_TRI_TRUE;
 			}
 			/* Nonvolatile: readable and writtable by MCU, preserved at startup */
 			else if( value_type == "NV"
 					|| value_type == "flash" )
 			{
-				memoryShared->m_cap = UV_DISASM_MEM_R 
-						| UV_DISASM_MEM_W
-						| UV_DISASM_MEM_NV;
+				memoryShared->m_R |= UVD_TRI_TRUE;
+				memoryShared->m_W |= UVD_TRI_TRUE;
+				memoryShared->m_X |= UVD_TRI_UNKNOWN;
+				memoryShared->m_NV = UVD_TRI_TRUE;
 			}
 			/* Memory mapped special func registers */
 			else if( value_type == "SFR" )
 			{
-				memoryShared->m_cap = UV_DISASM_MEM_R 
-						| UV_DISASM_MEM_W;
+				memoryShared->m_R |= UVD_TRI_TRUE;
+				memoryShared->m_W |= UVD_TRI_TRUE;
+				memoryShared->m_X |= UVD_TRI_FALSE;
+				memoryShared->m_NV = UVD_TRI_FALSE;
 			}
-			/*
-			else if( !strcmp(value_type, "IMM") )
-			{
-				
-			}
-			*/
 			else
 			{
 				printf_debug("Unknown memory type: %s, cap flags must be specified manually\n", value_type.c_str());
@@ -653,7 +661,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 				}
 				else
 				{
-					printf("Invalid key: %s\n", key.c_str());
+					printf_error("Invalid key: %s\n", key.c_str());
 					UV_ERR(rc);
 					goto error;
 				}

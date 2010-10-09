@@ -120,11 +120,11 @@ public:
 	since it will be difficult/impossible to tell what architecture it is simply from the binary
 	Note that we could support multiple archs in the plugin, we just return the best one
 	*/
-	virtual uv_err_t getArchitecture(UVDData *data, const std::string &architecture, UVDArchitecture **out);
+	virtual uv_err_t getArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out);
 	/*
 	Binary format wrapper
 	*/
-	virtual uv_err_t getObject(const UVDData *data, const std::string &architecture, UVDObject **out);
+	virtual uv_err_t getObject(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out);
 
 public:
 	//returned by dlopen()

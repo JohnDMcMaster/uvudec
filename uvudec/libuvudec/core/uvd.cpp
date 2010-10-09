@@ -38,6 +38,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_language.h"
 #include "uvd_log.h"
 #include "uvd_types.h"
+#include "core/runtime.h"
 
 UVD *g_uvd = NULL;
 
@@ -165,64 +166,19 @@ uv_err_t UVD::analyzeCode(UVDAnalyzedCode &analyzedCode)
 
 uv_err_t UVD::analyzeStrings()
 {
+#if 0
 	/*
 	Do strings(3) like processing to find ROM/string data
 	For some formats like ELF, it is possible to get this string table more directly
 	*/
 
 	uv_err_t rc = UV_ERR_GENERAL;
-/*
-	//An individual ASCII chunk, does not account terminating nulls
-	unsigned int minStringSize = 3;
-	//How far apart clusters should be to collect them
-	unsigned int maxClusterSpacing = 3;
-	UVDAnalyzedMemoryRanges startCluster;
-	*/
 	
 	UV_ENTER();
 
 	printf_debug_level(UVD_DEBUG_PASSES, "uvd: analyzing strings...\n");
 	UVDBenchmark stringAnalysisBenchmark;
 	stringAnalysisBenchmark.start();
-
-	/*
-	//For now just detect locations
-	//Eventually would like to get hit count
-
-	//Look for string data, it should have a high ASCII hit count
-	//Then cluster data for total count
-	for( unsigned int i = 0; i < m_data->size(); )
-	{
-		for( unsigned int j = 0; j < m_data->size(); )
-		{
-			int readRaw = 0;
-			char c = 0;
-			
-			readRaw = m_data->read(j);
-			++j;
-			
-			if( readRaw < 0 )
-			{
-				UV_DEBUG(rc);
-				goto error;
-			}
-			c = (char)readRaw;
-			if( !isprint(c) )
-			{
-				break;
-			}
-		}
-		
-		unsigned int endAddr = j - 1;
-		//Goes one beyond locations
-		if( endAddr - i >= minClusterSize )
-		{
-			startCluster.push_back(UVDAnalyzedMemoryRange(i, endAddr));
-		}
-		
-		i = j;
-	}
-	*/
 	
 	//For now assume non-coding addresses are ROM data since thats primary motiviation to exclude them
 	for( unsigned int i = 0; i < m_noncodingAddresses.size(); ++i )
@@ -273,20 +229,32 @@ uv_err_t UVD::analyzeStrings()
 	
 error:
 	return UV_DEBUG(rc);
+#endif
+	return UV_ERR_OK;
 }
 
-uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnalyzedBlock **blockOut)
+uv_err_t UVD::constructBlock(UVDAddressRange addressRange, UVDAnalyzedBlock **blockOut)
 {
+	/*
+	TODO: move this to UVDAnalyzedBlock->init()
+	*/
+	
 	UVDAnalyzedBlock *block = NULL;
 	UVDAnalyzedCode *analyzedCode = NULL;
 	UVDDataChunk *dataChunk = NULL;
+	UVDData *data = NULL;
 	//uint32_t dataSize = 0;
+	
+	uv_assert_ret(addressRange.m_space);
+	data = addressRange.m_space->m_data;
+	uv_addr_t minAddr = addressRange.m_min_addr;
+	uv_addr_t maxAddr = addressRange.m_max_addr;
 	
 	uv_assert_ret(m_config);
 	uv_assert_ret(blockOut);
 	
 	printf_debug("Constructing block 0x%.8X:0x%.8X\n", minAddr, maxAddr);
-	uv_assert_ret(m_data);
+	uv_assert_ret(data);
 
 	uv_assert_ret(minAddr <= maxAddr);
 	//uv_assert_ret(maxAddr <= m_config->m_addr_max);
@@ -294,6 +262,7 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 
 	block = new UVDAnalyzedBlock();
 	uv_assert_ret(block);
+	block->m_addressSpace = addressRange.m_space;
 	
 	analyzedCode = new UVDAnalyzedCode();
 	uv_assert_ret(analyzedCode);
@@ -301,8 +270,8 @@ uv_err_t UVD::constructBlock(unsigned int minAddr, unsigned int maxAddr, UVDAnal
 
 	dataChunk = new UVDDataChunk();
 	uv_assert_ret(dataChunk);
-	uv_assert_ret(m_data);
-	uv_assert_err_ret(dataChunk->init(m_data, minAddr, maxAddr));
+	uv_assert_ret(data);
+	uv_assert_err_ret(dataChunk->init(data, minAddr, maxAddr));
 	uv_assert_ret(dataChunk->m_data);
 	analyzedCode->m_dataChunk = dataChunk;
 
@@ -436,12 +405,11 @@ error:
 
 UVD::UVD()
 {
-	m_data = NULL;
-	m_architecture = 0;
 	m_analyzer = NULL;
 	m_format = NULL;
 	m_config = NULL;
 	m_pluginEngine = NULL;
+	m_runtime = NULL;
 }
 
 UVD::~UVD()
@@ -522,29 +490,28 @@ UVDIterator UVD::begin()
 	
 uv_err_t UVD::begin(UVDIterator &iter)
 {
-	uv_assert_err_ret(iter.init(this));
-	iter.m_data = m_data;
+	UVDAddressSpace *addressSpace = NULL;
+	
+	uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
+	uv_assert_err_ret(iter.init(this, addressSpace));
+	
 	return UV_ERR_OK;
 }
 
-UVDIterator UVD::begin(uint32_t offset)
+UVDIterator UVD::begin(uv_addr_t offset)
 {
 	UVDIterator iter;
+	UVDAddressSpace *addressSpace = NULL;
 	
-	UV_DEBUG(begin(offset, iter));
+	UV_DEBUG(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));	
+	UV_DEBUG(iter.init(this, addressSpace));
+
 	return iter;
 }
 
-uv_err_t UVD::begin(uint32_t offset, UVDIterator &iter)
+uv_err_t UVD::begin(UVDAddress address, UVDIterator &iter)
 {
-	uv_assert_err_ret(beginCore(offset, iter));
-	return UV_ERR_OK;;
-}
-
-uv_err_t UVD::beginCore(uint32_t offset, UVDIterator &out)
-{
-	uv_assert_err_ret(out.init(this, offset, 0));
-	out.m_data = m_data;
+	uv_assert_err_ret(iter.init(this, address, 0));
 
 	return UV_ERR_OK;
 }
@@ -600,8 +567,11 @@ UVDInstructionIterator UVD::instructionBegin()
 
 uv_err_t UVD::instructionBegin(UVDInstructionIterator &iter)
 {
-	//iter.m_data = m_data;
-	uv_assert_err_ret(iter.init(this));
+	UVDAddressSpace *addressSpace = NULL;
+	
+	uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));	
+	uv_assert_ret(addressSpace);
+	uv_assert_err_ret(iter.init(this, addressSpace));
 
 	return UV_ERR_OK;	
 }
@@ -755,7 +725,8 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::st
 	int verbose_old = 0;
 
 	uv_assert_ret(m_config);
-	uv_assert_err_ret(m_analyzer->getNumberAnalyzedBytes(&analyzedBytes));
+	//FIXME: this should be delta, not single...w/e
+	uv_assert_err_ret(iterBegin.m_addressSpace->getNumberAnalyzedBytes(&analyzedBytes));
 	uv_assert_ret(analyzedBytes != 0);
 	verbose_old = m_config->m_verbose;
 	m_config->m_verbose = m_config->m_verbose_printing;
@@ -843,11 +814,6 @@ uv_err_t UVD::changeConfig(UVDConfig *config)
 	return UV_ERR_OK;
 }
 */
-
-UVDData *UVD::getData()
-{
-	return m_data;
-}
 
 uv_err_t UVD::setOutputFormatting(UVDFormat *format)
 {
