@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_format.h"
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"
+#include "core/runtime.h"
 #include "main.h"
 #include "uvdasm/architecture.h"
 #include <stdio.h>
@@ -228,7 +229,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 	uv_assert_ret(inst);
 	uvd = inst->m_uvd;
 	uv_assert_ret(uvd);
-	data = uvd->getData();
+	data = uvdIter->m_addressSpace->m_data;
 	uv_assert_ret(data);
 
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -419,7 +420,7 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDDisasmArchitecture *architecture = NULL;
  	
- 	architecture = (UVDDisasmArchitecture *)g_uvd->m_architecture;
+ 	architecture = (UVDDisasmArchitecture *)g_uvd->m_runtime->m_architecture;
 //printf("printing operand\n");
 
 	//uv_assert(buff);
@@ -547,8 +548,8 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 		
 		//FIXME: global UVD ref
 		uv_assert_ret(g_uvd);
-		uv_assert_ret(g_uvd->m_architecture);
-		architecture = (UVDDisasmArchitecture *)g_uvd->m_architecture;
+		uv_assert_ret(g_uvd->m_runtime->m_architecture);
+		architecture = (UVDDisasmArchitecture *)g_uvd->m_runtime->m_architecture;
 		uv_assert_ret(architecture->m_symMap);
 		if( UV_SUCCEEDED(architecture->m_symMap->getSym(functionName, &sym_value)) )
 		{

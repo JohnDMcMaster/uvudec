@@ -11,6 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_language.h"
 #include "uvd_md5.h"
 #include "uvd_util.h"
+#include "core/runtime.h"
 
 /*
 UVDBinaryFunctionInstance
@@ -184,7 +185,7 @@ uv_err_t UVDBinaryFunctionInstance::toUVDElf(UVDElf **out)
 		std::string sourceFilename;
 		std::string mangledSourceFilename;
 
-		sourceFilename = g_uvd->getData()->getSource();
+		sourceFilename = g_uvd->m_runtime->m_object->m_data->getSource();
 		uv_assert_ret(!sourceFilename.empty());
 		//TODO: add option here for absolute path save
 		mangledSourceFilename = uv_basename(sourceFilename);

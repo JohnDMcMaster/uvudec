@@ -229,9 +229,6 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 		*/
 
 		uv_assert_err_ret(iter.getCurrent(lineRaw));
-		uv_assert_ret(iter.m_data);
-
-		//snprintf(buff, sizeof(buff), "%04X: %s", , lineRaw.c_str());
 		
 		uv_assert_err_ret(m_mainWindow->m_project->getFormat()->addressToAnchorName(iter.getPosition(), anchorName));
 		lineAnchor = "<A name=\"" + anchorName + "\" />\n";

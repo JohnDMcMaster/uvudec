@@ -15,6 +15,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd_config.h"
 #include "uvd_config_symbol.h"
 #include "uvd_address.h"
+#include "core/runtime.h"
 
 UVDPythonInterpreter::UVDPythonInterpreter()
 {
@@ -90,7 +91,7 @@ uv_err_t UVDPythonInterpreter::preparePythonProgram(const UVDInterpreterExpressi
 		addressSpaceName = (*iter).first;
 #endif
 	std::vector<std::string> addressSpaceNames;
-	g_uvd->m_architecture->getAddresssSpaceNames(addressSpaceNames);
+	g_uvd->m_runtime->m_architecture->getAddresssSpaceNames(addressSpaceNames);
 	for( std::vector<std::string>::iterator iter = addressSpaceNames.begin(); iter != addressSpaceNames.end(); ++iter )
 	{
 		std::string addressSpaceName = *iter;

@@ -124,6 +124,7 @@ public:
 	UVDAnalyzedCode *m_code;
 	//If it contains blocks, usually should be more than one
 	std::vector<UVDAnalyzedBlock *> m_blocks;
+	UVDAddressSpace *m_addressSpace;
 };
 
 //No inherent reason why same function can't be at multiple locations, 
@@ -161,18 +162,6 @@ public:
 	uv_err_t init();
 	uv_err_t deinit();
 
-	//How many bytes we have to analyze in total
-	//Based on size of program and analysis exclusions
-	uv_err_t getNumberAnalyzedBytes(uint32_t *analyzedBytesOut);
-	//Actual allowable address limits, not just what config says
-	uv_err_t getAddressMin(uv_addr_t *out);
-	uv_err_t getAddressMax(uv_addr_t *out);
-
-	//Next valid address capable of having any sort of analysis on it
-	uv_err_t nextValidAddress(uv_addr_t start, uv_addr_t *ret);
-	//Like above, but also must be a canidate for an executable area
-	uv_err_t nextValidExecutableAddress(uv_addr_t start, uv_addr_t *ret);
-
 	uv_err_t insertReference(uint32_t targetAddress, uint32_t from, uint32_t type);
 	//For destinations, not sources
 	uv_err_t insertCallReference(uv_addr_t targetAddress, uv_addr_t from);
@@ -206,13 +195,6 @@ public:
 	uv_err_t identifyKnownFunctions();
 
 	//static uv_err_t(UVDInstruction *instruction, const UVDVariableMap &attributes);
-
-private:
-	//Force a rebuild of the internal database
-	//uv_err_t rebuildDb();
-	//Only based on coding list, not any other validity
-	//Used internally by nextValidExecutionAddress()
-	uv_err_t nextCodingAddress(uv_addr_t start, uv_addr_t *ret);
 
 public:
 	//Superblock for block representation of program
