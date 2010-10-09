@@ -91,6 +91,11 @@ uv_err_t UVDData::readData(uint32_t offset, char *c) const
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDData::readData(uint32_t offset, uint8_t *c) const
+{
+	return UV_DEBUG(readData(offset, (char *)c));	
+}
+
 int UVDData::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
 	unsigned int end = offset + bufferSize;

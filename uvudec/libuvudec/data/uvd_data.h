@@ -33,6 +33,7 @@ public:
 	//By default, this calls read()
 	virtual uv_err_t readData(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
 	virtual uv_err_t readData(uint32_t offset, char *c) const;	
+	virtual uv_err_t readData(uint32_t offset, uint8_t *c) const;	
 	
 	//WARNING: next 2 read implementations will rely on each other, you must implement at least one
 	//Somewhat dangerous for new classes...maybe should do something different
