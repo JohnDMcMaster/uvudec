@@ -257,8 +257,8 @@ uv_err_t UVDBinaryFunctionInstance::computeHash()
 	buffSize = m_data->size();
 
 	//And compute an MD5
-	uv_assert_err_ret(uv_md5(buff, buffSize, m_MD5));
-	uv_assert_ret(!m_MD5.empty());
+	//uv_assert_err_ret(uv_md5(buff, buffSize, m_MD5));
+	//uv_assert_ret(!m_MD5.empty());
 	free(buff);
 	
 	return UV_ERR_OK;
@@ -278,8 +278,8 @@ uv_err_t UVDBinaryFunctionInstance::computeRelocatableHash()
 	buffSize = m_data->size();
 
 	//And compute an MD5
-	uv_assert_err_ret(uv_md5(buff, buffSize, m_relocatableMD5));
-	uv_assert_ret(!m_relocatableMD5.empty());
+	//uv_assert_err_ret(uv_md5(buff, buffSize, m_relocatableMD5));
+	//uv_assert_ret(!m_relocatableMD5.empty());
 	//Finished, free buffer
 	free(buff);
 	

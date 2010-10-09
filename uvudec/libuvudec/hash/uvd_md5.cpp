@@ -6,10 +6,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd_types.h" 
 #include "uvd_md5.h"
+#if USING_GNU_MD5
 #include "uvd_md5_GNU.h"
+#endif
 #include <stdlib.h>
 
-void uv_md5_format(char resblock[16], std::string &sOut)
+#if USING_GNU_MD5
+static void uv_md5_format(char resblock[16], std::string &sOut)
 {
 	sOut = "";
 	for( unsigned int i = 0; i < 16; ++i )
@@ -21,10 +24,12 @@ void uv_md5_format(char resblock[16], std::string &sOut)
 	}
 	printf_debug("Hash: %s\n", sOut.c_str());
 }
+#endif
 
 //Simple MD5 for text
 uv_err_t uv_md5(const std::string &sIn, std::string &sOut)
 {
+#if USING_GNU_MD5
 	//Binary MD5
 	char resblock[16];
 	
@@ -33,11 +38,15 @@ uv_err_t uv_md5(const std::string &sIn, std::string &sOut)
 	uv_md5_format(resblock, sOut);
 	
 	return UV_ERR_OK;
+#else
+	return UV_ERR_NOTSUPPORTED;
+#endif
 }
 
 //For binary
 uv_err_t uv_md5(const char *buff, uint32_t buffSize, std::string &sOut)
 {
+#if USING_GNU_MD5
 	//Binary MD5
 	char resblock[16];
 	
@@ -48,4 +57,8 @@ uv_err_t uv_md5(const char *buff, uint32_t buffSize, std::string &sOut)
 	uv_md5_format(resblock, sOut);
 
 	return UV_ERR_OK;
+#else
+	return UV_ERR_NOTSUPPORTED;
+#endif
 }
+

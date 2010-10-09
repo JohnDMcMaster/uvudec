@@ -64,7 +64,6 @@ CXX_SRCS = 	\
 			$(FLIRT_DIR)/sig/writer.cpp \
 			$(HASH_DIR)/uvd_crc.cpp \
 			$(HASH_DIR)/uvd_md5.cpp \
-			$(HASH_DIR)/uvd_md5_GNU.cpp \
 			$(INIT_DIR)/uvd_arg.cpp \
 			$(INIT_DIR)/uvd_arg_util.cpp \
 			$(INIT_DIR)/uvd_config.cpp \
