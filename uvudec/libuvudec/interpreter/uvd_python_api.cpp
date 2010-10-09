@@ -88,8 +88,11 @@ uv_err_t UVDPythonAPIInterpreter::execPythonLines(std::string pycode, std::strin
 	if( v == NULL )
 	{
 		printf_error("python run failed\n");
-		printf_error("code:\n\n%s\n\n", pycode.c_str());
-		PyErr_Print();
+		if( g_config && g_config->anyVerboseActive() )
+		{
+			printf_error("code:\n\n%s\n\n", pycode.c_str());
+			PyErr_Print();
+		}
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	Py_DECREF(v);
