@@ -257,6 +257,7 @@ uv_err_t UVDPluginEngine::initPlugin(const std::string &name)
 	if( iter == m_plugins.end() )
 	{
 		printf_error("no plugin loaded named %s\n", name.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	plugin = (*iter).second;
 	uv_assert_ret(plugin);
@@ -277,6 +278,7 @@ uv_err_t UVDPluginEngine::deinitPlugin(const std::string &name)
 	if( UV_FAILED(plugin->deinit(g_config)) )
 	{
 		printf_error("failed to cleanly unload plugin %s\n", name.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
 	m_loadedPlugins.erase(iter);
