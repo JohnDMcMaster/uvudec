@@ -33,11 +33,17 @@ LDFLAGS += -static -static-libgcc -Wl,'-z nodefaultlib'
 else
 
 LIBS +=
+# Setting the library runtime path to a way I want is tricky
+# People need to be able to install it, but I also want dynamic deployment
+# http://xahlee.org/UnixResource_dir/_/ldpath.html provides some good ideas on how to deal with this with LD_LIBRARY_PATH
+# I never thought about shipping as .o files, although I'm not sure if its a good idea or not..sounds painful
+# Wrapper scripts are probably my favorite
+
 # Hmm I guess it fixes up the correct paths automagically for us?
 # these paths are relative to the other dir
 # FIXME
 # ick well they are at the same level, so it just happens to work out
-LDFLAGS += -Wl,-rpath,$(LIB_DIR) -Wl,-rpath,$(PLUGIN_LIB_DIR)
+# LDFLAGS += -Wl,-rpath,$(LIB_DIR) -Wl,-rpath,$(PLUGIN_LIB_DIR)
 #LDFLAGS += -Wl,-rpath,../lib -Wl,-rpath,../lib/plugin
 
 endif
