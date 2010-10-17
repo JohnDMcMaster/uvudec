@@ -50,6 +50,8 @@ public:
 #define UVD_FLIRT_PAT_RELOCATION_CHAR				'.'
 #define UVD_FLIRT_PAT_PUBLIC_NAME_CHAR				':'
 #define UVD_FLIRT_PAT_REFERENCED_NAME_CHAR			'^'
+//appended to public name entries after offset to indicate it shouldn't be used outside of the object file
+#define UVD_FLIRT_PAT_LOCAL_SYMBOL_CHAR				'@'
 
 #define UVD_FLIRT_PAT_CRC_LEN_MAX					0xFF
 

@@ -192,7 +192,7 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 	//weak syms are close enough to local, and certainly aren't global
 	if( flags & BSF_LOCAL || flags & BSF_WEAK )
 	{
-		offsetSuffix = "@";
+		offsetSuffix += UVD_FLIRT_PAT_LOCAL_SYMBOL_CHAR;
 	}
 	
 	if( g_config->m_flirt.m_prefixUnderscores )
