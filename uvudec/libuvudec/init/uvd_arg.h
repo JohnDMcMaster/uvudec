@@ -30,11 +30,21 @@ Should be parsable from a config file or from command line
 
 --key=val is preferred form
 --defauledKey will, for example, assume you left off the = for a default and not check the next val
+
+FIXME: we need to subclass this or something
+I think we only deal with pointers to it anyway
 */
 class UVDArgConfig
 {
 public:
 	UVDArgConfig();
+	//For naked argumentss
+	//Of course, set min required to 0 for no requirement
+	UVDArgConfig(UVDArgConfigHandler handler,
+			const std::string &helpMessage,
+			uint32_t minRequired, 
+			bool combine, 
+			bool alwaysCall);
 	UVDArgConfig(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
@@ -73,7 +83,11 @@ public:
 	*/
 	std::string m_propertyForm;
 	//Single letter -X form, without -
-	char m_shortForm;
+	union
+	{
+		char m_shortForm;
+		bool m_alwaysCall;
+	};
 	//Longer letters --my-arg form, without --
 	std::string m_longForm;
 	//Briefly what the arg does
@@ -81,12 +95,36 @@ public:
 	//If it has enum vals, we need to print those as well.  One new line and expected to be newline terminated
 	std::string m_helpMessageExtra;
 	//Number trailing arguments, prob should be only 0 or 1
+	//Minimum number of arguments for naked arguments, does not have to be exactly equal
 	uint32_t m_numberExpectedValues;
 	//What to call when found
 	UVDArgConfigHandler m_handler;
-	//If set, an argument of the form --key will accept even if required arguments is greater
-	//callback should expect this and create the appropriete default itself
-	bool m_hasDefault;
+	union
+	{
+		//If set, an argument of the form --key will accept even if required arguments is greater
+		//callback should expect this and create the appropriete default itself
+		bool m_hasDefault;
+		//Spit out args as we go or give single vector at end?
+		//Former is more control, but latter is what is usually needed and more convenient
+		bool m_combine;
+	};
+};
+
+/*
+A --arg, -a, --adsf.adsf=val, etc type args
+*/
+class UVDPropertyArgConfig : public UVDArgConfig
+{
+public:
+};
+
+/*
+Handler policy for arguments with no - prefix
+We might make this more advanced to handle positional parameters, but right now is singleton
+*/
+class UVDNakedArgConfig : public UVDArgConfig
+{
+public:
 };
 
 #define UVD_ARG_FORM_UNKNOWN			0
@@ -115,6 +153,7 @@ public:
 	//The UVD_ARG_FORM_* value
 	uint32_t m_keyForm;
 	//Our key.  Should not have any -'s
+	//Also if this is a naked arg, we store this here since they are somewhat indistinguishable
 	std::string m_key;
 	//If we have a --key=val form
 	bool m_embeddedValPresent;

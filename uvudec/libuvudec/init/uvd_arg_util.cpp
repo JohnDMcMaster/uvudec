@@ -79,7 +79,7 @@ uv_err_t processArgCore(const std::string &arg, UVDParsedArg &parsedArg)
 	parsedArg.m_raw = arg;
 
 	//See if we can ID what form it is
-	if( arg.find('-') == std::string::npos )
+	if( arg[0] != '-' )
 	{
 		parsedArg.m_keyForm = UVD_ARG_FORM_NAKED;
 		parsedArg.m_key = arg;
@@ -202,3 +202,4 @@ uv_err_t matchArgConfig(const std::vector<UVDArgConfig *> &argConfigs, UVDParsed
 	UVDHelp();
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
+
