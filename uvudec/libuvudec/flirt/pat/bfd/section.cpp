@@ -35,21 +35,41 @@ uv_err_t UVDBFDPatSection::setFunctionSizes()
 	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.m_functions.begin(); iter != m_functions.m_functions.end(); )
 	{
 		UVDBFDPatFunction *function = NULL;
+		std::vector<UVDBFDPatFunction *>::iterator iterStart = iter;
 		
-		function = *iter;
-		++iter;
-		//Did we reach the section end?
-		if( iter == m_functions.m_functions.end() )
+		/*
+		What if we have a 0 sized symbol in the section?
+			Special case: symbol is at the end of the section
+		*/
+		do
 		{
-			function->m_size = sectionSize - function->m_offset;
-		}
-		else
-		{
-			UVDBFDPatFunction *functionNext = NULL;
+			function = *iter;
+			++iter;
+			//Get the next size
+			//Did we reach the section end?
+			if( iter == m_functions.m_functions.end() )
+			{
+				function->m_size = sectionSize - function->m_offset;
+				//Even if we still have 0 size, we need to break
+				break;
+			}
+			else
+			{
+				UVDBFDPatFunction *functionNext = NULL;
 			
-			functionNext = *iter;
-			function->m_size = functionNext->m_offset - function->m_offset;
+				functionNext = *iter;
+				function->m_size = functionNext->m_offset - function->m_offset;
+			}
 		}
+		while( function->m_size == 0 );
+		
+		//And set any previously skipped elements from same symbol position
+		while( iterStart != iter )
+		{
+			(*iterStart)->m_size = function->m_size;
+			++iterStart;
+		}
+		
 		printf_flirt_debug("early func size %s is 0x%.4X\n", bfd_asymbol_name(function->m_bfdAsymbol), function->m_size);
 	}
 	return UV_ERR_OK;
