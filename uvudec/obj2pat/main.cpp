@@ -51,10 +51,10 @@ static uv_err_t doConvert()
 	return rc;
 }
 
-#if 0
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
 {
 	UVDConfig *config = NULL;
+	UVDConfigFLIRT *flirtConfig = NULL;
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
@@ -64,14 +64,35 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uv_assert_ret(config->m_argv);
 	uv_assert_ret(argConfig);
 
+	flirtConfig = &g_config->m_flirt;
+
 	if( !argumentArguments.empty() )
 	{
 		firstArg = argumentArguments[0];
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
 	}
 
-	if( false )
+	if( argConfig->isNakedHandler() )
 	{
+		/*
+		Target files
+		Assume first input argument is input and second is output
+		We could also do funky guess stuff
+		Think we should let pat2sig deal with combining files
+		*/
+		if( argumentArguments.size() >= 1 )
+		{
+			flirtConfig->m_targetFiles.push_back(argumentArguments[0]);
+		}
+		if( argumentArguments.size() >= 2 )
+		{
+			flirtConfig->m_outputFile = argumentArguments[1];
+		}
+		if( argumentArguments.size() >= 3 )
+		{
+			printf_error("only 2 max bare arguments, given: %d\n", argumentArguments.size());
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
 	}
 	else
 	{
@@ -81,7 +102,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 	return UV_ERR_OK;
 }
-#endif
 
 uv_err_t initProgConfig()
 {
@@ -89,6 +109,8 @@ uv_err_t initProgConfig()
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
+
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input file] [output file]"));
 
 	return UV_ERR_OK;	
 }
@@ -137,7 +159,6 @@ uv_err_t uvmain(int argc, char **argv)
 		goto error;
 	}
 
-
 	//Create a doConvertr engine active on that input
 	printf_debug_level(UVD_DEBUG_SUMMARY, "doConvert: initializing FLIRT engine...\n");
 	if( UV_FAILED(UVDFLIRT::getFLIRT(&g_flirt)) )
@@ -156,6 +177,12 @@ uv_err_t uvmain(int argc, char **argv)
 	if( flirtConfig->m_targetFiles.empty() )
 	{
 		printf_error("Target file(s) not specified\n");
+		UVDHelp();
+		uv_assert_err(UV_ERR_GENERAL);
+	}
+	if( flirtConfig->m_targetFiles.size() != 1 )
+	{
+		printf_error("requires exactly 1 target file, got %d\n", flirtConfig->m_targetFiles.size());
 		UVDHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
