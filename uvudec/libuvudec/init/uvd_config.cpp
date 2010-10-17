@@ -20,6 +20,11 @@ UVDConfig *g_config = NULL;
 
 UVDConfig::UVDConfig()
 {
+	if( g_config )
+	{
+		printf_error("config alread initialized!\n");
+		//UVD_PRINT_STACK();
+	}
 	m_argc = 0;
 	m_argv = NULL;
 
@@ -474,6 +479,21 @@ void UVDConfig::setVerboseAll()
 	UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, true);
 }
 
+uv_err_t UVDConfig::registerDefaultArgument(UVDArgConfigHandler handler,
+		const std::string &helpMessage,
+		uint32_t minRequired,
+		bool combine,
+		bool alwaysCall)
+{
+	UVDArgConfig *argConfig = NULL;
+
+	argConfig = new UVDArgConfig(handler, helpMessage, minRequired, combine, alwaysCall);
+	uv_assert_ret(argConfig);
+	m_configArgs.push_back(argConfig);
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		char shortForm, std::string longForm, 
 		std::string helpMessage,
@@ -482,7 +502,7 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		bool hasDefault,
 		const std::string &plugin)
 {
-	uv_assert_err_ret(registerArgument(propertyForm,
+	return UV_DEBUG(registerArgument(propertyForm,
 			shortForm, longForm, 
 			helpMessage,
 			"",
@@ -490,8 +510,6 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 			handler,
 			hasDefault,
 			plugin));
-
-	return UV_ERR_OK;
 }
 		
 uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,

@@ -139,6 +139,17 @@ public:
 	void setVerboseAll();
 	void clearVerboseAll();
 
+	/*
+	Combine: only spit out a single vector with all of them instead of as we go
+	Always call: if combine is set, should we call the handler even or 0 args?
+		This is important as these may be required and we want to do error handling
+	Only one default handler can be registered, behavior is undefined if this is called twice
+	*/
+	uv_err_t registerDefaultArgument(UVDArgConfigHandler handler,
+			const std::string &helpMessage = "",
+			uint32_t minRequired = 0,
+			bool combine = true,
+			bool alwaysCall = true);
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,

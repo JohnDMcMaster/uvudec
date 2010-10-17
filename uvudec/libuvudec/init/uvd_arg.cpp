@@ -4,6 +4,10 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+/*
+FIXME: naked arg stuff added a number of quick hacks and we should rewrite using polymorphism or something
+*/
+
 #include "uvd_arg.h"
 #include "uvd_arg_property.h"
 #include "uvd_arg_util.h"
@@ -23,6 +27,24 @@ static void UVDPrintVersion(void);
 UVDArgConfig::UVDArgConfig()
 {
 	m_hasDefault = false;
+	m_numberExpectedValues = 0;
+	m_shortForm = 0;
+}
+
+UVDArgConfig::UVDArgConfig(UVDArgConfigHandler handler,
+		const std::string &helpMessage,
+		uint32_t minRequired,
+		bool combine,
+		bool alwaysCall)
+{
+	//Union full zero
+	m_shortForm = 0;
+
+	m_combine = combine;
+	m_handler = handler;
+	m_alwaysCall = alwaysCall;
+	m_numberExpectedValues = minRequired;
+	m_helpMessage = helpMessage;
 }
 
 UVDArgConfig::UVDArgConfig(const std::string &propertyForm,
@@ -92,6 +114,23 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 {	
 	uv_assert_err_ret(setupInstallDir());
 
+	//Used if m_alwaysCall or m_combine is used
+	std::vector<std::string> nakedArgs;
+	const UVDArgConfig *nakedConfig = NULL;
+
+	for( std::vector<UVDArgConfig *>::const_iterator iter = argConfigs.begin();
+			iter != argConfigs.end(); ++iter )
+	{
+		const UVDArgConfig *argConfig = *iter;
+			
+		uv_assert_ret(argConfig);
+		if( argConfig->isNakedHandler() )
+		{
+			nakedConfig = argConfig;
+			break;
+		}
+	}
+
 	/*
 	Core high level argument dispatching
 	We could store args as property map, but we'd still have to iterate over to match each part
@@ -115,8 +154,21 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 			uv_assert_err_ret(matchArgConfig(argConfigs, parsedArg, &matchedConfig));
 			uv_assert_ret(matchedConfig);
 			std::vector<std::string> argumentArguments;
+			//For now hand this off as single args
+			//Consider instead grouping into one large list
+			if( parsedArg.m_keyForm == UVD_ARG_FORM_NAKED )
+			{
+				uv_assert_ret(nakedConfig == matchedConfig);
+				nakedArgs.push_back(parsedArg.m_key);
+				if( nakedConfig->m_combine )
+				{
+					//Don't continue to process this arg now
+					continue;
+				}
+				argumentArguments.push_back(parsedArg.m_key);
+			}
 			//Do we need to consume an arg for this?
-			if( matchedConfig->m_numberExpectedValues > 0 )
+			else if( matchedConfig->m_numberExpectedValues > 0 )
 			{
 				uv_assert_ret(matchedConfig->m_numberExpectedValues == 1);
 				if( parsedArg.m_embeddedValPresent )
@@ -137,6 +189,29 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 			}
 			//And call their handler
 			uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments);
+			uv_assert_err_ret(handlerRc);
+			//Some option like help() has been called that means we should abort program
+			if( handlerRc == UV_ERR_DONE )
+			{
+				return UV_ERR_DONE;
+			}
+		}
+	}
+	
+	//Did we get enough values?
+	if( nakedConfig )
+	{
+		//Did we get enough args?
+		if( nakedArgs.size() < nakedConfig->m_numberExpectedValues )
+		{
+			printf_error("need at least %d arguments, got %d\n", nakedConfig->m_numberExpectedValues, nakedArgs.size());
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		//We would have already called the handler if we had previous args
+		if( nakedConfig->m_combine || (nakedConfig->m_alwaysCall && nakedArgs.empty()) )
+		{
+			//And call their handler
+			uv_err_t handlerRc = nakedConfig->m_handler(nakedConfig, nakedArgs);
 			uv_assert_err_ret(handlerRc);
 			//Some option like help() has been called that means we should abort program
 			if( handlerRc == UV_ERR_DONE )
@@ -529,9 +604,13 @@ static uv_err_t UVDPrintLoadedPlugins()
 
 uv_err_t printArg(UVDArgConfig *argConfig, const std::string &indent)
 {
-	printf_help("%s--%s (%s): %s\n",
-			indent.c_str(), argConfig->m_longForm.c_str(), argConfig->m_propertyForm.c_str(),
-			argConfig->m_helpMessage.c_str());
+	//Naked arguments don't have -- stuff
+	if( !argConfig->isNakedHandler() )
+	{
+		printf_help("%s--%s (%s): %s\n",
+				indent.c_str(), argConfig->m_longForm.c_str(), argConfig->m_propertyForm.c_str(),
+				argConfig->m_helpMessage.c_str());
+	}
 	if( !argConfig->m_helpMessageExtra.empty() )
 	{
 		printf_help("%s%s", indent.c_str(), argConfig->m_helpMessageExtra.c_str());
@@ -543,18 +622,32 @@ static uv_err_t UVDPrintUsage()
 {
 	const char *program_name = "";
 	UVDPluginEngine *pluginEngine = NULL;
+	std::string argsExtra;
 	
 	uv_assert_ret(g_config);
 	pluginEngine = &g_config->m_plugin.m_pluginEngine;
 	
+	for( std::vector<UVDArgConfig>::size_type i = 0; i < g_config->m_configArgs.size(); ++i )
+	{
+		UVDArgConfig *argConfig = g_config->m_configArgs[i];
+		
+		uv_assert_ret(argConfig);
+		if( argConfig->isNakedHandler() )
+		{
+			argsExtra = argConfig->m_helpMessage;
+		}
+	}
+
 	if( g_config->m_argv )
 	{
 		program_name = g_config->m_argv[0];
 	}
 
 	printf_help("\n");
-	printf_help("Usage: %s <args>\n", program_name);
+	printf_help("Usage: %s <args>%s\n", program_name, argsExtra.c_str());
 	printf_help("Args:\n");
+	//Maybe standard help should alphabatize these by -- form?
+	//Detailed print should do by property since not all might have --
 	for( std::vector<UVDArgConfig>::size_type i = 0; i < g_config->m_configArgs.size(); ++i )
 	{
 		UVDArgConfig *argConfig = g_config->m_configArgs[i];
