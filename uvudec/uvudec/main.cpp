@@ -124,6 +124,9 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
 	}
 
+	/*
+	FIXME: why don't we have input file listed here?
+	*/
 	if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_FILE )
 	{
 		uv_assert_ret(!argumentArguments.empty());
