@@ -42,7 +42,6 @@ uv_err_t UVDBFDPatSection::setFunctionSizes()
 		if( iter == m_functions.m_functions.end() )
 		{
 			function->m_size = sectionSize - function->m_offset;
-			break;
 		}
 		else
 		{
@@ -51,7 +50,7 @@ uv_err_t UVDBFDPatSection::setFunctionSizes()
 			functionNext = *iter;
 			function->m_size = functionNext->m_offset - function->m_offset;
 		}
-		printf_debug("early func size %s is 0x%.4X\n", bfd_asymbol_name(function->m_bfdAsymbol), function->m_size);
+		printf_flirt_debug("early func size %s is 0x%.4X\n", bfd_asymbol_name(function->m_bfdAsymbol), function->m_size);
 	}
 	return UV_ERR_OK;
 }
