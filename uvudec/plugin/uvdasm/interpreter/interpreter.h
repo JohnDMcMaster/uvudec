@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_INTERPRETER_H
 
 #include <string>
-#include "uvd_types.h"
+#include "uvd/util/types.h"
 #include "uvdasm/interpreter/instruction.h"
 
 //Resultant address from a call routine

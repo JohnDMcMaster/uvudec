@@ -4,13 +4,13 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_util.h"
-#include "uvd_address.h"
-#include "uvd_config.h"
+#include "uvd/util/util.h"
+#include "uvd/assembly/address.h"
+#include "uvd/init/config.h"
 #include "uvdasm/config_symbol.h"
-#include "uvd_format.h"
-#include "uvd_instruction.h"
-#include "uvd_types.h"
+#include "uvd/language/format.h"
+#include "uvd/assembly/instruction.h"
+#include "uvd/util/types.h"
 #include "uvdasm/instruction.h"
 #include "uvdasm/opcode_table.h"
 #include <string>

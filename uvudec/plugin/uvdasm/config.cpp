@@ -6,8 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvdasm/config.h"
 #include "uvdasm/plugin.h"
-#include "uvd_arg_property.h"
-#include "uvd_language.h"
+#include "uvd/init/arg_property.h"
+#include "uvd/language/language.h"
 
 UVDAsmConfig *g_asmConfig = NULL;
 

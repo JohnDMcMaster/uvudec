@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDASM_CONFIG_H
 #define UVDASM_CONFIG_H
 
-#include "init/uvd_config.h"
+#include "uvd/init/config.h"
 
 class UVDAsmPlugin;
 class UVDAsmConfig

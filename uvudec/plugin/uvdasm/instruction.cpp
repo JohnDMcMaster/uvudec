@@ -4,14 +4,13 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd.h"
+#include "uvd/core/uvd.h"
 #include "uvdasm/architecture.h"
 #include "uvdasm/instruction.h"
-#include "uvd_types.h"
-#include "core/runtime.h"
-#include "uvd_format.h"
-#include "uvd_util.h"
-#include "main.h"
+#include "uvd/util/types.h"
+#include "uvd/core/runtime.h"
+#include "uvd/language/format.h"
+#include "uvd/util/util.h"
 #include <vector>
 #include <string>
 #include <stdio.h>

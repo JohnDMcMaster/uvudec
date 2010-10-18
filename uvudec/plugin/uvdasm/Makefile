@@ -9,6 +9,7 @@ PLUGIN_NAME=uvdasm
 CC_SRCS =   \
 
 CXX_SRCS = 	\
+			flirt/flirt.cpp \
 			architecture.cpp \
 			architecture_init.cpp \
 			config.cpp \

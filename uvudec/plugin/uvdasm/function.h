@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDASM_FUNCTION_H
 #define UVDASM_FUNCTION_H
 
-#include "uvd_types.h"
+#include "uvd/util/types.h"
 
 //These are part of operands, which already have a name
 //Thus certain object such as that are uncessary

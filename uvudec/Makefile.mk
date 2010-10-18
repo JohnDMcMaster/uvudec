@@ -41,22 +41,6 @@ PLUGIN_LIB_DIR=$(LIB_DIR)/plugin
 # Libuvudec
 # TODO: these should all be removed as we move to absolute paths from the root uvd dir
 LIBUVUDEC_DIR=$(ROOT_DIR)/libuvudec
-ASSEMBLY_DIR=$(LIBUVUDEC_DIR)/assembly
-COMPILER_DIR=$(LIBUVUDEC_DIR)/compiler
-CORE_DIR=$(LIBUVUDEC_DIR)/core
-DATA_DIR=$(LIBUVUDEC_DIR)/data
-ELF_DIR=$(LIBUVUDEC_DIR)/elf
-EVENT_DIR=$(LIBUVUDEC_DIR)/event
-FLIRT_DIR=$(LIBUVUDEC_DIR)/flirt
-FLIRT_BFD_DIR=$(FLIRT_DIR)/bfd
-HASH_DIR=$(LIBUVUDEC_DIR)/hash
-INIT_DIR=$(LIBUVUDEC_DIR)/init
-INTERPRETER_DIR=$(LIBUVUDEC_DIR)/interpreter
-LANGUAGE_DIR=$(LIBUVUDEC_DIR)/language
-PROJECT_DIR=$(LIBUVUDEC_DIR)/project
-RELOCATION_DIR=$(LIBUVUDEC_DIR)/relocation
-UTIL_DIR=$(LIBUVUDEC_DIR)/util
-LIB_PLUGIN_DIR=$(LIBUVUDEC_DIR)/plugin
 # Others
 GUI_DIR=$(ROOT_DIR)/GUI
 PLUGIN_DIR=$(ROOT_DIR)/plugin
@@ -67,12 +51,13 @@ include $(ROOT_DIR)/Makefile.version
 
 PACKAGE=uvudec
 
+# Moving away from this option and instead using paths
+ifneq ($(NO_INCLUDE_DOT),Y)
+INCLUDES += -I.
+INCLUDES += -I$(ROOT_DIR)
+endif
 # hmm include are kinda weird, all projects use <dir_name>/<file_name>.h, but we include all invidual dirs
-INCLUDES += -I. -I$(ROOT_DIR) -I$(LIBUVUDEC_DIR)
-#for curDir in $(SOURCE_DIRS); do \
-#INCLUDES += " -I$${curDir}" ;\
-#done;
-INCLUDES += -I$(ASSEMBLY_DIR) -I$(COMPILER_DIR) -I$(CORE_DIR) -I$(DATA_DIR) -I$(ELF_DIR) -I$(FLIRT_DIR) -I$(FLIRT_BFD_DIR) -I$(HASH_DIR) -I$(INIT_DIR) -I$(INTERPRETER_DIR) -I$(LANGUAGE_DIR) -I$(PROJECT_DIR) -I$(RELOCATION_DIR) -I$(UTIL_DIR)
+INCLUDES += -I$(LIBUVUDEC_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g

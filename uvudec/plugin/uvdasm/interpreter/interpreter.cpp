@@ -5,7 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdasm/interpreter/interpreter.h"
-#include "uvd_types.h"
+#include "uvdasm/config.h"
+#include "uvd/util/types.h"
 
 UVDInterpreterExpression::UVDInterpreterExpression()
 {	

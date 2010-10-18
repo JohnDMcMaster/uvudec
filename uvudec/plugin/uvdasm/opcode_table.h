@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvdasm/instruction.h"
 #include "uvdasm/interpreter.h"
-#include "uvd_types.h"
+#include "uvd/util/types.h"
 
 #include <string>
 

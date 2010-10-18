@@ -11,19 +11,19 @@ obj2pat entry point
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
-#include "uvd_arg_property.h"
-#include "uvd_arg_util.h"
-#include "uvd_error.h"
-#include "uvd_log.h"
-#include "uvd_init.h"
-#include "uvd_util.h"
-#include "uvd.h"
-#include "flirt/flirt.h"
-#include "flirt/args.h"
-#include "uvd_data.h"
-#include "uvd_format.h"
-#include "uvd_address.h"
-#include "uvd_language.h"
+#include "uvd/init/arg_property.h"
+#include "uvd/init/arg_util.h"
+#include "uvd/util/error.h"
+#include "uvd/util/log.h"
+#include "uvd/init/init.h"
+#include "uvd/util/util.h"
+#include "uvd/core/uvd.h"
+#include "uvd/flirt/flirt.h"
+#include "uvd/flirt/args.h"
+#include "uvd/data/data.h"
+#include "uvd/language/format.h"
+#include "uvd/assembly/address.h"
+#include "uvd/language/language.h"
 
 static uv_err_t versionPrintPrefixThunk();
 
@@ -51,10 +51,10 @@ static uv_err_t doConvert()
 	return rc;
 }
 
-#if 0
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
 {
 	UVDConfig *config = NULL;
+	UVDConfigFLIRT *flirtConfig = NULL;
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
@@ -63,6 +63,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uv_assert_ret(config);
 	uv_assert_ret(config->m_argv);
 	uv_assert_ret(argConfig);
+	flirtConfig = &g_config->m_flirt;
+	uv_assert_ret(flirtConfig);
 
 	if( !argumentArguments.empty() )
 	{
@@ -70,8 +72,32 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
 	}
 
-	if( false )
+	if( argConfig->isNakedHandler() )
 	{
+		/*
+		Try to guess type based on file suffixes
+		*/
+		
+		for( std::vector<std::string>::iterator iter = argumentArguments.begin();
+				iter != argumentArguments.end(); ++iter )
+		{
+			const std::string &arg = *iter;
+			
+			if( arg.find(".pat") != std::string::npos )
+			{
+				flirtConfig->m_targetFiles.push_back(arg);
+			}
+			else if( arg.find(".sig") != std::string::npos )
+			{
+				flirtConfig->m_outputFile = arg;
+			}
+			//Hmm okay append suffixes and guess
+			else
+			{
+				printf_error("cannot guess argument purpose: %s\n", arg.c_str());
+				return UV_DEBUG(UV_ERR_GENERAL);
+			}
+		}
 	}
 	else
 	{
@@ -81,7 +107,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 	return UV_ERR_OK;
 }
-#endif
 
 uv_err_t initProgConfig()
 {
@@ -89,6 +114,8 @@ uv_err_t initProgConfig()
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
+
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [.pat files, .sig file]"));	
 
 	return UV_ERR_OK;	
 }

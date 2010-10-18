@@ -4,9 +4,9 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "plugin/plugin.h"
-#include "util/io.h"
-#include "uvd.h"
+#include "uvd/plugin/plugin.h"
+#include "uvd/util/io.h"
+#include "uvd/core/uvd.h"
 
 uv_err_t UVDPluginMain(UVDConfig *config, UVDPlugin **out)
 {

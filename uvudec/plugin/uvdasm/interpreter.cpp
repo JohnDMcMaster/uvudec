@@ -5,11 +5,11 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_util.h"
-#include "uvd_config.h"
+#include "uvd/init/config.h"
+#include "uvd/language/language.h"
+#include "uvd/util/util.h"
+#include "uvdasm/config.h"
 #include "uvdasm/interpreter.h"
-#include "uvd_language.h"
-
 
 UVDConfigExpression::UVDConfigExpression()
 {

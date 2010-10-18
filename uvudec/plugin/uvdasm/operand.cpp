@@ -4,15 +4,15 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd.h"
+#include "uvd/core/uvd.h"
+#include "uvd/util/types.h"
+#include "uvd/language/format.h"
+#include "uvd/core/runtime.h"
+#include "uvdasm/architecture.h"
 #include "uvdasm/instruction.h"
-#include "uvd_types.h"
-#include "uvd_format.h"
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"
-#include "core/runtime.h"
-#include "main.h"
-#include "uvdasm/architecture.h"
+
 #include <stdio.h>
 
 const char *uvd_data_str(int uvd_data)

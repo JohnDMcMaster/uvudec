@@ -5,8 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdasm/architecture.h"
-#include "uvd_instruction.h"
-#include "uvd_iterator.h"
+#include "uvd/assembly/instruction.h"
+#include "uvd/core/iterator.h"
 
 static uv_err_t getDefaultCPUFile(std::string &ret)
 {

@@ -5,8 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdasm/util.h"
-#include "assembly/uvd_instruction.h"
-#include "uvd_util.h"
+#include "uvd/assembly/instruction.h"
+#include "uvd/util/util.h"
 
 UVDConfigSection::UVDConfigSection()
 {
