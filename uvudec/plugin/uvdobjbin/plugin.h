@@ -7,8 +7,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDOBJBIN_PLUGIN_H
 #define UVDOBJBIN_PLUGIN_H
 
-#include "plugin/plugin.h"
-#include "uvd_types.h"
+#include "uvd/plugin/plugin.h"
+#include "uvd/util/types.h"
 #include "uvdasm/config.h"
 
 class UVDObjbinPlugin : public UVDPlugin

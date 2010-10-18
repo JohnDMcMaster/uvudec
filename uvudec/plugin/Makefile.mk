@@ -22,6 +22,9 @@ THIS_LIB_DIR=$(PLUGIN_LIB_DIR)
 # Creates duplicate plugin loading
 CREATE_LIB_LINKS=N
 
+# plugins should include from plugin folder
+NO_INCLUDE_DOT=Y
+
 include $(ROOT_DIR)/Makefile.mk
 
 # UVD official plugins should prefix include paths with the plugin name

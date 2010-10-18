@@ -7,11 +7,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDOBJBIN_OBJECT_H
 #define UVDOBJBIN_OBJECT_H
 
-#include "object/object.h"
-
-#include "uvd_types.h"
-#include "uvd_data.h"
-#include "object/object.h"
+#include "uvd/object/object.h"
+#include "uvd/util/types.h"
+#include "uvd/data/data.h"
+#include "uvd/object/object.h"
 
 /*
 A raw binary object as would be ripped off of a ROM (ex: EPROM)

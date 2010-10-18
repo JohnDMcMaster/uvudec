@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvdobjbin/object.h"
 #include "uvdobjbin/plugin.h"
-#include "core/uvd.h"
+#include "uvd/core/uvd.h"
 
 UVDObjbinPlugin *g_objbinPlugin = NULL;
 

@@ -4,7 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd_types.h"
+#include "uvd/util/types.h"
 #include "uvdasm/interpreter/operator.h"
 #include <string>
 

@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_GUI_FORMAT_H
 #define UVD_GUI_FORMAT_H
 
-#include "uvd_format.h"
+#include "uvd/language/format.h"
 
 class UVDGUIFormat : public UVDFormat
 {

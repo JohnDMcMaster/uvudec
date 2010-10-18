@@ -11,19 +11,20 @@ obj2pat entry point
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
-#include "uvd_arg_property.h"
-#include "uvd_arg_util.h"
-#include "uvd_error.h"
-#include "uvd_log.h"
-#include "uvd_init.h"
-#include "uvd_util.h"
-#include "uvd.h"
-#include "flirt/flirt.h"
-#include "flirt/args.h"
-#include "uvd_data.h"
-#include "uvd_format.h"
-#include "uvd_address.h"
-#include "uvd_language.h"
+#include "uvd/init/arg_property.h"
+#include "uvd/init/arg_util.h"
+#include "uvd/util/error.h"
+#include "uvd/util/log.h"
+#include "uvd/init/init.h"
+#include "uvd/util/util.h"
+#include "uvd/core/uvd.h"
+#include "uvd/flirt/flirt.h"
+#include "uvd/flirt/args.h"
+#include "uvd/flirt/args_property.h"
+#include "uvd/data/data.h"
+#include "uvd/language/format.h"
+#include "uvd/assembly/address.h"
+#include "uvd/language/language.h"
 
 static uv_err_t versionPrintPrefixThunk();
 
@@ -82,16 +83,32 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		*/
 		if( argumentArguments.size() >= 1 )
 		{
+			//These may not have suffixes (and many different of them), so don't bother checking
 			flirtConfig->m_targetFiles.push_back(argumentArguments[0]);
 		}
 		if( argumentArguments.size() >= 2 )
 		{
 			flirtConfig->m_outputFile = argumentArguments[1];
+			if( flirtConfig->m_outputFile.find(".pat") == std::string::npos )
+			{
+				flirtConfig->m_outputFile += ".pat";
+			}
 		}
 		if( argumentArguments.size() >= 3 )
 		{
 			printf_error("only 2 max bare arguments, given: %d\n", argumentArguments.size());
 			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES )
+	{
+		if( argumentArguments.empty() )
+		{
+			flirtConfig->m_functionsAsModules = true;
+		}
+		else
+		{
+			flirtConfig->m_functionsAsModules = UVDArgToBool(firstArg);
 		}
 	}
 	else
@@ -110,7 +127,8 @@ uv_err_t initProgConfig()
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
 
-	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input file] [output file]"));
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input object file] [output .pat file]"));	
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "functions-as-modules", "functions will not be grouped into object modules", 1, argParser, true));
 
 	return UV_ERR_OK;	
 }

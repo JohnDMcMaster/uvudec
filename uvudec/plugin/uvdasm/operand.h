@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDASM_OPERAND_H
 #define UVDASM_OPERAND_H
 
-#include "uvd_instruction.h"
+#include "uvd/assembly/instruction.h"
 #include "uvdasm/function.h"
 
 class UVDDisasmOperandShared : public UVDOperandShared

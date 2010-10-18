@@ -4,9 +4,9 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "architecture/architecture.h"
-#include "uvd_util.h"
-#include "uvd.h"
+#include "uvd/architecture/architecture.h"
+#include "uvd/util/util.h"
+#include "uvd/core/uvd.h"
 #include "uvdasm/architecture.h"
 
 #if 0

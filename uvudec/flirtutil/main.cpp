@@ -9,10 +9,10 @@ Some code taken from
 http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 */
 
-#include "flirt.h"
-#include "flirt/sig/format.h"
-#include "uvd_arg_property.h"
-#include "uvd_init.h"
+#include "uvd/flirt/flirt.h"
+#include "uvd/flirt/sig/format.h"
+#include "uvd/init/arg_property.h"
+#include "uvd/init/init.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -436,8 +436,8 @@ static uv_err_t dumpFile(const std::string &fileName)
 	return UV_ERR_OK;
 }
 
-std::vector<std::string> g_inputFiles;
-
+static std::vector<std::string> g_inputFiles;
+static std::vector<std::string> g_argumentArguments;
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
 {
 	//If present
@@ -454,7 +454,12 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
 	}
 
-	if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
+	if( argConfig->isNakedHandler() )
+	{
+		//With default options, we call this last, so action should already be settled on, but easier to do everything together
+		g_argumentArguments = argumentArguments;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		g_inputFiles.push_back(firstArg);
@@ -490,6 +495,8 @@ uv_err_t versionPrintPrefixThunk()
 
 uv_err_t initProgConfig()
 {
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [action specific]"));	
+
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "dest file for data (default: stdout)", 1, argParser, false));
 	//uv_assert_err_ret(g_config->registerArgument(PROP_ACTION_DECOMPRESS, 0, "decompress", "decompress input files, placing in output (default: stdout)", 0, argParser, false));
@@ -544,6 +551,12 @@ uv_err_t uvmain(int argc, char **argv)
 	}
 	else if( g_action == ACTION_DUMP )
 	{
+		for( std::vector<std::string>::iterator iter = g_argumentArguments.begin();
+				iter != g_argumentArguments.end(); ++iter )
+		{
+			g_inputFiles.push_back(*iter);
+		}
+
 		for( std::vector<std::string>::iterator iter = g_inputFiles.begin(); iter != g_inputFiles.end(); ++iter )
 		{
 			std::string file = *iter;

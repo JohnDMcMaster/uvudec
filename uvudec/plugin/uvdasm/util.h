@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDASM_UTIL_H
 #define UVDASM_UTIL_H
 
-#include "uvd_types.h"
+#include "uvd/util/types.h"
 
 class UVDConfigValue;
 class UVDOperand;

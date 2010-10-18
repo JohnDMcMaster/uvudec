@@ -9,13 +9,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string>
 #include <sstream>
 #include <vector>
-#include "uvd.h"
-#include "uvd_util.h"
-#include "uvdasm/interpreter/python.h"
-#include "uvd_config.h"
+#include "uvd/core/uvd.h"
+#include "uvd/util/util.h"
+#include "uvd/init/config.h"
+#include "uvd/assembly/address.h"
+#include "uvd/core/runtime.h"
 #include "uvdasm/config_symbol.h"
-#include "uvd_address.h"
-#include "core/runtime.h"
+#include "uvdasm/interpreter/python.h"
 
 UVDPythonInterpreter::UVDPythonInterpreter()
 {

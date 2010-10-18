@@ -25,12 +25,12 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 		$(GUI_DIR)/main.cpp \
 		$(GUI_DIR)/format.cpp \
-		$(GUI_DIR)/uvd_analysis_action.cpp \
-		$(GUI_DIR)/uvd_project.cpp \
-		$(GUI_DIR)/uvd_GUI.cpp \
-		$(GUI_DIR)/uvd_GUI_analysis_thread.cpp \
-		$(GUI_DIR)/moc_uvd_GUI.cpp \
-		$(GUI_DIR)/moc_uvd_GUI_analysis_thread.cpp
+		$(GUI_DIR)/analysis_action.cpp \
+		$(GUI_DIR)/project.cpp \
+		$(GUI_DIR)/GUI.cpp \
+		$(GUI_DIR)/analysis_thread.cpp \
+		$(GUI_DIR)/moc_GUI.cpp \
+		$(GUI_DIR)/moc_analysis_thread.cpp
 
 USING_LIB_UVUDEC=Y
 
@@ -41,11 +41,11 @@ USING_LIB_JANSSON=Y
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk
 
-$(GUI_DIR)/moc_uvd_GUI.cpp: $(GUI_DIR)/ui_uvudec.h $(GUI_DIR)/uvd_GUI.h
-	$(QT_MOC) $(QT_DEFINES) $(QT_INCPATH) $(GUI_DIR)/uvd_GUI.h -o $(GUI_DIR)/moc_uvd_GUI.cpp
+$(GUI_DIR)/moc_GUI.cpp: $(GUI_DIR)/ui_uvudec.h $(GUI_DIR)/GUI.h
+	$(QT_MOC) $(QT_DEFINES) $(QT_INCPATH) $(GUI_DIR)/GUI.h -o $(GUI_DIR)/moc_GUI.cpp
 
-$(GUI_DIR)/moc_uvd_GUI_analysis_thread.cpp: $(GUI_DIR)/uvd_GUI_analysis_thread.h
-	$(QT_MOC) $(QT_DEFINES) $(QT_INCPATH) $(GUI_DIR)/uvd_GUI_analysis_thread.h -o $(GUI_DIR)/moc_uvd_GUI_analysis_thread.cpp
+$(GUI_DIR)/moc_analysis_thread.cpp: $(GUI_DIR)/analysis_thread.h
+	$(QT_MOC) $(QT_DEFINES) $(QT_INCPATH) $(GUI_DIR)/analysis_thread.h -o $(GUI_DIR)/moc_analysis_thread.cpp
 
 # Manual dependencie are needed because since the file isn't present, autodep can't generate a path for it
 $(CXX_SRCS): $(GUI_DIR)/ui_uvudec.h

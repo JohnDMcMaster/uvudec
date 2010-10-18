@@ -11,17 +11,17 @@ uvudec entry point
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
-#include "uvd_arg_property.h"
-#include "uvd_arg_util.h"
-#include "uvd_error.h"
-#include "uvd_log.h"
-#include "uvd_init.h"
-#include "uvd_util.h"
-#include "uvd.h"
-#include "uvd_data.h"
-#include "uvd_format.h"
-#include "uvd_address.h"
-#include "uvd_language.h"
+#include "uvd/init/arg_property.h"
+#include "uvd/init/arg_util.h"
+#include "uvd/util/error.h"
+#include "uvd/util/log.h"
+#include "uvd/init/init.h"
+#include "uvd/util/util.h"
+#include "uvd/core/uvd.h"
+#include "uvd/data/data.h"
+#include "uvd/language/format.h"
+#include "uvd/assembly/address.h"
+#include "uvd/language/language.h"
 
 /*
 During parse, several things can happen:
@@ -146,8 +146,8 @@ uv_err_t initProgConfig()
 	uv_assert_ret(g_config);
 	
 	//Arguments
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_FILE, 0, "output", "output program (default: stdout)", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output program (default: stdout)", 1, argParser, false));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;

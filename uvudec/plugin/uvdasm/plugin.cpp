@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvdasm/architecture.h"
 #include "uvdasm/plugin.h"
-#include "core/uvd.h"
+#include "uvd/core/uvd.h"
 
 UVDAsmPlugin *g_asmPlugin = NULL;
 
@@ -23,6 +23,17 @@ uv_err_t UVDAsmPlugin::init(UVDConfig *config)
 {
 	uv_assert_err_ret(UVDPlugin::init(config));
 	uv_assert_err_ret(m_config.init(config));
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAsmPlugin::onUVDInit(UVD *uvd)
+{
+#ifdef UVD_FLIRT_PATTERN_UVD
+	UVDFLIRTPatternGeneratorUVD *generatorUVD = NULL;
+	
+	uv_assert_err_ret(UVDFLIRTPatternGeneratorUVD::getPatternGenerator(&generatorUVD));
+	m_patternGenerators.push_back(generatorUVD);
+#endif
 	return UV_ERR_OK;
 }
 

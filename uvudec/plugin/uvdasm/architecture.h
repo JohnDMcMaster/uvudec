@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVDASM_ARCHITECTURE_H
 #define UVDASM_ARCHITECTURE_H
 
-#include "architecture/architecture.h"
+#include "uvd/architecture/architecture.h"
 #include "uvdasm/util.h"
 #include "uvdasm/opcode_table.h"
 #include "uvdasm/config_symbol.h"
