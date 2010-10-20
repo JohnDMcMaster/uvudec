@@ -77,7 +77,7 @@ $(LIB_DYNAMIC_MINOR): $(LIB_DYNAMIC_PATCH)
 # ld   -lc  cfork_asm.o cfork_c.o  -o libcfork.so
 $(LIB_DYNAMIC_REAL): depend $(OBJS) $(THIS_LIB_DIR)
 	@(echo 'Creating dynamic lib...')
-	$(CXX) -shared $(LDFLAGS) $(OBJS) -o $(LIB_DYNAMIC_REAL)
+	$(CXX) -shared $(LDFLAGS) $(OBJS) $(LIBS) $(LIBS) -o $(LIB_DYNAMIC_REAL)
 
 static: $(LIB_STATIC)
 	@(true)
