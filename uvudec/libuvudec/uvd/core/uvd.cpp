@@ -435,8 +435,41 @@ uv_err_t UVD::deinit()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVD::getUVD(UVD **uvdOut, const std::string &file)
+{
+	UVD *uvd = NULL;
+	
+	if( g_uvd )
+	{
+		uvd = g_uvd;	
+	}
+	else
+	{
+		uvd = new UVD();
+		if( !uvd )
+		{
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		
+		uv_assert_ret(g_config);
+		uvd->m_config = g_config;
+		
+		if( UV_FAILED(uvd->init(file)) )
+		{
+			delete uvd;
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		
+		g_uvd = uvd;
+	}
+
+	uv_assert_ret(uvdOut);
+	*uvdOut = uvd;
+	return UV_ERR_OK;
+}
+
 //Factory function for construction
-uv_err_t UVD::getUVD(UVD **uvdIn, UVDData *data)
+uv_err_t UVD::getUVD(UVD **uvdOut, UVDData *data)
 {
 	UVD *uvd = NULL;
 	
@@ -464,8 +497,8 @@ uv_err_t UVD::getUVD(UVD **uvdIn, UVDData *data)
 		g_uvd = uvd;
 	}
 
-	uv_assert_ret(uvdIn);
-	*uvdIn = uvd;
+	uv_assert_ret(uvdOut);
+	*uvdOut = uvd;
 	return UV_ERR_OK;
 }
 
