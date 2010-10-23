@@ -21,7 +21,7 @@ UVDBFDPlugin::~UVDBFDPlugin()
 
 uv_err_t UVDBFDPlugin::onUVDInit(UVD *uvd)
 {
-printf("bfd on uvd init\n");
+	printf_flirt_debug("bfd on uvd init\n");
 	/*
 	UVDFLIRTPatternGeneratorBFD *generatorBFD = NULL;
 	
@@ -31,7 +31,8 @@ printf("bfd on uvd init\n");
 	std::string pluginName;
 	uv_assert_err_ret(getName(pluginName));
 	uv_assert_err_ret(uvd->m_flirt->m_patFactory.registerObject(pluginName,
-			UVDFLIRTPatternGeneratorBFD::canLoad, UVDFLIRTPatternGeneratorBFD::tryLoad));
+			UVDFLIRTPatternGeneratorBFD::canLoad, UVDFLIRTPatternGeneratorBFD::tryLoad,
+			this));
 	return UV_ERR_OK;
 }
 

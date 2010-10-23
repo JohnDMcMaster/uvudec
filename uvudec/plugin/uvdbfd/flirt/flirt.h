@@ -28,11 +28,13 @@ public:
 	static uv_err_t canLoad(const UVDRuntime *runtime, uvd_priority_t *confidence, void *data);
 	static uv_err_t tryLoad(const UVDRuntime *runtime, UVDFLIRTPatternGenerator **out, void *data);
 
-	virtual uv_err_t saveToStringCore(const std::string &inputFile, std::string &output);	
+	virtual uv_err_t saveToStringCore(UVDObject *object, std::string &output);	
 
 protected:
 	uv_err_t generateByBFD(bfd *abfd, std::string &output);
-	uv_err_t generateByFile(const std::string &fileName, std::string &output);
+	//Not an archive
+	uv_err_t generateByBFDCore(bfd *abfd, std::string &output);
+	//uv_err_t generateByFile(const std::string &fileName, std::string &output);
 };
 
 #endif

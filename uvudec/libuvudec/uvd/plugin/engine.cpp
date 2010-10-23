@@ -288,3 +288,35 @@ uv_err_t UVDPluginEngine::deinitPlugin(const std::string &name)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDPluginEngine::onUVDInit()
+{
+	uv_assert_ret(m_uvd);
+
+	for( std::map<std::string, UVDPlugin *>::iterator iter = m_loadedPlugins.begin();
+			iter != m_loadedPlugins.end(); ++iter )
+	{
+		UVDPlugin *plugin = (*iter).second;
+		
+		uv_assert_ret(plugin);
+		//FIXME: add config for potentially nonfatal errors
+		uv_assert_err_ret(plugin->onUVDInit(m_uvd));
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginEngine::onUVDDeinit()
+{
+	uv_assert_ret(m_uvd);
+
+	for( std::map<std::string, UVDPlugin *>::iterator iter = m_loadedPlugins.begin();
+			iter != m_loadedPlugins.end(); ++iter )
+	{
+		UVDPlugin *plugin = (*iter).second;
+		
+		uv_assert_ret(plugin);
+		//FIXME: add config for potentially nonfatal errors
+		uv_assert_err_ret(plugin->onUVDDeinit(m_uvd));
+	}
+	return UV_ERR_OK;
+}
+

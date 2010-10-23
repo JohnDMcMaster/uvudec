@@ -416,6 +416,11 @@ UVD::~UVD()
 
 uv_err_t UVD::deinit()
 {
+	if( m_config )
+	{
+		uv_assert_err_ret(m_config->m_plugin.m_pluginEngine.onUVDDeinit());
+	}
+	
 	//m_data deallocated by UVD engine caller
 	
 	delete m_analyzer;

@@ -81,9 +81,6 @@ uv_err_t UVDFLIRT::toPatFile(const std::string &outputFile)
 {
 	std::string output;
 	
-	uv_assert_ret(m_uvd);
-	uv_assert_ret(m_uvd->m_runtime);
-	uv_assert_ret(m_uvd->m_runtime->m_object);
 	uv_assert_err_ret(toPat(output));
 	uv_assert_err_ret(writeFile(outputFile, output));
 
@@ -92,7 +89,15 @@ uv_err_t UVDFLIRT::toPatFile(const std::string &outputFile)
 
 uv_err_t UVDFLIRT::toPat(std::string &output)
 {
+	UVDFLIRTPatternGenerator *generator = NULL;
 	
+	uv_assert_ret(m_uvd);
+	uv_assert_ret(m_uvd->m_runtime);
+	uv_assert_ret(m_uvd->m_runtime->m_object);
+	uv_assert_err_ret(m_patFactory.tryLoad(m_uvd->m_runtime, &generator));
+	uv_assert_ret(generator);
+	uv_assert_err_ret(generator->saveToString(m_uvd->m_runtime->m_object, output, true));
+
 	return UV_ERR_OK;
 }
 
