@@ -11,11 +11,12 @@ Do something instead like create a list of optional and required members, with p
 */
 
 #include "uvd/core/uvd.h"
+#include "uvd/flirt/flirt.h"
 #include "uvd/util/log.h"
-#include "uvd/util/benchmark.h"
+#include "uvd/core/runtime.h"
 #include "uvd/event/engine.h"
 #include "uvd/object/object.h"
-#include "uvd/core/runtime.h"
+#include "uvd/util/benchmark.h"
 
 uv_err_t UVDInit()
 {
@@ -54,7 +55,7 @@ uv_err_t UVDDeinit()
 file: data file to target
 architecture: hint about what we are trying to disassemble
 */
-uv_err_t UVD::init(const std::string &file, const std::string &object, const std::string &architecture)
+uv_err_t UVD::init(const std::string &file, const UVDRuntimeHints &hints)
 {
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	UVDData *data;
@@ -66,10 +67,10 @@ uv_err_t UVD::init(const std::string &file, const std::string &object, const std
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	return init(data, object, architecture);
+	return init(data, hints);
 }
 
-uv_err_t UVD::init(UVDData *data, const std::string &sObject, const std::string &sArchitecture)
+uv_err_t UVD::init(UVDData *data, const UVDRuntimeHints &hints)
 {
 	UVDObject *object = NULL;
 	UVDArchitecture *architecture = NULL;
@@ -77,12 +78,12 @@ uv_err_t UVD::init(UVDData *data, const std::string &sObject, const std::string 
 	uv_assert_err_ret(initEarly());
 
 	//Object wraps data and architectures, so it seems reasonable to instantiate first
-	uv_assert_err_ret(initObject(data, sObject, sArchitecture, &object));
-	uv_assert_err_ret(initArchitecture(data, sObject, sArchitecture, &architecture));
+	uv_assert_err_ret(initObject(data, hints, &object));
+	uv_assert_err_ret(initArchitecture(object, hints, &architecture));
 	return UV_DEBUG(init(object, architecture));	
 }
 
-uv_err_t UVD::initObject(UVDData *data, const std::string &sObject, const std::string &sArchitecture, UVDObject **out)
+uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
 {
 	//FIXME: replace this with a config based selection
 	//Must be able to feed into plugins
@@ -99,7 +100,7 @@ uv_err_t UVD::initObject(UVDData *data, const std::string &sObject, const std::s
 		uv_err_t rcTemp = UV_ERR_GENERAL;
 		
 		uv_assert_ret(plugin);
-		rcTemp = plugin->getObject(data, sObject, sArchitecture, &object);
+		rcTemp = plugin->getObject(data, hints, &object);
 		if( rcTemp == UV_ERR_NOTSUPPORTED )
 		{
 			continue;
@@ -134,7 +135,7 @@ uv_err_t UVD::initObject(UVDData *data, const std::string &sObject, const std::s
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::initArchitecture(UVDData *data, const std::string &sObject, const std::string &sArchitecture, UVDArchitecture **out)
+uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out)
 {
 	//FIXME: replace this with a config based selection
 	//Must be able to feed into plugins
@@ -150,7 +151,7 @@ uv_err_t UVD::initArchitecture(UVDData *data, const std::string &sObject, const 
 		uv_err_t rcTemp = UV_ERR_GENERAL;
 		
 		uv_assert_ret(plugin);
-		rcTemp = plugin->getArchitecture(data, sObject, sArchitecture, &architecture);
+		rcTemp = plugin->getArchitecture(object, hints, &architecture);
 		if( rcTemp == UV_ERR_NOTSUPPORTED )
 		{
 			continue;
@@ -240,7 +241,9 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	m_eventEngine = new UVDEventEngine();
 	uv_assert_ret(m_eventEngine);
 	uv_assert_err_ret(m_eventEngine->init());
-
+	m_flirt = new UVDFLIRT();
+	uv_assert_ret(m_flirt);
+	uv_assert_err_ret(m_flirt->init());
 	/*
 	Read file
 	This is raw dat, NOT null terminated string

@@ -35,6 +35,7 @@ Ex:
 
 #include "uvd/assembly/address.h"
 #include "uvd/util/types.h"
+#include "uvd/core/runtime_hints.h"
 #include "uvd/object/section.h"
 #include "uvd/util/priority.h"
 #include "uvd/assembly/symbol.h"
@@ -55,14 +56,16 @@ public:
 	//Used for probing
 	//Intended to display an interactive menu of good architecture choices
 	//confidence: priority level of being a good match
-	typedef uv_err_t (*CanLoad)(const UVDData *data, const std::string &object, const std::string &architecture, uvd_priority_t *confidence);
+	typedef uv_err_t (*CanLoad)(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,
+			void *user);
 
 	//Function tryLoad(...)
 	//Do the actual load
 	//Note that we MIGHT NOT call CanLoad first
 	//eg: user manually selects object format
 	//Ownership of data is transfered to returned object upon success
-	typedef uv_err_t (*TryLoad)(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out);
+	typedef uv_err_t (*TryLoad)(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out,
+			void *user);
 
 public:
 	UVDObject();

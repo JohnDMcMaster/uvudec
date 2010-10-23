@@ -5,22 +5,19 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/config.h"
-#include <assert.h>
+#include <algorithm>
 #include <ctype.h>
 #include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
 //What we need...IS SOME ROPE!
 #if USING_ROPE
 #include <ext/rope>
 #endif //USING_ROPE
-#include <string.h>
-#include <ctype.h>
 #include <math.h>
-#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <vector>
-#include <algorithm>
 #include "uvd/architecture/architecture.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
@@ -409,6 +406,7 @@ UVD::UVD()
 	m_config = NULL;
 	m_pluginEngine = NULL;
 	m_runtime = NULL;
+	m_flirt = NULL;
 }
 
 UVD::~UVD()

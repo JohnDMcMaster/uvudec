@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/init/arg.h"
 #include "uvd/util/types.h"
 #include "uvd/util/version.h"
+#include "uvd/core/runtime_hints.h"
 #include <set>
 #include <map>
 
@@ -113,18 +114,19 @@ public:
 	*/
 
 	/*
+	Binary format wrapper
+	*/
+	virtual uv_err_t getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+	/*
 	If we deem appropriete, load architecture
 	Returns UV_ERR_NOTSUPPORTED if we can't support the data format
 		such as a plugin that doesn't support architectures
 	Since many of the formats will be binary, we should specify the correct plugin instead of spamming
 	since it will be difficult/impossible to tell what architecture it is simply from the binary
 	Note that we could support multiple archs in the plugin, we just return the best one
+	Since architecture detection needs to see ISA, we need at a minimum the object format
 	*/
-	virtual uv_err_t getArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out);
-	/*
-	Binary format wrapper
-	*/
-	virtual uv_err_t getObject(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out);
+	virtual uv_err_t getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out);
 
 public:
 	//returned by dlopen()

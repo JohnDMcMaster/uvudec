@@ -33,25 +33,6 @@ static const char *GetVersion()
 	return UVUDEC_VER_STRING;
 }
 
-static uv_err_t doConvert()
-{
-	uv_err_t rc = UV_ERR_GENERAL;
-	std::string output;
-	UVDConfigFLIRT *flirtConfig = NULL;
-		
-	flirtConfig = &g_uvd->m_config->m_flirt;
-	uv_assert_ret(flirtConfig);
-
-	//Get string output
-	printf_debug_level(UVD_DEBUG_SUMMARY, "main: creating pat file...\n");
-	uv_assert_err_ret(g_flirt->objs2patFile(flirtConfig->m_targetFiles, flirtConfig->m_outputFile));
-	printf_debug_level(UVD_DEBUG_PASSES, "main: pat done\n");
-
-	rc = UV_ERR_OK;
-	
-	return rc;
-}
-
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
 {
 	UVDConfig *config = NULL;
@@ -153,7 +134,9 @@ uv_err_t uvmain(int argc, char **argv)
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfig *config = NULL;
 	UVDConfigFLIRT *flirtConfig = NULL;
+	UVD *uvd = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
+	std::string inputFile;
 	
 	if( strcmp(GetVersion(), UVDGetVersion()) )
 	{
@@ -177,19 +160,7 @@ uv_err_t uvmain(int argc, char **argv)
 		goto error;
 	}
 
-	//Create a doConvertr engine active on that input
-	printf_debug_level(UVD_DEBUG_SUMMARY, "doConvert: initializing FLIRT engine...\n");
-	if( UV_FAILED(UVDFLIRT::getFLIRT(&g_flirt)) )
-	{
-		printf_error("Failed to initialize FLIRT engine\n");
-		rc = UV_ERR_OK;
-		goto error;
-	}
-	uv_assert_ret(g_flirt);
-
-	uv_assert_ret(g_uvd);
-	uv_assert_ret(g_uvd->m_config);
-	flirtConfig = &g_uvd->m_config->m_flirt;
+	flirtConfig = &g_config->m_flirt;;
 	uv_assert_ret(flirtConfig);
 
 	if( flirtConfig->m_targetFiles.empty() )
@@ -204,12 +175,20 @@ uv_err_t uvmain(int argc, char **argv)
 		UVDHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
-	
-	if( UV_FAILED(doConvert()) )
+	inputFile = flirtConfig->m_targetFiles[0];
+	if( UV_FAILED(UVD::getUVD(&uvd, inputFile)) )
 	{
-		printf_error("Top level doConvert failed\n");
-		uv_assert(UV_ERR_GENERAL);
-	}	
+		printf_error("Failed to initialize FLIRT engine\n");
+		rc = UV_ERR_OK;
+		goto error;
+	}
+	uv_assert_ret(uvd);
+
+	//Get string output
+	printf_debug_level(UVD_DEBUG_SUMMARY, "main: creating pat file...\n");
+	uv_assert_err_ret(uvd->m_flirt->toPatFile(flirtConfig->m_outputFile));
+	printf_debug_level(UVD_DEBUG_PASSES, "main: pat done\n");
+
 
 	rc = UV_ERR_OK;
 

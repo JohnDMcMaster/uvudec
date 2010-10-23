@@ -563,6 +563,7 @@ uv_err_t UVDPluginConfig::init(UVDConfig *config)
 	//FIXME: hack until I can have startup config files
 	m_dirs.push_back("../lib/plugin");
 	m_toLoad.push_back("uvdasm");
+	m_toLoad.push_back("uvdbfd");
 	m_toLoad.push_back("uvdobjbin");
 	//This must be done early since command line options depend upon which plugins are loaded
 	uv_assert_err_ret(m_pluginEngine.init(g_config));

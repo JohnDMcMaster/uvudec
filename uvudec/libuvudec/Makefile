@@ -22,6 +22,7 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/compiler/assembly.cpp \
 			$(UVD_DIR)/compiler/gcc.cpp \
 			$(UVD_DIR)/core/runtime.cpp \
+			$(UVD_DIR)/core/runtime_hints.cpp \
 			$(UVD_DIR)/core/uvd.cpp \
 			$(UVD_DIR)/core/analysis.cpp \
 			$(UVD_DIR)/core/analysis_db.cpp \
@@ -50,6 +51,7 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/flirt/args.cpp \
 			$(UVD_DIR)/flirt/flirt.cpp \
 			$(UVD_DIR)/flirt/function.cpp \
+			$(UVD_DIR)/flirt/pat/factory.cpp \
 			$(UVD_DIR)/flirt/pat/pat.cpp \
 			$(UVD_DIR)/flirt/sig/tree/basic_node.cpp \
 			$(UVD_DIR)/flirt/sig/tree/hash_node.cpp \

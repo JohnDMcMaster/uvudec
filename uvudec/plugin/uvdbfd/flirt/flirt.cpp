@@ -14,15 +14,18 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <typeinfo>
 
+#include "uvd/core/runtime.h"
 #include "uvd/init/config.h"
 #include "uvd/hash/crc.h"
 #include "uvd/util/debug.h"
 #include "uvd/flirt/flirt.h"
-#include "uvdbfd/flirt/flirt.h"
-#include "uvdbfd/flirt/core.h"
 #include "uvd/util/string_writer.h"
 #include "uvd/flirt/flirt.h"
+#include "uvdbfd/object.h"
+#include "uvdbfd/flirt/flirt.h"
+#include "uvdbfd/flirt/core.h"
 
 /*
 UVDFLIRTPatternGeneratorBFD
@@ -55,33 +58,29 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGeneratorBFD::canGenerate(const std::string &file)
+uv_err_t UVDFLIRTPatternGeneratorBFD::canLoad(const UVDRuntime *runtime, uvd_priority_t *confidence, void *data)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
-	bfd *abfd = NULL;
-
-	//If its a junk file, don't think we get a good handle
-	abfd = bfd_openr(file.c_str(), "default");
-	if( abfd == NULL )
+	//Require a bfd object	
+	uv_assert_ret(runtime);
+	uv_assert_ret(runtime->m_object);
+	if( typeid(runtime->m_object) != typeid(UVDBFDObject) )
 	{
-		printf_error("Could not open file <%s>\n", file.c_str());
-		return UV_ERR_GENERAL;
+		return UV_ERR_NOTSUPPORTED;
 	}
+	return UV_ERR_OK;
+}
 
-	//Needs to be an object...maybe an archive?	
-	if( bfd_check_format(abfd, bfd_object) == TRUE
-			|| bfd_check_format(abfd, bfd_archive) == TRUE )
-	{
-		rc = UV_ERR_OK;
-	}
-	else
-	{
-		rc = UV_ERR_GENERAL;
-	}
-	bfd_close(abfd);
-printf_debug("rc %d\n", rc);
-
-	return rc;
+//uv_err_t UVDFLIRTPatternGeneratorBFD::getPatternGenerator(UVDFLIRTPatternGeneratorBFD **generatorOut)
+uv_err_t UVDFLIRTPatternGeneratorBFD::tryLoad(const UVDRuntime *runtime, UVDFLIRTPatternGenerator **generatorOut, void *data)
+{
+	UVDFLIRTPatternGeneratorBFD *generator = NULL;
+	
+	generator = new UVDFLIRTPatternGeneratorBFD();
+	
+	uv_assert_err_ret(generator->init());
+	
+	*generatorOut = generator;
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDFLIRTPatternGeneratorBFD::generateByBFD(bfd *abfd, std::string &output)
@@ -151,18 +150,6 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::generateByFile(const std::string &fileName
 uv_err_t UVDFLIRTPatternGeneratorBFD::saveToStringCore(const std::string &inputFile, std::string &output)
 {
 	uv_assert_err_ret(generateByFile(inputFile, output));
-	return UV_ERR_OK;
-}
-	
-uv_err_t UVDFLIRTPatternGeneratorBFD::getPatternGenerator(UVDFLIRTPatternGeneratorBFD **generatorOut)
-{
-	UVDFLIRTPatternGeneratorBFD *generator = NULL;
-	
-	generator = new UVDFLIRTPatternGeneratorBFD();
-	
-	uv_assert_err_ret(generator->init());
-	
-	*generatorOut = generator;
 	return UV_ERR_OK;
 }
 

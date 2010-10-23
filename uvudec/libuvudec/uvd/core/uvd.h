@@ -153,12 +153,12 @@ public:
 	object: hint about the file format
 	architecture: hint about what we are trying to disassemble
 	*/
-	uv_err_t init(const std::string &file, const std::string &object = "", const std::string &architecture = "");
-	uv_err_t init(UVDData *data, const std::string &object = "", const std::string &architecture = "");
+	uv_err_t init(const std::string &file, const UVDRuntimeHints &hints = UVDRuntimeHints());
+	uv_err_t init(UVDData *data, const UVDRuntimeHints &hints = UVDRuntimeHints());
 	uv_err_t initEarly();
 	uv_err_t initPlugins();
-	uv_err_t initObject(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out);
-	uv_err_t initArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out);
+	uv_err_t initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+	uv_err_t initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out);
 	//Core version with a pre-supplied object and architecture
 	uv_err_t init(UVDObject *object, UVDArchitecture *architecture);
 	uv_err_t deinit();
