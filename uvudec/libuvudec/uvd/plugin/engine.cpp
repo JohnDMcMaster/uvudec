@@ -36,24 +36,7 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 	{
 		const std::string &pluginDir = *iter;
 		
-		for( boost::filesystem::directory_iterator iter(pluginDir);
-			iter != boost::filesystem::directory_iterator(); ++iter )
-		{
-			//Not necessarily canonical
-			std::string path;
-			
-			if( is_directory(iter->status()) )
-			{
-				continue;				
-			}
-			path = pluginDir + "/" + iter->path().filename();
-			
-			//Try loading it, ignoring errors since it might just be a text file or something
-			if( UV_FAILED(loadByPath(path, false)) )
-			{
-				//printf_warn("failed to load possible plugin: %s\n", path.c_str());
-			}
-		}		
+		uv_assert_err_ret(loadByDir(pluginDir, config))
 	}
 	
 	/*
@@ -66,6 +49,64 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 		
 		uv_assert_err_ret(initPlugin(toInit));		
 	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *config,
+			bool recursive,
+			bool failOnBad, bool failOnBadPlugin)
+{
+	for( boost::filesystem::directory_iterator iter(pluginDir);
+		iter != boost::filesystem::directory_iterator(); ++iter )
+	{
+		//Not necessarily canonical
+		std::string path;
+		uv_err_t loadByPathRc = UV_ERR_GENERAL;
+		
+		path = pluginDir + "/" + iter->path().filename();
+		if( is_directory(iter->status()) )
+		{
+			if( recursive )
+			{
+				uv_assert_err_ret(loadByDir(path, config,
+						recursive,
+						failOnBad, failOnBadPlugin));
+			}
+			continue;				
+		}
+		
+		//Try loading it, ignoring errors since it might just be a plugin config file or something
+		//We should print a warning if
+		loadByPathRc = loadByPath(path, false);
+		if( UV_FAILED(loadByPathRc) )
+		{
+			if( loadByPathRc == UV_ERR_NOTSUPPORTED )
+			{
+				if( failOnBad )
+				{
+					printf_error("failed to load possible plugin: %s\n", path.c_str());
+					return UV_DEBUG(UV_ERR_GENERAL);
+				}
+				else
+				{
+					printf_plugin_debug("failed to load possible plugin: %s\n", path.c_str());
+				}
+			}
+			else
+			{
+				if( failOnBad || failOnBadPlugin )
+				{
+					printf_error("failed to load plugin: %s\n", path.c_str());
+					return UV_DEBUG(UV_ERR_GENERAL);
+				}
+				else
+				{
+					printf_warn("failed to load plugin: %s\n", path.c_str());
+				}
+			}
+		}
+	}		
 
 	return UV_ERR_OK;
 }
@@ -87,6 +128,7 @@ uv_err_t UVDPluginEngine::deinit()
 	return UV_ERR_OK;
 }
 
+extern uint32_t g_debugTypeFlags;
 uv_err_t UVDPluginEngine::loadByName(const std::string &name)
 {
 	/*
@@ -96,6 +138,13 @@ uv_err_t UVDPluginEngine::loadByName(const std::string &name)
 	
 	//We could prob link some Boost in and make this easier
 	std::string path;
+	
+	//Already loaded?
+	if( m_loadedPlugins.find(name) != m_loadedPlugins.end() )
+	{
+		printf_plugin_debug("duplicate lodaing of %s\n", name.c_str());
+		return UV_ERR_OK;
+	}
 	
 	path = std::string("lib") + name + ".so";
 	
@@ -112,7 +161,7 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	std::string name;
 
-reportErrors = true;
+	printf_plugin_debug("trying to load plugin path %s\n", path.c_str());
 
 	//Clear errors
 	dlerror();
@@ -129,11 +178,16 @@ reportErrors = true;
 				lastError = "<UNKNOWN>";
 			}
 			printf_error("%s: load library failed: %s\n", path.c_str(), lastError);
-			return UV_DEBUG(UV_ERR_GENERAL);
+			return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 		}
 		else
 		{
-			return UV_ERR_GENERAL;
+			if( !lastError )
+			{
+				lastError = "<UNKNOWN>";
+			}
+			printf_plugin_debug("%s: load library failed: %s\n", path.c_str(), lastError);
+			return UV_ERR_NOTSUPPORTED;
 		}
 	}
 
@@ -157,12 +211,17 @@ reportErrors = true;
 				}
 				printf_error("plugin %s: failed to load main: %s\n", path.c_str(), lastError);
 				dlclose(library);
-				return UV_DEBUG(UV_ERR_GENERAL);
+				return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 			}
 			else
 			{
+				if( !lastError )
+				{
+					lastError = "<UNKNOWN>";
+				}
+				printf_plugin_debug("plugin %s: failed to load main: %s\n", path.c_str(), lastError);
 				dlclose(library);
-				return UV_ERR_GENERAL;
+				return UV_ERR_NOTSUPPORTED;
 			}
 		}
 	}
@@ -181,46 +240,23 @@ reportErrors = true;
 	rcTemp = UV_DEBUG(pluginMain(config, &plugin));
 	if( UV_FAILED(rcTemp) )
 	{
-		if( reportErrors )
-		{
-			printf_error("plugin %s: main failed\n", path.c_str());
-			dlclose(library);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		else
-		{
-			dlclose(library);
-			return UV_ERR_GENERAL;
-		}
+		//Don't do report error checks since it has demonstrated reasonable effort at being a valid plugin
+		printf_error("plugin %s: main failed\n", path.c_str());
+		dlclose(library);
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	if( !plugin )
 	{
-		if( reportErrors )
-		{
-			printf_error("plugin %s: didn't return a plugin object\n", path.c_str());
-			dlclose(library);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		else
-		{
-			dlclose(library);
-			return UV_ERR_GENERAL;
-		}
+		printf_error("plugin %s: didn't return a plugin object\n", path.c_str());
+		dlclose(library);
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
 	rcTemp = UV_DEBUG(plugin->getName(name));
 	if( UV_FAILED(rcTemp) )
 	{
-		if( reportErrors )
-		{
-			dlclose(library);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		else
-		{
-			dlclose(library);
-			return UV_ERR_GENERAL;
-		}
+		dlclose(library);
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
 	if( name.empty() )
@@ -231,23 +267,14 @@ reportErrors = true;
 		but it might cause issues later
 		refusing to load makes people stop being lazy
 		*/
-		if( reportErrors )
-		{
-			printf_error("plugin %s: didn't provide a name\n", path.c_str());
-			dlclose(library);
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		else
-		{
-			dlclose(library);
-			return UV_ERR_GENERAL;
-		}
+		printf_error("plugin %s: didn't provide a name\n", path.c_str());
+		dlclose(library);
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
 	plugin->m_hLibrary = library;
 	m_plugins[name] = plugin;
 	
-
 	return UV_ERR_OK;
 }
 

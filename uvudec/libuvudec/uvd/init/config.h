@@ -13,10 +13,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <vector>
 #include "uvd/init/arg.h"
 #include "uvd/assembly/instruction.h"
-#include "uvd/util/priority_list.h"
 #include "uvd/flirt/config.h"
+#include "uvd/init/arg.h"
 #include "uvd/plugin/plugin.h"
 #include "uvd/plugin/engine.h"
+#include "uvd/util/priority_list.h"
 
 /*
 To control whether addresses are analyzed or not
@@ -40,6 +41,7 @@ public:
 	~UVDPluginConfig();
 
 	uv_err_t init(UVDConfig *config);
+	uv_err_t earlyArgParse(UVDConfig *config);
 	uv_err_t deinit();
 
 	//Add a plugin to be loaded
@@ -57,7 +59,11 @@ public:
 	//std::vector<std::string> m_pluginDirs;
 	std::vector<std::string> m_dirs;
 
+	//Since plugins are required for arg parsing, the plugin engine has to be part of the config
 	UVDPluginEngine m_pluginEngine;
+
+	//Plugin related early parsing so that main argument parse goes correctly
+	UVDArgConfigs m_earlyConfigArgs;
 };
 
 class UVDConfigSymbols
@@ -144,19 +150,22 @@ public:
 	Always call: if combine is set, should we call the handler even or 0 args?
 		This is important as these may be required and we want to do error handling
 	Only one default handler can be registered, behavior is undefined if this is called twice
+	FIXME: we should have a user data item (void *)
 	*/
 	uv_err_t registerDefaultArgument(UVDArgConfigHandler handler,
 			const std::string &helpMessage = "",
 			uint32_t minRequired = 0,
 			bool combine = true,
-			bool alwaysCall = true);
+			bool alwaysCall = true,
+			bool early = false);
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
 			bool hasDefault,
-			const std::string &plugin = "");
+			const std::string &plugin = "",
+			bool early = false);
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
@@ -164,7 +173,11 @@ public:
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
 			bool hasDefault,
-			const std::string &plugin = "");
+			const std::string &plugin = "",
+			bool early = false);
+
+	//If level is not at least as verbose as level, make it
+	uv_err_t ensureDebugLevel(uint32_t level);
 
 protected:
 	// ~/.uvudec file
@@ -214,7 +227,7 @@ public:
 
 	//Configuration option parsing
 	//Could bet set from command line, interactive shell, or a file
-	std::vector<UVDArgConfig *> m_configArgs;
+	UVDArgConfigs m_configArgs;
 	
 	std::string m_sDebugFile;
 	//FILE *m_pDebugFile;
@@ -240,7 +253,7 @@ public:
 
 	//TODO: re-impliment this as flags
 	int m_verbose;
-	int m_verbose_level;
+	uint32_t m_debugLevel;
 	//Program sections
 	int m_verbose_args;
 	int m_verbose_init;

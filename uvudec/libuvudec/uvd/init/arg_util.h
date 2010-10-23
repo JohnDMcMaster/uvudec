@@ -16,6 +16,6 @@ uv_err_t parseFileOption(const std::string optionFileIn, FILE **pOptionFileIn);
 bool UVDArgToBool(const std::string &sArg);
 uv_err_t processArgCore(const std::string &arg, UVDParsedArg &parsedArg);
 uv_err_t processArg(const std::string &arg, std::vector<UVDParsedArg> &parsedArgs);
-uv_err_t matchArgConfig(const std::vector<UVDArgConfig *> &argConfigs, UVDParsedArg &arg, UVDArgConfig const **matchedArgConfig);
+uv_err_t matchArgConfig(const UVDArgConfigs &argConfigs, UVDParsedArg &arg, UVDArgConfig const **matchedArgConfig);
 
 #endif

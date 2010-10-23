@@ -6,6 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/init/arg.h"
 #include "uvd/init/arg_util.h"
+#include "uvd/util/debug.h"
 #include <vector>
 #include <string.h>
 
@@ -152,13 +153,13 @@ uv_err_t processArg(const std::string &arg, std::vector<UVDParsedArg> &parsedArg
 	return UV_ERR_OK;
 }
 
-uv_err_t matchArgConfig(const std::vector<UVDArgConfig *> &argConfigs, UVDParsedArg &arg, UVDArgConfig const**matchedArgConfig)
+uv_err_t matchArgConfig(const UVDArgConfigs &argConfigs, UVDParsedArg &arg, UVDArgConfig const**matchedArgConfig)
 {
 	uv_assert_ret(matchedArgConfig);
-	for( std::vector<UVDArgConfig>::size_type argConfigsIndex = 0; 
-			argConfigsIndex < argConfigs.size(); ++argConfigsIndex )
+	for( UVDArgConfigs::const_iterator iter = argConfigs.begin();
+			iter != argConfigs.end(); ++iter )
 	{
-		const UVDArgConfig *argConfig = argConfigs[argConfigsIndex];
+		const UVDArgConfig *argConfig = (*iter).second;
 		uv_assert_ret(argConfig);
 		
 		switch( arg.m_keyForm )
@@ -195,11 +196,10 @@ uv_err_t matchArgConfig(const std::vector<UVDArgConfig *> &argConfigs, UVDParsed
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
-	
+
 	//This is fatal since an unknown arg could have any number of required extra params
 	//ex: should we assume --arg param or just --arg?  param could be a default option such as our target file
-	printf_error("Unknown option: <%s>\n", arg.m_raw.c_str());
-	UVDHelp();
-	return UV_DEBUG(UV_ERR_GENERAL);
+	printf_args_debug("Unknown option: <%s>\n", arg.m_raw.c_str());
+	return UV_ERR_NOTFOUND;
 }
 

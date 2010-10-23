@@ -24,6 +24,11 @@ val: trailing argument value, if arg->m_expectedValues == 1
 class UVDArgConfig;
 typedef uv_err_t (*UVDArgConfigHandler)(const UVDArgConfig *UVDArgConfig, std::vector<std::string> argumentArgument);
 
+//Map of property to arg config
+//Naked handler has empty property
+class UVDArgConfig;
+typedef std::map<std::string, UVDArgConfig *> UVDArgConfigs;
+
 /*
 Argument parsing for startup
 Should be parsable from a config file or from command line
@@ -71,7 +76,7 @@ public:
 		if num args == 1
 	--arg=val or --arg val
 	*/
-	static uv_err_t process(const std::vector<UVDArgConfig *> &argConfig, std::vector<std::string> &args);
+	static uv_err_t process(const UVDArgConfigs &argConfig, std::vector<std::string> &args, bool printErrors = true);
 
 public:
 	/*

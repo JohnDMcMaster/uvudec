@@ -62,6 +62,7 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/hash/crc.cpp \
 			$(UVD_DIR)/hash/md5.cpp \
 			$(UVD_DIR)/init/arg.cpp \
+			$(UVD_DIR)/init/arg_early.cpp \
 			$(UVD_DIR)/init/arg_util.cpp \
 			$(UVD_DIR)/init/config.cpp \
 			$(UVD_DIR)/init/config_symbols.cpp \
