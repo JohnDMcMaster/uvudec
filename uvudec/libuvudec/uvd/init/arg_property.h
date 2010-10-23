@@ -15,6 +15,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_DEBUG_LEVEL					"debug.level"
 #define UVD_PROP_DEBUG_ARGS						"debug.args"
 #define UVD_PROP_DEBUG_INIT						"debug.init"
+#define UVD_PROP_DEBUG_PLUGIN					"debug.plugin"
 #define UVD_PROP_DEBUG_PROCESSING				"debug.processing"
 #define UVD_PROP_DEBUG_ANALYSIS					"debug.analysis"
 #define UVD_PROP_DEBUG_PRINTING					"debug.printing"

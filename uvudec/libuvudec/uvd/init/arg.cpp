@@ -14,6 +14,7 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 #include "uvd/util/ascii_art.h"
 #include "uvd/init/config.h"
 #include "uvd/language/language.h"
+#include "uvd/util/debug.h"
 #include "uvd/util/types.h"
 #include "uvd/util/util.h"
 #include "uvd/util/version.h"
@@ -110,7 +111,7 @@ uv_err_t setupInstallDir()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, std::vector<std::string> &args)
+uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std::string> &args, bool printErrors)
 {	
 	uv_assert_err_ret(setupInstallDir());
 
@@ -118,10 +119,10 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 	std::vector<std::string> nakedArgs;
 	const UVDArgConfig *nakedConfig = NULL;
 
-	for( std::vector<UVDArgConfig *>::const_iterator iter = argConfigs.begin();
+	for( UVDArgConfigs::const_iterator iter = argConfigs.begin();
 			iter != argConfigs.end(); ++iter )
 	{
-		const UVDArgConfig *argConfig = *iter;
+		const UVDArgConfig *argConfig = (*iter).second;
 			
 		uv_assert_ret(argConfig);
 		if( argConfig->isNakedHandler() )
@@ -141,6 +142,7 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 	{
 		std::string arg = args[argsIndex];
 		std::vector<UVDParsedArg> parsedArgs;
+		bool ignoreEarlyArg = false;
 
 		uv_assert_err_ret(processArg(arg, parsedArgs));
 
@@ -149,15 +151,38 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 		{
 			UVDParsedArg &parsedArg = *iter;
 			const UVDArgConfig *matchedConfig = NULL;
+			uv_err_t matchRc = UV_ERR_GENERAL;
 			
 			//Extract the argument info for who should handle it
-			uv_assert_err_ret(matchArgConfig(argConfigs, parsedArg, &matchedConfig));
+			matchRc = matchArgConfig(argConfigs, parsedArg, &matchedConfig);
+			//Make sure to return UV_ERR_NOTFOUND if generated
+			if( UV_FAILED(matchRc) )
+			{
+				//FIXME: hack
+				//don't error if it was an early initialization arg
+				if( UV_SUCCEEDED(matchArgConfig(g_config->m_plugin.m_earlyConfigArgs, parsedArg, &matchedConfig)) )
+				{
+					ignoreEarlyArg = true;
+				}
+				else
+				{
+					if( printErrors )
+					{
+						return UV_DEBUG(matchRc);
+					}
+					else
+					{
+						return matchRc;
+					}
+				}
+			}
 			uv_assert_ret(matchedConfig);
 			std::vector<std::string> argumentArguments;
 			//For now hand this off as single args
 			//Consider instead grouping into one large list
 			if( parsedArg.m_keyForm == UVD_ARG_FORM_NAKED )
 			{
+				uv_assert_ret(!ignoreEarlyArg);
 				uv_assert_ret(nakedConfig == matchedConfig);
 				nakedArgs.push_back(parsedArg.m_key);
 				if( nakedConfig->m_combine )
@@ -188,12 +213,15 @@ uv_err_t UVDArgConfig::process(const std::vector<UVDArgConfig *> &argConfigs, st
 				}
 			}
 			//And call their handler
-			uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments);
-			uv_assert_err_ret(handlerRc);
-			//Some option like help() has been called that means we should abort program
-			if( handlerRc == UV_ERR_DONE )
+			if( !ignoreEarlyArg )
 			{
-				return UV_ERR_DONE;
+				uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments);
+				uv_assert_err_ret(handlerRc);
+				//Some option like help() has been called that means we should abort program
+				if( handlerRc == UV_ERR_DONE )
+				{
+					return UV_ERR_DONE;
+				}
 			}
 		}
 	}
@@ -229,29 +257,19 @@ uv_err_t UVDInitArgConfig()
 	//Now add our arguments
 	
 	//Actions
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", 0, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", 0, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ACTION_USELESS_ASCII_ART, 0, "print-useless-ascii-art", "print nifty ASCII art", 1, argParser, true));
-	
-	//Debug
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_ARGS, 0, "verbose-args", "selectivly debug argument parsing", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_INIT, 0, "verbose-init", "selectivly debug initialization", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_PROCESSING, 0, "verbose-analysis", "selectivly debugging code analysis", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_ANALYSIS, 0, "verbose-processing", "selectivly debugging code post-analysis", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_PRINTING, 0, "verbose-printing", "selectivly debugging print routine", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true));
-	
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", 0, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", 0, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_USELESS_ASCII_ART, 0, "print-useless-ascii-art", "print nifty ASCII art", 1, argParser, true));	
 	
 	//Analysis target related
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS_EXCLUDE, 0, "addr-exclude", "exclusion address range (, or - separated)", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_TARGET_ADDRESS, 0, "analysis-address", "only output analysis data for specified address", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS_EXCLUDE, 0, "addr-exclude", "exclusion address range (, or - separated)", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS, 0, "analysis-address", "only output analysis data for specified address", 1, argParser, false));
 
 	//Analysis
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ANALYSIS_ONLY, 0, "analysis-only", "only do analysis, don't print data", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ANALYSIS_DIR, 0, "analysis-dir", "create data suitible for stored analysis", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_ANALYSIS_FLOW_TECHNIQUE, 0, "flow-analysis",
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ANALYSIS_ONLY, 0, "analysis-only", "only do analysis, don't print data", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ANALYSIS_DIR, 0, "analysis-dir", "create data suitible for stored analysis", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ANALYSIS_FLOW_TECHNIQUE, 0, "flow-analysis",
 			"how to determine next instruction to analyze",
 				"\tlinear (linear sweep): start at beginning, read all instructions linearly, then find jump/calls (default)\n"
 				"\ttrace (recursive descent): start at all vectors, analyze all segments called/branched recursivly\n"
@@ -259,15 +277,12 @@ uv_err_t UVDInitArgConfig()
 			1, argParser, false));
 
 	//Output
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_OPCODE_USAGE, 0, "opcode-usage", "opcode usage count table", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_JUMPED_ADDRESSES, 0, "print-jumped-addresses", "whether to print information about jumped to addresses (*1)", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_CALLED_ADDRESSES, 0, "print-called-addresses", "whether to print information about called to addresses (*1)", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_USELESS_ASCII_ART, 0, "useless-ascii-art", "append nifty ascii art headers to output files", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_NAME, 0, "plugin", "load given library name as plugin", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin search path", 1, argParser, false));
-	g_config->m_configArgs.push_back(new UVDArgConfig(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin search path", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_OPCODE_USAGE, 0, "opcode-usage", "opcode usage count table", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_JUMPED_ADDRESSES, 0, "print-jumped-addresses", "whether to print information about jumped to addresses (*1)", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_CALLED_ADDRESSES, 0, "print-called-addresses", "whether to print information about called to addresses (*1)", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_USELESS_ASCII_ART, 0, "useless-ascii-art", "append nifty ascii art headers to output files", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
 
 	return UV_ERR_OK;	
 }
@@ -278,6 +293,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
+	bool firstArgBool = true;
 	
 	config = g_config;
 	uv_assert_ret(config);
@@ -289,6 +305,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		firstArg = argumentArguments[0];
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
+		firstArgBool = UVDArgToBool(firstArg);
 	}
 
 	/*
@@ -309,93 +326,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		printf("Have too much time on our hands do we?\n%s\n\n", getRandomUVNetASCIIArt().c_str());
 	}
 	/*
-	Debug
+	Misc
 	*/
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_LEVEL )
-	{
-		//If they didn't set any flags, assume its a general state across the program
-		if( !config->anyVerboseActive() )
-		{
-			config->setVerboseAll();
-		}
-	
-		//Did we specify or want default?
-		if( argumentArguments.empty() )
-		{
-			config->m_verbose_level = UVD_DEBUG_VERBOSE;
-		}
-		else
-		{
-			config->m_verbose_level = firstArgNum;
-		}
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_ARGS )
-	{
-		if( argumentArguments.empty() )
-		{
-			config->m_verbose_args = true;
-		}
-		else
-		{
-			config->m_verbose_args = UVDArgToBool(firstArg);
-		}
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_INIT )
-	{
-		if( argumentArguments.empty() )
-		{
-			config->m_verbose_init = true;
-		}
-		else
-		{
-			config->m_verbose_init = UVDArgToBool(firstArg);
-		}
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PROCESSING )
-	{
-		if( argumentArguments.empty() )
-		{
-			config->m_verbose_processing = true;
-		}
-		else
-		{
-			config->m_verbose_processing = UVDArgToBool(firstArg);
-		}
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_ANALYSIS )
-	{
-		if( argumentArguments.empty() )
-		{
-			config->m_verbose_analysis = true;
-		}
-		else
-		{
-			config->m_verbose_analysis = UVDArgToBool(firstArg);
-		}
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PRINTING )
-	{
-		if( argumentArguments.empty() )
-		{
-			config->m_verbose_printing = true;
-		}
-		else
-		{
-			config->m_verbose_printing = UVDArgToBool(firstArg);
-		}
-	}
-	/*
-	This looks unused, was used for printing out the binary as we go along during disassembly
-	else if( argConfig->m_propertyForm == "debug.print_binary" )
-	{
-		g_binary = TRUE;
-	}
-	*/
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_FILE )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		config->m_sDebugFile = firstArg;
-	}
 	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
 	{
 		uv_assert_ret(!argumentArguments.empty());
@@ -481,86 +413,29 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	*/
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_OPCODE_USAGE )
 	{
-		if( argumentArguments.empty() )
-		{
-			config->m_printUsed = true;
-		}
-		else
-		{
-			config->m_printUsed = UVDArgToBool(firstArg);
-		}
+		config->m_printUsed = firstArgBool;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_JUMPED_ADDRESSES )
 	{
-		if( argumentArguments.empty() )
-		{
-			config->m_jumpedSources = true;
-		}
-		else
-		{
-			config->m_jumpedSources = UVDArgToBool(firstArg);
-		}
+		config->m_jumpedSources = firstArgBool;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_CALLED_ADDRESSES )
 	{
-		if( argumentArguments.empty() )
-		{
-			config->m_calledSources = true;
-		}
-		else
-		{
-			config->m_calledSources = UVDArgToBool(firstArg);
-		}
+		config->m_calledSources = firstArgBool;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_USELESS_ASCII_ART )
 	{
-		if( argumentArguments.empty() )
-		{
-			config->m_uselessASCIIArt = true;
-		}
-		else
-		{
-			config->m_uselessASCIIArt = UVDArgToBool(firstArg);
-		}
+		config->m_uselessASCIIArt = firstArgBool;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_ADDRESS_COMMENT )
 	{
-		if( argumentArguments.empty() )
-		{
-			config->m_addressComment = true;
-		}
-		else
-		{
-			config->m_addressComment = UVDArgToBool(firstArg);
-		}
+		config->m_addressComment = firstArgBool;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_ADDRESS_LABEL )
 	{
-		if( argumentArguments.empty() )
-		{
-			config->m_addressLabel = true;
-		}
-		else
-		{
-			config->m_addressLabel = UVDArgToBool(firstArg);
-		}
+		config->m_addressLabel = firstArgBool;
 	}
-	//Plugins
-	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_NAME )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->m_plugin.addPlugin(firstArg));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_APPEND_PATH )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->m_plugin.appendPluginPath(firstArg));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_PREPEND_PATH )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->m_plugin.prependPluginPath(firstArg));
-	}
+	//Maybe it was in the early config?
 	else
 	{
 		printf_error("Property not recognized in callback: %s\n", argConfig->m_propertyForm.c_str());
@@ -627,9 +502,10 @@ static uv_err_t UVDPrintUsage()
 	uv_assert_ret(g_config);
 	pluginEngine = &g_config->m_plugin.m_pluginEngine;
 	
-	for( std::vector<UVDArgConfig>::size_type i = 0; i < g_config->m_configArgs.size(); ++i )
+	for( UVDArgConfigs::iterator iter = g_config->m_configArgs.begin();
+			iter != g_config->m_configArgs.end(); ++iter )
 	{
-		UVDArgConfig *argConfig = g_config->m_configArgs[i];
+		UVDArgConfig *argConfig = (*iter).second;
 		
 		uv_assert_ret(argConfig);
 		if( argConfig->isNakedHandler() )
@@ -648,9 +524,10 @@ static uv_err_t UVDPrintUsage()
 	printf_help("Args:\n");
 	//Maybe standard help should alphabatize these by -- form?
 	//Detailed print should do by property since not all might have --
-	for( std::vector<UVDArgConfig>::size_type i = 0; i < g_config->m_configArgs.size(); ++i )
+	for( UVDArgConfigs::iterator iter = g_config->m_configArgs.begin();
+			iter != g_config->m_configArgs.end(); ++iter )
 	{
-		UVDArgConfig *argConfig = g_config->m_configArgs[i];
+		UVDArgConfig *argConfig = (*iter).second;
 		
 		uv_assert_ret(argConfig);
 		
@@ -661,6 +538,17 @@ static uv_err_t UVDPrintUsage()
 		}
 	}
 	
+	//Print special argument handling last
+	printf_help("Pre plugin load args:\n");
+	for( UVDArgConfigs::iterator iter = g_config->m_plugin.m_earlyConfigArgs.begin();
+			iter != g_config->m_plugin.m_earlyConfigArgs.end(); ++iter )
+	{
+		UVDArgConfig *argConfig = (*iter).second;
+		
+		uv_assert_ret(argConfig);		
+		uv_assert_err_ret(printArg(argConfig, ""));
+	}
+
 	printf_help("\n");
 	UVDPrintLoadedPlugins();
 
@@ -698,6 +586,7 @@ static uv_err_t UVDPrintUsage()
 
 void UVDHelp()
 {
+UVD_PRINT_STACK();
 	UVDPrintVersion();
 	UVDPrintUsage();
 }

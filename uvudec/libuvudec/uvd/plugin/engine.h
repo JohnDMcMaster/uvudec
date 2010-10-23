@@ -38,9 +38,22 @@ public:
 	//eg: uvdasm might try to find libuvdasm.so on Linux
 	uv_err_t loadByName(const std::string &name);
 
-	//Load plugin at given path
-	//needs an exported symbol called UVDPluginMain
-	//Obviously this will error under a static build
+	/*
+	Try to batch load an entire directory
+	failOnBad: if any file in the dir fails to load, return error
+	failOnBadPlugin: only return error if it demonstrated reasonable ability to be a plugin
+	*/
+	uv_err_t loadByDir(const std::string &pluginDir, UVDConfig *config,
+			bool recursive = false,
+			bool failOnBad = false, bool failOnBadPlugin = false);
+
+	/*
+	Load plugin at given path
+	needs an exported symbol called UVDPluginMain
+	Obviously this will error under a static build
+	reportErrors: set to false to ignore printing errors on something that might not be a plugin
+	Returns UV_ERR_NOTSUPPORTED if we don't think its a plugin, UV_ERR_GENERAL if we do and it errors
+	*/
 	uv_err_t loadByPath(const std::string &path, bool reportErrors = true);
 	
 	//This actually activates a plugin for use

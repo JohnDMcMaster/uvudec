@@ -9,7 +9,7 @@ PLUGIN_NAME=uvdstrings
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			main.cpp
+#			main.cpp
 
 include ../Makefile.mk
 

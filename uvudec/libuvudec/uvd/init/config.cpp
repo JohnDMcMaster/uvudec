@@ -51,7 +51,7 @@ UVDConfig::UVDConfig()
 	m_addressComment = false;
 	m_addressLabel = false;
 
-	m_verbose_level = UVD_DEBUG_NONE;
+	m_debugLevel = UVD_DEBUG_NONE;
 	clearVerboseAll();
 
 	m_haltOnTruncatedInstruction = FALSE;
@@ -82,6 +82,12 @@ UVDConfig::~UVDConfig()
 	deinit();
 }
 
+uv_err_t UVDConfig::ensureDebugLevel(uint32_t level)
+{
+	m_debugLevel = uvd_max(level, m_debugLevel);
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDConfig::parseMain(int argc, char *const *argv)
 {
 	return UV_DEBUG(parseMain(argc, argv, NULL));
@@ -89,6 +95,10 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv)
 
 uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 {
+	/*
+	Load plugins and parse args
+	We can't load plugins until we have args because we might add plugins or change library paths 
+	*/
 	uv_err_t processRc = UV_ERR_GENERAL;
 
 	m_argc = argc;
@@ -96,12 +106,27 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	
 	m_args = charPtrArrayToVector(m_argv, m_argc);
 
+	//Early parsing for debugging and plugin related
+	uv_assert_err_ret(m_plugin.init(this));
+
 	//Parse the data
 	processRc = UVDArgConfig::process(m_configArgs, m_args);
-	uv_assert_err_ret(processRc);
 	if( processRc == UV_ERR_DONE )
 	{
 		return processRc;
+	}
+	if( UV_FAILED(processRc) )
+	{
+		//From a bad input argument?
+		if( processRc == UV_ERR_NOTFOUND )
+		{
+			UVDHelp();
+			return UV_ERR_NOTFOUND;
+		}
+		else
+		{
+			return UV_DEBUG(processRc);
+		}
 	}
 
 	//And then initialize as needed
@@ -138,16 +163,16 @@ uv_err_t UVDConfig::init()
 	uv_assert_err_ret(parseUserConfig());
 	
 	//Okay, now that we have base plugin search paths setup, we can initialize plugin engine
-	uv_assert_err_ret(m_plugin.init(this));
+	//uv_assert_err_ret(m_plugin.init(this));
 
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDConfig::deinit()
 {
-	for( std::vector<UVDArgConfig *>::iterator iter = m_configArgs.begin(); iter != m_configArgs.end(); ++iter )
+	for( UVDArgConfigs::iterator iter = m_configArgs.begin(); iter != m_configArgs.end(); ++iter )
 	{
-		delete *iter;
+		delete (*iter).second;
 	}
 	m_configArgs.clear();
 	
@@ -483,13 +508,21 @@ uv_err_t UVDConfig::registerDefaultArgument(UVDArgConfigHandler handler,
 		const std::string &helpMessage,
 		uint32_t minRequired,
 		bool combine,
-		bool alwaysCall)
+		bool alwaysCall,
+		bool early)
 {
 	UVDArgConfig *argConfig = NULL;
 
 	argConfig = new UVDArgConfig(handler, helpMessage, minRequired, combine, alwaysCall);
 	uv_assert_ret(argConfig);
-	m_configArgs.push_back(argConfig);
+	if( early )
+	{
+		m_plugin.m_earlyConfigArgs[""] = argConfig;
+	}
+	else
+	{
+		m_configArgs[""] = argConfig;
+	}
 
 	return UV_ERR_OK;
 }
@@ -500,7 +533,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		uint32_t numberExpectedValues,
 		UVDArgConfigHandler handler,
 		bool hasDefault,
-		const std::string &plugin)
+		const std::string &plugin,
+		bool early)
 {
 	return UV_DEBUG(registerArgument(propertyForm,
 			shortForm, longForm, 
@@ -509,7 +543,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 			numberExpectedValues,
 			handler,
 			hasDefault,
-			plugin));
+			plugin,
+			early));
 }
 		
 uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
@@ -519,7 +554,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		uint32_t numberExpectedValues,
 		UVDArgConfigHandler handler,
 		bool hasDefault,
-		const std::string &plugin)
+		const std::string &plugin,
+		bool early)
 {
 	UVDArgConfig *argConfig = NULL;
 		
@@ -535,11 +571,19 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
 	}
 	uv_assert_ret(argConfig);
-	g_config->m_configArgs.push_back(argConfig);
-
-	if( !plugin.empty() )
+	//Should this be parsed before plugins are loaded?
+	if( early )
 	{
-		g_config->m_plugin.m_pluginEngine.m_pluginArgMap[argConfig] = plugin;
+		g_config->m_plugin.m_earlyConfigArgs[propertyForm] = argConfig;
+	}
+	else
+	{
+		g_config->m_configArgs[propertyForm] = argConfig;
+		
+		if( !plugin.empty() )
+		{
+			g_config->m_plugin.m_pluginEngine.m_pluginArgMap[argConfig] = plugin;
+		}
 	}
 
 	return UV_ERR_OK;
@@ -560,19 +604,21 @@ UVDPluginConfig::~UVDPluginConfig()
 
 uv_err_t UVDPluginConfig::init(UVDConfig *config)
 {
-	//FIXME: hack until I can have startup config files
-	m_dirs.push_back("../lib/plugin");
-	m_toLoad.push_back("uvdasm");
-	m_toLoad.push_back("uvdbfd");
-	m_toLoad.push_back("uvdobjbin");
+	uv_assert_err_ret(earlyArgParse(config));
 	//This must be done early since command line options depend upon which plugins are loaded
-	uv_assert_err_ret(m_pluginEngine.init(g_config));
+	uv_assert_err_ret(m_pluginEngine.init(config));
 
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDPluginConfig::deinit()
 {
+	for( UVDArgConfigs::iterator iter = m_earlyConfigArgs.begin(); iter != m_earlyConfigArgs.end(); ++iter )
+	{
+		delete (*iter).second;
+	}
+	m_earlyConfigArgs.clear();
+
 	return UV_ERR_OK;
 }
 

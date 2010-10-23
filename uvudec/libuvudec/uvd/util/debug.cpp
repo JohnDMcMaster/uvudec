@@ -20,7 +20,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #endif
 
 static const char *g_last_func = NULL;
-static uint32_t g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
+uint32_t g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
 //<propertyForm, numeric flag>
 static std::map<std::string, uint32_t> g_propertyFlagMap;
 
@@ -101,8 +101,7 @@ void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t
 		}
 		if( g_config )
 		{
-			verbose = g_config->m_verbose;
-			set_level = g_config->m_verbose_level;
+			set_level = g_config->m_debugLevel;
 		}
 		else
 		{
@@ -111,7 +110,7 @@ void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t
 		}
 	
 		//Is logging disabled or are we at too high of a level?
-		if( !verbose || level > set_level )
+		if( level > set_level )
 		{
 			return;
 		}
@@ -125,7 +124,7 @@ void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t
 			}
 		}
 		printf_debug_prefix(logHandle, typePrefix.c_str(), file, line, func);
-	
+
 		va_start(ap, format);
 		vfprintf(logHandle, format, ap);
 		fflush(logHandle);
@@ -207,6 +206,11 @@ static uv_err_t initializeTypePrefixes()
 {
 	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_GENERAL, "general", ""));
 	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_FLIRT, "flirt", "FLIRT"));
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_PLUGIN, "plugin", "PLUGIN"));
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_PROCESSING, "processing", "PROCESSING"));
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_ARGS, "args", "ARGS"));
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_INIT, "init", "INIT"));
+	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_ANALYSIS, "analysis", "ANALYSIS"));
 	
 	return UV_ERR_OK;
 }

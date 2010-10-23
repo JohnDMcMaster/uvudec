@@ -74,19 +74,38 @@ uv_assert_err is always enabled
 
 #else /* ifdef NDEBUG */
 
+/*
+Seems like these will have to be stored as a set instead,
+there just aren't enough flags for things to be done very smoothly at a large scale
+*/
 #define UVD_DEBUG_TYPE_NONE							0x00000000
 //Main engine initializaiton and such
 #define UVD_DEBUG_TYPE_GENERAL						0x00000001
 //Iteration on instructions and assembly printing
 #define UVD_DEBUG_TYPE_ITERATOR						0x00000002
-//Config file parsing
-#define UVD_DEBUG_TYPE_UVD_ASM_CONFIG				0x00000003
 //Actual printing operations of instructions
-#define UVD_DEBUG_TYPE_UVD_PRINT					0x00000004
+#define UVD_DEBUG_TYPE_PRINT						0x00000004
+//Plugin initialization and such
+#define UVD_DEBUG_TYPE_PLUGIN						0x00000008
+#define printf_plugin_debug(format, ...) printf_debug_type(UVD_DEBUG_TYPE_PLUGIN, format, ## __VA_ARGS__)
+#define UVD_DEBUG_TYPE_PROCESSING					0x00000010
+#define UVD_DEBUG_TYPE_ARGS							0x00000020
+#define printf_args_debug(format, ...) printf_debug_type(UVD_DEBUG_TYPE_ARGS, format, ## __VA_ARGS__)
+#define UVD_DEBUG_TYPE_INIT							0x00000040
+#define printf_init_debug(format, ...) printf_debug_type(UVD_DEBUG_TYPE_INIT, format, ## __VA_ARGS__)
+#define UVD_DEBUG_TYPE_ANALYSIS						0x00000080
+#define printf_analysis_debug(format, ...) printf_debug_type(UVD_DEBUG_TYPE_ANALYSIS, format, ## __VA_ARGS__)
 //FLIRT related...will likely break this up into several parts
 #define UVD_DEBUG_TYPE_FLIRT						0x00000100
-//If your plugin needs to debug, chose something above this
-#define UVD_DEBUG_TYPE_PLUGIN_BASE					0x10000000
+#define printf_flirt_debug(format, ...) printf_debug_type(UVD_DEBUG_TYPE_FLIRT, format, ## __VA_ARGS__)
+//For official plugins
+//#define UVD_DEBUG_TYPE_PLUGIN_BASE					0x00000000
+#define UVD_DEBUG_TYPE_PLUGIN_UVDASM				0x01000000
+#define UVD_DEBUG_TYPE_PLUGIN_UVDBFD				0x02000000
+#define UVD_DEBUG_TYPE_PLUGIN_UVDOBJBIN				0x04000000
+//If your plugin needs to debug, chose something above this at a RANDOM offset, ie don't chose UVD_DEBUG_TYPE_UNOFFICIAL_PLUGIN_BASE + 1
+//Err actually these are still flags
+#define UVD_DEBUG_TYPE_UNOFFICIAL_PLUGIN_BASE		0x10000000
 #define UVD_DEBUG_TYPE_ALL							0xFFFFFFFF
 
 typedef uint32_t uvd_debug_flag_t;
