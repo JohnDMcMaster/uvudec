@@ -15,7 +15,7 @@ The code may be a bit archaic and needs some cleanup
 
 #include <vector>
 #include <string>
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/data/data.h"
 #include "uvd/util/types.h"
 

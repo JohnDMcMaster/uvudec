@@ -4,7 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/hash/crc.h"
 #include "uvd/flirt/pat/pat.h"
 #include "uvd/flirt/lib/lib.h"

@@ -4,7 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/util/version.h"
 #include "uvd/util/io.h"
 #include "uvdbfd/plugin.h"

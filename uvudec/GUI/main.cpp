@@ -6,7 +6,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 
 #include <QApplication>
 #include "GUI/GUI.h"
-#include "uvd/init/init.h"
+#include "uvd/core/init.h"
 
 QApplication *g_application = NULL;
 

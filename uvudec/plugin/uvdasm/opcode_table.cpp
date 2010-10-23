@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/util.h"
 #include "uvd/assembly/address.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvdasm/config_symbol.h"
 #include "uvd/language/format.h"
 #include "uvd/assembly/instruction.h"

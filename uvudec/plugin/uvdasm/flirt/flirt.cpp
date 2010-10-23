@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "flirt/pat/pat.h"
 #include "flirt/pat/uvd.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/hash/crc.h"
 #include "uvd_library.h"
 #include "uvd/util/util.h"

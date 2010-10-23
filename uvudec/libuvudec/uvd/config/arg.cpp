@@ -8,11 +8,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 FIXME: naked arg stuff added a number of quick hacks and we should rewrite using polymorphism or something
 */
 
-#include "uvd/init/arg.h"
-#include "uvd/init/arg_property.h"
-#include "uvd/init/arg_util.h"
+#include "uvd/config/arg.h"
+#include "uvd/config/arg_property.h"
+#include "uvd/config/arg_util.h"
 #include "uvd/util/ascii_art.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/language/language.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/types.h"

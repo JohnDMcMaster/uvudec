@@ -11,10 +11,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <set>
 #include <string>
 #include <vector>
-#include "uvd/init/arg.h"
+#include "uvd/config/arg.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/flirt/config.h"
-#include "uvd/init/arg.h"
+#include "uvd/config/arg.h"
 #include "uvd/plugin/plugin.h"
 #include "uvd/plugin/engine.h"
 #include "uvd/util/priority_list.h"

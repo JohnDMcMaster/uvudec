@@ -11,7 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <vector>
 #include "uvd/core/uvd.h"
 #include "uvd/util/util.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/assembly/address.h"
 #include "uvd/core/runtime.h"
 #include "uvdasm/config_symbol.h"

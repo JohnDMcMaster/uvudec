@@ -5,7 +5,7 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/language/language.h"
 #include "uvd/util/util.h"
 #include "uvdasm/config.h"
