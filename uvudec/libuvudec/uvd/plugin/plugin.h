@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef PLUGIN_PLUGIN_H
 #define PLUGIN_PLUGIN_H
 
-#include "uvd/init/arg.h"
+#include "uvd/config/arg.h"
 #include "uvd/util/types.h"
 #include "uvd/util/version.h"
 #include "uvd/core/runtime_hints.h"

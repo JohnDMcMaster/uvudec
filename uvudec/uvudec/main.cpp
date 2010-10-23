@@ -11,11 +11,11 @@ uvudec entry point
 #include <string.h>
 #include <sys/stat.h>
 #include <string>
-#include "uvd/init/arg_property.h"
-#include "uvd/init/arg_util.h"
+#include "uvd/config/arg_property.h"
+#include "uvd/config/arg_util.h"
 #include "uvd/util/error.h"
 #include "uvd/util/log.h"
-#include "uvd/init/init.h"
+#include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvd/data/data.h"

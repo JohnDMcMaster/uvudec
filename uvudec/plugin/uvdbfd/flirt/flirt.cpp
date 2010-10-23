@@ -17,7 +17,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <typeinfo>
 
 #include "uvd/core/runtime.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/hash/crc.h"
 #include "uvd/util/debug.h"
 #include "uvd/flirt/flirt.h"

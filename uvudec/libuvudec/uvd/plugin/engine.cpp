@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/plugin/engine.h"
 #include "uvd/plugin/plugin.h"
 #include "uvd/core/uvd.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include <boost/filesystem.hpp>
 #include <dlfcn.h>
 

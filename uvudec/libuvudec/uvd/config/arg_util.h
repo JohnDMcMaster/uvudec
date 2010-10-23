@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_ARG_UTIL_H
 #define UVD_ARG_UTIL_H
 
-#include "uvd/init/arg.h"
+#include "uvd/config/arg.h"
 #include "uvd/util/types.h"
 #include <stdio.h>
 #include <string>

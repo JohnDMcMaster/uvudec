@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string.h>
 #include "uvdbfd/flirt/section.h"
 #include "uvdbfd/flirt/core.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/flirt/flirt.h"
 
 /*

@@ -5,7 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/util/error.h"
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/util/log.h"
 #include <stdio.h>
 #include <stdarg.h>

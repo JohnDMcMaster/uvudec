@@ -28,6 +28,7 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/core/analysis_db.cpp \
 			$(UVD_DIR)/core/analyzer.cpp \
 			$(UVD_DIR)/core/event.cpp \
+			$(UVD_DIR)/core/init.cpp \
 			$(UVD_DIR)/core/iterator.cpp \
 			$(UVD_DIR)/data/data.cpp \
 			$(UVD_DIR)/data/chunk.cpp \
@@ -61,12 +62,11 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/flirt/sig/writer.cpp \
 			$(UVD_DIR)/hash/crc.cpp \
 			$(UVD_DIR)/hash/md5.cpp \
-			$(UVD_DIR)/init/arg.cpp \
-			$(UVD_DIR)/init/arg_early.cpp \
-			$(UVD_DIR)/init/arg_util.cpp \
-			$(UVD_DIR)/init/config.cpp \
-			$(UVD_DIR)/init/config_symbols.cpp \
-			$(UVD_DIR)/init/init.cpp \
+			$(UVD_DIR)/config/arg.cpp \
+			$(UVD_DIR)/config/arg_early.cpp \
+			$(UVD_DIR)/config/arg_util.cpp \
+			$(UVD_DIR)/config/config.cpp \
+			$(UVD_DIR)/config/config_symbols.cpp \
 			$(UVD_DIR)/language/format.cpp \
 			$(UVD_DIR)/language/language.cpp \
 			$(UVD_DIR)/plugin/engine.cpp \

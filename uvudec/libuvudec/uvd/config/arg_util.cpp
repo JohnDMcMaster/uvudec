@@ -4,8 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/arg.h"
-#include "uvd/init/arg_util.h"
+#include "uvd/config/arg.h"
+#include "uvd/config/arg_util.h"
 #include "uvd/util/debug.h"
 #include <vector>
 #include <string.h>

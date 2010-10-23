@@ -11,8 +11,8 @@ http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 
 #include "uvd/flirt/flirt.h"
 #include "uvd/flirt/sig/format.h"
-#include "uvd/init/arg_property.h"
-#include "uvd/init/init.h"
+#include "uvd/config/arg_property.h"
+#include "uvd/core/init.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/stat.h>

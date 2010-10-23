@@ -4,10 +4,10 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/arg_property.h"
-#include "uvd/init/config.h"
+#include "uvd/config/arg_property.h"
+#include "uvd/config/config.h"
 #include "uvd/project/file_extensions.h"
-#include "uvd/init/init.h"
+#include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "GUI/project.h"
 #include "GUI/format.h"

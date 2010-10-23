@@ -4,8 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/arg_util.h"
-#include "uvd/init/config.h"
+#include "uvd/config/arg_util.h"
+#include "uvd/config/config.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
 #include "uvd/util/log.h"

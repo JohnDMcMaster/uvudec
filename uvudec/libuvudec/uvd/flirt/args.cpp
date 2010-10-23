@@ -4,11 +4,11 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/init/config.h"
+#include "uvd/config/config.h"
 #include "uvd/flirt/args.h"
 #include "uvd/flirt/args_property.h"
-#include "uvd/init/arg_property.h"
-#include "uvd/init/arg_util.h"
+#include "uvd/config/arg_property.h"
+#include "uvd/config/arg_util.h"
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
 
