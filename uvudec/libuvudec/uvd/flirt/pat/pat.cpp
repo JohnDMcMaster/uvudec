@@ -45,19 +45,19 @@ uv_err_t UVDFLIRTPatternGenerator::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGenerator::saveToFile(const std::string &inputFile, const std::string &file)
+uv_err_t UVDFLIRTPatternGenerator::saveToFile(UVDObject *object, const std::string &file)
 {
 	std::string output;
 	
-	uv_assert_err_ret(saveToString(inputFile, output, true));
+	uv_assert_err_ret(saveToString(object, output, true));
 	uv_assert_err_ret(writeFile(file, output));
 	
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGenerator::saveToString(const std::string &inputFile, std::string &output, uint32_t terminateFile)
+uv_err_t UVDFLIRTPatternGenerator::saveToString(UVDObject *object, std::string &output, uint32_t terminateFile)
 {
-	uv_assert_err_ret(saveToStringCore(inputFile, output));
+	uv_assert_err_ret(saveToStringCore(object, output));
 	
 	if( terminateFile )
 	{

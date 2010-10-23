@@ -63,10 +63,12 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::canLoad(const UVDRuntime *runtime, uvd_pri
 	//Require a bfd object	
 	uv_assert_ret(runtime);
 	uv_assert_ret(runtime->m_object);
-	if( typeid(runtime->m_object) != typeid(UVDBFDObject) )
+	if( typeid(*runtime->m_object) != typeid(UVDBFDObject) )
 	{
 		return UV_ERR_NOTSUPPORTED;
 	}
+	uv_assert_ret(confidence);
+	*confidence = UVD_MATCH_ACCEPTABLE;
 	return UV_ERR_OK;
 }
 
@@ -83,7 +85,7 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::tryLoad(const UVDRuntime *runtime, UVDFLIR
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGeneratorBFD::generateByBFD(bfd *abfd, std::string &output)
+uv_err_t UVDFLIRTPatternGeneratorBFD::generateByBFDCore(bfd *abfd, std::string &output)
 {
 	UVDBFDPatCore generator;
 	
@@ -95,17 +97,9 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::generateByBFD(bfd *abfd, std::string &outp
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGeneratorBFD::generateByFile(const std::string &fileName, std::string &output)
+uv_err_t UVDFLIRTPatternGeneratorBFD::generateByBFD(bfd *abfd, std::string &output)
 {
-	/*
-	TODO: move recursion to recursive by BFD
-	*/
-	bfd *abfd = NULL;
-
-	//printf("head bfd generation for filename %s\n", fileName.c_str());
-	//fflush(stdout);
-	printf_flirt_debug("head bfd generation for filename %s\n", fileName.c_str());
-	abfd = bfd_openr(fileName.c_str(), "default");
+	//printf_flirt_debug("head bfd generation for filename %s\n", fileName.c_str());
 	uv_assert_ret(abfd);
 	//If we get an archive, we must recurse
 	if( bfd_check_format(abfd, bfd_archive) == TRUE )
@@ -140,16 +134,22 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::generateByFile(const std::string &fileName
 	//Otherwise, process
 	else
 	{
-		uv_assert_err_ret(generateByBFD(abfd, output));
+		uv_assert_err_ret(generateByBFDCore(abfd, output));
 	}
-	bfd_close(abfd);
 	
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGeneratorBFD::saveToStringCore(const std::string &inputFile, std::string &output)
+uv_err_t UVDFLIRTPatternGeneratorBFD::saveToStringCore(UVDObject *object, std::string &output)
 {
-	uv_assert_err_ret(generateByFile(inputFile, output));
+	UVDBFDObject *bfdObject = NULL;
+
+	uv_assert_ret(object);
+	uv_assert_ret(typeid(*object) == typeid(UVDBFDObject));
+	bfdObject = (UVDBFDObject *)object;
+	//uv_assert_err_ret(generateByFile(inputFile, output));
+	uv_assert_err_ret(generateByBFD(bfdObject->m_bfd, output));
+	
 	return UV_ERR_OK;
 }
 

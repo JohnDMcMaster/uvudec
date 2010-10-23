@@ -243,11 +243,14 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	uv_assert_err_ret(m_eventEngine->init());
 	m_flirt = new UVDFLIRT();
 	uv_assert_ret(m_flirt);
+	m_flirt->m_uvd = this;
 	uv_assert_err_ret(m_flirt->init());
 	/*
 	Read file
 	This is raw dat, NOT null terminated string
 	*/
+
+	uv_assert_err_ret(m_config->m_plugin.m_pluginEngine.onUVDInit());
 
 	printFormatting();
 	printf_debug("UVD: init OK!\n\n\n");

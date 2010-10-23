@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/assembly/symbol.h"
 #include "uvd/data/data.h"
+#include "uvd/object/object.h"
 #include "uvd/util/priority.h"
 
 /*
@@ -42,13 +43,13 @@ public:
 	/*
 	Save .pat to given file
 	*/
-	uv_err_t saveToFile(const std::string &inputFile, const std::string &file);
+	uv_err_t saveToFile(UVDObject *object, const std::string &file);
 	//Core version providing a text dump of the .pat file
 	//terminate file: add the ending ---
-	uv_err_t saveToString(const std::string &inputFile, std::string &output, uint32_t terminateFile);
+	uv_err_t saveToString(UVDObject *object, std::string &output, uint32_t terminateFile);
 	//Gives only the lines, ie no ending terminator
 	//Do this so we can combine several object file signatures together nicely
-	virtual uv_err_t saveToStringCore(const std::string &inputFile, std::string &output) = 0;
+	virtual uv_err_t saveToStringCore(UVDObject *object, std::string &output) = 0;
 	
 	//Can we generate a .pat for the given object file?
 	//supersceeded by the static method

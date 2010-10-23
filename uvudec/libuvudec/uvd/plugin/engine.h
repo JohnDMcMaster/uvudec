@@ -48,6 +48,9 @@ public:
 	uv_err_t initPlugin(const std::string &name);
 	uv_err_t deinitPlugin(const std::string &name);
 	
+	uv_err_t onUVDInit();
+	uv_err_t onUVDDeinit();
+
 protected:
 	//Initialize statically linked plugins
 	uv_err_t staticInit();

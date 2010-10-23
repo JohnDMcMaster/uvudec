@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/flirt/pat/factory.h"
+#include "uvd/flirt/flirt.h"
 
 UVDFLIRTPatFactoryLoader::UVDFLIRTPatFactoryLoader()
 {
@@ -77,6 +78,8 @@ uv_err_t UVDFLIRTPatFactory::unregisterObject(const std::string &name)
 uv_err_t UVDFLIRTPatFactory::canLoad(const UVDRuntime *runtime, PriorityList &bestCandidates)
 {
 	uvd_priority_t confidence = UVD_MATCH_NONE;
+
+	printf_flirt_debug("canLoad(), n loaders: %d\n", m_loaders.size());
 	bestCandidates = PriorityList();
 	
 	for( Loaders::iterator iter = m_loaders.begin();
@@ -89,6 +92,7 @@ uv_err_t UVDFLIRTPatFactory::canLoad(const UVDRuntime *runtime, PriorityList &be
 		uv_assert_ret(canLoad);
 		if( UV_SUCCEEDED(canLoad(runtime, &confidenceTemp, loader.m_user)) )
 		{
+			printf_flirt_debug("can load confidence: %d\n", confidenceTemp);
 			//Better value?
 			if( confidenceTemp < confidence )
 			{
@@ -128,7 +132,7 @@ uv_err_t UVDFLIRTPatFactory::tryLoad(const UVDRuntime *runtime, UVDFLIRTPatternG
 	//Arbitrarily chose the first
 	UVDFLIRTPatFactoryLoader firstCandidate = (*bestCandidates.begin()).first;
 	tryLoadCallback = firstCandidate.m_tryLoad;
-	uv_assert_ret(tryLoadCallback(runtime, out, firstCandidate.m_user));
+	uv_assert_err_ret(tryLoadCallback(runtime, out, firstCandidate.m_user));
 	
 	return UV_ERR_OK;
 }

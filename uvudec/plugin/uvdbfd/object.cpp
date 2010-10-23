@@ -88,9 +88,8 @@ uv_err_t UVDBFDObject::init(UVDData *data)
 
 	uv_assert_err_ret(UVDObject::init(data));
 
-	if( typeid(data) != typeid(UVDDataFile) )
+	if( typeid(*data) != typeid(UVDDataFile) )
 	{
-printf("typeid: %s\n", typeid(data).name());
 		return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 	}
 	dataFile = (UVDDataFile *)data;
