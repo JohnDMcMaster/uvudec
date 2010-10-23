@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/assembly/symbol.h"
 #include "uvd/data/data.h"
+#include "uvd/util/priority.h"
 
 /*
 A library under first analysis
@@ -16,8 +17,23 @@ To generate .pat files
 Architecture and source data file dependent
 */
 class UVDFLIRTFunction;
+class UVDRuntime;
 class UVDFLIRTPatternGenerator
 {
+public:
+	/*
+	Function canLoad(...)
+	Used for probing
+	*/
+	typedef uv_err_t (*CanLoad)(const UVDRuntime *runtime, uvd_priority_t *confidence, void *data);
+
+	/*
+	Function tryLoad(...)
+	Do the actual load
+	Note that we MIGHT NOT call CanLoad first
+	*/
+	typedef uv_err_t (*TryLoad)(const UVDRuntime *runtime, UVDFLIRTPatternGenerator **out, void *data);
+
 public:
 	UVDFLIRTPatternGenerator();
 	virtual ~UVDFLIRTPatternGenerator();
@@ -35,7 +51,8 @@ public:
 	virtual uv_err_t saveToStringCore(const std::string &inputFile, std::string &output) = 0;
 	
 	//Can we generate a .pat for the given object file?
-	virtual uv_err_t canGenerate(const std::string &file) = 0;
+	//supersceeded by the static method
+	//virtual uv_err_t canGenerate(const std::string &file) = 0;
 		
 	//Start analysis, chosing the best analyzer object from detected format
 	//static uv_err_t getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generatorOut);

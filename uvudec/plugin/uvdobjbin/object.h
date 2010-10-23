@@ -24,10 +24,12 @@ public:
 	virtual uv_err_t init(UVDData *data);
 
 	//Returns UV_ERR_NOTSUPPORTED if can't load
-	static uv_err_t canLoad(const UVDData *data, const std::string &object, const std::string &architecture, uvd_priority_t *confidence);
+	static uv_err_t canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,
+			void *user);
 	//How could this fail?
 	//indicates we need a priorty system to load ELF files first etc
-	static uv_err_t tryLoad(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out);
+	static uv_err_t tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out,
+			void *user);
 
 public:
 };

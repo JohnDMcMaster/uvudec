@@ -17,8 +17,8 @@ Similar in concept to BFD
 class UVDData
 {
 public:
-	UVDData();
 	virtual ~UVDData();
+
 	virtual void deinit();
 	
 	//Returns human readable string representation of the source
@@ -75,6 +75,10 @@ public:
 	
 	//For debugging
 	void hexdump();
+
+protected:
+	//Do not instantiate this class by itself ... it has pure virtual funcs anyway
+	UVDData();
 
 private:
 	//NOTE: this is not currently implemented, but may be in the future

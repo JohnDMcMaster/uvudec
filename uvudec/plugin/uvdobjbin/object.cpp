@@ -39,14 +39,16 @@ uv_err_t UVDBinaryObject::init(UVDData *data)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinaryObject::canLoad(const UVDData *data, const std::string &object, const std::string &architecture, uvd_priority_t *confidence)
+uv_err_t UVDBinaryObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,
+		void *user)
 {
 	//While this may work, likely its not a good loader and should be a last resort
 	*confidence = UVD_MATCH_POOR;
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinaryObject::tryLoad(UVDData *data, const std::string &object, const std::string &architecture, UVDObject **out)
+uv_err_t UVDBinaryObject::tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out,
+		void *user)
 {
 	UVDBinaryObject *binaryObject = NULL;
 	

@@ -15,6 +15,7 @@ http://www.hex-rays.com/idapro/flirt.htm
 #define UVD_FLIRT_H
 
 #include "uvd/core/uvd.h"
+#include "uvd/flirt/pat/factory.h"
 #include "uvd/flirt/pat/pat.h"
 #include <string>
 #include <vector>
@@ -39,9 +40,18 @@ public:
 	uv_err_t init();
 	uv_err_t deinit();
 	
+	/*
+	We assume obj2pat is only going to generate from a single runtime
+	Old code instead instantiated a UVDFLIRT engine w/o an associated UVD and did it on demand
+	However, its very important in the long time to use the object format, OS stuff etc (UVDRuntime),
+	so require UVD instantiation
+	*/
 	//Automatically chose object format and engine
-	uv_err_t objs2patFile(const std::vector<std::string> &inputFiles, const std::string &outputFile);
-	uv_err_t objs2pat(const std::vector<std::string> &inputFiles, std::string &output);
+	//uv_err_t objs2patFile(const std::vector<std::string> &inputFiles, const std::string &outputFile);
+	//uv_err_t objs2pat(const std::vector<std::string> &inputFiles, std::string &output);
+	//Uses the object attached to our uvd instance to generate it
+	uv_err_t toPatFile(const std::string &outputFile);
+	uv_err_t toPat(std::string &output);
 
 	//Input pattern files and output sig file
 	uv_err_t patFiles2SigFile(const std::vector<std::string> &inputFiles, const std::string &outputFile);
@@ -61,7 +71,8 @@ protected:
 public:
 	UVD *m_uvd;
 	//Pattern generation engines
-	std::vector<UVDFLIRTPatternGenerator *> m_patternGenerators;
+	//std::vector<UVDFLIRTPatternGenerator *> m_patternGenerators;
+	UVDFLIRTPatFactory m_patFactory;
 };
 
 extern UVDFLIRT *g_flirt;

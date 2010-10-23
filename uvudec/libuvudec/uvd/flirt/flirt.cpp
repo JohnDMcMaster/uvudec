@@ -8,11 +8,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/flirt/pat/pat.h"
 #include "uvd/flirt/sig/sig.h"
 #include "uvd/util/util.h"
+#include "uvd/core/runtime.h"
 
 UVDFLIRT *g_flirt = NULL;
 
 UVDFLIRT::UVDFLIRT()
 {
+	m_uvd = NULL;
 }
 
 UVDFLIRT::~UVDFLIRT()
@@ -29,15 +31,18 @@ uv_err_t UVDFLIRT::init()
 
 uv_err_t UVDFLIRT::deinit()
 {
+	/*
 	for( std::vector<UVDFLIRTPatternGenerator *>::iterator iter = m_patternGenerators.begin(); iter != m_patternGenerators.end(); ++iter )
 	{
 		delete *iter;
 	}
 	m_patternGenerators.clear();
+	*/
 	
 	return UV_ERR_OK;
 }
 
+#if 0
 uv_err_t UVDFLIRT::objs2patFile(const std::vector<std::string> &inputFiles, const std::string &outputFile)
 {
 	std::string output;
@@ -66,6 +71,27 @@ uv_err_t UVDFLIRT::objs2pat(const std::vector<std::string> &inputFiles, std::str
 		
 		output += lastOutput;
 	}
+	
+	return UV_ERR_OK;
+}
+
+#endif
+
+uv_err_t UVDFLIRT::toPatFile(const std::string &outputFile)
+{
+	std::string output;
+	
+	uv_assert_ret(m_uvd);
+	uv_assert_ret(m_uvd->m_runtime);
+	uv_assert_ret(m_uvd->m_runtime->m_object);
+	uv_assert_err_ret(toPat(output));
+	uv_assert_err_ret(writeFile(outputFile, output));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRT::toPat(std::string &output)
+{
 	
 	return UV_ERR_OK;
 }
@@ -109,6 +135,9 @@ uv_err_t UVDFLIRT::patFiles2SigDB(const std::vector<std::string> &inputFiles, UV
 
 uv_err_t UVDFLIRT::getPatternGenerator(const std::string &file, UVDFLIRTPatternGenerator **generatorOut)
 {
+	uv_assert_ret(m_uvd);
+	return UV_DEBUG(m_patFactory.tryLoad(m_uvd->m_runtime, generatorOut));
+#if 0
 	//Iterate over all generators until one claims support
 	//We might want to add priorities here later
 	for( std::vector<UVDFLIRTPatternGenerator *>::iterator iter = m_patternGenerators.begin();
@@ -126,6 +155,7 @@ uv_err_t UVDFLIRT::getPatternGenerator(const std::string &file, UVDFLIRTPatternG
 	
 	printf_error("Could not get pat generator\n");
 	return UV_DEBUG(UV_ERR_GENERAL);
+#endif
 }
 
 uv_err_t UVDFLIRT::getFLIRT(UVDFLIRT **out)
