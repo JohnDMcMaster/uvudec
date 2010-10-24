@@ -98,23 +98,8 @@ bool UVDArgConfig::operator==(const std::string &r) const
 }
 */
 
-uv_err_t setupInstallDir()
-{
-	std::string programName;
-
-	uv_assert_err_ret(getProgramName(programName));
-	uv_assert_ret(g_config);
-	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
-	g_config->m_installDir = uv_dirname(uv_dirname(programName));
-	g_config->m_archDir = g_config->m_installDir + "/arch";
-
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std::string> &args, bool printErrors)
-{	
-	uv_assert_err_ret(setupInstallDir());
-
+{
 	//Used if m_alwaysCall or m_combine is used
 	std::vector<std::string> nakedArgs;
 	const UVDArgConfig *nakedConfig = NULL;
@@ -586,7 +571,6 @@ static uv_err_t UVDPrintUsage()
 
 void UVDHelp()
 {
-UVD_PRINT_STACK();
 	UVDPrintVersion();
 	UVDPrintUsage();
 }

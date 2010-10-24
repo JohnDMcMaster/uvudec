@@ -177,6 +177,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArg = argumentArguments[0];
 		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, UVDArgToBool(firstArg)));
 	}
+	uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
 
 	return UV_ERR_OK;
 }
@@ -189,14 +190,16 @@ uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &arg
 	uv_assert_ret(g_config->m_modulePrefixes.find(typeFlag) == g_config->m_modulePrefixes.end());
 	g_config->m_modulePrefixes[typeFlag] = printPrefix;
 	g_propertyFlagMap[propertyForm] = typeFlag;
-	
 	//static std::map<std::string, uint32_t> g_propertyFlagMap;
+	
 	
 	uv_assert_err_ret(g_config->registerArgument(propertyForm,
 			0, argStringToDebugFlagLongForm(argName),
 			"set given debug flag",
 			1,
 			argParser,
+			true,
+			"",
 			true));
 	
 	return UV_ERR_OK;

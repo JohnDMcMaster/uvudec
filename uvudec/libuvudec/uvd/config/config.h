@@ -4,8 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#ifndef UVD_CONFIG
-#define UVD_CONFIG
+#ifndef UVD_CONFIG_H
+#define UVD_CONFIG_H
 
 #include <map>
 #include <set>
@@ -15,8 +15,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/instruction.h"
 #include "uvd/flirt/config.h"
 #include "uvd/config/arg.h"
-#include "uvd/plugin/plugin.h"
-#include "uvd/plugin/engine.h"
+#include "uvd/config/file.h"
+#include "uvd/config/plugin.h"
 #include "uvd/util/priority_list.h"
 
 /*
@@ -32,39 +32,6 @@ XXX: it may be desirable, however, to later unify these
 #define UVD_ADDRESS_ANALYSIS_INCLUDE			1
 //Do not analyze
 #define UVD_ADDRESS_ANALYSIS_EXCLUDE			2
-
-
-class UVDPluginConfig
-{
-public:
-	UVDPluginConfig();
-	~UVDPluginConfig();
-
-	uv_err_t init(UVDConfig *config);
-	uv_err_t earlyArgParse(UVDConfig *config);
-	uv_err_t deinit();
-
-	//Add a plugin to be loaded
-	uv_err_t addPlugin(const std::string &pluginLibraryName);
-	uv_err_t appendPluginPath(const std::string &path);
-	uv_err_t prependPluginPath(const std::string &path);
-
-public:
-	//To activate at startup
-	//std::vector<std::string> m_plugins;
-	//renamed
-	std::vector<std::string> m_toLoad;
-
-	//All of these will be added to plugin selection lists and have their main called
-	//std::vector<std::string> m_pluginDirs;
-	std::vector<std::string> m_dirs;
-
-	//Since plugins are required for arg parsing, the plugin engine has to be part of the config
-	UVDPluginEngine m_pluginEngine;
-
-	//Plugin related early parsing so that main argument parse goes correctly
-	UVDArgConfigs m_earlyConfigArgs;
-};
 
 class UVDConfigSymbols
 {
@@ -200,6 +167,8 @@ public:
 	int m_argc;
 	char *const *m_argv;
 	std::vector<std::string> m_args;
+	//After adding options from config files and such
+	std::vector<std::string> m_argsEffective;
 
 	//The binary we are analyzing, it from a file
 	//The primary source of this information should be uvd's UVDData and this is more for init purposes
@@ -344,6 +313,7 @@ public:
 	UVDUint32RangePriorityList m_addressRangeValidity;
 
 	UVDPluginConfig m_plugin;
+	UVDConfigFileLoader *m_configFileLoader;
 };
 
 //The following are internal use only
@@ -359,3 +329,4 @@ extern UVDConfig *g_config;
 UVDConfig *UVDGetConfig();
 
 #endif
+

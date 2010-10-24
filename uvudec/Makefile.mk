@@ -125,6 +125,7 @@ endif
 ifeq ($(USING_LIB_JANSSON),Y)
 # `pkg-config --cflags --libs jansson`
 LIBS += -ljansson
+FLAGS_SHARED += -DUSING_JANSSON
 endif
 
 
@@ -178,6 +179,10 @@ endif
 all: $(ALL_TARGETS)
 	@(echo 'all: done')
 	@(true)
+
+# FIXME: deal with this better
+$(ROOT_DIR)/libuvudec/uvd/config.h: $(ROOT_DIR)/Makefile.configure
+	touch $(ROOT_DIR)/libuvudec/uvd/config.h
 
 $(BIN_DIR):
 	mkdir $(BIN_DIR)

@@ -128,7 +128,6 @@ uv_err_t UVDPluginEngine::deinit()
 	return UV_ERR_OK;
 }
 
-extern uint32_t g_debugTypeFlags;
 uv_err_t UVDPluginEngine::loadByName(const std::string &name)
 {
 	/*
@@ -275,6 +274,8 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 	plugin->m_hLibrary = library;
 	m_plugins[name] = plugin;
 	
+	printf_plugin_debug("loaded plugin: %s\n", name.c_str());
+
 	return UV_ERR_OK;
 }
 

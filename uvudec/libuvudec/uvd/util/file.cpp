@@ -42,6 +42,11 @@ uv_err_t getWorkingDir(std::string &out)
 	return UV_DEBUG(getEnvironmentVariable("PWD", out));
 }
 
+uv_err_t UVDGetHomeDir(std::string &out)
+{
+	return UV_DEBUG(getEnvironmentVariable("HOME", out));
+}
+
 uv_err_t getCannonicalFileName(const std::string &filename, std::string &cannonicalFileName)
 {
 	std::string relativeDir;
