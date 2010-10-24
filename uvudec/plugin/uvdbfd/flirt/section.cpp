@@ -128,7 +128,10 @@ uv_err_t UVDBFDPatSection::assignRelocation(arelent *bfdRelocation)
 	Not very efficient...just slams on each entry until we hit the correct one
 	But maybe thats best we can do since we are using linked list
 	*/
-	printf_flirt_debug("finding function within section for arelent 0x%.8X\n", (int)bfdRelocation);
+	//printf_flirt_debug("finding function within section for arelent 0x%.8X\n", (int)bfdRelocation);
+	//We do this because multiple at the same address need duplicate relocations
+	//FIXME: this is a quick hack, we should probaly group the symbols into one function object
+	bool previousSuccess = false;
 	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.m_functions.begin();
 			iter != m_functions.m_functions.end(); ++iter )
 	{
@@ -138,8 +141,13 @@ uv_err_t UVDBFDPatSection::assignRelocation(arelent *bfdRelocation)
 		//Successfully added?  We hit the correct range then
 		if( UV_SUCCEEDED(uvdFunction->m_relocations.isApplicable(bfdRelocation)) )
 		{
+			previousSuccess = true;
 			uv_assert_err_ret(uvdFunction->m_relocations.addRelocation(bfdRelocation));
-			printf_flirt_debug("found function within section for arelent 0x%.8X\n", (int)bfdRelocation);
+			//printf("0x%08X new relocs: %d\n", (int)uvdFunction, uvdFunction->m_relocations.m_relocations.size());
+			//printf_flirt_debug("found function within section for arelent 0x%.8X\n", (int)bfdRelocation);
+		}
+		else if( previousSuccess )
+		{
 			return UV_ERR_OK;
 		}
 	}
