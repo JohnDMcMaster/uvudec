@@ -29,7 +29,7 @@ public:
 public:
 	//Do we own this?
 	struct bfd_section *m_section;
-	UVDBFDPatFunctions m_functions;
+	UVDBFDPatModule m_functions;
 	//We own this
 	unsigned char *m_content;
 	//Do not own this
