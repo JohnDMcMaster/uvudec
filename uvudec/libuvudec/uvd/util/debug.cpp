@@ -70,6 +70,11 @@ uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet)
 	return UV_ERR_OK;
 }
 
+bool UVDAnyDebugActive()
+{
+	return g_debugTypeFlags != 0;
+}
+
 static void printf_debug_prefix(FILE *logHandle, const char *prefix, const char *file, uint32_t line, const char *func)
 {
 	if( !logHandle )
