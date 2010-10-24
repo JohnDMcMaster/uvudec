@@ -594,6 +594,7 @@ int main(int argc, char **argv)
 	uv_err_t rc = uvmain(argc, argv);
 	if( UV_FAILED(rc) )
 	{
+		printf_error("failed\n");
 		return 1;
 	}
 	else
