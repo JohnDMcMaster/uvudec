@@ -207,6 +207,7 @@ int main(int argc, char **argv)
 	printf_debug("main: exit\n");
 	if( UV_FAILED(rc) )
 	{
+		printf_error("failed\n");
 		return 1;
 	}
 	else
