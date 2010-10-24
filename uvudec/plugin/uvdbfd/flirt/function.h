@@ -124,11 +124,11 @@ public:
 /*
 UVDBFDFunctions
 */
-class UVDBFDPatFunctions
+class UVDBFDPatModule
 {
 public:
-	UVDBFDPatFunctions();
-	~UVDBFDPatFunctions();
+	UVDBFDPatModule();
+	~UVDBFDPatModule();
 	
 	uv_err_t add(UVDBFDPatFunction *function);
 	

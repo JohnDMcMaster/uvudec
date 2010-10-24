@@ -303,14 +303,14 @@ UVDBFDPatFunction::iterator UVDBFDPatFunction::end()
 }
 
 /*
-UVDBFDPatFunctions
+UVDBFDPatModule
 */
 
-UVDBFDPatFunctions::UVDBFDPatFunctions()
+UVDBFDPatModule::UVDBFDPatModule()
 {
 }
 
-UVDBFDPatFunctions::~UVDBFDPatFunctions()
+UVDBFDPatModule::~UVDBFDPatModule()
 {
 	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.begin();
 			iter != m_functions.end(); ++iter )
@@ -320,7 +320,7 @@ UVDBFDPatFunctions::~UVDBFDPatFunctions()
 	m_functions.clear();
 }
 
-uv_err_t UVDBFDPatFunctions::add(UVDBFDPatFunction *function)
+uv_err_t UVDBFDPatModule::add(UVDBFDPatFunction *function)
 {
 	std::vector<UVDBFDPatFunction *>::iterator iter;
 	
