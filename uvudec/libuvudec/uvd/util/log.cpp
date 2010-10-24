@@ -22,15 +22,15 @@ uv_err_t uv_log(uv_log_level level, const char *message, const char *file, int l
 {
 	const char *level_str = "UNKNOWN";
 	FILE *logHandle = g_log_handle;
-	
+
 	if( !logHandle )
 	{
 		printf_warn("tried to log before logging setup\n");
 		logHandle = stdout;
 	}
 	
-	//Before config init, assume log all
-	if( g_config && !g_config->m_verbose )
+	//Only print if debugging, otherwise just clutters up screen
+	if( !UVDAnyDebugActive() )
 	{
 		return UV_ERR_OK;
 	}

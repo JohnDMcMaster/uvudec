@@ -67,7 +67,6 @@ UVDConfig::UVDConfig()
 	m_print_block_id = false;
 	m_print_header = false;
 
-
 	m_computeFunctionMD5 = true;
 	m_computeFunctionRelocatableMD5 = true;
 
@@ -124,6 +123,7 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 			printf_error("***__verbose activated***\n");
 			UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, true);
 			m_debugLevel = UVD_DEBUG_VERBOSE;
+			m_verbose = true;
 			break;
 		}
 	}
@@ -527,7 +527,7 @@ uv_err_t UVDConfig::lastAddressState(uint32_t start, uint32_t *ret, uint32_t tar
 
 bool UVDConfig::anyVerboseActive()
 {
-	return m_verbose_args || m_verbose || m_verbose_init || m_verbose_processing || m_verbose_analysis || m_verbose_printing;
+	return UVDAnyDebugActive() || m_verbose_args || m_verbose || m_verbose_init || m_verbose_processing || m_verbose_analysis || m_verbose_printing;
 }
 
 void UVDConfig::clearVerboseAll()

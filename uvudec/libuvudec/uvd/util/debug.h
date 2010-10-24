@@ -139,6 +139,7 @@ void uv_enter(const char *file, uint32_t line, const char *func);
 uv_err_t UVDDebugInit();
 uv_err_t UVDDebugDeinit();
 uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet);
+bool UVDAnyDebugActive();
 
 #define UVD_BREAK() do { __asm__("INT3"); } while( 0 )
 #define UVD_PRINT_STACK() uvd_print_trace(__FILE__, __LINE__, __FUNCTION__)
