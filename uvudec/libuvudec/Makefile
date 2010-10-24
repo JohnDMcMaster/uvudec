@@ -21,6 +21,13 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/compiler/compiler.cpp \
 			$(UVD_DIR)/compiler/assembly.cpp \
 			$(UVD_DIR)/compiler/gcc.cpp \
+			$(UVD_DIR)/config/arg.cpp \
+			$(UVD_DIR)/config/arg_early.cpp \
+			$(UVD_DIR)/config/arg_util.cpp \
+			$(UVD_DIR)/config/config.cpp \
+			$(UVD_DIR)/config/config_symbols.cpp \
+			$(UVD_DIR)/config/file.cpp \
+			$(UVD_DIR)/config/plugin.cpp \
 			$(UVD_DIR)/core/runtime.cpp \
 			$(UVD_DIR)/core/runtime_hints.cpp \
 			$(UVD_DIR)/core/uvd.cpp \
@@ -62,11 +69,6 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/flirt/sig/writer.cpp \
 			$(UVD_DIR)/hash/crc.cpp \
 			$(UVD_DIR)/hash/md5.cpp \
-			$(UVD_DIR)/config/arg.cpp \
-			$(UVD_DIR)/config/arg_early.cpp \
-			$(UVD_DIR)/config/arg_util.cpp \
-			$(UVD_DIR)/config/config.cpp \
-			$(UVD_DIR)/config/config_symbols.cpp \
 			$(UVD_DIR)/language/format.cpp \
 			$(UVD_DIR)/language/language.cpp \
 			$(UVD_DIR)/plugin/engine.cpp \

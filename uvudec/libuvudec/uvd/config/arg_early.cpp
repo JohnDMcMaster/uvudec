@@ -57,42 +57,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			config->m_debugLevel = firstArgNum;
 		}
 	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_ARGS )
-	{
-		config->m_verbose_args = firstArgBool;
-		UVDSetDebugFlag(UVD_DEBUG_TYPE_ARGS, firstArgBool);
-		uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_INIT )
-	{
-		config->m_verbose_init = firstArgBool;
-		UVDSetDebugFlag(UVD_DEBUG_TYPE_INIT, firstArgBool);
-		uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PLUGIN )
-	{
-printf("plugin debug flag set: %d\n", UVD_DEBUG_TYPE_PLUGIN);
-		UVDSetDebugFlag(UVD_DEBUG_TYPE_PLUGIN, firstArgBool);
-		uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PROCESSING )
-	{
-		config->m_verbose_processing = firstArgBool;
-		UVDSetDebugFlag(UVD_DEBUG_TYPE_PROCESSING, firstArgBool);
-		uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_ANALYSIS )
-	{
-		config->m_verbose_analysis = firstArgBool;
-		UVDSetDebugFlag(UVD_DEBUG_TYPE_ANALYSIS, firstArgBool);
-		uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_PRINTING )
-	{
-		config->m_verbose_printing = firstArgBool;
-		UVDSetDebugFlag(UVD_DEBUG_TYPE_PRINT, firstArgBool);
-		uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-	}
 	/*
 	This looks unused, was used for printing out the binary as we go along during disassembly
 	else if( argConfig->m_propertyForm == "debug.print_binary" )
@@ -110,6 +74,7 @@ printf("plugin debug flag set: %d\n", UVD_DEBUG_TYPE_PLUGIN);
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		uv_assert_err_ret(config->m_plugin.addPlugin(firstArg));
+		config->m_plugin.m_toLoad.push_back(firstArg);
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_APPEND_PATH )
 	{
@@ -134,26 +99,21 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin search path", 1, argParser, false, "", true));
 	
 	//Debug
+	//NOTE: type debug flags are automaticlly registered along with the type
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_ANALYSIS, 0, "verbose-analysis", "selectivly debug analysis", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_ARGS, 0, "verbose-args", "selectivly debug argument parsing", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_INIT, 0, "verbose-init", "selectivly debug initialization", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_PLUGIN, 0, "verbose-plugin", "selectivly debug plugin engine", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_PRINTING, 0, "verbose-printing", "selectivly debug printing", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_PROCESSING, 0, "verbose-processing", "selectivly debug post-analysis", 1, argParser, true, "", true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true, "", true));
 
 	//So we can ignore arg meant for later
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, "", 0, true, true, true));
 
-	//Early config parsing for debugging, especially during plugin loading/initialization
-	UVDArgConfig::process(m_earlyConfigArgs, config->m_args, false);
-
 	//FIXME XXX TODO: hack until I can have startup config files
 	m_dirs.push_back("../lib/plugin");
+	/*
 	m_toLoad.push_back("uvdasm");
 	m_toLoad.push_back("uvdbfd");
 	m_toLoad.push_back("uvdobjbin");
+	*/
 
 	return UV_ERR_OK;
 }
+

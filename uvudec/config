@@ -1,0 +1,4 @@
+plugin=uvdasm
+plugin=uvdbfd
+plugin=uvdobjbin
+

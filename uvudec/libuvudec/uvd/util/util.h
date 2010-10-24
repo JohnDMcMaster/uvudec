@@ -62,6 +62,7 @@ uv_err_t getCannonicalFileName(const std::string &filename, std::string &cannoni
 //Resolve relative to specified dir
 uv_err_t getCannonicalFileNameCore(const std::string &filename, const std::string &relativeDir, std::string &cannonicalFileName);
 uv_err_t getWorkingDir(std::string &out);
+uv_err_t UVDGetHomeDir(std::string &out);
 uv_err_t collapsePath(const std::string &relativePath, std::string &pathRet);
 //Only add if something else isn't already present
 uv_err_t weaklyEnsurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out);

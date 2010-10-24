@@ -75,6 +75,8 @@ UVDConfig::UVDConfig()
 	m_writeRelocatableBinary = true;
 	m_writeElfFile = true;
 	m_functionIndexFilename = "index.func";
+	
+	m_configFileLoader = NULL;
 }
 
 UVDConfig::~UVDConfig()
@@ -93,6 +95,19 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv)
 	return UV_DEBUG(parseMain(argc, argv, NULL));
 }
 
+static uv_err_t setupInstallDir()
+{
+	std::string programName;
+
+	uv_assert_err_ret(getProgramName(programName));
+	uv_assert_ret(g_config);
+	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
+	g_config->m_installDir = uv_dirname(uv_dirname(programName));
+	g_config->m_archDir = g_config->m_installDir + "/arch";
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 {
 	/*
@@ -101,16 +116,45 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	*/
 	uv_err_t processRc = UV_ERR_GENERAL;
 
+	//for debugging problems with startup
+	for( int i = 1; i < argc; ++i )
+	{
+		if( std::string(argv[i]) == "--__verbose" )
+		{
+			printf_error("***__verbose activated***\n");
+			UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, true);
+			m_debugLevel = UVD_DEBUG_VERBOSE;
+			break;
+		}
+	}
+	//printf("parse main, effective args: %d\n", m_argsEffective.size());
+	
 	m_argc = argc;
 	m_argv = argv;
 	
 	m_args = charPtrArrayToVector(m_argv, m_argc);
+	m_argsEffective = m_args;
+	//printf("parse main, effective args: %d\n", m_argsEffective.size());
+
+	//This must be setup very early so config files can be correctly loaded
+	uv_assert_err_ret(setupInstallDir());
 
 	//Early parsing for debugging and plugin related
 	uv_assert_err_ret(m_plugin.init(this));
+	//Meddles with m_argsEffective
+	uv_assert_ret(m_configFileLoader);
+	uv_assert_err_ret(m_configFileLoader->init(this));
+
+	//printf("effective args: %d\n", m_argsEffective.size());
+	//for( unsigned int i = 0; i < m_argsEffective.size(); ++i ) printf("arg[%d] = %s\n", i, m_argsEffective[i].c_str());
+	//Early config parsing for debugging, especially during plugin loading/initialization
+	UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false);
+
+	//This must be done early since command line options depend upon which plugins are loaded
+	uv_assert_err_ret(m_plugin.m_pluginEngine.init(this));
 
 	//Parse the data
-	processRc = UVDArgConfig::process(m_configArgs, m_args);
+	processRc = UVDArgConfig::process(m_configArgs, m_argsEffective);
 	if( processRc == UV_ERR_DONE )
 	{
 		return processRc;
@@ -135,11 +179,13 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDConfig::parseUserConfig()
 {
 	//TODO: add support using libconfig
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVDConfig::processParseMain()
 {
@@ -160,10 +206,12 @@ uv_err_t UVDConfig::init()
 	uv_assert_err_ret(m_symbols.init());
 	
 	//Load user defined defaults
-	uv_assert_err_ret(parseUserConfig());
+	//uv_assert_err_ret(parseUserConfig());
 	
 	//Okay, now that we have base plugin search paths setup, we can initialize plugin engine
 	//uv_assert_err_ret(m_plugin.init(this));
+
+	m_configFileLoader = new UVDConfigFileLoader();
 
 	return UV_ERR_OK;
 }
@@ -586,57 +634,6 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		}
 	}
 
-	return UV_ERR_OK;
-}
-
-/*
-UVDPluginConfig
-*/
-
-UVDPluginConfig::UVDPluginConfig()
-{
-}
-
-UVDPluginConfig::~UVDPluginConfig()
-{
-	UV_DEBUG(deinit());
-}
-
-uv_err_t UVDPluginConfig::init(UVDConfig *config)
-{
-	uv_assert_err_ret(earlyArgParse(config));
-	//This must be done early since command line options depend upon which plugins are loaded
-	uv_assert_err_ret(m_pluginEngine.init(config));
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDPluginConfig::deinit()
-{
-	for( UVDArgConfigs::iterator iter = m_earlyConfigArgs.begin(); iter != m_earlyConfigArgs.end(); ++iter )
-	{
-		delete (*iter).second;
-	}
-	m_earlyConfigArgs.clear();
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDPluginConfig::addPlugin(const std::string &pluginLibraryName)
-{
-	m_toLoad.push_back(pluginLibraryName);
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDPluginConfig::appendPluginPath(const std::string &path)
-{
-	m_dirs.insert(m_dirs.end(), path);
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDPluginConfig::prependPluginPath(const std::string &path)
-{
-	m_dirs.insert(m_dirs.begin(), path);
 	return UV_ERR_OK;
 }
 
