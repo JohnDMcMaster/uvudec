@@ -131,6 +131,7 @@ public:
 	~UVDBFDPatModule();
 	
 	uv_err_t add(UVDBFDPatFunction *function);
+	uv_err_t print();
 	
 public:
 	//We own these

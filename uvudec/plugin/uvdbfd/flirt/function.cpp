@@ -341,3 +341,15 @@ uv_err_t UVDBFDPatModule::add(UVDBFDPatFunction *function)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDBFDPatModule::print()
+{
+	//printf_flirt_debug("Section: %s, size 0x%X\n",
+	//		   s->section->name, (unsigned int)bfd_section_size(m_bfd, s->section));
+	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.begin();
+			iter != m_functions.end(); ++iter )
+	{
+		UVDBFDPatFunction *function = *iter;
+		uv_assert_err_ret(function->print());
+	}
+	return UV_ERR_OK;
+}
