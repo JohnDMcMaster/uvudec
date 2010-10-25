@@ -17,11 +17,14 @@ UVDConfigFLIRT::UVDConfigFLIRT()
 	m_patLeadingLength = UVD_PROP_FLIRT_PAT_LEADING_LENGTH_DEFAULT;
 	m_patModuleLengthMax = UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX_DEFAULT;
 	m_functionsAsModules = UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES_DEFAULT;
+	m_patternReferenceTrailingSpace = UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE_DEFAULT;
 
 	m_outputFile = "/dev/stdout";
 
 	m_prefixUnderscores = UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES_DEFAULT;
 	m_debugDumpTab = "  ";
+	
+	makeFLAIRCompatible();
 }
 
 UVDConfigFLIRT::~UVDConfigFLIRT()
@@ -41,8 +44,11 @@ uv_err_t UVDConfigFLIRT::makeFLAIRCompatible(bool makeCompatible)
 	//Don't think FLAIR does this, but will need some evidence
 	m_trimZeros = !makeCompatible;
 	m_functionsAsModules = !makeCompatible;
+	//Changing this has a higher risk of breaking pat parsing programs where as the other options shouldn't
+	m_patternFileNewline = "\r\n";
+	m_patternReferenceTrailingSpace = makeCompatible;
 
-	//m_relocateNearFar?
+	//m_relocateNearFar is settable in FLAIR I think
 
 	return UV_ERR_OK;
 }

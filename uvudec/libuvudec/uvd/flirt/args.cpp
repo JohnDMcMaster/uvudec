@@ -18,7 +18,10 @@ uv_err_t initFLIRTSharedConfig()
 
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_FLAIR_COMPATIBILITY, 'f', "flair", "try to be FLAIR like", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH, 0, "sig-min-length", "minimum (unrelocatable) signature length, default 4 bytes", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH, 0, "sig-max-length", "maximum signature length, default 0x8000 bytes", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE, 0, "pat-trailing-space", "always put a space after references (even if at line end)", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES, 0, "pat-prefix-underscores", "prefix underscores to symbols in certain object formats", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "pat-functions-as-modules", "don't group functions into modules", 1, argParser, true));	
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_NEWLINE, 0, "pat-newline", "line termination, lf or crlf", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "Object library (ELF, OMF, etc)", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "pat file (default: stdout)", 1, argParser, false));
 
@@ -32,6 +35,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
+	bool firstArgBool = true;
 	
 	config = g_config;
 	uv_assert_ret(config);
@@ -45,17 +49,42 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		firstArg = argumentArguments[0];
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
+		firstArgBool = UVDArgToBool(firstArg);
 	}
 
 	if( argConfig->m_propertyForm == UVD_PROP_FLIRT_FLAIR_COMPATIBILITY )
 	{
-		if( argumentArguments.empty() )
+		flirtConfig->makeFLAIRCompatible(firstArgBool);
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE )
+	{
+		flirtConfig->m_patternReferenceTrailingSpace = firstArgBool;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES )
+	{
+		flirtConfig->m_prefixUnderscores = firstArgBool;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES )
+	{
+		flirtConfig->m_functionsAsModules = firstArgBool;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_PAT_NEWLINE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+
+		if( firstArg == "lf" )
 		{
-			flirtConfig->makeFLAIRCompatible(true);
+			flirtConfig->m_patternFileNewline = "\n";
 		}
+		else if( firstArg == "crlf" )
+		{
+			flirtConfig->m_patternFileNewline = "\r\n";
+		}
+		//We could allow arbitrary line termination, but it seems more like a user input mistake
 		else
 		{
-			flirtConfig->makeFLAIRCompatible(UVDArgToBool(firstArg));
+			printf_error("Unrecognized line termination: %s\n", firstArg.c_str());
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH )

@@ -41,6 +41,8 @@ public:
 	uint32_t m_patModuleLengthMax;
 	//UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES
 	uint32_t m_functionsAsModules;
+	//UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE
+	uint32_t m_patternReferenceTrailingSpace;
 	
 	/*
 	Triming heuristics
@@ -61,7 +63,8 @@ public:
 	std::string m_debugDumpTab;
 
 	//Haven't quite figured out why it does this yet
-	//Related to C++ mangling somehow?
+	//Related to C++ mangling somehow?  Archive packing somehow I guess
+	//Listed as a general option since I might write files without them and need to parse them correctly
 	//UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES
 	uint32_t m_prefixUnderscores;
 };
