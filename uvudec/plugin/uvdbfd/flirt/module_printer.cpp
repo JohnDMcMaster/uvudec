@@ -226,7 +226,7 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 		uv_assert_ret(function);
 
 		uv_assert_err_ret(m_module->offset(&moduleOffset));
-		moduleOffset = function->m_offset - moduleOffset;
+		publicNameOffset = function->m_offset - moduleOffset;
 
 		bfdAsymbol = function->m_bfdAsymbol;
 		flags = bfdAsymbol->flags;
