@@ -129,6 +129,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 		std::vector<UVDParsedArg> parsedArgs;
 		bool ignoreEarlyArg = false;
 
+		printf_args_debug("arg: %s\n", arg.c_str());
 		uv_assert_err_ret(processArg(arg, parsedArgs));
 
 		//Now iterate for each logical command line argument (such as from -abc)
@@ -157,7 +158,9 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 					}
 					else
 					{
-						return matchRc;
+						//We should be IN the early config
+						//Ignore this argument
+						continue;
 					}
 				}
 			}
