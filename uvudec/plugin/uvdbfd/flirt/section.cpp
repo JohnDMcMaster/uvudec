@@ -5,8 +5,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include <string.h>
-#include "uvdbfd/flirt/section.h"
 #include "uvdbfd/flirt/core.h"
+#include "uvdbfd/flirt/module.h"
+#include "uvdbfd/flirt/section.h"
 #include "uvd/config/config.h"
 #include "uvd/flirt/flirt.h"
 
@@ -26,13 +27,34 @@ UVDBFDPatSection::~UVDBFDPatSection()
 	free(m_content);
 }
 
+uv_err_t UVDBFDPatSection::size(uint32_t *out)
+{
+	uv_assert_ret(m_core);
+	uv_assert_ret(m_section);
+	
+	*out = bfd_section_size(m_core->m_bfd, m_section);
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDBFDPatSection::setFunctionSizes()
 {
+	//Functions were sorted into modules, but we need a contiguous list to determine sizes
+	std::vector<UVDBFDPatFunction *> allSectionFunctions;
 	int sectionSize = 0;
+
+	for( std::vector<UVDBFDPatModule *>::iterator iter = m_modules.begin();
+			iter != m_modules.end(); ++iter )
+	{
+		UVDBFDPatModule *module = *iter;
+		
+		uv_assert_ret(module);
+		//std::vector<UVDBFDPatFunction *> m_functions
+		allSectionFunctions.insert(allSectionFunctions.end(), module->m_functions.begin(), module->m_functions.end());
+	}
 
 	sectionSize = bfd_section_size(m_core->m_bfd, m_section);
 	//Iterate over all functions within that section
-	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.m_functions.begin(); iter != m_functions.m_functions.end(); )
+	for( std::vector<UVDBFDPatFunction *>::iterator iter = allSectionFunctions.begin(); iter != allSectionFunctions.end(); )
 	{
 		UVDBFDPatFunction *function = NULL;
 		std::vector<UVDBFDPatFunction *>::iterator iterStart = iter;
@@ -47,7 +69,7 @@ uv_err_t UVDBFDPatSection::setFunctionSizes()
 			++iter;
 			//Get the next size
 			//Did we reach the section end?
-			if( iter == m_functions.m_functions.end() )
+			if( iter == allSectionFunctions.end() )
 			{
 				function->m_size = sectionSize - function->m_offset;
 				//Even if we still have 0 size, we need to break
@@ -70,29 +92,33 @@ uv_err_t UVDBFDPatSection::setFunctionSizes()
 			++iterStart;
 		}
 		
-		printf_flirt_debug("early func size %s is 0x%.4X\n", bfd_asymbol_name(function->m_bfdAsymbol), function->m_size);
+		printf_flirt_debug("early func size %s is 0x%04X\n", bfd_asymbol_name(function->m_bfdAsymbol), function->m_size);
 	}
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBFDPatSection::print()
 {
-	return UV_DEBUG(m_functions.print());
+	for( std::vector<UVDBFDPatModule *>::iterator iter = m_modules.begin();
+			iter != m_modules.end(); ++iter )
+	{
+		UVDBFDPatModule *module = *iter;
+		
+		uv_assert_ret(module);
+		uv_assert_err_ret(module->print());
+	}
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBFDPatSection::trimSignatures()
 {
-	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.m_functions.begin();
-			iter != m_functions.m_functions.end(); ++iter )
+	for( std::vector<UVDBFDPatModule *>::iterator iter = m_modules.begin();
+			iter != m_modules.end(); ++iter )
 	{
-		UVDBFDPatFunction *function = *iter;
-
-		if( function->m_size >= g_config->m_flirt.m_patSignatureLengthMax )
-		{
-			printf_flirt_warning("truncating signature for function %s\n", bfd_asymbol_name(function->m_bfdAsymbol));
-			//Hmm why was this max - 1?
-			function->m_size = g_config->m_flirt.m_patSignatureLengthMax - 1;
-		}
+		UVDBFDPatModule *module = *iter;
+		
+		uv_assert_ret(module);
+		uv_assert_err_ret(module->trimSignatures());
 	}
 	return UV_ERR_OK;
 }
@@ -100,16 +126,45 @@ uv_err_t UVDBFDPatSection::trimSignatures()
 uv_err_t UVDBFDPatSection::addFunction(asymbol *functionSymbol)
 {
 	UVDBFDPatFunction *function = NULL;
-	
+	UVDBFDPatModule *module = NULL;
+				
 	function = new UVDBFDPatFunction();
 	uv_assert_ret(function);
-	function->m_section = this;
 	function->m_bfdAsymbol = functionSymbol;
 	function->m_offset = functionSymbol->value;
 	//We'll get this by computing deltas
 	function->m_size = 0;
-	uv_assert_err_ret(m_functions.add(function));	
+
+	//Should we group functions into single modules or each its own module?
+	if( g_config->m_flirt.m_functionsAsModules )
+	{
+		module = new UVDBFDPatModule();
+		uv_assert_ret(module);
+		module->m_section = this;
+		uv_assert_err_ret(module->add(function));	
 	
+		m_modules.push_back(module);
+	}
+	else
+	{
+		//Create the single module if it didn't already exist
+		if( m_modules.empty() )
+		{
+			module = new UVDBFDPatModule();
+			uv_assert_ret(module);
+			module->m_section = this;
+			m_modules.push_back(module);
+		}
+		else
+		{
+			module = m_modules[0];
+			uv_assert_ret(module);
+		}
+		uv_assert_ret(m_modules.size() == 1);
+		uv_assert_err_ret(module->add(function));	
+	}
+	function->m_module = module;
+
 	return UV_ERR_OK;
 }
 
@@ -120,35 +175,42 @@ uv_err_t UVDBFDPatSection::assignRelocation(arelent *bfdRelocation)
 	Not very efficient...just slams on each entry until we hit the correct one
 	But maybe thats best we can do since we are using linked list
 	*/
-	//printf_flirt_debug("finding function within section for arelent 0x%.8X\n", (int)bfdRelocation);
+	printf_flirt_debug("finding function within section for arelent 0x%08X @ offset 0x%04X\n", (int)bfdRelocation, bfdRelocation->address);
 	//We do this because multiple at the same address need duplicate relocations
 	//FIXME: this is a quick hack, we should probaly group the symbols into one function object
 	bool previousSuccess = false;
-	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_functions.m_functions.begin();
-			iter != m_functions.m_functions.end(); ++iter )
+	for( std::vector<UVDBFDPatModule *>::iterator iter = m_modules.begin();
+			iter != m_modules.end(); ++iter )
 	{
-		UVDBFDPatFunction *uvdFunction = *iter;
+		UVDBFDPatModule *module = *iter;
 		
-		//printf_flirt_debug("assinging relocations, current function: 0x%.8X\n", (int)uvdFunction);
+		uv_assert_ret(module);
+
+		//printf_flirt_debug("module functions: %d\n", module->m_functions.size());
+		//printf_flirt_debug("assinging relocations, current function: 0x%08X\n", (int)uvdFunction);
 		//Successfully added?  We hit the correct range then
-		if( UV_SUCCEEDED(uvdFunction->m_relocations.isApplicable(bfdRelocation)) )
+		if( UV_SUCCEEDED(module->m_relocations.isApplicable(bfdRelocation)) )
 		{
 			previousSuccess = true;
-			uv_assert_err_ret(uvdFunction->m_relocations.addRelocation(bfdRelocation));
-			//printf("0x%08X new relocs: %d\n", (int)uvdFunction, uvdFunction->m_relocations.m_relocations.size());
-			//printf_flirt_debug("found function within section for arelent 0x%.8X\n", (int)bfdRelocation);
+			uv_assert_err_ret(module->m_relocations.addRelocation(bfdRelocation));
+			//printf_flirt_debug("0x%08X new relocs: %d\n", (int)uvdFunction, uvdFunction->m_relocations.m_relocations.size());
+			//printf_flirt_debug("found function within section for arelent 0x%08X\n", (int)bfdRelocation);
 		}
 		else if( previousSuccess )
 		{
 			return UV_ERR_OK;
 		}
 	}
+	if( previousSuccess )
+	{
+		return UV_ERR_OK;
+	}
 	/*
 	Original code silently ignores this
 	Ex why: reloc out of bounds @ 0x00008089, func .debug_info 0x00000000 - 0x00007FFF
 	This may be partially due to the lose way func detection is currently done
 	*/
-	printf_flirt_debug("ignoring out of bounds relocation at offset 0x%.4X\n", (int)bfdRelocation->address);
+	printf_flirt_debug("ignoring out of bounds relocation at offset 0x%04X\n", (int)bfdRelocation->address);
 	return UV_ERR_OK;
 }
 

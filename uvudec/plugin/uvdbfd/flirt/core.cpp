@@ -209,6 +209,7 @@ uv_err_t UVDBFDPatCore::placeRelocationsIntoFunctions()
 			printf_flirt_debug("skipping section %s: couldn't find section to apply to\n", bfdAsection->name);
 			continue;
 		}
+		
 		printf_flirt_debug("Reloc section name is %s\n", bfdAsection->name);
 		if( !strcmp(".debug_info", bfdAsection->name) )
 		{

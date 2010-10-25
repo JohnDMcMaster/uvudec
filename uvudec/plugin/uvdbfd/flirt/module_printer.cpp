@@ -8,11 +8,16 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/util.h"
 #include "uvd/flirt/flirt.h"
 #include "uvdbfd/flirt/function.h"
-#include "uvdbfd/flirt/function_printer.h"
+#include "uvdbfd/flirt/module_printer.h"
 #include "uvdbfd/flirt/relocation.h"
 #include "uvdbfd/flirt/section.h"
 #include "uvdbfd/flirt/core.h"
 
+#define printDebug() \
+
+#define printDebugIter(iter) \
+
+/*
 #define printDebug() \
 		printf_flirt_debug("m_iter.m_offset: 0x%.4X, iter reloc offset: 0x%.4X, func offset: 0x%.4X, func size: 0x%.4X\n", m_iter.m_offset, \
 		m_iter.m_relocIter == m_func->m_relocations.m_relocations.end() ? 0xFFFF : (*m_iter.m_relocIter)->m_offset, \
@@ -21,30 +26,38 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define printDebugIter(iter) \
 		printf_flirt_debug("given iter.m_offset: 0x%.4X, iter reloc offset: 0x%.4X, func offset: 0x%.4X, func size: 0x%.4X\n", iter.m_offset, \
 		iter.m_relocIter == m_func->m_relocations.m_relocations.end() ? 0xFFFF : (*iter.m_relocIter)->m_offset)
+*/
 
-UVDBFDPatFunctionPrinter::UVDBFDPatFunctionPrinter(UVDBFDPatFunction *func)
+UVDBFDPatModulePrinter::UVDBFDPatModulePrinter(UVDBFDPatModule *module)
 {
-	m_func = func;
+	m_module = module;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::printLeadingBytes()
+uv_err_t UVDBFDPatModulePrinter::printLeadingBytes()
 {
-	UVDBFDPatFunction::const_iterator endPosIter;
+	UVDBFDPatModule::const_iterator endPosIter;
+	uint32_t numberLeadingBytes = 0;
 	uint32_t endPosRaw = 0;
 	uint32_t startSize = 0;
 	uint32_t endSize = 0;
 	uint32_t expectedChars = 0;
+	uint32_t moduleSize = 0;
+	uint32_t moduleOffset = 0;
 	
 	expectedChars = g_config->m_flirt.m_patLeadingLength * 2;	
 	
-	endPosRaw = uvd_min(m_func->m_size, g_config->m_flirt.m_patLeadingLength);
-	endPosIter = m_func->const_offset_begin(endPosRaw);
+	uv_assert_err_ret(m_module->offset(&moduleOffset));
+	uv_assert_err_ret(m_module->size(&moduleSize));
+	numberLeadingBytes = uvd_min(moduleSize, g_config->m_flirt.m_patLeadingLength);
+	endPosRaw = moduleOffset + numberLeadingBytes;
+	printf_flirt_debug("print leading bytes, endPosRaw: 0x%04X\n", endPosRaw);
+	endPosIter = m_module->const_offset_begin(endPosRaw);
 	//printf_flirt_debug("Leading pattern bytes, m_size: 0x%.4X, config max length: 0x%.4X, selected end pos: 0x%.4X\n", m_size, g_config->m_flirt.m_patLeadingLength, endPos);
 
 	//And let it be born
-	printf_flirt_debug("printing leading bytes, endPosIter.m_offset: 0x%.4X, func offset: 0x%.4X, func size: 0x%.4X\n", endPosIter.m_offset, m_func->m_offset, m_func->m_size);
+	//printf_flirt_debug("printing leading bytes, endPosIter.m_offset: 0x%.4X, func offset: 0x%.4X, func size: 0x%.4X\n", endPosIter.m_offset, m_func->m_offset, m_func->m_size);
 	startSize = getStringWriter()->m_buffer.size();
-	uv_assert_err_ret(printPatternBytes(m_func->const_begin(), endPosIter));
+	uv_assert_err_ret(printPatternBytes(m_module->const_begin(), endPosIter));
 	endSize = getStringWriter()->m_buffer.size();
 	uv_assert_ret(endSize - startSize <= expectedChars);
 	//Pad trailing dots
@@ -65,12 +78,24 @@ uv_err_t UVDBFDPatFunctionPrinter::printLeadingBytes()
 	return UV_ERR_OK;
 }
 
-UVDStringWriter *UVDBFDPatFunctionPrinter::getStringWriter()
+UVDStringWriter *UVDBFDPatModulePrinter::getStringWriter()
 {
-	return &m_func->m_section->m_core->m_writer;
+	if( !m_module )
+	{
+		printf_error("no module, impending crash\n");
+	}
+	if( !m_module->m_section )
+	{
+		printf_error("no section, impending crash\n");
+	}
+	if( !m_module->m_section->m_core )
+	{
+		printf_error("no core, impending crash\n");
+	}
+	return &m_module->m_section->m_core->m_writer;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::printPatternBytes(UVDBFDPatFunction::const_iterator startIter, UVDBFDPatFunction::const_iterator endIter)
+uv_err_t UVDBFDPatModulePrinter::printPatternBytes(UVDBFDPatModule::const_iterator startIter, UVDBFDPatModule::const_iterator endIter)
 {
 	/*
 	TODO: instead of buffering, inch along relocations as needed
@@ -106,8 +131,9 @@ uv_err_t UVDBFDPatFunctionPrinter::printPatternBytes(UVDBFDPatFunction::const_it
 	//printf_flirt_debug("printing pattern bytes, number relocations: %d\n", m_relocations.m_relocations.size());
 	
 	printf_flirt_debug("end iter: 0x%.8X\n", endIter.m_offset);	
+	uv_assert_ret(startIter.m_offset <= endIter.m_offset);
 	//Each iteration write as much as possible between relocations
-	for( UVDBFDPatFunction::const_iterator iter = startIter; iter != endIter; )
+	for( UVDBFDPatModule::const_iterator iter = startIter; iter != endIter; )
 	{
 		printf_flirt_debug("iterating print, iter.m_offset: 0x%.4X, endIter.m_offset: 0x%.4X\n", iter.m_offset, endIter.m_offset);
 		//If we have a relocation, fill it in
@@ -127,14 +153,14 @@ uv_err_t UVDBFDPatFunctionPrinter::printPatternBytes(UVDBFDPatFunction::const_it
 	return UV_ERR_OK;
 }
 
-void UVDBFDPatFunctionPrinter::printRelocationByte()
+void UVDBFDPatModulePrinter::printRelocationByte()
 {
 	getStringWriter()->print("%c%c", UVD_FLIRT_PAT_RELOCATION_CHAR, UVD_FLIRT_PAT_RELOCATION_CHAR);
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::nextRelocation(UVDBFDPatFunction::const_iterator &out) const
+uv_err_t UVDBFDPatModulePrinter::nextRelocation(UVDBFDPatModule::const_iterator &out) const
 {
-	for( out = m_iter; out != m_func->end(); ++out )
+	for( out = m_iter; out != m_module->end(); ++out )
 	{
 		if( (*out).m_relocation )
 		{
@@ -145,9 +171,9 @@ uv_err_t UVDBFDPatFunctionPrinter::nextRelocation(UVDBFDPatFunction::const_itera
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::printCRC()
+uv_err_t UVDBFDPatModulePrinter::printCRC()
 {
-	UVDBFDPatFunction::const_iterator effectiveEndPosition;
+	UVDBFDPatModule::const_iterator effectiveEndPosition;
 	
 	uv_assert_err_ret(nextRelocation(effectiveEndPosition));
 	//No progress?  Means nothing to print
@@ -168,7 +194,7 @@ uv_err_t UVDBFDPatFunctionPrinter::printCRC()
 			effectiveEndPosition.advance(UVD_FLIRT_PAT_CRC_LEN_MAX);
 		}
 		printf_flirt_debug("CRC length 0x%02X\n", crcLength);
-		getStringWriter()->print(" %02X %04X", crcLength, uvd_crc16((char *)(m_func->m_section->m_content + m_iter.sectionOffset()), crcLength));
+		getStringWriter()->print(" %02X %04X", crcLength, uvd_crc16((char *)(m_module->m_section->m_content + m_iter.sectionOffset()), crcLength));
 		//Shift
 		m_iter = effectiveEndPosition;
 	}
@@ -176,44 +202,56 @@ uv_err_t UVDBFDPatFunctionPrinter::printCRC()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
+uv_err_t UVDBFDPatModulePrinter::printRelocations()
 {
-	uint32_t publicNameOffset = 0;
 	//FLAIR only emits the first reference location
 	std::set<std::string> alreadyPrintedSymbols;
-	uint32_t flags = 0;
-	asymbol *bfdAsymbol = NULL;
-	std::string offsetSuffix;
 	std::string symbolPrefix;
 
-	bfdAsymbol = m_func->m_bfdAsymbol;
-	flags = bfdAsymbol->flags;
-	//Local referenced names should have a @ suffix
-	//weak syms are close enough to local, and certainly aren't global
-	if( flags & BSF_LOCAL || flags & BSF_WEAK )
-	{
-		offsetSuffix += UVD_FLIRT_PAT_LOCAL_SYMBOL_CHAR;
-	}
-	
 	if( g_config->m_flirt.m_prefixUnderscores )
 	{
 		symbolPrefix = "_";
 	}
 	
-	//The symbol name
-	//FIXME: there are a lot of special cases are are skipping
-	//Can .pat files have more than one :0000 entry?
-	//yes they can
-	//ex: 5589E583EC208B4508D975E483F8FF746F83F8FE0F849E0000000FB7100FB74D A0 98D8 00C0 :0000 ___fesetenv :0000@ _fesetenv 
-	//Or should they always be one per line?
-	//Seems like its allowed, but probably somewhat specialized what will directly generate it in a .pat
-	//publicNameOffset = m_offset
-	getStringWriter()->print(" %c%.4X%s %s%s",
-			UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, publicNameOffset, offsetSuffix.c_str(),
-			symbolPrefix.c_str(), bfd_asymbol_name(m_func->m_bfdAsymbol));
+	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_toPrint.begin();
+			iter != m_toPrint.end(); ++iter )
+	{
+		uint32_t publicNameOffset = 0;
+		uint32_t moduleOffset = 0;
+		UVDBFDPatFunction *function = *iter;
+		uint32_t flags = 0;
+		asymbol *bfdAsymbol = NULL;
+		std::string offsetSuffix;
+		
+		uv_assert_ret(function);
+
+		uv_assert_err_ret(m_module->offset(&moduleOffset));
+		moduleOffset = function->m_offset - moduleOffset;
+
+		bfdAsymbol = function->m_bfdAsymbol;
+		flags = bfdAsymbol->flags;
+		//Local referenced names should have a @ suffix
+		//weak syms are close enough to local, and certainly aren't global
+		if( flags & BSF_LOCAL || flags & BSF_WEAK )
+		{
+			offsetSuffix += UVD_FLIRT_PAT_LOCAL_SYMBOL_CHAR;
+		}
+	
+		//The symbol name
+		//FIXME: there are a lot of special cases are are skipping
+		//Can .pat files have more than one :0000 entry?
+		//yes they can
+		//ex: 5589E583EC208B4508D975E483F8FF746F83F8FE0F849E0000000FB7100FB74D A0 98D8 00C0 :0000 ___fesetenv :0000@ _fesetenv 
+		//Or should they always be one per line?
+		//Seems like its allowed, but probably somewhat specialized what will directly generate it in a .pat
+		//publicNameOffset = m_offset
+		getStringWriter()->print(" %c%.4X%s %s%s",
+				UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, publicNameOffset, offsetSuffix.c_str(),
+				symbolPrefix.c_str(), bfd_asymbol_name(function->m_bfdAsymbol));
+	}
 	
 	//Dependencies
-	for( std::vector<UVDBFDPatRelocation *>::iterator depRelocIter = m_func->m_relocations.m_relocations.begin(); depRelocIter != m_func->m_relocations.m_relocations.end(); ++depRelocIter )
+	for( std::vector<UVDBFDPatRelocation *>::iterator depRelocIter = m_module->m_relocations.m_relocations.begin(); depRelocIter != m_module->m_relocations.m_relocations.end(); ++depRelocIter )
 	{
 		UVDBFDPatRelocation *depRelocation = *depRelocIter;
 		
@@ -221,8 +259,11 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 		//these are anonymous and should be skipped
 		if( !depRelocation->m_symbolName.empty() && alreadyPrintedSymbols.find(depRelocation->m_symbolName) == alreadyPrintedSymbols.end() )
 		{			
+			uint32_t relocationOffset = 0;
+			
+			uv_assert_err_ret(depRelocation->offset(m_module, &relocationOffset));
 			getStringWriter()->print(" %c%.4X %s%s",
-					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, depRelocation->m_offset, 
+					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, relocationOffset, 
 					symbolPrefix.c_str(), depRelocation->m_symbolName.c_str());
 			alreadyPrintedSymbols.insert(depRelocation->m_symbolName);
 		}
@@ -238,84 +279,121 @@ uv_err_t UVDBFDPatFunctionPrinter::printRelocations()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::printTailingBytes()
+uv_err_t UVDBFDPatModulePrinter::printTailingBytes()
 {
 	//Burn up the rest of the iterator
 	//Tail/trailing bytes
-	if( m_iter != m_func->const_end() )
+	if( m_iter != m_module->const_end() )
 	{
 		getStringWriter()->print(" ");
-		uv_assert_err_ret(printPatternBytes(m_iter, m_func->const_end()));
+		uv_assert_err_ret(printPatternBytes(m_iter, m_module->const_end()));
 	}
 	//Not strictly necessary
-	m_iter = m_func->const_end();
+	m_iter = m_module->const_end();
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::shouldPrintFunction()
+uv_err_t UVDBFDPatModulePrinter::addToPrint(UVDBFDPatFunction *toPrint)
 {
-	uint32_t flags = 0;
-	asymbol *bfdAsymbol = NULL;
+	std::vector<UVDBFDPatFunction *>::iterator iter;
+	
+	uv_assert_ret(toPrint);
+	for( iter = m_toPrint.begin();
+			iter != m_toPrint.end(); ++iter )
+	{
+		UVDBFDPatFunction *cur = *iter;
+		uv_assert_ret(cur);
+		if( cur->m_offset > toPrint->m_offset )
+		{
+			break;
+		}
+	}
+	m_toPrint.insert(iter, toPrint);
+	return UV_ERR_OK;
+}
 
-	bfdAsymbol = m_func->m_bfdAsymbol;
+uv_err_t UVDBFDPatModulePrinter::shouldPrint()
+{
+	m_toPrint.clear();
 
-	//we must filter here - to don`t lose sizes ! 
-	if( std::string(bfdAsymbol->name).empty() )
+	uv_assert_ret(m_module);
+	//printf_flirt_debug("module number functions: %d\n", m_module->m_functions.size());
+	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_module->m_functions.begin();
+			iter != m_module->m_functions.end(); ++iter )
 	{
-		printf_flirt_debug("Skipping printing empty symbol\n");
-		return UV_ERR_DONE;
-	}
-	flags = bfdAsymbol->flags;
-	/*
-	if( (flags & BSF_EXPORT) != BSF_EXPORT )
-	{
-		printf_flirt_debug("Skipping private (non-exported) symbol %s\n", bfdAsymbol->name);
-		return UV_ERR_DONE;
-	}
-	*/
-	if( (flags & BSF_SECTION_SYM) || (flags & BSF_FILE) )
-	{
-		printf_flirt_debug("Skipping section/file symbol %s\n", bfdAsymbol->name);
-		return UV_ERR_DONE;
-	}
-	//Why is BSF_OBJECT important?
-	if( !((flags & BSF_FUNCTION) /*|| (flags & BSF_OBJECT)*/) )
-	{
-		printf_flirt_debug("Skipping non-funcion symbol %s\n", bfdAsymbol->name);
-		return UV_ERR_DONE;
-	}
+		UVDBFDPatFunction *function = *iter;
+		uint32_t flags = 0;
+		asymbol *bfdAsymbol = NULL;
+		
+		uv_assert_ret(function);
 
-	//Make sure we have enough bytes as per our policy
-	if( m_func->m_size < g_config->m_flirt.m_patSignatureLengthMin )
-	{
-		printf_flirt_debug("Skipping short len symbol %s, length: 0x%.2X\n", bfdAsymbol->name, m_func->m_size);
-		return UV_ERR_DONE;
+		bfdAsymbol = function->m_bfdAsymbol;
+
+		//we must filter here - to don`t lose sizes ! 
+		if( std::string(bfdAsymbol->name).empty() )
+		{
+			printf_flirt_debug("Skipping printing empty symbol\n");
+			continue;
+		}
+		flags = bfdAsymbol->flags;
+		/*
+		if( (flags & BSF_EXPORT) != BSF_EXPORT )
+		{
+			printf_flirt_debug("Skipping private (non-exported) symbol %s\n", bfdAsymbol->name);
+			return UV_ERR_DONE;
+		}
+		*/
+		if( (flags & BSF_SECTION_SYM) || (flags & BSF_FILE) )
+		{
+			printf_flirt_debug("Skipping section/file symbol %s\n", bfdAsymbol->name);
+			continue;
+		}
+		//Why is BSF_OBJECT important?
+		if( !((flags & BSF_FUNCTION) /*|| (flags & BSF_OBJECT)*/) )
+		{
+			printf_flirt_debug("Skipping non-funcion symbol %s\n", bfdAsymbol->name);
+			continue;
+		}
+
+		//Make sure we have enough bytes as per our policy
+		if( function->m_size < g_config->m_flirt.m_patSignatureLengthMin )
+		{
+			printf_flirt_debug("Skipping short len symbol %s, length: 0x%.2X\n", bfdAsymbol->name, function->m_size);
+			continue;
+		}
+	
+		//now we have exported function 
+		//FIXME: currentSymbol was from prev loop, looks wrong 
+		//printf_flirt_debug("Section name %s, size %d, vma = 0x%X\n",
+		//	   symbol->section->name, (unsigned int)bfd_section_size(m_bfd, symbol->section), (unsigned int)symbol->section->vma);
+		printf_flirt_debug("Name: %s, base %d value 0x%X, flags 0x%X, size 0x%X\n",
+				bfd_asymbol_name(bfdAsymbol), (unsigned int)bfd_asymbol_base(bfdAsymbol),
+				(unsigned int)bfd_asymbol_value(bfdAsymbol), bfdAsymbol->flags, function->m_size);
+		uv_assert_err_ret(addToPrint(function));
 	}
 	
-	//now we have exported function 
-	//FIXME: currentSymbol was from prev loop, looks wrong 
-	//printf_flirt_debug("Section name %s, size %d, vma = 0x%X\n",
-	//	   symbol->section->name, (unsigned int)bfd_section_size(m_bfd, symbol->section), (unsigned int)symbol->section->vma);
-	printf_flirt_debug("Name: %s, base %d value 0x%X, flags 0x%X, size 0x%X\n",
-			bfd_asymbol_name(bfdAsymbol), (unsigned int)bfd_asymbol_base(bfdAsymbol),
-			(unsigned int)bfd_asymbol_value(bfdAsymbol), bfdAsymbol->flags, m_func->m_size);
+	if( m_toPrint.empty() )
+	{
+		return UV_ERR_DONE;
+	}
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPatFunctionPrinter::print()
+uv_err_t UVDBFDPatModulePrinter::print()
 {
 	uv_err_t shouldPrintRc = UV_ERR_GENERAL;
+	uint32_t moduleSize = 0;
 	//Review scoping on this
 	//uint32_t effectiveEndPosition = 0;
 	
-	shouldPrintRc = shouldPrintFunction();
+	shouldPrintRc = shouldPrint();
 	uv_assert_err_ret(shouldPrintRc);
 	if( shouldPrintRc == UV_ERR_DONE )
 	{
 		return UV_ERR_OK;
 	}
-	m_iter = m_func->const_begin();
+	m_iter = m_module->const_begin();
 	
 	/*
 	//For debugging
@@ -346,7 +424,8 @@ uv_err_t UVDBFDPatFunctionPrinter::print()
 	printDebug();
 	uv_assert_err_ret(printCRC());
 	//Total length
-	getStringWriter()->print(" %.4X", m_func->m_size);
+	uv_assert_err_ret(m_module->size(&moduleSize));
+	getStringWriter()->print(" %.4X", moduleSize);
 	printf_flirt_debug("\n\nprinting relocations\n");
 	printDebug();
 	uv_assert_err_ret(printRelocations());

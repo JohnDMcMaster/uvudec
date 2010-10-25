@@ -14,11 +14,15 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 /*
 UVDBFDPatRelocation
 */
+class UVDBFDPatModule;
 class UVDBFDPatRelocation
 {
 public:
 	UVDBFDPatRelocation();
 	~UVDBFDPatRelocation();
+	
+	//Module offset as opposed to section
+	uv_err_t offset(UVDBFDPatModule *module, uint32_t *offsetOut);
 
 public:
 	//Symbol name
@@ -27,15 +31,15 @@ public:
 	//Address within section
 	uv_addr_t m_address;
 	uint32_t m_size;
-	//relative to function, not section
-	//FIXME: we should probably remove this
-	uint32_t m_offset;
+	//relative to module, not section
+	//FIXME: we should probably remove this?
+	//yeah, use function instead
+	//uint32_t m_offset;
 };
 
 /*
 UVDBFDPatRelocations
 */
-class UVDBFDPatFunction;
 class UVDBFDPatRelocations
 {
 public:
@@ -49,7 +53,7 @@ public:
 public:
 	//Sorted lowest address first
 	std::vector<UVDBFDPatRelocation *> m_relocations;
-	UVDBFDPatFunction *m_function;
+	UVDBFDPatModule *m_module;
 };
 
 #endif
