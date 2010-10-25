@@ -433,7 +433,7 @@ uv_err_t UVDBFDPatModulePrinter::print()
 	printDebug();
 	uv_assert_err_ret(printTailingBytes());
 	
-	getStringWriter()->print("\n");
+	getStringWriter()->print(g_config->m_flirt.m_patternFileNewline.c_str());
 
 	printf_flirt_debug("\n\n\n");	
 	printf_flirt_debug("buffer:\n%s\n", getStringWriter()->m_buffer.c_str());
