@@ -14,6 +14,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDBFDPatSection
 */
 class UVDBFDPatCore;
+class UVDBFDPatModule;
 class UVDBFDPatSection
 {
 public:
@@ -25,11 +26,20 @@ public:
 	uv_err_t setFunctionSizes();
 	uv_err_t assignRelocation(arelent *bfdRelocation);
 	uv_err_t print();
+	uv_err_t size(uint32_t *out);
 
 public:
+	//XXX: whats the difference between asection and struct bfd_section?
 	//Do we own this?
 	struct bfd_section *m_section;
-	UVDBFDPatModule m_functions;
+	/*
+	Two supported cases
+	-All functions in section belong to module
+	-Every function belongs to its own module within the function
+	In order of offset
+	Modules must NOT interleave data
+	*/
+	std::vector<UVDBFDPatModule *> m_modules;
 	//We own this
 	unsigned char *m_content;
 	//Do not own this

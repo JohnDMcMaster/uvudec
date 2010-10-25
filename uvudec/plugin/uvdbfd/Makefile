@@ -12,7 +12,8 @@ CXX_SRCS = 	\
 			flirt/flirt.cpp \
 			flirt/core.cpp \
 			flirt/function.cpp \
-			flirt/function_printer.cpp \
+			flirt/module.cpp \
+			flirt/module_printer.cpp \
 			flirt/relocation.cpp \
 			flirt/section.cpp \
 			architecture.cpp \
