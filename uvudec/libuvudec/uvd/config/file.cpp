@@ -119,7 +119,13 @@ uv_err_t UVDConfigFile::init(const std::string &filename)
 	lines = split(fileContent, '\n', false);
 	for( std::vector<std::string>::iterator iter = lines.begin(); iter != lines.end(); ++iter )
 	{
-		configArgs.push_back(std::string("--") + *iter);
+		std::string line = *iter;
+		
+		if( line.empty() )
+		{
+			continue;
+		}
+		configArgs.push_back(std::string("--") + line);
 	}
 
 #ifdef USING_JANSSON
