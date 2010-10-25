@@ -288,6 +288,10 @@ uv_err_t UVDBFDPatModulePrinter::printTailingBytes()
 		getStringWriter()->print(" ");
 		uv_assert_err_ret(printPatternBytes(m_iter, m_module->const_end()));
 	}
+	else if( g_config->m_flirt.m_patternReferenceTrailingSpace )
+	{
+		getStringWriter()->print(" ");
+	}
 	//Not strictly necessary
 	m_iter = m_module->const_end();
 	return UV_ERR_OK;
