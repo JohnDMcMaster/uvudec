@@ -664,9 +664,9 @@ uv_err_t UVDFLIRTSignatureRawSequence::truncate(iterator pos)
 }
 
 /*
-UVDFLIRTFunction
+UVDFLIRTModule
 */
-UVDFLIRTFunction::UVDFLIRTFunction()
+UVDFLIRTModule::UVDFLIRTModule()
 {
 	m_totalLength = 0;
 	m_crc16Length = 0;
@@ -674,7 +674,7 @@ UVDFLIRTFunction::UVDFLIRTFunction()
 	m_attributeFlags = 0;
 }
 
-UVDFLIRTFunction::~UVDFLIRTFunction()
+UVDFLIRTModule::~UVDFLIRTModule()
 {
 }
 
@@ -708,7 +708,7 @@ static uv_err_t zeroedBuffer(const UVDFLIRTSignatureRawSequence *seq, uint8_t **
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTFunction::computeCRC16()
+uv_err_t UVDFLIRTModule::computeCRC16()
 {
 	uint8_t *crcBuff = NULL;
 	
@@ -728,17 +728,37 @@ uv_err_t UVDFLIRTFunction::computeCRC16()
 }
 */
 
-uv_err_t UVDFLIRTFunction::transferSequence(UVDFLIRTSignatureRawSequence *sequence)
+uv_err_t UVDFLIRTModule::transferSequence(UVDFLIRTSignatureRawSequence *sequence)
 {
 	sequence->transfer(&m_sequence);
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTFunction::setSequence(const UVDFLIRTSignatureRawSequence *sequence)
+uv_err_t UVDFLIRTModule::setSequence(const UVDFLIRTSignatureRawSequence *sequence)
 {
 	sequence->copyTo(&m_sequence);
 	
 	return UV_ERR_OK;
+}
+
+std::string UVDFLIRTModule::debugString()
+{
+	std::string ret;
+
+	for( std::vector<UVDFLIRTPublicName>::iterator iter = m_publicNames.begin();
+			iter != m_publicNames.end(); ++iter )
+	{
+		UVDFLIRTPublicName &publicName = (*iter);
+		char buff[256];
+		
+		snprintf(buff, sizeof(buff), ":%04X %s", publicName.m_offset, publicName.m_name.c_str());		
+		if( iter != m_publicNames.begin() )
+		{
+			ret += " ";
+		}
+		ret += buff;
+	}	
+	return ret;	
 }
 

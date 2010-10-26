@@ -29,7 +29,7 @@ UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode()
 	m_leadingLength = 0;
 }
 
-UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode(const UVDFLIRTFunction *function)
+UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode(const UVDFLIRTModule *function)
 {
 	m_crc16 = function->m_crc16;
 	m_leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);
@@ -43,13 +43,18 @@ UVDFLIRTSignatureTreeHashNode::~UVDFLIRTSignatureTreeHashNode()
 	}
 }
 
-uv_err_t UVDFLIRTSignatureTreeHashNode::insert(UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTSignatureTreeHashNode::insert(UVDFLIRTModule *module)
 {
 	UVDFLIRTSignatureTreeBasicNode *node = NULL;
 	
-	uv_assert_err_ret(UVDFLIRTSignatureTreeBasicNode::fromFunction(function, &node)); 
+	uv_assert_err_ret(UVDFLIRTSignatureTreeBasicNode::fromFunction(module, &node)); 
 	uv_assert_ret(node);
-	uv_assert_ret(m_bucket.find(node) == m_bucket.end());
+	//We should not be inserting the same module twice
+	if( m_bucket.find(node) != m_bucket.end() )
+	{
+		UVDPrintfError("double insert of basic node 0x%08X, module: %s", node, module->debugString().c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
 	m_bucket.insert(node);
 
 	return UV_ERR_OK;
@@ -124,7 +129,7 @@ UVDFLIRTSignatureTreeHashNodes::~UVDFLIRTSignatureTreeHashNodes()
 {
 }
 
-uv_err_t UVDFLIRTSignatureTreeHashNodes::insert(UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTSignatureTreeHashNodes::insert(UVDFLIRTModule *function)
 {
 	UVDFLIRTSignatureTreeHashNode *hashNode = NULL;
 	UVDFLIRTSignatureTreeHashNode lookingFor(function);

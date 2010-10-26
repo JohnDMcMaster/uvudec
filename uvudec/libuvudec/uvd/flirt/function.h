@@ -217,11 +217,11 @@ A basic function not stored in a tree or resolved for conflicts
 Basically what you'd find in a .pat file
 Intended as an intermediate representation for exchange between sig/pat processors
 */
-class UVDFLIRTFunction
+class UVDFLIRTModule
 {
 public:
-	UVDFLIRTFunction();
-	~UVDFLIRTFunction();
+	UVDFLIRTModule();
+	~UVDFLIRTModule();
 	
 	//Implement if we need to get a fully copy
 	//uv_err_t getSequence(UVDFLIRTSignatureRawSequence **out);
@@ -237,6 +237,8 @@ public:
 	uv_err_t transferSequence(UVDFLIRTSignatureRawSequence *m_sequence);
 	//Not invalidated
 	uv_err_t setSequence(const UVDFLIRTSignatureRawSequence *m_sequence);
+	//Return a human readable representation of the module
+	std::string debugString();
 
 protected:
 	//Get a copy of sequence with relocations 0 filled

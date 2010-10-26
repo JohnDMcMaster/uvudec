@@ -94,7 +94,7 @@ public:
 	
 	uv_err_t fromString(const std::string &in);
 	uv_err_t fileLine(const std::string &in);
-	uv_err_t insert(UVDFLIRTFunction *function, UVDFLIRTSignatureRawSequence &leadingBytes);
+	uv_err_t insert(UVDFLIRTModule *function, UVDFLIRTSignatureRawSequence &leadingBytes);
 
 public:
 	//Do not own this
@@ -154,7 +154,7 @@ uv_err_t UVDPatLoaderCore::fromString(const std::string &in)
 
 uv_err_t UVDPatLoaderCore::fileLine(const std::string &in)
 {
-	UVDFLIRTFunction function;
+	UVDFLIRTModule function;
 
 	uv_assert_err_ret(UVDFLIRTPatternGenerator::patLineToFunction(in, &function));
 	uv_assert_err_ret(m_db->insert(&function));
@@ -238,7 +238,7 @@ uv_err_t UVDFLIRTSignatureDB::loadFromPatFileString(const std::string &in)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTSignatureDB::insert(UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTSignatureDB::insert(UVDFLIRTModule *function)
 {
 #if 0
 	UVDFLIRTSignatureTreeLeadingNode *rootNode = NULL;
