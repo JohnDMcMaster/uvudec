@@ -12,7 +12,6 @@ Do something instead like create a list of optional and required members, with p
 
 #include "uvd/core/uvd.h"
 #include "uvd/flirt/flirt.h"
-#include "uvd/util/log.h"
 #include "uvd/core/runtime.h"
 #include "uvd/event/engine.h"
 #include "uvd/object/object.h"
@@ -20,11 +19,12 @@ Do something instead like create a list of optional and required members, with p
 
 uv_err_t UVDInit()
 {
-	//Initially we log to console until a "real" log is setup which may be an actual file
-	//we don't know actual file because we haven't parsed args yet
-	uv_assert_err_ret(uv_log_init("/dev/stdout"));
-	uv_assert_err_ret(UVDInitConfigEarly());
+	//Setup signal handling and basic logging
 	uv_assert_err_ret(UVDDebugInit());
+	//Create the g_config object so we can start to take values from it
+	uv_assert_err_ret(UVDInitConfigEarly());
+	//Registers libuvudec args
+	//Seems we should move this to arg parsing
 	uv_assert_err_ret(UVDInitConfig());
 	printf_debug_level(UVD_DEBUG_PASSES, "UVDInit(): done\n");
 	return UV_ERR_OK;
@@ -46,7 +46,6 @@ uv_err_t UVDDeinit()
 	}
 
 	uv_assert_err_ret(UVDDebugDeinit());
-	uv_assert_err_ret(uv_log_deinit());
 
 	return UV_ERR_OK;
 }

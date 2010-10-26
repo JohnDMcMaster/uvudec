@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UV_DEBUG_H
 #define UV_DEBUG_H
 
+#include <stdarg.h>
 #include <stdio.h>
 
 #define DEBUG_BREAK()			do { printf("DEBUG BREAK (%s:%d)\n", __FILE__, __LINE__); exit(1); } while ( 0 )
@@ -37,11 +38,15 @@ It would be cool to set system preferences to compile this selectivly in program
 
 //#define printf_warn printf_debug
 //Or should this be treated as a level 1 error?
-#define printf_warn(format, ...) printf("WARNING: " format, ## __VA_ARGS__)
+#define printf_warn(format, ...) UVDPrintfWarning(format, ## __VA_ARGS__)
 //An error the user should see because they likely caused the issue due to bad input (file, arg, etc)
-#define printf_error(format, ...) do { printf("ERROR: " format, ## __VA_ARGS__); fflush(stdout); } while( 0 )
+#define printf_error(format, ...) UVDPrintfError(format, ## __VA_ARGS__)
 //An internal error
 void printf_debug_error(const char *format, ...);
+void UVDPrintfError(const char *format, ...);
+void UVDPrintfErrorV(const char *format, va_list ap);
+void UVDPrintfWarning(const char *format, ...);
+void UVDPrintfWarningV(const char *format, va_list ap);
 
 #define printf_deprecated(format, ...) printf_debug_level(UVD_DEBUG_DEPRECATED, format, ## __VA_ARGS__)
 
@@ -136,8 +141,11 @@ void uv_enter(const char *file, uint32_t line, const char *func);
 
 #endif /* ifndef NDEBUG */
 
+//If not supplied, log to stdout
 uv_err_t UVDDebugInit();
 uv_err_t UVDDebugDeinit();
+//Log file
+uv_err_t UVDSetDebugFile(const std::string &file);
 uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet);
 bool UVDAnyDebugActive();
 

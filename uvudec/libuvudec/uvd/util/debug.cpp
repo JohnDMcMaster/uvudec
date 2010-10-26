@@ -75,22 +75,22 @@ bool UVDAnyDebugActive()
 	return g_debugTypeFlags != 0;
 }
 
-static void printf_debug_prefix(FILE *logHandle, const char *prefix, const char *file, uint32_t line, const char *func)
+static void printf_debug_prefix(FILE *fileHandle, const char *prefix, const char *file, uint32_t line, const char *func)
 {
-	if( !logHandle )
+	if( !fileHandle )
 	{
-		logHandle = stdout;
+		fileHandle = stdout;
 	}
 	if( prefix == NULL )
 	{
 		prefix = "";
 	}
-	fprintf(logHandle, "DEBUG %s(%s:%d): %s", file, func, line, prefix);
+	fprintf(fileHandle, "DEBUG %s(%s:%d): %s", file, func, line, prefix);
 }
 
 void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t line, const char *func, const char *format, ...)
 {
-	FILE *logHandle = g_log_handle;
+	FILE *fileHandle = g_log_handle;
 	va_list ap;
 	uint32_t verbose = 0;
 	uint32_t set_level = 0;
@@ -100,9 +100,9 @@ void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t
 		std::string typePrefix;
 		
 		//Keep logging before g_config initialized
-		if( !logHandle )
+		if( !fileHandle )
 		{
-			logHandle = stdout;
+			fileHandle = stdout;
 		}
 		if( g_config )
 		{
@@ -128,11 +128,11 @@ void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t
 				typePrefix += ": ";
 			}
 		}
-		printf_debug_prefix(logHandle, typePrefix.c_str(), file, line, func);
+		printf_debug_prefix(fileHandle, typePrefix.c_str(), file, line, func);
 
 		va_start(ap, format);
-		vfprintf(logHandle, format, ap);
-		fflush(logHandle);
+		vfprintf(fileHandle, format, ap);
+		fflush(fileHandle);
 		va_end(ap);
 	}
 }
@@ -225,6 +225,10 @@ static uv_err_t initializeTypePrefixes()
 
 uv_err_t UVDDebugInit()
 {
+	//Initially we log to console until a "real" log is setup which may be an actual file
+	//we don't know actual file because we haven't parsed args yet
+	uv_assert_err_ret(uv_log_init("/dev/stdout"));
+
 	g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
 	signal(SIGSEGV, uvd_signal_handler);
 	signal(SIGFPE, uvd_signal_handler);
@@ -234,6 +238,7 @@ uv_err_t UVDDebugInit()
 
 uv_err_t UVDDebugDeinit()
 {
+	uv_assert_err_ret(uv_log_deinit());
 	return UV_ERR_OK;
 }
 
@@ -304,4 +309,53 @@ void uvd_print_trace(const char *file, int line, const char *function)
 	printf_warn("stack trace unsupported\n");
 }
 #endif
+
+void UVDPrintfError(const char *format, ...)
+{
+	va_list ap;
+
+	va_start(ap, format);
+	UVDPrintfErrorV(format, ap);
+	va_end(ap);
+
+}
+
+void UVDPrintfErrorV(const char *format, va_list ap)
+{
+	if( g_config && g_config->m_suppressErrors )
+	{
+		return;
+	}
+	
+	fprintf(stdout, "%s", "ERROR: ");
+	vfprintf(stdout, format, ap);
+	fflush(stdout);
+}
+
+void UVDPrintfWarning(const char *format, ...)
+{
+	va_list ap;
+
+	va_start(ap, format);
+	UVDPrintfWarningV(format, ap);
+	va_end(ap);
+
+}
+
+void UVDPrintfWarningV(const char *format, va_list ap)
+{
+	if( g_config && g_config->m_suppressErrors )
+	{
+		return;
+	}
+	
+	fprintf(stdout, "%s", "WARNING: ");
+	vfprintf(stdout, format, ap);
+	fflush(stdout);
+}
+
+uv_err_t UVDSetDebugFile(const std::string &file)
+{
+	return UV_DEBUG(uv_log_init(file.c_str()));
+}
 

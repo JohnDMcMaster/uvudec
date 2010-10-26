@@ -14,7 +14,6 @@ obj2pat entry point
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
 #include "uvd/util/error.h"
-#include "uvd/util/log.h"
 #include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"

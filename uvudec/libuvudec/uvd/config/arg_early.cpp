@@ -37,7 +37,16 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		//skip...let primary handler deal with it
 	}
 	/*
+	Debug
 	*/
+	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_IGNORE_ERRORS )
+	{
+		config->m_ignoreErrors = firstArgBool;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_SUPPRESS_ERRORS )
+	{
+		config->m_suppressErrors = firstArgBool;
+	}
 	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_LEVEL )
 	{
 		//If they didn't set any flags, assume its a general state across the program
@@ -102,6 +111,8 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	
 	//Debug
 	//NOTE: type debug flags are automaticlly registered along with the type
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_IGNORE_ERRORS, 0, "ignore-errors", "ignore nonfatal errors", 1, argParser, true, "", true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_SUPPRESS_ERRORS, 0, "suppress-errors", "suprress printing of warnings and nonfatal errors", 1, argParser, true, "", true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true, "", true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true, "", true));
 

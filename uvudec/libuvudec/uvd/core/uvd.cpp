@@ -21,7 +21,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/architecture/architecture.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
-#include "uvd/util/log.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvd/assembly/address.h"
@@ -32,7 +31,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/language/format.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/language/language.h"
-#include "uvd/util/log.h"
 #include "uvd/util/types.h"
 #include "uvd/core/runtime.h"
 

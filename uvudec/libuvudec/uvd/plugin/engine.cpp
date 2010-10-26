@@ -55,7 +55,7 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 
 uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *config,
 			bool recursive,
-			bool failOnBad, bool failOnBadPlugin)
+			bool failOnError, bool failOnPluginError)
 {
 	//boost throws exceptions
 	//TODO: move to UVD friendly adapter interface
@@ -75,7 +75,7 @@ uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *con
 				{
 					uv_assert_err_ret(loadByDir(path, config,
 							recursive,
-							failOnBad, failOnBadPlugin));
+							failOnError, failOnPluginError));
 				}
 				continue;				
 			}
@@ -87,7 +87,7 @@ uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *con
 			{
 				if( loadByPathRc == UV_ERR_NOTSUPPORTED )
 				{
-					if( failOnBad )
+					if( failOnError )
 					{
 						printf_error("failed to load possible plugin: %s\n", path.c_str());
 						return UV_DEBUG(UV_ERR_GENERAL);
@@ -99,7 +99,7 @@ uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *con
 				}
 				else
 				{
-					if( failOnBad || failOnBadPlugin )
+					if( failOnError || failOnPluginError )
 					{
 						printf_error("failed to load plugin: %s\n", path.c_str());
 						return UV_DEBUG(UV_ERR_GENERAL);
@@ -116,7 +116,19 @@ uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *con
 	}
 	catch(...)
 	{
-		return UV_DEBUG(UV_ERR_GENERAL);
+		if( !config->m_suppressErrors )
+		{
+			printf_error("failed to load plugin dir %s\n", pluginDir.c_str());
+		}
+		
+		if( config->m_ignoreErrors )
+		{
+			return UV_DEBUG(UV_ERR_WARNING);
+		}
+		else
+		{
+			return UV_DEBUG(UV_ERR_GENERAL);			
+		}		
 	}
 }
 
@@ -255,7 +267,11 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 	}
 	if( !plugin )
 	{
-		printf_error("plugin %s: didn't return a plugin object\n", path.c_str());
+		if( !config->m_suppressErrors )
+		{
+			printf_error("plugin %s: didn't return a plugin object\n", path.c_str());
+		}
+
 		dlclose(library);
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}

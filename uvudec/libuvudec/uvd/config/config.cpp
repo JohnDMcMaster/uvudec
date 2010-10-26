@@ -9,7 +9,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/config/config.h"
 #include "uvd/util/debug.h"
 #include "uvd/language/language.h"
-#include "uvd/util/log.h"
 #include "uvd/util/util.h"
 #include "uvd/core/analysis.h"
 #include <string>
@@ -51,6 +50,8 @@ UVDConfig::UVDConfig()
 	m_addressComment = false;
 	m_addressLabel = false;
 
+	m_ignoreErrors = UVD_PROP_DEBUG_IGNORE_ERRORS_DEFAULT;
+	m_suppressErrors = UVD_PROP_DEBUG_SUPPRESS_ERRORS_DEFAULT;
 	m_debugLevel = UVD_DEBUG_NONE;
 	clearVerboseAll();
 
@@ -190,7 +191,7 @@ uv_err_t UVDConfig::parseUserConfig()
 uv_err_t UVDConfig::processParseMain()
 {
 	//Make sure we are logging to correct target now that we have parsed args
-	uv_assert_err_ret(uv_log_init(m_sDebugFile.c_str()));
+	uv_assert_err_ret(UVDSetDebugFile(m_sDebugFile));
 	
 	printf_debug("m_verbose_args: %d, m_verbose_init: %d, m_verbose_processing: %d, m_verbose_analysis: %d, m_verbose_printing: %d\n",
 			m_verbose_args, m_verbose_init, m_verbose_processing, m_verbose_analysis, m_verbose_printing);
@@ -212,6 +213,7 @@ uv_err_t UVDConfig::init()
 	//uv_assert_err_ret(m_plugin.init(this));
 
 	m_configFileLoader = new UVDConfigFileLoader();
+	uv_assert_ret(m_configFileLoader);
 
 	return UV_ERR_OK;
 }
