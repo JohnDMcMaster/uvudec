@@ -93,6 +93,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 {
+	std::string mainPluginDir;
+	
 	//Plugin
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_NAME, 0, "plugin", "load given library name as plugin", 1, argParser, false, "", true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin search path", 1, argParser, false, "", true));
@@ -107,7 +109,8 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, "", 0, true, true, true));
 
 	//FIXME XXX TODO: hack until I can have startup config files
-	m_dirs.push_back("../lib/plugin");
+	mainPluginDir = config->m_installDir + "/lib/plugin";
+	m_dirs.push_back(mainPluginDir);
 	/*
 	m_toLoad.push_back("uvdasm");
 	m_toLoad.push_back("uvdbfd");
