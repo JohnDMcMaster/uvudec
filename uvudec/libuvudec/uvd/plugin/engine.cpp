@@ -57,58 +57,67 @@ uv_err_t UVDPluginEngine::loadByDir(const std::string &pluginDir, UVDConfig *con
 			bool recursive,
 			bool failOnBad, bool failOnBadPlugin)
 {
-	for( boost::filesystem::directory_iterator iter(pluginDir);
-		iter != boost::filesystem::directory_iterator(); ++iter )
+	//boost throws exceptions
+	//TODO: move to UVD friendly adapter interface
+	try
 	{
-		//Not necessarily canonical
-		std::string path;
-		uv_err_t loadByPathRc = UV_ERR_GENERAL;
-		
-		path = pluginDir + "/" + iter->path().filename();
-		if( is_directory(iter->status()) )
+		for( boost::filesystem::directory_iterator iter(pluginDir);
+			iter != boost::filesystem::directory_iterator(); ++iter )
 		{
-			if( recursive )
-			{
-				uv_assert_err_ret(loadByDir(path, config,
-						recursive,
-						failOnBad, failOnBadPlugin));
-			}
-			continue;				
-		}
+			//Not necessarily canonical
+			std::string path;
+			uv_err_t loadByPathRc = UV_ERR_GENERAL;
 		
-		//Try loading it, ignoring errors since it might just be a plugin config file or something
-		//We should print a warning if
-		loadByPathRc = loadByPath(path, false);
-		if( UV_FAILED(loadByPathRc) )
-		{
-			if( loadByPathRc == UV_ERR_NOTSUPPORTED )
+			path = pluginDir + "/" + iter->path().filename();
+			if( is_directory(iter->status()) )
 			{
-				if( failOnBad )
+				if( recursive )
 				{
-					printf_error("failed to load possible plugin: %s\n", path.c_str());
-					return UV_DEBUG(UV_ERR_GENERAL);
+					uv_assert_err_ret(loadByDir(path, config,
+							recursive,
+							failOnBad, failOnBadPlugin));
+				}
+				continue;				
+			}
+		
+			//Try loading it, ignoring errors since it might just be a plugin config file or something
+			//We should print a warning if
+			loadByPathRc = loadByPath(path, false);
+			if( UV_FAILED(loadByPathRc) )
+			{
+				if( loadByPathRc == UV_ERR_NOTSUPPORTED )
+				{
+					if( failOnBad )
+					{
+						printf_error("failed to load possible plugin: %s\n", path.c_str());
+						return UV_DEBUG(UV_ERR_GENERAL);
+					}
+					else
+					{
+						printf_plugin_debug("failed to load possible plugin: %s\n", path.c_str());
+					}
 				}
 				else
 				{
-					printf_plugin_debug("failed to load possible plugin: %s\n", path.c_str());
+					if( failOnBad || failOnBadPlugin )
+					{
+						printf_error("failed to load plugin: %s\n", path.c_str());
+						return UV_DEBUG(UV_ERR_GENERAL);
+					}
+					else
+					{
+						printf_warn("failed to load plugin: %s\n", path.c_str());
+					}
 				}
 			}
-			else
-			{
-				if( failOnBad || failOnBadPlugin )
-				{
-					printf_error("failed to load plugin: %s\n", path.c_str());
-					return UV_DEBUG(UV_ERR_GENERAL);
-				}
-				else
-				{
-					printf_warn("failed to load plugin: %s\n", path.c_str());
-				}
-			}
-		}
-	}		
+		}		
 
-	return UV_ERR_OK;
+		return UV_ERR_OK;
+	}
+	catch(...)
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
 }
 
 uv_err_t UVDPluginEngine::staticInit()

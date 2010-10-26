@@ -65,6 +65,7 @@ uv_err_t UVD::init(const std::string &file, const UVDRuntimeHints &hints)
 	rcTemp = UVDDataFile::getUVDDataFile(&data, file);
 	if( UV_FAILED(rcTemp) || !data )
 	{
+		printf_error("could not open file: %s\n", file.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	return init(data, hints);
