@@ -45,6 +45,12 @@ pats: $(PATS)
 objs: $(OBJS)
 	@true
 
+flair:
+	$(MAKE) all USED=flair
+	
+uvudec:
+	$(MAKE) all USED=uvudec
+
 all: objs pats
 	@(echo 'updated unit test targets')
 
