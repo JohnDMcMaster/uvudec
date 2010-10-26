@@ -41,6 +41,7 @@ public:
 	//...but we probably should
 	//UVDData *m_data;
 	//...and a big change
+	//XXX: this is likely to become an array of some sort later so we can have supporting libraries included
 	UVDObject *m_object;
 
 	/*
