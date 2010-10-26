@@ -202,11 +202,35 @@ uv_err_t UVDBFDPatModulePrinter::printCRC()
 	return UV_ERR_OK;
 }
 
+static bool isValidPublicName(const std::string &symbolName)
+{
+	bool ret = false;
+	ret = symbolName.size() >= g_config->m_flirt.m_patternPublicNameLengthMin;
+	//printf_flirt_debug("check public name validity: %s, %d\n", symbolName.c_str(), ret);
+	return ret;
+}
+
 uv_err_t UVDBFDPatModulePrinter::printRelocations()
 {
+	/*
+	Recursive functions do not get a second reference
+	Function names shorter than 3 chars (1-2) are treated specially
+		We need at least 2 to tag them in the module
+		They are ommited if any "real" public names are present
+	C++ mangled names don't seem to get any special treatment
+	If the module has NO public names, its name is ?
+		including from short names
+	FLAIR does NOT necessarily print references in increasing order
+		It would be good to find out when/why it doesn't though in case it hints at a special case we're missing
+	Is it possible to have a local unknown name module?
+		Probably not
+	*/
+	
 	//FLAIR only emits the first reference location
 	std::set<std::string> alreadyPrintedSymbols;
 	std::string symbolPrefix;
+	std::set<std::string> validPublicNames;
+	uint32_t invalidPublicNameCount = 0;
 
 	if( g_config->m_flirt.m_prefixUnderscores )
 	{
@@ -216,12 +240,32 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_toPrint.begin();
 			iter != m_toPrint.end(); ++iter )
 	{
+		UVDBFDPatFunction *function = *iter;
+		std::string symbolName;
+		
+		uv_assert_ret(function);
+		symbolName = bfd_asymbol_name(function->m_bfdAsymbol);
+		if( isValidPublicName(symbolName) )
+		{
+			validPublicNames.insert(symbolName);
+		}
+		else
+		{
+			++invalidPublicNameCount;
+		}
+	}
+
+	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_toPrint.begin();
+			iter != m_toPrint.end(); ++iter )
+	{
 		uint32_t publicNameOffset = 0;
 		uint32_t moduleOffset = 0;
 		UVDBFDPatFunction *function = *iter;
 		uint32_t flags = 0;
 		asymbol *bfdAsymbol = NULL;
 		std::string offsetSuffix;
+		std::string symbolName;
+		std::string publicName;
 		
 		uv_assert_ret(function);
 
@@ -238,26 +282,51 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 		}
 	
 		//The symbol name
-		//FIXME: there are a lot of special cases are are skipping
-		//Can .pat files have more than one :0000 entry?
-		//yes they can
-		//ex: 5589E583EC208B4508D975E483F8FF746F83F8FE0F849E0000000FB7100FB74D A0 98D8 00C0 :0000 ___fesetenv :0000@ _fesetenv 
-		//Or should they always be one per line?
-		//Seems like its allowed, but probably somewhat specialized what will directly generate it in a .pat
 		//publicNameOffset = m_offset
+		symbolName = bfd_asymbol_name(function->m_bfdAsymbol);
+		uv_assert_ret(!symbolName.empty());
+		alreadyPrintedSymbols.insert(symbolName);
+
+		//Do we have a single unknown public name to print a ? entry?
+		if( validPublicNames.empty() && invalidPublicNameCount <= 1 )
+		{
+			publicName = UVD_FLIRT_PAT_UNKNOWN_PUBLIC_NAME_CHAR;
+			uv_assert_ret(publicNameOffset == 0);
+		}
+		//Skip if wasn't a valid public name AND we have public names
+		else if( !validPublicNames.empty() && validPublicNames.find(symbolName) == validPublicNames.end() )
+		{
+			continue;
+		}
+		//Standard case, just print the symbol name
+		else
+		{
+			publicName = symbolName;
+		}
+		
 		getStringWriter()->print(" %c%.4X%s %s%s",
 				UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, publicNameOffset, offsetSuffix.c_str(),
-				symbolPrefix.c_str(), bfd_asymbol_name(function->m_bfdAsymbol));
+				symbolPrefix.c_str(), symbolName.c_str());
+
+		//Only print the ? entry if we had a single invalid public name
+		if( validPublicNames.empty() && invalidPublicNameCount <= 1 )
+		{
+			break;
+		}
 	}
 	
 	//Dependencies
+	//I don't believe its possible to print invalid public names here, they only show up in relocations (if in range)
 	for( std::vector<UVDBFDPatRelocation *>::iterator depRelocIter = m_module->m_relocations.m_relocations.begin(); depRelocIter != m_module->m_relocations.m_relocations.end(); ++depRelocIter )
 	{
 		UVDBFDPatRelocation *depRelocation = *depRelocIter;
+		std::string symbolName;
 		
-		//Not all relocations have names
+		//Not all relocations have names (length 0)
 		//these are anonymous and should be skipped
-		if( !depRelocation->m_symbolName.empty() && alreadyPrintedSymbols.find(depRelocation->m_symbolName) == alreadyPrintedSymbols.end() )
+		//They will be taken care of by patternPublicNameLengthMin
+		symbolName = depRelocation->m_symbolName;
+		if( isValidPublicName(symbolName) && alreadyPrintedSymbols.find(depRelocation->m_symbolName) == alreadyPrintedSymbols.end() )
 		{			
 			uint32_t relocationOffset = 0;
 			
@@ -265,7 +334,7 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 			getStringWriter()->print(" %c%.4X %s%s",
 					UVD_FLIRT_PAT_REFERENCED_NAME_CHAR, relocationOffset, 
 					symbolPrefix.c_str(), depRelocation->m_symbolName.c_str());
-			alreadyPrintedSymbols.insert(depRelocation->m_symbolName);
+			alreadyPrintedSymbols.insert(symbolName);
 		}
 		/*
 		else

@@ -50,6 +50,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE				"flirt.pattern.reference_trailing_space"
 #define UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE_DEFAULT 	false
 
+//FLAIR treats names with length shorter than 3 as unknown
+#define UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN				"flirt.pattern.name.length.min"
+#define UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN_DEFAULT		3
+
 /*
 Certain linkers do hacks to speed up near calls by replacing far call code with
 more efficient near call code

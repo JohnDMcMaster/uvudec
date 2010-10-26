@@ -37,12 +37,15 @@ public:
 	uint32_t m_relocateNearFar;
 	//UVD_PROP_FLIRT_PAT_LEADING_LENGTH
 	uint32_t m_patLeadingLength;
-	//UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX_DEFAULT
+	//UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX
 	uint32_t m_patModuleLengthMax;
 	//UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES
 	uint32_t m_functionsAsModules;
 	//UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE
 	uint32_t m_patternReferenceTrailingSpace;
+	//UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN
+	uint32_t m_patternPublicNameLengthMin;
+
 	
 	/*
 	Triming heuristics
