@@ -51,7 +51,7 @@ UVDFLIRTSignatureTreeLeadingNode::~UVDFLIRTSignatureTreeLeadingNode()
 }
 
 /*
-uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertHashNode(UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTSignatureTreeLeadingNode::insertHashNode(UVDFLIRTModule *function)
 {
 	uv_assert_err_ret(m_crcNodes.insert(node));
 	
@@ -139,7 +139,7 @@ class UVDFLIRTSignatureTreeLeadingNodeInserter
 {
 public:
 	//Entry point
-	uv_err_t insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTFunction *function);
+	uv_err_t insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTModule *function);
 	//When it is determinted node shares no bytes with current position
 	uv_err_t insertChildLeadingMatch(UVDFLIRTSignatureTreeLeadingNode *node, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
 	//Recursive case
@@ -150,10 +150,10 @@ public:
 	UVDFLIRTSignatureRawSequence m_leadingSequence;
 	//Function the sequencei s from
 	//We'll need this to go to the lower levels
-	UVDFLIRTFunction *m_function;
+	UVDFLIRTModule *m_function;
 };
 
-uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTModule *function)
 {
 	UVDFLIRTSignatureTreeLeadingNodeInserter inserter;
 
@@ -165,7 +165,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::insert(UVDFLIRTFunction *function)
 	return UV_ERR_OK;
 };
 
-uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insert(UVDFLIRTSignatureTreeLeadingNode *rootNode, UVDFLIRTModule *function)
 {
 	//TODO: we could add a special case for seq length <= 0x20 to use the input function instead
 	//Careful not to delete it upon cleanup (or double frees rather)

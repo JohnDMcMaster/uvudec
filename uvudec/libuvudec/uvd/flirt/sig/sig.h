@@ -75,7 +75,7 @@ For working with .sig files
 class UVDFLIRTPatternAnalysis;
 class UVDFLIRT;
 class UVDFLIRTSignatureTreeLeadingNode;
-class UVDFLIRTFunction;
+class UVDFLIRTModule;
 class UVDFLIRTSignatureDB
 {
 public:
@@ -109,7 +109,7 @@ public:
 	uv_err_t loadFromPatFile(const std::string &file);
 	uv_err_t loadFromPatFileString(const std::string &patternFileContents);
 
-	uv_err_t insert(UVDFLIRTFunction *function);
+	uv_err_t insert(UVDFLIRTModule *function);
 
 	//How many total patterns in the DB
 	//"number modules"

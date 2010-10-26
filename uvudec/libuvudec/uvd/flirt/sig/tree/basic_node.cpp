@@ -42,7 +42,7 @@ UVDFLIRTSignatureTreeBasicNode::UVDFLIRTSignatureTreeBasicNode()
 	m_attributeFlags = 0;
 }
 
-uv_err_t UVDFLIRTSignatureTreeBasicNode::fromFunction(const UVDFLIRTFunction *function, UVDFLIRTSignatureTreeBasicNode **out)
+uv_err_t UVDFLIRTSignatureTreeBasicNode::fromFunction(const UVDFLIRTModule *function, UVDFLIRTSignatureTreeBasicNode **out)
 {
 	UVDFLIRTSignatureTreeBasicNode *ret = NULL;
 	

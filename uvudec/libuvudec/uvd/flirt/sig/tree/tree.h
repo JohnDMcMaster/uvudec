@@ -59,12 +59,12 @@ The lowest level of the tree
 Should be all of the information (combied with above) to 
 Was UVDFLIRTSignatureElement
 */
-class UVDFLIRTFunction;
+class UVDFLIRTModule;
 class UVDFLIRTSignatureTreeBasicNode
 {
 public:
 	UVDFLIRTSignatureTreeBasicNode();
-	static uv_err_t fromFunction(const UVDFLIRTFunction *function, UVDFLIRTSignatureTreeBasicNode **out);
+	static uv_err_t fromFunction(const UVDFLIRTModule *function, UVDFLIRTSignatureTreeBasicNode **out);
 	~UVDFLIRTSignatureTreeBasicNode();
 	
 	uv_err_t insertReference(UVDFLIRTSignatureReference reference);
@@ -118,11 +118,11 @@ public:
 
 public:
 	UVDFLIRTSignatureTreeHashNode();
-	UVDFLIRTSignatureTreeHashNode(const UVDFLIRTFunction *function);
+	UVDFLIRTSignatureTreeHashNode(const UVDFLIRTModule *function);
 	~UVDFLIRTSignatureTreeHashNode();
 	
 	//Do a full collision check and such
-	uv_err_t insert(UVDFLIRTFunction *function);
+	uv_err_t insert(UVDFLIRTModule *function);
 	uv_err_t compare(const UVDFLIRTSignatureTreeHashNode *second);
 
 	uv_err_t size(uint32_t *size);
@@ -154,7 +154,7 @@ public:
 	UVDFLIRTSignatureTreeHashNodes();
 	~UVDFLIRTSignatureTreeHashNodes();
 
-	uv_err_t insert(UVDFLIRTFunction *function);
+	uv_err_t insert(UVDFLIRTModule *function);
 	uv_err_t debugDump(const std::string &prefix);
 
 public:
@@ -188,13 +188,13 @@ public:
 	//Careful using these
 	//uv_err_t insertLeadingNode(UVDFLIRTSignatureTreeLeadingNode *node, std::vector<UVDFLIRTSignatureTreeNode *>::iterator pos);
 	//uv_err_t insertHashNode(UVDFLIRTSignatureTreeLeafNode *node);
-	//uv_err_t insertHashNode(UVDFLIRTFunction *function);
+	//uv_err_t insertHashNode(UVDFLIRTModule *function);
 	
 	//Place the node as best as possible into the tree, noting we have already parsed the first so many bytes
 	//Internal nodes will be rearranged as necessary
 	//Originally I was thinking we might steal the data allocated in function, but since we will likely have ot split, its not economical
-	uv_err_t insert(UVDFLIRTFunction *function);
-	//uv_err_t insertSubseq(UVDFLIRTFunction *function, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
+	uv_err_t insert(UVDFLIRTModule *function);
+	//uv_err_t insertSubseq(UVDFLIRTModule *function, UVDFLIRTSignatureRawSequence::const_iterator sequencePosition);
 
 	uv_err_t size(uint32_t *size);
 

@@ -47,7 +47,7 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::init()
 	bfd_init();
 	if( !bfd_set_default_target(defaultTarget.c_str()) )
 	{
-		printf_error("can't set BFD default target to `%s': %s", defaultTarget.c_str(), bfd_errmsg(bfd_get_error()));
+		printf_error("can't set BFD default target to `%s': %s\n", defaultTarget.c_str(), bfd_errmsg(bfd_get_error()));
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	return UV_ERR_OK;

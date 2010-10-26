@@ -67,7 +67,7 @@ uv_err_t UVDFLIRTPatternGenerator::saveToString(UVDObject *object, std::string &
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTPatternGenerator::patLineToFunction(const std::string &in, UVDFLIRTFunction *function)
+uv_err_t UVDFLIRTPatternGenerator::patLineToFunction(const std::string &in, UVDFLIRTModule *function)
 {
 	/*
 	ex:
