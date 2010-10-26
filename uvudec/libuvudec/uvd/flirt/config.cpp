@@ -18,6 +18,7 @@ UVDConfigFLIRT::UVDConfigFLIRT()
 	m_patModuleLengthMax = UVD_PROP_FLIRT_PAT_MODULE_LENGTH_MAX_DEFAULT;
 	m_functionsAsModules = UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES_DEFAULT;
 	m_patternReferenceTrailingSpace = UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE_DEFAULT;
+	m_patternPublicNameLengthMin = UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN_DEFAULT;
 
 	m_outputFile = "/dev/stdout";
 

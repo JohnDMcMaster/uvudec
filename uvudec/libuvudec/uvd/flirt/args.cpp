@@ -21,6 +21,7 @@ uv_err_t initFLIRTSharedConfig()
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE, 0, "pat-trailing-space", "always put a space after references (even if at line end)", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES, 0, "pat-prefix-underscores", "prefix underscores to symbols in certain object formats", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "pat-functions-as-modules", "don't group functions into modules", 1, argParser, true));	
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN, 0, "pat-public-name-length-min", "minium length for a public name not to be considered unknown", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_NEWLINE, 0, "pat-newline", "line termination, lf or crlf", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "Object library (ELF, OMF, etc)", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "pat file (default: stdout)", 1, argParser, false));
@@ -86,6 +87,11 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			printf_error("Unrecognized line termination: %s\n", firstArg.c_str());
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_patternPublicNameLengthMin = firstArgNum;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH )
 	{
