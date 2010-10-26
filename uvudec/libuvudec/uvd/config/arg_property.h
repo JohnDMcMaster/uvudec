@@ -12,6 +12,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_ACTION_VERSION					"action.version"
 #define UVD_PROP_ACTION_USELESS_ASCII_ART		"action.print_ascii_art"
 //Debug
+#define UVD_PROP_DEBUG_IGNORE_ERRORS			"debug.ignore_errors"
+#define UVD_PROP_DEBUG_IGNORE_ERRORS_DEFAULT	true
+#define UVD_PROP_DEBUG_SUPPRESS_ERRORS			"debug.suppress_errors"
+#define UVD_PROP_DEBUG_SUPPRESS_ERRORS_DEFAULT	false
 #define UVD_PROP_DEBUG_LEVEL					"debug.level"
 #define UVD_PROP_DEBUG_ARGS						"debug.args"
 #define UVD_PROP_DEBUG_INIT						"debug.init"

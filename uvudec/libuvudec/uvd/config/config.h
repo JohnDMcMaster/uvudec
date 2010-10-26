@@ -220,6 +220,10 @@ public:
 	//g_addr_label
 	int m_addressLabel;
 
+	//Only halt on fatal errors?
+	int m_ignoreErrors;
+	//Don't print an error if its nonfatal
+	int m_suppressErrors;
 	//TODO: re-impliment this as flags
 	int m_verbose;
 	uint32_t m_debugLevel;

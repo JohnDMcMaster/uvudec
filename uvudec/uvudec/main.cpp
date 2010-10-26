@@ -9,19 +9,14 @@ uvudec entry point
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <string>
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
 #include "uvd/util/error.h"
-#include "uvd/util/log.h"
 #include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvd/data/data.h"
-#include "uvd/language/format.h"
-#include "uvd/assembly/address.h"
-#include "uvd/language/language.h"
 
 /*
 During parse, several things can happen:

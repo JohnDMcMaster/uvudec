@@ -4,6 +4,13 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+/*
+XXX
+This file is deprecated
+It will be removed soon
+DO NOT use its API
+*/
+
 #include "uvd/config/arg_util.h"
 #include "uvd/config/config.h"
 #include "uvd/util/debug.h"

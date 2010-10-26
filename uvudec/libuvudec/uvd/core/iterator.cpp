@@ -21,7 +21,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/ascii_art.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
-#include "uvd/util/log.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvd/assembly/address.h"

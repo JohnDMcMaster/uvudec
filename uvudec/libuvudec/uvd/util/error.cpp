@@ -6,23 +6,23 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/error.h"
 #include "uvd/config/config.h"
-#include "uvd/util/log.h"
 #include <stdio.h>
 #include <stdarg.h>
 
 uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const char *func)
 {
-	const uint32_t buff_size = 1024;
-	char buff[buff_size];
+	if( !UVDAnyDebugActive() )
+	{
+		return UV_ERR_OK;
+	}
+
 	if( UV_FAILED(rc) )
 	{
-		snprintf(buff, buff_size, "rc=%s", uv_err_str(rc));
-		uv_log(UV_LOG_LVL_ERR, buff, file, line, func);
+		UVDPrintfError("%s (%s:%d): rc=%s\n", func, file, line, uv_err_str(rc));
 	}
 	else if( UV_WARNING(rc) )
 	{
-		snprintf(buff, buff_size, "rc=%s", uv_err_str(rc));
-		uv_log(UV_LOG_LVL_WARN, buff, file, line, func);
+		UVDPrintfWarning("%s (%s:%d): rc=%s\n", func, file, line, uv_err_str(rc));
 	}
 	return rc;
 }
@@ -56,14 +56,13 @@ const char *uv_err_str(uv_err_t err)
 void printf_debug_error(const char *format, ...)
 {
 	//If we are in any sort of debug state, report errors
-	if( g_config->anyVerboseActive() )
+	if( g_config && g_config->anyVerboseActive() )
 	{
 		va_list ap;
 
 		va_start(ap, format);
-		printf("ERROR: ");
-		vfprintf(stdout, format, ap);
-		fflush(stdout);
+		UVDPrintfErrorV(format, ap);
 		va_end(ap);
 	}
 }
+
