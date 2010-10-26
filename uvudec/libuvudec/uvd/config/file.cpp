@@ -108,27 +108,9 @@ UVDConfigFile::~UVDConfigFile()
 
 uv_err_t UVDConfigFile::init(const std::string &filename)
 {
-	/*
-	Okay I tried to play nice, now its time to get work done and go back to this later
-	*/
-	std::string fileContent;
-	std::vector<std::string> configArgs;
-	std::vector<std::string> lines;
 
-	uv_assert_err_ret(readFile(filename, fileContent));
-	lines = split(fileContent, '\n', false);
-	for( std::vector<std::string>::iterator iter = lines.begin(); iter != lines.end(); ++iter )
-	{
-		std::string line = *iter;
-		
-		if( line.empty() )
-		{
-			continue;
-		}
-		configArgs.push_back(std::string("--") + line);
-	}
-
-#ifdef USING_JANSSON
+#if 0
+//#ifdef USING_JANSSON
 #if 0
 	/*
 	This validates as valid JSON on http://www.jsonlint.com/
@@ -239,11 +221,34 @@ printf_args_debug("root type: %d\n", json_typeof(root));
 	//Combine, skipping over program name
 	g_config->m_argsEffective.insert(g_config->m_argsEffective.begin() + 1, configArgs.begin(), configArgs.end());
 
-	//json_decref(root);
+	json_decref(root);
 	return UV_ERR_OK;
 #else
-	printf_args_debug("not compiled with JSON support\n");
-	return UV_ERR_NOTSUPPORTED;
+	printf_args_debug("not using / compiled with JSON support\n");
+	/*
+	Okay I tried to play nice, now its time to get work done and go back to this later
+	*/
+	std::string fileContent;
+	std::vector<std::string> configArgs;
+	std::vector<std::string> lines;
+
+	uv_assert_err_ret(readFile(filename, fileContent));
+	lines = split(fileContent, '\n', false);
+	for( std::vector<std::string>::iterator iter = lines.begin(); iter != lines.end(); ++iter )
+	{
+		std::string line = *iter;
+		
+		if( line.empty() )
+		{
+			continue;
+		}
+		configArgs.push_back(std::string("--") + line);
+	}
+
+	//Combine, skipping over program name
+	g_config->m_argsEffective.insert(g_config->m_argsEffective.begin() + 1, configArgs.begin(), configArgs.end());
+
+	return UV_ERR_OK;
 #endif
 }
 
