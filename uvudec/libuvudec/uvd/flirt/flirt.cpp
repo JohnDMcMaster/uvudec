@@ -173,15 +173,15 @@ uv_err_t UVDFLIRT::getFLIRT(UVDFLIRT **out)
 	}
 	else
 	{
-		UVD *uvd = NULL;
+		//UVD *uvd = NULL;
 
 		flirt = new UVDFLIRT();
 		uv_assert_ret(flirt);
 		uv_assert_err_ret(flirt->init());
 		
-		uv_assert_err_ret(UVD::getUVD(&uvd, NULL));
-		flirt->m_uvd = uvd;
-		uvd->m_flirt = flirt;
+		//uv_assert_err_ret(UVD::getUVD(&uvd, NULL));
+		//flirt->m_uvd = uvd;
+		//uvd->m_flirt = flirt;
 	}	
 	*out = flirt;
 

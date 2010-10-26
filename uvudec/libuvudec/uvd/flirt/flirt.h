@@ -59,8 +59,7 @@ public:
 	uv_err_t patFiles2SigDB(const std::vector<std::string> &inputFiles, UVDFLIRTSignatureDB **out);
 
 	//Don't do a full UVD engine init, only grab the FLIRT component
-	//Since so much would break without a basic UVD engine, for now a basic UVD engine with no opcode caps is loaded
-	//The way those translations are done should prob be re-delegated anyway
+	//The UVD engine may or may not be initialized internally, do not count on it
 	static uv_err_t getFLIRT(UVDFLIRT **out);
 	
 protected:

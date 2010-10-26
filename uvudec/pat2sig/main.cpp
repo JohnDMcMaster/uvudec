@@ -37,7 +37,7 @@ static uv_err_t doConvert()
 	std::string output;
 	UVDConfigFLIRT *flirtConfig = NULL;
 		
-	flirtConfig = &g_uvd->m_config->m_flirt;
+	flirtConfig = &g_config->m_flirt;
 	uv_assert_ret(flirtConfig);
 
 	//Get string output
@@ -174,9 +174,7 @@ uv_err_t uvmain(int argc, char **argv)
 	}
 	uv_assert_ret(g_flirt);
 
-	uv_assert_ret(g_uvd);
-	uv_assert_ret(g_uvd->m_config);
-	flirtConfig = &g_uvd->m_config->m_flirt;
+	flirtConfig = &g_config->m_flirt;
 	uv_assert_ret(flirtConfig);
 
 	//Source .pat files
