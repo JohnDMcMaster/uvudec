@@ -293,6 +293,7 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 					//whys neg ref useful?
 					has_negative = read_flags < 0x20;
 					//FIXME: we don't have any info on how to process this
+					//okay it seems negative address is a local symbol
 					//uv_assert_ret(!has_negative);
 					if( has_negative )
 					{
@@ -308,11 +309,11 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 							return UV_DEBUG(UV_ERR_GENERAL);
 						}
 					
-						if( read_flags < 0x20 )
+						if( read_flags <= UVD__IDASIG__NAME__ESCAPE_MAX )
 						{
 							read_flags = read_byte();
 						}
-						if( read_flags < 0x20 )
+						if( read_flags <= UVD__IDASIG__NAME__ESCAPE_MAX )
 						{
 							break;
 						}
@@ -324,11 +325,11 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 					publicName.m_offset = ref_cur_offset;
 					//printf_flirt_debug(" %04X:%s", ref_cur_offset, publicName.m_name.c_str());
 					m_module.m_publicNames.push_back(publicName);
-				} while( read_flags & 1 );
+				} while( read_flags & UVD__IDASIG__NAME__MORE_NAMES );
 				
 				//FIXME: not sure what this is
 				//Looks like some offset + value?
-				if( read_flags & 2)
+				if( read_flags & UVD__IDASIG__NAME__PAREN )
 				{
 					uint32_t first;
 					uint32_t second;
@@ -350,7 +351,7 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 				
 				//Symbol linked references
 				//This indicates we only preserve one of the references from the .pat file since there is no loop here
-				if( read_flags & 4)
+				if( read_flags & UVD__IDASIG__NAME__SYMBOL_LINKED_REFERENCE)
 				{
 					UVDFLIRTSignatureReference reference;
 					uint32_t ref_name_len;
@@ -373,8 +374,8 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 				}
 				//Ready to roll
 				uv_assert_err_ret(m_db->insert(&m_module));
-			} while( read_flags & 0x08 );
-		} while( read_flags & 0x10 );
+			} while( read_flags & UVD__IDASIG__NAME__MORE_BASIC );
+		} while( read_flags & UVD__IDASIG__NAME__MORE_HASH );
 	}
 	
 	return UV_ERR_OK;
