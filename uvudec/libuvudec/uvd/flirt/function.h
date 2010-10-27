@@ -15,6 +15,8 @@ class UVDFLIRTSignatureReference
 public:
 	UVDFLIRTSignatureReference();
 	~UVDFLIRTSignatureReference();
+	
+	int compare(const UVDFLIRTSignatureReference *second) const;
 
 public:
 	//.sig file uses m_offset from data area, but here offset should be from chain 
@@ -206,6 +208,8 @@ public:
 	UVDFLIRTPublicName();
 	UVDFLIRTPublicName(const std::string &name, uint32_t offset);
 	~UVDFLIRTPublicName();
+	
+	int compare(const UVDFLIRTPublicName *other) const;
 	
 public:
 	std::string m_name;

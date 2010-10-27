@@ -64,7 +64,7 @@ class UVDFLIRTSignatureTreeBasicNode
 {
 public:
 	UVDFLIRTSignatureTreeBasicNode();
-	static uv_err_t fromFunction(const UVDFLIRTModule *function, UVDFLIRTSignatureTreeBasicNode **out);
+	static uv_err_t fromModule(const UVDFLIRTModule *function, UVDFLIRTSignatureTreeBasicNode **out);
 	~UVDFLIRTSignatureTreeBasicNode();
 	
 	uv_err_t insertReference(UVDFLIRTSignatureReference reference);
@@ -73,6 +73,7 @@ public:
 
 	uv_err_t size(uint32_t *size);
 
+	std::string debugString();
 	uv_err_t debugDump(const std::string &prefix, uint32_t basicNodeIndex);
 
 public:

@@ -19,10 +19,11 @@ Do something instead like create a list of optional and required members, with p
 
 uv_err_t UVDInit()
 {
-	//Setup signal handling and basic logging
-	uv_assert_err_ret(UVDDebugInit());
 	//Create the g_config object so we can start to take values from it
 	uv_assert_err_ret(UVDInitConfigEarly());
+	//Setup signal handling and basic logging
+	//Also registers type prefixes and the associated debug args
+	uv_assert_err_ret(UVDDebugInit());
 	//Registers libuvudec args
 	//Seems we should move this to arg parsing
 	uv_assert_err_ret(UVDInitConfig());

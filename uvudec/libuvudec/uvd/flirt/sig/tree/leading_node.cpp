@@ -449,6 +449,11 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::debugDump(const std::string &prefixIn
 	
 	std::string prefix = prefixIn;
 	
+	if( !UVDGetDebugFlag(UVD_DEBUG_TYPE_FLIRT) )
+	{
+		return UV_ERR_OK;
+	}
+
 	//We should be holding something useful
 	//eh we might use this to debug the tree while being built
 	//uv_assert_ret(!m_crcNodes.empty() || !m_leadingChildren.empty());
