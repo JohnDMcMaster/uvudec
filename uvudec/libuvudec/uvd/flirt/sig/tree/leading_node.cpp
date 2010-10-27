@@ -479,7 +479,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::dump(const std::string &prefixIn, boo
 		UVDFLIRTSignatureTreeLeadingNode *node = *iter;
 		
 		uv_assert_ret(node);
-		node->dump(prefix, includeDebug);
+		uv_assert_err_ret(node->dump(prefix, includeDebug));
 	}
 	return UV_ERR_OK;
 }
