@@ -86,7 +86,8 @@ uv_err_t UVDFLIRTPatternGenerator::patLineToFunction(const std::string &in, UVDF
 	//UVDFLIRTSignatureRawSequence leadingSignature;
 	uint32_t leadingSignatureLength = 0;
 	
-	printf_flirt_debug("loading FLIRT function from pat line: %s\n", in.c_str());
+	//This is too verbose for general testing
+	//printf_flirt_debug("loading FLIRT function from pat line: %s\n", in.c_str());
 	
 	uv_assert_ret(function);
 	

@@ -31,6 +31,10 @@ UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode()
 
 UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode(const UVDFLIRTModule *function)
 {
+	if( !function )
+	{
+		UVD_PRINT_STACK();
+	}
 	m_crc16 = function->m_crc16;
 	m_leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);
 }
@@ -45,14 +49,24 @@ UVDFLIRTSignatureTreeHashNode::~UVDFLIRTSignatureTreeHashNode()
 
 uv_err_t UVDFLIRTSignatureTreeHashNode::insert(UVDFLIRTModule *module)
 {
+	/*
+	It seems what is going on here is maybe we didn't take into account crc collisions?
+	*/
+	
 	UVDFLIRTSignatureTreeBasicNode *node = NULL;
 	
-	uv_assert_err_ret(UVDFLIRTSignatureTreeBasicNode::fromFunction(module, &node)); 
+	uv_assert_err_ret(UVDFLIRTSignatureTreeBasicNode::fromModule(module, &node)); 
+	printf_flirt_debug("inserting basic node 0x%08X, module: %s\n", node, module->debugString().c_str());
 	uv_assert_ret(node);
 	//We should not be inserting the same module twice
 	if( m_bucket.find(node) != m_bucket.end() )
 	{
-		UVDPrintfError("double insert of basic node 0x%08X, module: %s", node, module->debugString().c_str());
+		UVDFLIRTSignatureTreeBasicNode *existingNode = *m_bucket.find(node);
+		
+		printf_flirt_debug("double insert (%d) of basic node 0x%08X, module: %s\n", m_bucket.size(), node, module->debugString().c_str());
+		uv_assert_ret(existingNode);
+		printf_flirt_debug("existing node: 0x%08X %s\n", existingNode, existingNode->debugString().c_str());
+		printf_flirt_debug("new node:      0x%08X %s\n", node, node->debugString().c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	m_bucket.insert(node);
@@ -134,6 +148,7 @@ uv_err_t UVDFLIRTSignatureTreeHashNodes::insert(UVDFLIRTModule *function)
 	UVDFLIRTSignatureTreeHashNode *hashNode = NULL;
 	UVDFLIRTSignatureTreeHashNode lookingFor(function);
 
+	uv_assert_ret(function);
 	if( m_nodes.find(&lookingFor) == m_nodes.end() )
 	{
 		hashNode = new UVDFLIRTSignatureTreeHashNode(function);

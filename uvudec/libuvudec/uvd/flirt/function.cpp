@@ -36,6 +36,41 @@ UVDFLIRTSignatureReference::~UVDFLIRTSignatureReference()
 {
 }
 
+int UVDFLIRTSignatureReference::compare(const UVDFLIRTSignatureReference *r) const
+{
+	int delta = 0;
+	
+	if( this == r )
+	{
+		return 0;
+	}
+	if( this == NULL )
+	{
+		return INT_MIN;
+	}
+	if( r == NULL )
+	{
+		return INT_MAX;
+	}
+
+	//It doesn't make sense to have two references at the same location...I think
+	//So it should be the only compare needed
+	//But lets do both just to be careful
+	delta = m_offset - r->m_offset;
+	if( delta )
+	{
+		return delta;
+	}
+
+	delta = m_name.compare(r->m_name);
+	if( delta )
+	{
+		return delta;
+	}
+	
+	return m_attributeFlags - r->m_attributeFlags;
+}
+
 int UVDFLIRTSignatureRawSequence::const_iterator::deref::compare(const deref &other) const
 {
 	if( m_isReloc && other.m_isReloc )
@@ -345,7 +380,6 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromStringAllocSize(const std::string &s,
 			if( byte == SIGNATURE_ESCAPE_CHAR )
 			{
 				++size;
-				++i;
 			}	
 		}
 		++size;
@@ -364,7 +398,7 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromString(const std::string &s)
 
 uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint32_t lengthIn)
 {
-	printf_flirt_debug("loading raw sequence from string: %s\n", s.c_str());
+	printf_flirt_debug("loading raw sequence 0x%08X (len: %d) from string: %s\n", (int)this, s.size(), s.c_str());
 
 	uint32_t size = 0;
 	
@@ -374,7 +408,7 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint
 	uv_assert_ret(m_bytes);
 	//Poison
 	memset(m_bytes, 0xCD, size);
-	printf_flirt_debug("allocated memory\n");
+	printf_flirt_debug("allocated %d bytes of pattern memory\n", size);
 	
 	uint32_t pos = 0;
 	for( std::string::size_type i = 0; i + 1 < s.size(); i += 2, ++pos )
@@ -394,7 +428,11 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint
 		uv_assert_ret(pos < size);
 		if( first == UVD_FLIRT_PAT_RELOCATION_CHAR )
 		{
-			uv_assert_ret(second == UVD_FLIRT_PAT_RELOCATION_CHAR);
+			if( second != UVD_FLIRT_PAT_RELOCATION_CHAR )
+			{
+				printf_error("relocation chars must be in pairs, invalid at position %d in sequence %s\n", i, s.c_str());
+				return UV_DEBUG(UV_ERR_GENERAL);
+			}
 			m_bytes[pos] = SIGNATURE_ESCAPE_CHAR;
 			++pos;
 			uv_assert_ret(pos < size);
@@ -426,7 +464,12 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint
 	uv_assert_ret(pos < size);
 	m_bytes[pos] = SIGNATURE_ESCAPE_CHAR;
 	++pos;
-	uv_assert_ret(pos < size);
+	if( pos >= size )
+	{
+		printf_flirt_debug("pos: %d, size: %d, target length: %d\n", pos, size, lengthIn);
+		hexdump(m_bytes, size);
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
 	m_bytes[pos] = SIGNATURE_ESCAPED_CHAR_END;
 	++pos;
 	uv_assert_ret(pos == size);
@@ -490,6 +533,19 @@ bool UVDFLIRTSignatureRawSequence::operator!=(const UVDFLIRTSignatureRawSequence
 
 int UVDFLIRTSignatureRawSequence::compare(const UVDFLIRTSignatureRawSequence *other) const
 {
+	if( this == other )
+	{
+		return 0;
+	}
+	if( this == NULL )
+	{
+		return INT_MIN;
+	}
+	if( other == NULL )
+	{
+		return INT_MAX;
+	}
+
 	//Walk down the sequence
 	const_iterator iterThis = const_begin();
 	const_iterator iterOther = other->const_begin();
@@ -522,6 +578,8 @@ int UVDFLIRTSignatureRawSequence::compare(const UVDFLIRTSignatureRawSequence *ot
 		UV_DEBUG(iterThis.next());
 		UV_DEBUG(iterOther.next());
 	}
+	
+	return 0;
 }
 
 uint32_t UVDFLIRTSignatureRawSequence::size() const
@@ -760,5 +818,53 @@ std::string UVDFLIRTModule::debugString()
 		ret += buff;
 	}	
 	return ret;	
+}
+
+/*
+UVDFLIRTPublicName
+*/
+
+UVDFLIRTPublicName::UVDFLIRTPublicName()
+{
+	m_offset = 0;
+	UVD_POKE(this);
+}
+
+UVDFLIRTPublicName::UVDFLIRTPublicName(const std::string &name, uint32_t offset)
+{
+	m_name = name;
+	m_offset = offset;
+	UVD_POKE(this);
+}
+
+UVDFLIRTPublicName::~UVDFLIRTPublicName()
+{
+}
+
+int UVDFLIRTPublicName::compare(const UVDFLIRTPublicName *other) const
+{
+	int delta = 0;
+	
+	if( this == other )
+	{
+		return 0;
+	}
+	if( this == NULL )
+	{
+		return INT_MIN;
+	}
+	if( other == NULL )
+	{
+		return INT_MAX;
+	}
+	
+	//Offset seems more important than name
+	delta =  m_offset - other->m_offset;
+	if( delta )
+	{
+		return delta;
+	}
+	
+	return m_name.compare(other->m_name);
 }
 
