@@ -328,7 +328,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 				UVDFLIRTPublicName publicName = *nameIter;
 				UVDFLIRTSignatureReference ref;
 
-				ref.m_offset = publicName.m_offset;
+				ref.m_offset = publicName.getOffset();
 				ref.m_name = publicName.m_name;
 				//FIXME: figure out what these do
 				ref.m_attributeFlags = 0;

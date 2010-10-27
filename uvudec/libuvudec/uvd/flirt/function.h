@@ -20,8 +20,7 @@ public:
 
 public:
 	//.sig file uses m_offset from data area, but here offset should be from chain 
-	//Noted the signedness
-	int32_t m_offset;
+	uint32_t m_offset;
 	//If we scale this up, switch this to a char * or std::string *
 	//Or should this be UVDFLIRTSignatureTreeLeafNode and store a list of names in the main node struct?
 	//Keep both for now, eliminate m_name if it seems useless, it may only be needed for construction
@@ -222,12 +221,22 @@ public:
 	UVDFLIRTPublicName(const std::string &name, uint32_t offset);
 	~UVDFLIRTPublicName();
 	
+	//Get .pat style representation
+	std::string toString() const;
+	
 	int compare(const UVDFLIRTPublicName *other) const;
+	uint32_t getOffset() const;
+	uv_err_t setOffset(uint32_t offset);
+	bool isLocal() const;
+	uv_err_t setLocal(bool isLocal);
 	
 public:
 	std::string m_name;
-	//Note the signedness
-	int32_t m_offset;
+
+//These are private from what seems to be a previous data layout misconception
+private:
+	bool m_isLocal;
+	uint32_t m_offset;
 };
 
 /*
@@ -256,7 +265,7 @@ public:
 	//Not invalidated
 	uv_err_t setSequence(const UVDFLIRTSignatureRawSequence *m_sequence);
 	//Return a human readable representation of the module
-	std::string debugString();
+	std::string debugString() const;
 
 protected:
 	//Get a copy of sequence with relocations 0 filled

@@ -875,22 +875,20 @@ uv_err_t UVDFLIRTModule::setSequence(const UVDFLIRTSignatureRawSequence *sequenc
 	return UV_ERR_OK;
 }
 
-std::string UVDFLIRTModule::debugString()
+std::string UVDFLIRTModule::debugString() const
 {
 	std::string ret;
 
-	for( std::vector<UVDFLIRTPublicName>::iterator iter = m_publicNames.begin();
+	for( std::vector<UVDFLIRTPublicName>::const_iterator iter = m_publicNames.begin();
 			iter != m_publicNames.end(); ++iter )
 	{
-		UVDFLIRTPublicName &publicName = (*iter);
-		char buff[256];
+		const UVDFLIRTPublicName &publicName = *iter;
 		
-		snprintf(buff, sizeof(buff), ":%04X %s", publicName.m_offset, publicName.m_name.c_str());		
 		if( iter != m_publicNames.begin() )
 		{
 			ret += " ";
 		}
-		ret += buff;
+		ret += publicName.toString();
 	}	
 	return ret;	
 }
@@ -902,18 +900,34 @@ UVDFLIRTPublicName
 UVDFLIRTPublicName::UVDFLIRTPublicName()
 {
 	m_offset = 0;
-	UVD_POKE(this);
+	m_isLocal = false;
 }
 
 UVDFLIRTPublicName::UVDFLIRTPublicName(const std::string &name, uint32_t offset)
 {
 	m_name = name;
 	m_offset = offset;
-	UVD_POKE(this);
+	m_isLocal = false;
 }
 
 UVDFLIRTPublicName::~UVDFLIRTPublicName()
 {
+}
+
+std::string UVDFLIRTPublicName::toString() const
+{
+	/*
+	Seems there is some special treatment for local unnamed symbols in dumpsig output?
+		Prints a (!) instead of a (?)
+	We don't care though unless its found to mean something special
+	Maybe it just thinks the information is mostly useless and trying to warn us
+	*/
+	const char *localPrefix = "";
+	if( isLocal() )
+	{
+		localPrefix = "(l)";
+	}
+	return UVDSprintf("%s:%04X %s", localPrefix, getOffset(), m_name.c_str());	
 }
 
 int UVDFLIRTPublicName::compare(const UVDFLIRTPublicName *other) const
@@ -941,5 +955,27 @@ int UVDFLIRTPublicName::compare(const UVDFLIRTPublicName *other) const
 	}
 	
 	return m_name.compare(other->m_name);
+}
+
+uint32_t UVDFLIRTPublicName::getOffset() const
+{
+	return m_offset;
+}
+
+uv_err_t UVDFLIRTPublicName::setOffset(uint32_t offset)
+{
+	m_offset = offset;
+	return UV_ERR_OK;
+}
+
+bool UVDFLIRTPublicName::isLocal() const
+{
+	return m_isLocal;
+}
+
+uv_err_t UVDFLIRTPublicName::setLocal(bool isLocal)
+{
+	m_isLocal = isLocal;
+	return UV_ERR_OK;
 }
 

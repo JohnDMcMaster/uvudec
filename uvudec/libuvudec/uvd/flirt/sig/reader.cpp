@@ -285,20 +285,11 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 				{
 					UVDFLIRTPublicName publicName;
 					uint32_t delta = 0;
-					bool has_negative;
 					
 					delta = bitshift_read();
 				
 					read_flags = read_byte();
-					//whys neg ref useful?
-					has_negative = read_flags < 0x20;
-					//FIXME: we don't have any info on how to process this
-					//okay it seems negative address is a local symbol
-					//uv_assert_ret(!has_negative);
-					if( has_negative )
-					{
-						printf_warn("has negative and we don't handle it correctly\n");
-					}
+					uv_assert_err_ret(publicName.setLocal(read_flags < 0x20));
 					
 					//Read reference name
 					for( int i = 0; ; ++i )
@@ -322,7 +313,7 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 						read_flags = 0;
 					}
 					ref_cur_offset += delta;
-					publicName.m_offset = ref_cur_offset;
+					uv_assert_err_ret(publicName.setOffset(ref_cur_offset));
 					//printf_flirt_debug(" %04X:%s", ref_cur_offset, publicName.m_name.c_str());
 					m_module.m_publicNames.push_back(publicName);
 				} while( read_flags & UVD__IDASIG__NAME__MORE_NAMES );

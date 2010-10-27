@@ -160,7 +160,8 @@ std::string UVDFLIRTSignatureTreeBasicNode::debugString()
 	{
 		const UVDFLIRTPublicName &cur = *iter;
 		
-		ret += UVDSprintf(" :%04X %s", cur.m_offset, cur.m_name.c_str());
+		ret += " ";
+		ret += cur.toString();
 	}
 	for( std::vector<UVDFLIRTSignatureReference>::iterator iter = m_references.begin(); iter != m_references.end(); ++iter )
 	{
