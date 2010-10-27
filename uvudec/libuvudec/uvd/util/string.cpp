@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <stdarg.h>
 #include <time.h>
 #include <errno.h>
 #include <ctype.h>
@@ -452,5 +453,33 @@ uint32_t nonBlankLinesRemaining(std::vector<std::string> &lines, std::vector<std
 	}
 
 	return nonBlankLines;
+}
+
+std::string UVDSprintf(const std::string &format, ...)
+{
+	//TODO: should we try buffering the memory to increase performance?
+	//Think during UVDInit we should reserve a modest buffer for the common case
+	char *buff = NULL;
+	size_t needed = 0;
+	std::string ret;
+	va_list ap;
+	
+	va_start(ap, format);
+	needed = vsnprintf(NULL, 0, format.c_str(), ap) + 1;
+	va_end(ap);
+ 	
+	buff = (char *)malloc(sizeof(buff[0]) * needed);
+	if( !buff )
+	{
+		return "";
+	}
+
+	va_start(ap, format);
+	vsnprintf(buff, needed, format.c_str(), ap);
+	va_end(ap);
+
+	ret = buff;
+	free(buff);
+	return ret;
 }
 
