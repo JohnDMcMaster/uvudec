@@ -7,11 +7,11 @@ Some code originally from
 http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 */
 
-#include <stdint.h>
-#include <string>
-
 #ifndef UVD_FLIRT_SIGNATURE_FORMAT_H
 #define UVD_FLIRT_SIGNATURE_FORMAT_H
+
+#include <stdint.h>
+#include <string>
 
 /*
 Feature flags

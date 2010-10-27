@@ -20,7 +20,8 @@ public:
 
 public:
 	//.sig file uses m_offset from data area, but here offset should be from chain 
-	uint32_t m_offset;
+	//Noted the signedness
+	int32_t m_offset;
 	//If we scale this up, switch this to a char * or std::string *
 	//Or should this be UVDFLIRTSignatureTreeLeafNode and store a list of names in the main node struct?
 	//Keep both for now, eliminate m_name if it seems useless, it may only be needed for construction
@@ -64,7 +65,9 @@ public:
 		bool operator!=(const const_iterator &other) const;		
 		//Only read for now
 		deref operator*();
-		std::string toString() const;
+		//Hmm maybe this was just for debugging
+		//std::string toString() const;
+		std::string toDebugString() const;
 
 		static const_iterator getEnd(const UVDFLIRTSignatureRawSequence *seq);
 	
@@ -120,13 +123,23 @@ public:
 	//Length is in bytes, NOT string length
 	uv_err_t fromStringCore(const std::string &s, uint32_t lengthIn);
 	
+	//Get the representation as would be in a .pat file
+	std::string toString() const;
 	//For debugging
 	//Upon error we truncate the print, ending in a ?
-	std::string toString() const;
+	std::string toDebugString() const;
 	
 	//How long is it in bytes
 	//If relocations are at the end, they will be included
 	uint32_t size() const;
+	
+	//Add on chars from second to this
+	uv_err_t append(const std::string &patForm);
+	uv_err_t append(const UVDFLIRTSignatureRawSequence *second);
+	//Lose n chars from the end
+	//Error if we don't have enough chars
+	//We could do this with iteration operators and such directly
+	uv_err_t shorten(uint32_t n);
 	
 	/*
 	get first position where nodes differ
@@ -213,7 +226,8 @@ public:
 	
 public:
 	std::string m_name;
-	uint32_t m_offset;
+	//Note the signedness
+	int32_t m_offset;
 };
 
 /*
@@ -273,6 +287,13 @@ public:
 	//Post 0x20 length stuff used for 
 	//UVDFLIRTSignatureRawSequence m_tailingSequence;
 	UVDFLIRTSignatureRawSequence m_sequence;
+
+	//These were seen in the reference .sig dumper app without apparant explanation
+	//think its also in dumpsig output but I have no idea still what it is
+	//printf_flirt_debug("That unknown thing: (0x%04X: 0x%02X)\n", first, second);
+	bool m_hasUnknowns;
+	uint16_t m_unknown0;
+	uint8_t m_unknown1;
 };
 
 #endif

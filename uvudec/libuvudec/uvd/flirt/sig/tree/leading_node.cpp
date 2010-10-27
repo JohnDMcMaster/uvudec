@@ -250,7 +250,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insertSubseq(UVDFLIRTSignatur
 	//Start by finding how much of the sequence we share
 	//uv_err_t matchPosition(const UVDFLIRTSignatureRawSequence *other, const_iterator &otherStartEnd, const_iterator &thisMatchPoint) const;
 	uv_assert_err_ret(node->m_bytes.differencePosition(&m_leadingSequence, sequencePosition, nodeBranchPoint));
-	printf_flirt_debug("difference, existing: %s, inserting: %s\n", sequencePosition.toString().c_str(), nodeBranchPoint.toString().c_str());
+	printf_flirt_debug("difference, existing: %s, inserting: %s\n", sequencePosition.toDebugString().c_str(), nodeBranchPoint.toDebugString().c_str());
 	
 	/*
 	A partial match
@@ -432,7 +432,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::size(uint32_t *sizeOut)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTSignatureTreeLeadingNode::debugDump(const std::string &prefixIn)
+uv_err_t UVDFLIRTSignatureTreeLeadingNode::dump(const std::string &prefixIn, bool includeDebug)
 {
 	/*
 	Root
@@ -449,7 +449,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::debugDump(const std::string &prefixIn
 	
 	std::string prefix = prefixIn;
 	
-	if( !UVDGetDebugFlag(UVD_DEBUG_TYPE_FLIRT) )
+	if( includeDebug && !UVDGetDebugFlag(UVD_DEBUG_TYPE_FLIRT) )
 	{
 		return UV_ERR_OK;
 	}
@@ -474,7 +474,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::debugDump(const std::string &prefixIn
 		UVDFLIRTSignatureTreeLeadingNode *node = *iter;
 		
 		uv_assert_ret(node);
-		node->debugDump(prefix);
+		node->dump(prefix, includeDebug);
 	}
 	return UV_ERR_OK;
 }

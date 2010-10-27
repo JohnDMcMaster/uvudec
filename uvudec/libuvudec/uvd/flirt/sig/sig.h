@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/types.h"
 #include "uvd/data/data.h"
+#include "uvd/flirt/sig/format.h"
 #include <vector>
 
 #define UVD__FLIRT__CONFLICT__RESOLUTION__UNKNOWN		0
@@ -99,7 +100,7 @@ public:
 	Load from a .sig file
 	Work in progress
 	*/
-	uv_err_t loadFromFile(const std::string &file);
+	uv_err_t loadSigFile(const std::string &file);
 	
 	/*
 	Will not clear the DB
@@ -109,15 +110,19 @@ public:
 	uv_err_t loadFromPatFile(const std::string &file);
 	uv_err_t loadFromPatFileString(const std::string &patternFileContents);
 
+	//TODO: should this be const?
 	uv_err_t insert(UVDFLIRTModule *function);
 
 	//How many total patterns in the DB
 	//"number modules"
 	uv_err_t size(uint32_t *size);
 
-	//Debug dump of the DB like (but not exactly like) dumpsig would give
-	uv_err_t debugDump();
-
+	//Debug dump of the DB similar to what dumpsig would give
+	//Also includes header information
+	uv_err_t dump();
+	//Just the tree structure and include addrsses
+	uv_err_t debugDumpTree();
+		
 public:
 	//The UVD FLIRT engine
 	//We do not own it
@@ -149,6 +154,8 @@ public:
 	UVDFLIRTSignatureDBConflicts *m_conflicts;
 
 	std::string m_libraryName;
+
+	struct UVD_IDA_sig_header_t m_header;
 };
 
 #define UVD_FLIRT_SIG_LEADING_LENGTH				0x20

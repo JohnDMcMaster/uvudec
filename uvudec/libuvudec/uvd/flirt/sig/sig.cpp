@@ -6,6 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/flirt/flirt.h"
 #include "uvd/flirt/pat/pat.h"
+#include "uvd/flirt/pat/reader.h"
+#include "uvd/flirt/sig/reader.h"
 #include "uvd/flirt/sig/sig.h"
 #include "uvd/flirt/sig/tree/tree.h"
 #include "uvd/flirt/sig/format.h"
@@ -13,6 +15,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/debug.h"
 #include "uvd/util/util.h"
 #include <string>
+#include <string.h>
 
 /*
 UVDFLIRTSignatureDBConflictSource
@@ -84,85 +87,6 @@ uv_err_t UVDFLIRTSignatureDBConflicts::readFromString(const std::string &in, UVD
 }
 
 /*
-UVDPatLoaderCore
-*/
-class UVDPatLoaderCore
-{
-public:
-	UVDPatLoaderCore(UVDFLIRTSignatureDB *db, const std::string &file = "");
-	~UVDPatLoaderCore();
-	
-	uv_err_t fromString(const std::string &in);
-	uv_err_t fileLine(const std::string &in);
-	uv_err_t insert(UVDFLIRTModule *function, UVDFLIRTSignatureRawSequence &leadingBytes);
-
-public:
-	//Do not own this
-	UVDFLIRTSignatureDB *m_db;
-	std::string m_file;
-};
-
-UVDPatLoaderCore::UVDPatLoaderCore(UVDFLIRTSignatureDB *db, const std::string &file)
-{
-	m_db = db;
-	m_file = file;
-}
-
-UVDPatLoaderCore::~UVDPatLoaderCore()
-{
-}
-
-uv_err_t UVDPatLoaderCore::fromString(const std::string &in)
-{
-	std::vector<std::string> lines = split(in, '\n', false);
-	
-	for( std::vector<std::string>::iterator iter = lines.begin(); ; ++iter )
-	{
-		std::string line;
-		
-		if( iter == lines.end() )
-		{
-			printf_error("ending .pat terminator " UVD_FLIRT_PAT_TERMINATOR " required\n");
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		
-		line = *iter;
-		
-		line = trimString(line);
-		if( line.empty() )
-		{
-			continue;
-		}
-		if( line == UVD_FLIRT_PAT_TERMINATOR )
-		{
-			//There should not be any more lines
-			uint32_t nonBlank = nonBlankLinesRemaining(lines, iter);
-			if( nonBlank > 0 )
-			{
-				printf_flirt_warning("%s: non blank lines remaining in .pat load: %d\n", m_file, nonBlank);
-			}
-			break;
-		}
-		
-		//Okay, all the prelims are over, ready to roll
-		uv_assert_err_ret(fileLine(line));
-		uv_assert_err_ret(m_db->debugDump());
-	}
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDPatLoaderCore::fileLine(const std::string &in)
-{
-	UVDFLIRTModule function;
-
-	uv_assert_err_ret(UVDFLIRTPatternGenerator::patLineToFunction(in, &function));
-	uv_assert_err_ret(m_db->insert(&function));
-
-	return UV_ERR_OK;
-}
-
-/*
 UVDFLIRTSignatureDB
 */
 
@@ -172,6 +96,7 @@ UVDFLIRTSignatureDB::UVDFLIRTSignatureDB()
 	m_data = NULL;
 	m_tree = NULL;
 	m_conflicts = NULL;
+	memset(&m_header, 0, sizeof(struct UVD_IDA_sig_header_t));
 }
 
 UVDFLIRTSignatureDB::~UVDFLIRTSignatureDB()
@@ -268,6 +193,7 @@ uv_err_t UVDFLIRTSignatureDB::insert(UVDFLIRTModule *function)
 	{
 		//Note: root node doesn't have any leading bytes
 		m_tree = new UVDFLIRTSignatureTreeLeadingNode();
+		uv_assert_ret(m_tree);
 	}
 	
 	uv_assert_err_ret(m_tree->insert(function));
@@ -282,12 +208,90 @@ uv_err_t UVDFLIRTSignatureDB::size(uint32_t *out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDFLIRTSignatureDB::debugDump()
+uv_err_t UVDFLIRTSignatureDB::loadSigFile(const std::string &fileNameIn)
 {
+	UVDFLIRTSigReader sigReader(this);
+	
+	uv_assert_err_ret(sigReader.load(fileNameIn));
+	
+	return UV_ERR_OK;
+}
+
+
+static std::string hexstr(const char *in, int sz)
+{
+	std::string ret;
+	for( int i = 0; i < sz; ++i)
+	{
+		char buff[3];
+		sprintf(buff, "%02X", in[i]);
+		ret += buff;
+	}
+	return ret;
+}
+
+static std::string safestr(const char *in, int sz)
+{
+	std::string ret;
+	
+	for( int i = 0; i < sz; ++i )
+	{
+		if( in[i] == 0)
+		{
+			break;
+		}
+		if( isprint(in[i]) )
+		{
+			ret += in[i];
+		}
+		else
+		{
+			ret += '.';
+		}
+	}
+	return ret;
+}
+
+uv_err_t UVDFLIRTSignatureDB::dump()
+{
+	printf("magic: %s\n", hexstr(m_header.magic, sizeof(m_header.magic)).c_str());	
+	printf("version: %d\n", m_header.version);
+	printf("processor: %s (0x%02X)\n", UVDIDASigArchToString(m_header.processor).c_str(), m_header.processor);
+	printf("file_types: %s (0x%08X)\n", UVDIDASigFileToString(m_header.file_types).c_str(), m_header.file_types);
+	printf("OS_types: %s (0x%04X)\n", UVDIDASigOSToString(m_header.OS_types).c_str(), m_header.OS_types);
+	printf("app_types: %s (0x%04X)\n", UVDIDASigApplicationToString(m_header.app_types).c_str(), m_header.app_types);
+	printf("feature_flags: %s (0x%02X)\n", UVDIDASigFeaturesToString(m_header.feature_flags).c_str(), m_header.feature_flags);
+	printf("unknown (pad): 0x%02X\n", m_header.pad);
+	printf("old_number_modules: 0x%04X\n", m_header.old_number_modules);
+	printf("crc16: 0x%04X\n", m_header.crc16);	
+	//Make sure its null terminated
+	printf("ctype: %s\n", safestr(m_header.ctype, sizeof(m_header.ctype)).c_str());	
+	printf("library_name_sz: 0x%02X\n", m_header.library_name_sz);	
+	printf("alt_ctype_crc: 0x%04X\n", m_header.alt_ctype_crc);	
+	printf("n_modules: 0x%08X (%d)\n", m_header.n_modules, m_header.n_modules);
+
+	//Name is immediatly after header
+	printf("library name: %s\n", m_libraryName.c_str());
+		
+	if( m_tree )
+	{
+		uv_assert_err_ret(m_tree->dump("", false));
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureDB::debugDumpTree()
+{
+	if( !UVDGetDebugFlag(UVD_DEBUG_TYPE_FLIRT) )
+	{
+		return UV_ERR_OK;
+	}
+
 	if( m_tree )
 	{
 		printf_flirt_debug("Signature DB tree (root = 0x%08X):\n", (int)m_tree);
-		uv_assert_err_ret(m_tree->debugDump(g_config->m_flirt.m_debugDumpTab));
+		uv_assert_err_ret(m_tree->dump(g_config->m_flirt.m_debugDumpTab, true));
 	}
 	else
 	{

@@ -203,7 +203,7 @@ public:
 	//pos should not equal begin and will be the first node in the new tree
 	uv_err_t split(UVDFLIRTSignatureRawSequence::iterator pos);
 	
-	uv_err_t debugDump(const std::string &prefix);
+	uv_err_t dump(const std::string &prefix, bool includeDebug = true);
 	
 public:
 	//For the current node

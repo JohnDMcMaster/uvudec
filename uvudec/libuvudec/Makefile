@@ -61,10 +61,12 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/flirt/function.cpp \
 			$(UVD_DIR)/flirt/pat/factory.cpp \
 			$(UVD_DIR)/flirt/pat/pat.cpp \
+			$(UVD_DIR)/flirt/pat/reader.cpp \
 			$(UVD_DIR)/flirt/sig/tree/basic_node.cpp \
 			$(UVD_DIR)/flirt/sig/tree/hash_node.cpp \
 			$(UVD_DIR)/flirt/sig/tree/leading_node.cpp \
 			$(UVD_DIR)/flirt/sig/format.cpp \
+			$(UVD_DIR)/flirt/sig/reader.cpp \
 			$(UVD_DIR)/flirt/sig/sig.cpp \
 			$(UVD_DIR)/flirt/sig/writer.cpp \
 			$(UVD_DIR)/hash/crc.cpp \

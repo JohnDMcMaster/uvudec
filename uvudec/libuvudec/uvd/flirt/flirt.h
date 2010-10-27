@@ -58,6 +58,9 @@ public:
 	//out should be deleted by calllee
 	uv_err_t patFiles2SigDB(const std::vector<std::string> &inputFiles, UVDFLIRTSignatureDB **out);
 
+	//Dump a sig file in a human readable form
+	uv_err_t dumpSigFile(const std::string &file);
+	
 	//Don't do a full UVD engine init, only grab the FLIRT component
 	//The UVD engine may or may not be initialized internally, do not count on it
 	static uv_err_t getFLIRT(UVDFLIRT **out);

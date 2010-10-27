@@ -94,7 +94,7 @@ std::string UVDFLIRTSignatureRawSequence::const_iterator::deref::toString() cons
 {
 	if( m_isReloc )
 	{
-		return ".";
+		return "..";
 	}
 	else
 	{
@@ -250,7 +250,25 @@ UVDFLIRTSignatureRawSequence::const_iterator UVDFLIRTSignatureRawSequence::const
 	return const_iterator(seq, NULL);
 }
 
+/*
 std::string UVDFLIRTSignatureRawSequence::const_iterator::toString() const
+{
+	//Put paren around current seq pos
+	//if at end, just empty paren at end
+	std::string ret;
+	for( const_iterator iter = *this; iter != m_seq->const_end(); )
+	{
+		if( iter != m_seq->const_end() )
+		{
+			ret += (*iter).toString();
+		}
+		UV_DEBUG(iter.next());
+	}
+	return ret;
+}
+*/
+
+std::string UVDFLIRTSignatureRawSequence::const_iterator::toDebugString() const
 {
 	//Put paren around current seq pos
 	//if at end, just empty paren at end
@@ -480,6 +498,7 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint
 
 std::string UVDFLIRTSignatureRawSequence::toString() const
 {
+	//FIXME: why aren't we using the iterator func?
 	std::string ret;
 	uint8_t *cur = m_bytes;
 	 
@@ -628,6 +647,10 @@ uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start, uint3
 	//hexdump(m_bytes, 0x40);
 	for( const_iterator iter = start; iter != const_end(); UV_DEBUG(iter.next()) )
 	{
+		if( n == 0 )
+		{
+			break;
+		}
 		//printf_flirt_debug("iteration, offset: 0x%.8X, 0x%.2X\n", iter.m_cur, *iter.m_cur);
 		++ret;
 		if( *iter.m_cur == SIGNATURE_ESCAPE_CHAR )
@@ -637,10 +660,6 @@ uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start, uint3
 		if( n != npos )
 		{
 			--n;
-			if( n == 0 )
-			{
-				break;
-			}
 		}
 	}
 	return ret;
@@ -655,7 +674,7 @@ uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *de
 	size = allocSizeFrom(pos, n);
 	//Should have at least 1 byte + 2 for terminate
 	//maybe 0 if we want empty seq in future
-	uv_assert_ret(size >= 3);
+	uv_assert_ret(size >= 2);
 	uv_assert_ret(!empty());
 	printf_flirt_debug("subseqTo, alloc size: 0x%.2X, seq: %s, pos: 0x%.8X (m_bytes: 0x%.8X), n: 0x%.8X\n", size, toString().c_str(), pos.m_cur, m_bytes, n);
 	//Alloc
@@ -672,7 +691,11 @@ uv_err_t UVDFLIRTSignatureRawSequence::subseqTo(UVDFLIRTSignatureRawSequence *de
 	printf_flirt_debug("constructed subseq (len = 0x%.2X): %s\n", dest->size(), dest->toString().c_str());
 	if( n != npos )
 	{
-		uv_assert_ret(dest->size() == n);
+		if( dest->size() != n )
+		{
+			printf_flirt_debug("expected size: %d, us: %d, result: %d\n", n, this->size(), dest->size());
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
 	}	
 	return UV_ERR_OK;
 }
@@ -721,6 +744,55 @@ uv_err_t UVDFLIRTSignatureRawSequence::truncate(iterator pos)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDFLIRTSignatureRawSequence::append(const std::string &patForm)
+{
+	//Quick hack, we should reimplement if a performance issue
+	UVDFLIRTSignatureRawSequence temp;
+	
+	temp.fromString(toString() + patForm);
+
+	//Transfer data to this
+	free(m_bytes);
+	m_bytes = temp.m_bytes;
+	temp.m_bytes = NULL;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureRawSequence::append(const UVDFLIRTSignatureRawSequence *second)
+{
+	//Quick hack, we should reimplement if a performance issue
+	UVDFLIRTSignatureRawSequence temp;
+	
+	uv_assert_ret(second);
+	temp.fromString(toString() + second->toString());
+
+	//Transfer data to this
+	free(m_bytes);
+	m_bytes = temp.m_bytes;
+	temp.m_bytes = NULL;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTSignatureRawSequence::shorten(uint32_t n)
+{
+	UVDFLIRTSignatureRawSequence temp;
+	uint32_t currentLength = size();
+	uint32_t newLength = 0;
+	
+	uv_assert_ret(n <= currentLength);
+	newLength = currentLength - n;
+	uv_assert_err_ret(subseqTo(&temp, begin(), newLength));
+	
+	//Transfer data to this
+	free(m_bytes);
+	m_bytes = temp.m_bytes;
+	temp.m_bytes = NULL;
+	
+	return UV_ERR_OK;
+}
+
 /*
 UVDFLIRTModule
 */
@@ -730,6 +802,9 @@ UVDFLIRTModule::UVDFLIRTModule()
 	m_crc16Length = 0;
 	m_crc16 = 0;
 	m_attributeFlags = 0;
+	m_hasUnknowns = false;
+	m_unknown0 = 0;
+	m_unknown1 = 0;
 }
 
 UVDFLIRTModule::~UVDFLIRTModule()
