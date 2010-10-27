@@ -461,7 +461,12 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::dump(const std::string &prefixIn, boo
 	//Root node does not have any leading bytes, don't indent it and such
 	if( !m_bytes.empty() )
 	{
-		printf("%s%s (0x%08X):\n", prefix.c_str(), m_bytes.toString().c_str(), (int)this);
+		printf("%s%s", prefix.c_str(), m_bytes.toString().c_str());
+		if( includeDebug )
+		{
+			printf(" (0x%08X)", (int)this);
+		}
+		printf(":\n");
 		prefix += g_config->m_flirt.m_debugDumpTab;
 	}
 	
