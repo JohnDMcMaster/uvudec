@@ -147,6 +147,8 @@ uv_err_t UVDDebugDeinit();
 //Log file
 uv_err_t UVDSetDebugFile(const std::string &file);
 uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet);
+//Returns true if the given flag is set
+bool UVDGetDebugFlag(uint32_t flag);
 bool UVDAnyDebugActive();
 
 #define UVD_BREAK() do { __asm__("INT3"); } while( 0 )

@@ -70,6 +70,11 @@ uv_err_t UVDSetDebugFlag(uint32_t flag, uint32_t shouldSet)
 	return UV_ERR_OK;
 }
 
+bool UVDGetDebugFlag(uint32_t flag)
+{
+	return g_debugTypeFlags & flag;
+}
+
 bool UVDAnyDebugActive()
 {
 	return g_debugTypeFlags != 0;
