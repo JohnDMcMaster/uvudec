@@ -153,5 +153,11 @@ bool UVDAnyDebugActive();
 #define UVD_PRINT_STACK() uvd_print_trace(__FILE__, __LINE__, __FUNCTION__)
 void uvd_print_trace(const char *file, int line, const char *function);
 
+//For valgrind/memcheck stuff
+//Forces the code flow to depend on the value, but doesn't actually do anything
+#define UVD_POKE(x) UVDPoke((uint8_t *)x, sizeof((x)[0]))
+#define UVD_POKE_THIS() UVDPoke((uint8_t *)this, sizeof(void *));
+void UVDPoke(uint8_t *in, size_t size);
+
 #endif /* ifndef UV_DEBUG_H */
 

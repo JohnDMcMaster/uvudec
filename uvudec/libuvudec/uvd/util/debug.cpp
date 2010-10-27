@@ -359,3 +359,14 @@ uv_err_t UVDSetDebugFile(const std::string &file)
 	return UV_DEBUG(uv_log_init(file.c_str()));
 }
 
+void UVDPoke(uint8_t *in, size_t size)
+{
+	for( size_t i = 0; i < size; ++i )
+	{
+		if( in[i] )
+		{
+			std::string s;
+		}
+	}
+}
+
