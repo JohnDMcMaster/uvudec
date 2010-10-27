@@ -177,6 +177,9 @@ uv_err_t isConfigIdentifier(const std::string &in);
 void hexdump(const void *data, size_t size);
 void hexdumpCore(const char *data, size_t size, const std::string &prefix);
 
+//printf like formatting to a std::string
+std::string UVDSprintf(const std::string &format, ...);
+
 #define UVD_WARN_IF_VERSION_MISMATCH()\
 		do \
 		{\
