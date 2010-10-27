@@ -106,11 +106,12 @@ int UVDFLIRTSignatureTreeHashNode::compare(const UVDFLIRTSignatureTreeHashNode *
 uv_err_t UVDFLIRTSignatureTreeHashNode::debugDump(const std::string &prefix, uint32_t hashNodeIndex)
 {
 	uint32_t basicNodeIndex = 0;
+
+	printf("%s%d) CRC16:0x%.4X leadingLength:0x%.2X\n", prefix.c_str(), hashNodeIndex, m_crc16, m_leadingLength);
 	for( BasicSet::iterator iter = m_bucket.begin(); iter != m_bucket.end(); ++iter )
 	{
 		UVDFLIRTSignatureTreeBasicNode *basicNode = *iter;
 
-		printf("%s%d) CRC16:0x%.4X leadingLength:0x%.2X\n", prefix.c_str(), hashNodeIndex, m_crc16, m_leadingLength);
 		uv_assert_ret(basicNode);
 		uv_assert_err_ret(basicNode->debugDump(prefix + g_config->m_flirt.m_debugDumpTab, basicNodeIndex));
 		++basicNodeIndex;
