@@ -4,13 +4,14 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "main_hook.h"
+#include "uvd/core/uvd.h"
+#include "uvd/core/init.h"
+#include "uvd_test.h"
+#include "uvd/util/util.h"
 #include <vector>
 #include <string>
-#include "main_hook.h"
-#include "uvd.h"
-#include "uvd_init.h"
-#include "uvd_test.h"
-#include "uvd_util.h"
+#include <string.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION (UVDUnitTest);
 
@@ -133,7 +134,7 @@ void UVDUnitTest::analysisDirTest(void)
 {
 	int argc = 0;
 	//char arg0[32];
-	char *argv[] = {"uvudec", "--analysis-dir=" UNITTEST_ANALYSIS_DIR};
+	const char *argv[] = {"uvudec", "--analysis-dir=" UNITTEST_ANALYSIS_DIR};
 	std::string file = DEFAULT_DECOMPILE_FILE;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
@@ -149,7 +150,7 @@ void UVDUnitTest::analysisDirTest(void)
 	UVCPPUNIT_ASSERT(UVDInit());
 	CPPUNIT_ASSERT(g_config != NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, argv) == UV_ERR_OK);
+	CPPUNIT_ASSERT(g_config->parseMain(argc, (char **)argv) == UV_ERR_OK);
 	
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
@@ -179,7 +180,7 @@ void UVDUnitTest::disassembleTest(void)
 {
 	int argc = 0;
 	//char arg0[32];
-	char *argv[] = {"uvudec"};
+	const char *argv[] = {"uvudec"};
 	std::string file = DEFAULT_DECOMPILE_FILE;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
@@ -193,7 +194,7 @@ void UVDUnitTest::disassembleTest(void)
 	UVCPPUNIT_ASSERT(UVDInit());
 	CPPUNIT_ASSERT(g_config != NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, argv) == UV_ERR_OK);
+	CPPUNIT_ASSERT(g_config->parseMain(argc, (char **)argv) == UV_ERR_OK);
 	
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
@@ -375,7 +376,7 @@ void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args, std::
 {
 	int argc = 0;
 	//char arg0[32];
-	char *argv[16] = {"uvudec"};
+	const char *argv[16] = {"uvudec"};
 	std::string file = DEFAULT_DECOMPILE_FILE;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
@@ -405,7 +406,7 @@ void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args, std::
 	UVCPPUNIT_ASSERT(UVDInit());
 	CPPUNIT_ASSERT(g_config != NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, argv) == UV_ERR_OK);
+	CPPUNIT_ASSERT(g_config->parseMain(argc, (char **)argv) == UV_ERR_OK);
 	
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
@@ -428,8 +429,8 @@ void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args, std::
 
 void UVDUnitTest::uvudecBasicRun(void)
 {
-	char *argv[] = {"uvudec", "--output=/dev/null"};
+	const char *argv[] = {"uvudec", "--output=/dev/null"};
 	int argc = sizeof(argv) / sizeof(argv[0]);
 
-	UVCPPUNIT_ASSERT(uvudec_uvmain(argc, argv));
+	UVCPPUNIT_ASSERT(uvudec_uvmain(argc, (char **)argv));
 }

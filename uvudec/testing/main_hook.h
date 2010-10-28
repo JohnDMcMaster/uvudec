@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef MAIN_HOOK_H
 #define MAIN_HOOK_H
 
-#include "uvd_types.h"
+#include "uvd/util/types.h"
 
 uv_err_t uvudec_uvmain(int argc, char **argv);
 

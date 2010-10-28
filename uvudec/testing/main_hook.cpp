@@ -14,4 +14,4 @@ Allows simulation of running the program without going through system() mess
 #define main		uvudec_main_disabled
 #define uvmain		uvudec_uvmain
 
-#include "../core/main.cpp"
+#include "../uvudec/main.cpp"

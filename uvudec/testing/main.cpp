@@ -14,6 +14,8 @@ Unit test
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/TestRunner.h>
 #include <cppunit/BriefTestProgressListener.h>
+#include <stdint.h>
+#include <stdio.h>
 
 int main(int argc, char* argv[])
 {
