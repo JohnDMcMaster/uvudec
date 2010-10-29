@@ -204,7 +204,7 @@ class Builder:
 					sys.exit(1)
 				self.new_version = output.find('Already up-to-date.') < 0
 			else:
-				if simple_shell_exec("git clone %s %d" % (self.VCS_URL, self.project_dir)):
+				if simple_shell_exec("git clone %s %s" % (self.VCS_URL, self.project_dir)):
 					print 'ERROR: failed clone'
 					sys.exit(1)
 			(rc_temp, revision) = shell_exec("cd %s && git rev-parse HEAD" % self.project_dir)
