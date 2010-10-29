@@ -281,8 +281,8 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	args.push_back("--addr-include=0x0000-0x0002");
 	args.push_back("--addr-include=0x000B-0x000E");
 	generalDisassemble(args, output);
-	printf("\n\n\noutput<%s>\n\n\n", limitString(output, 200).c_str());
-	printf("\n\n\ntarget<%s>\n\n\n", limitString(target, 200).c_str());
+	printf("\n\n\noutput\n<%s>\n\n\n", limitString(output, 200).c_str());
+	printf("\n\n\ntarget\n<%s>\n\n\n", limitString(target, 200).c_str());
 	CPPUNIT_ASSERT(output == target);
 }
 
@@ -352,9 +352,9 @@ void UVDUnitTest::configDeinit()
 	{
 		for( int i = 0; i < m_argc; ++i )
 		{
-			delete m_argv[i];
+			free(m_argv[i]);
 		}
-		delete m_argv;
+		free(m_argv);
 	}
 	m_argc = 0;
 	m_argv = NULL;	
