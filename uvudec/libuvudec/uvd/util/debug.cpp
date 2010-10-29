@@ -332,6 +332,7 @@ void UVDPrintfErrorV(const char *format, va_list ap)
 		return;
 	}
 	
+	fflush(stdout);
 	fprintf(stdout, "%s", "ERROR: ");
 	vfprintf(stdout, format, ap);
 	fflush(stdout);
@@ -341,6 +342,7 @@ void UVDPrintfWarning(const char *format, ...)
 {
 	va_list ap;
 
+	fflush(stdout);
 	va_start(ap, format);
 	UVDPrintfWarningV(format, ap);
 	va_end(ap);
