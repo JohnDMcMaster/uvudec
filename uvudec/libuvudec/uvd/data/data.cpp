@@ -29,7 +29,7 @@ void UVDData::deinit()
 {
 }
 
-std::string UVDData::getSource()
+std::string UVDData::getSource() const
 {
 	return "";
 }

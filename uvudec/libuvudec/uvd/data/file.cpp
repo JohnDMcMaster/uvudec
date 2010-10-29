@@ -40,6 +40,11 @@ error:
 	return ret;
 }
 
+uv_err_t UVDDataFile::getUVDDataFile(UVDDataFile** pDataFile, const std::string &file)
+{
+	return UV_DEBUG(getUVDDataFile((UVDData **)pDataFile, file));
+}
+
 uv_err_t UVDDataFile::getUVDDataFile(UVDData **pDataFile, const std::string &file)
 {
 	UVDDataFile *dataFile = NULL;
@@ -82,7 +87,7 @@ void UVDDataFile::deinit()
 	UVDData::deinit();
 }
 
-std::string UVDDataFile::getSource()
+std::string UVDDataFile::getSource() const
 {
 	return m_sFile;
 }

@@ -22,7 +22,7 @@ public:
 	virtual void deinit();
 	
 	//Returns human readable string representation of the source
-	virtual std::string getSource();
+	virtual std::string getSource() const;
 	
 	//Read all of the data
 	virtual uv_err_t readData(char **buffer) const;	
@@ -97,7 +97,7 @@ public:
 	UVDDataPlaceholder();
 	~UVDDataPlaceholder();
 
-	virtual std::string getSource();
+	virtual std::string getSource() const;
 
 	//These always return 0
 	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
@@ -124,11 +124,12 @@ public:
 	UVDDataFile();
 	uv_err_t init(const std::string &file);
 	static uv_err_t getUVDDataFile(UVDData** pDataFile, const std::string &file);
+	static uv_err_t getUVDDataFile(UVDDataFile** pDataFile, const std::string &file);
 	virtual ~UVDDataFile();	
 	void deinit();
 
 	//Returns human readable string representation of the source
-	std::string getSource();	
+	std::string getSource() const;
 
 	int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;
 	uint32_t size() const;
@@ -163,7 +164,7 @@ public:
 	static uv_err_t getUVDDataMemoryByCopy(const UVDData *dataIn, UVDData **dataOut);
 	virtual ~UVDDataMemory();
 
-	std::string getSource();
+	std::string getSource() const;
 	//Reallocate storage.  Buffer data and pointer is invalidated
 	uv_err_t realloc(uint32_t bufferSize);
 	

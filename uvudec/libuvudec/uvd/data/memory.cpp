@@ -151,7 +151,7 @@ uv_err_t UVDDataMemory::writeData(unsigned int offset, const char *buffer, unsig
 	return UV_ERR_OK;
 }
 
-std::string UVDDataMemory::getSource()
+std::string UVDDataMemory::getSource() const
 {
 	char buffer[64];
 	snprintf(buffer, 64, "0x%08X:+0x%08X", (unsigned int)m_buffer, (unsigned int)m_bufferSize);

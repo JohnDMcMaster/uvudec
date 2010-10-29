@@ -14,7 +14,7 @@ UVDDataPlaceholder::~UVDDataPlaceholder()
 {
 }
 
-std::string UVDDataPlaceholder::getSource()
+std::string UVDDataPlaceholder::getSource() const
 {
 	return "placeholder";
 }
