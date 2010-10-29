@@ -244,16 +244,27 @@ class Builder:
 		(rc, self.build_result_text) = shell_exec("cd %s && make %s" % (self.make_dir, string.join(self.make_test_args, ' ')))
 		print 'main test rc: %d' % rc
 		output_file.write(self.build_result_text)
+		status_line = None
+		severe_error = False
 		for line in self.build_result_text.split('\n'):
 			if line.find('Run: ') >= 0:
 				status_line = line
 				break
-		# Run: 11   Failure total: 3   Failures: 3   Errors: 0
-		total_tests = int(status_line.split()[1])
-		failed_tests = int(status_line.split()[4])
+			elif line.find('SEVERE ERROR') >= 0:
+				severe_error = True
+				break
+		if status_line:
+			# Run: 11   Failure total: 3   Failures: 3   Errors: 0
+			total_tests = int(status_line.split()[1])
+			failed_tests = int(status_line.split()[4])
 		if rc:
 			print 'ERROR: failed test run'
-			self.email_subject = "failed %d / %d tests" % (failed_tests, total_tests)
+			if status_line:
+				self.email_subject = "failed %d / %d tests" % (failed_tests, total_tests)
+			elif severe_error:
+				self.email_subject = 'severe error (crash)'
+			else:
+				self.email_subject = 'unknown failure'
 			print 'subject: %s' % self.email_subject
 			self.should_send_email = True
 			output_file.close()
