@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 
 	uint32_t wasSuccessful = collectedresults.wasSuccessful();
 
-	printf("main: done\n");
+	printf("main: done, wasSuccessful: %d\n", wasSuccessful);
 
 	// return 0 if tests were successful
 	return wasSuccessful ? 0 : 1;
