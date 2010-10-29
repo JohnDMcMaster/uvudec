@@ -89,6 +89,7 @@ class Builder:
 		self.email_from = ''
 		self.email_to = ''
 		self.email_subject_prefix = ''
+		self.email_subject = "results"
 		self.make_dir = None
 		self.make_build_args = ()
 		self.make_test_args = ()
@@ -105,7 +106,7 @@ class Builder:
 		
 		fromaddr = self.email_from
 		toaddr  = self.email_to
-		subject = self.email_subject_prefix + "results"
+		subject = self.email_subject_prefix + self.email_subject
 		# Later we might add some standard footer or something
 		body = message
 
@@ -208,7 +209,7 @@ class Builder:
 		
 	def run_make(self):
 		# We need to make it only e-mail if the result changed
-		if os.path.exists(self.file_previous):
+		if os.path.exists(self.file_current):
 			# Rotate log files
 			shutil.move(self.file_current, self.file_previous)
 		else:
@@ -225,18 +226,32 @@ class Builder:
 		output_file.write(self.build_result_text)
 		if rc:
 			print 'ERROR: failed build'
+			self.email_subject = "build failure"
+			self.should_send_email = True
 			output_file.close()
 			return
 
 		(rc, self.build_result_text) = shell_exec("cd %s && make %s" % (self.make_dir, string.join(self.make_test_args, ' ')))
+		print 'main test rc: %d' % rc
 		output_file.write(self.build_result_text)
+		for line in self.build_result_text.split('\n'):
+			if line.find('Run: ') >= 0:
+				status_line = line
+				break
+		# Run: 11   Failure total: 3   Failures: 3   Errors: 0
+		total_tests = int(status_line.split()[1])
+		failed_tests = int(status_line.split()[4])
 		if rc:
 			print 'ERROR: failed test run'
+			self.email_subject = "failed %d / %d tests" % (failed_tests, total_tests)
+			print 'subject: %s' % self.email_subject
+			self.should_send_email = True
 			output_file.close()
 			return
 		
 		output_file.close()
 
+		# This is so a failure count can be seen that the bugs were fixed
 		if os.path.exists(self.file_previous):
 			self.should_send_email = filecmp.cmp(self.file_current, self.file_previous)
 		else:
