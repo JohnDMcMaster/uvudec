@@ -14,6 +14,7 @@ import os
 from os import path
 import sys
 import time
+import filecmp
 
 debug_email = False 
 ever_send_email = True 
@@ -89,13 +90,15 @@ class Builder:
 		self.email_to = ''
 		self.email_subject_prefix = ''
 		self.make_dir = None
-		self.make_args = ''
+		self.make_build_args = ()
+		self.make_test_args = ()
 		self.file_previous = 'build_0.txt'
 		self.file_current = 'build_1.txt'
 		# Text representation of the build output as would display in a terminal
 		self.build_result_text = None
 		self.project_dir = None
 		self.new_version = True
+		self.should_send_email = False
 	
 	def send_email(self, message):
 		global debug_email
@@ -129,7 +132,7 @@ class Builder:
 		server.quit()
 
 	def email_results(self):
-		if ever_send_email:
+		if ever_send_email and self.should_send_email:
 			self.send_email(self.build_result_text)
 		else:
 			print 'NOT sending email'
@@ -175,9 +178,12 @@ class Builder:
 		if 'file_previous' in j:
 			self.file_previous = j['file_previous']
 			
-		if 'make_args' in j:
-			self.make_args = j['make_args']
+		if 'make_build_args' in j:
+			self.make_build_args = j['make_build_args']
 			
+		if 'make_test_args' in j:
+			self.make_test_args = j['make_test_args']
+
 		self.project_dir = j['project_dir']
 			
 		if 'make_dir' in j:
@@ -200,23 +206,47 @@ class Builder:
 		else:
 			raise Exception('unknown VCS: %s' % self.VCS)
 		
-	def build(self):
+	def run_make(self):
+		# We need to make it only e-mail if the result changed
 		if os.path.exists(self.file_previous):
 			# Rotate log files
 			shutil.move(self.file_current, self.file_previous)
 		else:
 			print 'Doing initial build'
 		
+		'''
 		if simple_shell_exec("(cd %s && make %s)2>&1 |tee %s" % (self.make_dir, string.join(self.make_args, ' '), self.file_current)):
 			print 'WARNING: failed build'
+		self.build_result_text = open(self.file_current).read()
+		'''
 		
-		self.build_result_text = open(self.file_current)
+		output_file = open(self.file_current, 'w')
+		(rc, self.build_result_text) = shell_exec("cd %s && make %s" % (self.make_dir, string.join(self.make_build_args, ' ')))
+		output_file.write(self.build_result_text)
+		if rc:
+			print 'ERROR: failed build'
+			output_file.close()
+			return
+
+		(rc, self.build_result_text) = shell_exec("cd %s && make %s" % (self.make_dir, string.join(self.make_test_args, ' ')))
+		output_file.write(self.build_result_text)
+		if rc:
+			print 'ERROR: failed test run'
+			output_file.close()
+			return
 		
+		output_file.close()
+
+		if os.path.exists(self.file_previous):
+			self.should_send_email = filecmp.cmp(self.file_current, self.file_previous)
+		else:
+			self.should_send_email = True
+
 	def run(self):
 		b.load_config(config_file)
 		b.checkout()
 		if self.new_version or force_build:
-			b.build()
+			b.run_make()
 			b.email_results()
 		elif not force_build:
 			print 'Skipping build: not a new version'
