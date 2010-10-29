@@ -427,6 +427,8 @@ uv_err_t UVD::deinit()
 	delete m_format;
 	m_format = NULL;
 
+	//To help migrate from global instances
+	//At the time of this writing, g_config is deleted during UVDDeinit()
 	if( m_config != g_config )
 	{
 		delete m_config;

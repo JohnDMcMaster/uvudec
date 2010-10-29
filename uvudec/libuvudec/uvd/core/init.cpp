@@ -33,12 +33,17 @@ uv_err_t UVDInit()
 
 uv_err_t UVDDeinit()
 {
+	/*
+	Removed this to move away from the g_uvd instance
+	We should work towards having multiple uvd objects
 	if( g_uvd )
 	{
 		delete g_uvd;
-		g_uvd = NULL;
 	}
+	*/
+	g_uvd = NULL;
 
+	//Hmm this one is more tricky
 	//This won't get deleted by prev if it was global instance
 	if( g_config )
 	{
@@ -58,7 +63,7 @@ architecture: hint about what we are trying to disassemble
 uv_err_t UVD::init(const std::string &file, const UVDRuntimeHints &hints)
 {
 	uv_err_t rcTemp = UV_ERR_GENERAL;
-	UVDData *data;
+	UVDData *data = NULL;
 	
 	uv_assert_err_ret(initEarly());
 		
@@ -199,6 +204,10 @@ uv_err_t UVD::initEarly()
 //int init_count = 0;
 uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 {
+	if( !m_config->m_argv )
+	{
+		printf_warn("initializing UVD without parsing main\n");
+	}
 	uv_assert_err_ret(initEarly());
 
 	//We might want to make this more dynamic just in case
