@@ -82,6 +82,10 @@ static:
 test:
 	cd testing && $(MAKE)
 
+# Quick hack...to get around suffixes
+run_test:
+	find -wholename '$(TESTING_EXE)*' -type f -exec {} ';'
+
 lib:
 	cd libuvudec && $(MAKE)
 
