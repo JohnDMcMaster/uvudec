@@ -61,8 +61,9 @@ uv_err_t UVDAsmPlugin::getAuthor(std::string &out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAsmPlugin::getArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out)
+uv_err_t UVDAsmPlugin::getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out)
 {
+	uv_assert_ret(out);
 	*out = new UVDDisasmArchitecture();
 	uv_assert_ret(*out);
 	return UV_ERR_OK;

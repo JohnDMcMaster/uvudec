@@ -23,7 +23,7 @@ public:
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
 	virtual uv_err_t getAuthor(std::string &out);
-	virtual uv_err_t getArchitecture(UVDData *data, const std::string &object, const std::string &architecture, UVDArchitecture **out);
+	virtual uv_err_t getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out);
 
 public:
 	UVDAsmConfig m_config;

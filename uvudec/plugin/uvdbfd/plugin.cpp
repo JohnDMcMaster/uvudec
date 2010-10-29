@@ -80,7 +80,7 @@ uv_err_t UVDBFDPlugin::getObject(UVDData *data, const UVDRuntimeHints &hints, UV
 	
 	ret = new UVDBFDObject();
 	uv_assert_ret(ret);
-	uv_assert_err_ret(ret->init(data));
+	uv_assert_err_ret_rc(ret->init(data));
 	
 	uv_assert_ret(out);
 	*out = ret;

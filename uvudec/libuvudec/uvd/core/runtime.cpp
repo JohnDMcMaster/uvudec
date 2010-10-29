@@ -65,6 +65,7 @@ uv_err_t UVDRuntime::rebuildAddressSpaces()
 	{
 		//Binary object supported for now doesn't do this
 		//ELF, PE, s-record, etc will
+		UVD_POKE(m_object);
 		for( std::vector<UVDSection *>::iterator iter = m_object->m_sections.begin();
 				iter != m_object->m_sections.end(); ++iter )
 		{

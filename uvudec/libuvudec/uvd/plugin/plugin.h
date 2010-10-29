@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define PLUGIN_PLUGIN_H
 
 #include "uvd/config/arg.h"
+#include "uvd/util/priority.h"
 #include "uvd/util/types.h"
 #include "uvd/util/version.h"
 #include "uvd/core/runtime_hints.h"
@@ -116,6 +117,7 @@ public:
 	/*
 	Binary format wrapper
 	*/
+	virtual uv_err_t canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
 	virtual uv_err_t getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
 	/*
 	If we deem appropriete, load architecture
@@ -126,6 +128,7 @@ public:
 	Note that we could support multiple archs in the plugin, we just return the best one
 	Since architecture detection needs to see ISA, we need at a minimum the object format
 	*/
+	virtual uv_err_t canGetArchitecture(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
 	virtual uv_err_t getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out);
 
 public:

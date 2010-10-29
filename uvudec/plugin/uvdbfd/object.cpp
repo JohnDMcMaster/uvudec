@@ -81,7 +81,7 @@ UVDBFDObject::~UVDBFDObject()
 	}
 }
 
-uv_err_t UVDBFDObject::init(UVDData *data)
+uv_err_t UVDBFDObject::init(const UVDData *data)
 {
 	std::string file;
 	UVDDataFile *dataFile = NULL;

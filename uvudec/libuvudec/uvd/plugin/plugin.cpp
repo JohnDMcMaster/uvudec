@@ -4,8 +4,20 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/plugin/plugin.h"
+/*
+TODO FIXME XXX WARNING XXX FIXME TODO
+We do some sketchy stuff with constness as a hack to get some reasonable default canLoad behaviors
+I'll probably go to programmer hell for it, but it provides some reasonable default behavior
+Its based on the possibly assumption that initialization routines won't modify the object data
+Since the same init routines are used for both, it doesn't quite work out nicely...
+
+In any case, its highly reccomend you implement one if you implement the other
+*/
+
+#include "uvd/architecture/architecture.h"
 #include "uvd/config/config.h"
+#include "uvd/object/object.h"
+#include "uvd/plugin/plugin.h"
 #include <dlfcn.h>
 
 UVDPlugin::UVDPlugin()
@@ -49,9 +61,51 @@ uv_err_t UVDPlugin::getDependencies(PluginDependencies &out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+{
+	/*
+	Crude default handler that literally tries a full load and then aborts it
+	*/
+	UVDObject *object = NULL;
+	
+	uv_assert_ret(confidence);
+	
+	if( UV_SUCCEEDED(getObject((UVDData *)data, hints, &object)) )
+	{
+		delete object;
+		*confidence = UVD_MATCH_ACCEPTABLE;
+		return UV_ERR_OK;
+	}
+	else
+	{
+		return UV_ERR_NOTSUPPORTED;
+	}
+}
+
 uv_err_t UVDPlugin::getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
 {
 	return UV_ERR_NOTSUPPORTED;
+}
+
+uv_err_t UVDPlugin::canGetArchitecture(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+{
+	/*
+	Crude default handler that literally tries a full load and then aborts it
+	*/
+	UVDArchitecture *architecture = NULL;
+	
+	uv_assert_ret(confidence);
+	
+	if( UV_SUCCEEDED(getArchitecture((UVDObject *)object, hints, &architecture)) )
+	{
+		delete architecture;
+		*confidence = UVD_MATCH_ACCEPTABLE;
+		return UV_ERR_OK;
+	}
+	else
+	{
+		return UV_ERR_NOTSUPPORTED;
+	}
 }
 
 uv_err_t UVDPlugin::getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out)

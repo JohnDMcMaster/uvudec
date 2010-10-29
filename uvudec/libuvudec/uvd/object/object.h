@@ -64,7 +64,7 @@ public:
 	//Note that we MIGHT NOT call CanLoad first
 	//eg: user manually selects object format
 	//Ownership of data is transfered to returned object upon success
-	typedef uv_err_t (*TryLoad)(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out,
+	typedef uv_err_t (*TryLoad)(const UVDData *data, const UVDRuntimeHints &hints, UVDObject **out,
 			void *user);
 
 public:
@@ -72,7 +72,7 @@ public:
 	virtual ~UVDObject();
 	
 	//Load given data as this type of object
-	virtual uv_err_t init(UVDData *data);
+	virtual uv_err_t init(const UVDData *data);
 	//Convenience function to collect address spaces from each function	
 	//virtual uv_err_t getAddressSpaces(UVDAddressSpaces *out);
 	//All of the sections returned to the best of our ability
@@ -83,7 +83,8 @@ public:
 	UVDBinarySymbolManager m_symbols;
 	//Raw pointer to the data
 	//We own this
-	UVDData *m_data;
+	//Also, we are a loader...don't modify the data
+	const UVDData *m_data;
 	//We own these sections
 	std::vector<UVDSection *> m_sections;
 };
