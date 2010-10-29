@@ -10,11 +10,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <stdint.h>
 #include "uvd/util/types.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif /* ifdef __cplusplus */
-
 /*
 Error classes
 */
@@ -96,9 +91,5 @@ typedef const char * uv_const_char_ptr;
 
 /* This must come AFTER the type declarations here */
 #include "uvd/util/debug.h"
-
-#ifdef __cplusplus
-}
-#endif /* ifdef __cplusplus */
 
 #endif // ifndef UV_ERR_H

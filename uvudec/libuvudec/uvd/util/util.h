@@ -18,6 +18,9 @@ I will be testing integration of boost::filesystem and many of these funcs could
 #include "uvd/util/types.h"
 #include "uvd/util/error.h"
 
+#define uvd_stringify_1(x)		#x
+#define uvd_stringify(x)		uvd_stringify_1(x)
+
 #define UV_TEMP_PREFIX			"/tmp/uvXXXXXX"
 
 /*

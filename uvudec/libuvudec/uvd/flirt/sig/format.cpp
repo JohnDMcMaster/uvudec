@@ -9,10 +9,8 @@ http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 
 #include "uvd/flirt/sig/format.h"
 
-#define __stringify_1(x)	#x
-#define __stringify(x)		__stringify_1(x)
 #define FLAG_STRING(flag, str)			if (flags & flag) { if(!ret.empty()) ret += " "; ret += str; }
-#define FLAG_STRING_RAW(flag)			FLAG_STRING(flag, __stringify(flag))
+#define FLAG_STRING_RAW(flag)			FLAG_STRING(flag, uvd_stringify(flag))
 #define CASE_STRING(define, str)		if (in == define) return str;
 
 std::string UVDIDASigFeaturesToString(uint32_t flags)

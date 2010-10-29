@@ -4,16 +4,27 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/util/error.h"
-
 #ifndef UV_DEBUG_H
 #define UV_DEBUG_H
+
+#include "uvd/util/error.h"
+#include "uvd/util/util.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 
 #define DEBUG_BREAK()			do { printf("DEBUG BREAK (%s:%d)\n", __FILE__, __LINE__); exit(1); } while ( 0 )
 
+#ifdef UVD_PLUGIN_NAME
+#define UVD_PLUGIN_NAME_STR		UVD_PLUGIN_NAME
+#define UVD_PLUGIN_PATH_STR		UVD_PLUGIN_NAME_STR "/"
+#else
+#define UVD_PLUGIN_NAME_STR		""
+#define UVD_PLUGIN_PATH_STR		""
+#endif
+
+//Paths have gotten confusing since files are just named say "plugin.cpp" when built
+#define UVD_FILE				(UVD_PLUGIN_PATH_STR __FILE__)
 
 //Don't print anything.  A debug statement should not have this, only global level
 #define UVD_DEBUG_NONE			0
@@ -123,7 +134,7 @@ uv_err_t UVDGetTypeFlag(uvd_debug_flag_t *typeFlag);
 #define printf_debug(format, ...) printf_debug_level(UVD_DEBUG_VERBOSE, format, ## __VA_ARGS__)
 #define printf_debug_type(type, format, ...) printf_debug_macro(UVD_DEBUG_TEMP, type, format, ## __VA_ARGS__)
 #define printf_debug_level(level, format, ...) printf_debug_macro(level, UVD_DEBUG_TYPE_ALL, format, ## __VA_ARGS__)
-#define printf_debug_macro(level, type, format, ...) printf_debug_core(level, type, __FILE__, __LINE__, __FUNCTION__, format, ## __VA_ARGS__)
+#define printf_debug_macro(level, type, format, ...) printf_debug_core(level, type, UVD_FILE, __LINE__, __FUNCTION__, format, ## __VA_ARGS__)
 void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t line, const char *func, const char *format, ...);
 
 #define uv_assert(x) if( !(x) ) { UV_ERR(rc); goto error; }
@@ -132,10 +143,10 @@ void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t
 uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const char *func);
 void uv_enter(const char *file, uint32_t line, const char *func);
 
-#define UV_DEBUG(x) uv_err_ret_handler(x, __FILE__, __LINE__, __FUNCTION__)
+#define UV_DEBUG(x) uv_err_ret_handler(x, UVD_FILE, __LINE__, __FUNCTION__)
 //This was an old distinction
 #define UV_ERR		UV_DEBUG
-#define UV_ENTER() uv_enter(__FILE__, __LINE__, __FUNCTION__)
+#define UV_ENTER() uv_enter(UVD_FILE, __LINE__, __FUNCTION__)
 //Only active on heavily checked debug builds
 #define UVD_CHECKED(x)				x
 
@@ -152,7 +163,7 @@ bool UVDGetDebugFlag(uint32_t flag);
 bool UVDAnyDebugActive();
 
 #define UVD_BREAK() do { __asm__("INT3"); } while( 0 )
-#define UVD_PRINT_STACK() uvd_print_trace(__FILE__, __LINE__, __FUNCTION__)
+#define UVD_PRINT_STACK() uvd_print_trace(UVD_FILE, __LINE__, __FUNCTION__)
 void uvd_print_trace(const char *file, int line, const char *function);
 
 //For valgrind/memcheck stuff
