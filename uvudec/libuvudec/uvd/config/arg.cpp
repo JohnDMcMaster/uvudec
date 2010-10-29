@@ -127,7 +127,6 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 	{
 		std::string arg = args[argsIndex];
 		std::vector<UVDParsedArg> parsedArgs;
-		bool ignoreEarlyArg = false;
 
 		printf_args_debug("arg: %s\n", arg.c_str());
 		uv_assert_err_ret(processArg(arg, parsedArgs));
@@ -135,6 +134,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 		//Now iterate for each logical command line argument (such as from -abc)
 		for( std::vector<UVDParsedArg>::iterator iter = parsedArgs.begin(); iter != parsedArgs.end(); ++iter )
 		{
+			bool ignoreEarlyArg = false;
 			UVDParsedArg &parsedArg = *iter;
 			const UVDArgConfig *matchedConfig = NULL;
 			uv_err_t matchRc = UV_ERR_GENERAL;
@@ -170,7 +170,12 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 			//Consider instead grouping into one large list
 			if( parsedArg.m_keyForm == UVD_ARG_FORM_NAKED )
 			{
-				uv_assert_ret(!ignoreEarlyArg);
+				//We should be during the primary parse
+				if( ignoreEarlyArg )
+				{
+					printf_error("undecorated argument was matched to early config: <%s>\n", parsedArg.m_raw.c_str());
+					return UV_DEBUG(UV_ERR_GENERAL);
+				}
 				uv_assert_ret(nakedConfig == matchedConfig);
 				nakedArgs.push_back(parsedArg.m_key);
 				if( nakedConfig->m_combine )
