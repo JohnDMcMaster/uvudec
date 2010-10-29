@@ -15,28 +15,32 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 CPPUNIT_TEST_SUITE_REGISTRATION (UVDUnitTest);
 
-void UVDUnitTest::setUp (void)
+void UVDUnitTest::setUp(void)
 {
+	m_argc = 0;
+	m_argv = NULL;
+	m_config = NULL;
+	m_uvd = NULL;
 }
 
-void UVDUnitTest::tearDown (void) 
+void UVDUnitTest::tearDown(void) 
 {
 }
 
 void UVDUnitTest::initDeinitTest(void)
 {
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
-	//Should initialize config: logging, arg parsing structures
-	CPPUNIT_ASSERT(g_config != NULL);
-	//Should not be initialized by this call
-	CPPUNIT_ASSERT(g_uvd == NULL);
-
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
+	try
+	{
+		std::vector<std::string> args;
+		
+		CPPUNIT_ASSERT_EQUAL(UV_ERR_OK, configInit(args));
+		generalDeinit();
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		throw;
+	}
 }
 
 void UVDUnitTest::versionTest(void)
@@ -46,204 +50,116 @@ void UVDUnitTest::versionTest(void)
 
 void UVDUnitTest::defaultDecompileFileTest(void)
 {
-	UVDData *data = NULL;
-	std::string file = DEFAULT_DECOMPILE_FILE;
+	try
+	{
+		UVDData *data = NULL;
+		std::string file = DEFAULT_DECOMPILE_FILE;
 	
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
+		uvdInit();
 
-	/*
-	Currently requires a file at engine init because its suppose to guess the type
-	*/
-	printf("Opening on %s\n", file.c_str());
-	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-	CPPUNIT_ASSERT(data != NULL);	
+		/*
+		Currently requires a file at engine init because its suppose to guess the type
+		*/
+		printf("Opening on %s\n", file.c_str());
+		UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
+		CPPUNIT_ASSERT(data != NULL);	
 	
-	delete data;
+		delete data;
 
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
+		configDeinit();
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		throw;
+	}
 }
 
 void UVDUnitTest::versionArgTest(void)
 {
-	int argc = 0;
-	char arg0[32];
-	char arg1[32];
-	char *argv[] = {arg0, arg1};
-	
-	strncpy(arg0, "uvudec", sizeof(arg0)); 
-	strncpy(arg1, "--version", sizeof(arg1)); 
-	argc = sizeof(argv) / sizeof(argv[0]);
-	
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
-	CPPUNIT_ASSERT(g_config != NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, argv) == UV_ERR_DONE);
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
+	try
+	{
+		std::vector<std::string> args;
+		
+		args.push_back("--version");
+		
+		CPPUNIT_ASSERT_EQUAL(UV_ERR_DONE, configInit(args));
+		generalDeinit();
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		throw;
+	}
 }
 
 void UVDUnitTest::helpArgTest(void)
 {
-	int argc = 0;
-	char arg0[32];
-	char arg1[32];
-	char *argv[] = {arg0, arg1};
-	
-	strncpy(arg0, "uvudec", sizeof(arg0)); 
-	strncpy(arg1, "--help", sizeof(arg1)); 
-	argc = sizeof(argv) / sizeof(argv[0]);
-	
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
-	CPPUNIT_ASSERT(g_config != NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, argv) == UV_ERR_DONE);
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
+	try
+	{
+		std::vector<std::string> args;
+		args.push_back("--help");
+		
+		CPPUNIT_ASSERT(configInit(args) == UV_ERR_DONE);
+		generalDeinit();
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		throw;
+	}
 }
 
 void UVDUnitTest::engineInitTest(void)
 {
-	int argc = 0;
-	char arg0[32];
-	char *argv[] = {arg0};
-	std::string file = DEFAULT_DECOMPILE_FILE;
-	UVD *uvd = NULL;
-	UVDDataFile *data = NULL;
-	
-	strncpy(arg0, "uvudec", sizeof(arg0)); 
-	argc = sizeof(argv) / sizeof(argv[0]);
-	
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	UVCPPUNIT_ASSERT(UVDInit());
-	CPPUNIT_ASSERT(g_config != NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, argv) == UV_ERR_OK);
-	
-	/*
-	Currently requires a file at engine init because its suppose to guess the type
-	*/
-	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-	CPPUNIT_ASSERT(data != NULL);
-	UVD_POKE(data);
+	try
+	{
+		std::vector<std::string> args;
 
-	UVCPPUNIT_ASSERT(UVD::getUVD(&uvd, data));
-	CPPUNIT_ASSERT(uvd != NULL);
-	CPPUNIT_ASSERT(g_uvd != NULL);
-
-	UVCPPUNIT_ASSERT(UVDDeinit());
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	
-	delete data;
+		generalInit(args);
+		generalDeinit();
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		throw;
+	}
 }
 
 #define UNITTEST_ANALYSIS_DIR	"analysis.unittest"
 void UVDUnitTest::analysisDirTest(void)
 {
-	int argc = 0;
-	//char arg0[32];
-	const char *argv[] = {"uvudec", "--analysis-dir=" UNITTEST_ANALYSIS_DIR};
-	std::string file = DEFAULT_DECOMPILE_FILE;
-	UVD *uvd = NULL;
-	UVDData *data = NULL;
+	try
+	{
+		std::vector<std::string> args;
 	
-	//May not exist, ignore errors
-	remove(UNITTEST_ANALYSIS_DIR);
-	
-	//strncpy(arg0, "uvudec", sizeof(arg0)); 
-	argc = sizeof(argv) / sizeof(argv[0]);
-	
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	UVCPPUNIT_ASSERT(UVDInit());
-	CPPUNIT_ASSERT(g_config != NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, (char **)argv) == UV_ERR_OK);
-	
-	/*
-	Currently requires a file at engine init because its suppose to guess the type
-	*/
-	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-	CPPUNIT_ASSERT(data != NULL);	
+		args.push_back("--analysis-dir=" UNITTEST_ANALYSIS_DIR);
 
-	UVCPPUNIT_ASSERT(UVD::getUVD(&uvd, data));
-	CPPUNIT_ASSERT(uvd != NULL);
-	CPPUNIT_ASSERT(g_uvd != NULL);
-
-	UVCPPUNIT_ASSERT(uvd->createAnalysisDir());
-	//TODO: can we use objdump to do a sanity check on output files?
-	//ie give it an expected symbol list and verify they exist
-	
-	//Lame...what is a good C func to do this recursivly?
-	CPPUNIT_ASSERT(system("rm -rf " UNITTEST_ANALYSIS_DIR) == 0);
-
-	UVCPPUNIT_ASSERT(UVDDeinit());
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-
-	delete data;
+		generalInit(args);
+		//TODO: can we use objdump to do a sanity check on output files?
+		//ie give it an expected symbol list and verify they exist
+		UVCPPUNIT_ASSERT(m_uvd->createAnalysisDir());
+		generalDeinit();
+		//Lame...what is a good C func to do this recursivly?
+		CPPUNIT_ASSERT(system("rm -rf " UNITTEST_ANALYSIS_DIR) == 0);
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		system("rm -rf " UNITTEST_ANALYSIS_DIR);
+		throw;
+	}
 }
 
 void UVDUnitTest::disassembleTest(void)
 {
-	int argc = 0;
-	//char arg0[32];
-	const char *argv[] = {"uvudec"};
-	std::string file = DEFAULT_DECOMPILE_FILE;
-	UVD *uvd = NULL;
-	UVDData *data = NULL;
+	std::vector<std::string> args;
 	std::string output;
 	
-	//strncpy(arg0, "uvudec", sizeof(arg0)); 
-	argc = sizeof(argv) / sizeof(argv[0]);
-	
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	UVCPPUNIT_ASSERT(UVDInit());
-	CPPUNIT_ASSERT(g_config != NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, (char **)argv) == UV_ERR_OK);
-	
-	/*
-	Currently requires a file at engine init because its suppose to guess the type
-	*/
-	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-	CPPUNIT_ASSERT(data != NULL);	
-
-	UVCPPUNIT_ASSERT(UVD::getUVD(&uvd, data));
-	CPPUNIT_ASSERT(uvd != NULL);
-	CPPUNIT_ASSERT(g_uvd != NULL);
-
-	UVCPPUNIT_ASSERT(uvd->disassemble(output));
+	generalDisassemble(args, output);
 	printf("sample output:\n%s", limitString(output, 200).c_str());
-
-	UVCPPUNIT_ASSERT(UVDDeinit());
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
-
-	delete data;
 }
 
-/*
-class UVDIERange
-{
-public:
-	UVDIERange()
-	{
-		m_ie = 0;
-		m_low = 0;
-		m_high = 0;
-	}
-	
-public:
-	//Include or exclude
-	//UVD_ADDRESS_ANALYSIS_UNKNOWN, UVD_ADDRESS_ANALYSIS_INCLUDE, UVD_ADDRESS_ANALYSIS_EXCLUDE
-	uint32_t m_ie;
-	uv_addr_t m_low;
-	uv_addr_t m_high;
-};
-
-void disassembleSpecificRangeTest(const std::vector<UVDIERange> &ranges)
-{
-}
-*/
 
 void UVDUnitTest::disassembleRangeTestDeliminators(void)
 {
@@ -287,10 +203,8 @@ void UVDUnitTest::disassembleRangeTestDeliminators(void)
 	
 	printf("Range deliminator tests\n");
 
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
-	
 	//Try all possible range delminators
-	
+
 	printf("- range deliminator\n");
 	args.clear();
 	args.push_back("--addr-include=0x0000-0x0010");
@@ -308,7 +222,6 @@ void UVDUnitTest::disassembleRangeTestDeliminators(void)
 	args.push_back("--addr-include=0x0000,0x0010");
 	generalDisassemble(args, output);
 	CPPUNIT_ASSERT(output == smallRangeTarget);
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
@@ -320,7 +233,6 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	std::string uselessExcludedrange;
 	
 	printf("Default range equivilence to specified\n");
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
 	
 	//Full analysis
 	args.clear();
@@ -339,7 +251,6 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	printf("\n\n\ndefaultRange\n<%s>\n\n\n", limitString(defaultRange, 200).c_str());
 	printf("\n\n\nuselessExcludedrange\n<%s>\n\n\n", limitString(uselessExcludedrange, 200).c_str());
 	CPPUNIT_ASSERT(defaultRange == uselessExcludedrange);
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::disassembleRangeTestComplex(void)
@@ -362,10 +273,9 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	std::string output;
 	
 	printf("Range deliminator compound\n");
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
 	
 	//Try all possible range delminators
-	
+
 	printf("Multiple inclusion range\n");
 	args.clear();
 	args.push_back("--addr-include=0x0000-0x0002");
@@ -374,7 +284,6 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	printf("\n\n\noutput<%s>\n\n\n", limitString(output, 200).c_str());
 	printf("\n\n\ntarget<%s>\n\n\n", limitString(target, 200).c_str());
 	CPPUNIT_ASSERT(output == target);
-	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args)
@@ -384,59 +293,133 @@ void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args)
 	generalDisassemble(args, discard);
 }
 
-void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args, std::string &output)
+void UVDUnitTest::uvdInit()
 {
-	int argc = 0;
-	//char arg0[32];
-	const char *argv[16] = {"uvudec"};
-	std::string file = DEFAULT_DECOMPILE_FILE;
-	UVD *uvd = NULL;
-	UVDData *data = NULL;
-	
-	//Make sure we can fit it in the buffer
-	CPPUNIT_ASSERT(sizeof(argv) / sizeof(argv[0]) > args.size());
-	
-	std::string toExec;
-	
-	//Prog name
-	argc = 1;
-	toExec += argv[0];
-	//Copy all args into the buffer
-	for( std::vector<std::string>::size_type i = 0; i < args.size(); ++i )
-	{
-		std::string arg = args[i];
-		
-		toExec += " ";
-		toExec += arg;
-		argv[argc] = (char *)arg.c_str();
-		++argc;
-	}
-	printf("To exec: %s\n", toExec.c_str());
-	
 	CPPUNIT_ASSERT(g_config == NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
+	CPPUNIT_ASSERT(m_config == NULL);
 	UVCPPUNIT_ASSERT(UVDInit());
 	CPPUNIT_ASSERT(g_config != NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
-	CPPUNIT_ASSERT(g_config->parseMain(argc, (char **)argv) == UV_ERR_OK);
+}
+
+uv_err_t UVDUnitTest::configInit(const std::vector<std::string> &args, UVDConfig **configOut)
+{
+	uv_err_t rc = UV_ERR_GENERAL;
+	std::string temp;
+
+	temp = stringVectorToSystemArgument(args);
+	printf("To exec: %s\n", temp.c_str());
+	fflush(stdout);
+
+	//Allocate as if from main
+	m_argc = args.size() + 1;
+	m_argv = (char **)malloc(sizeof(char *) * m_argc);
+	CPPUNIT_ASSERT(m_argv);
+	m_argv[0] = strdup("uvtest");
+	CPPUNIT_ASSERT(m_argv[0]);
+	for( int i = 0; i < (int)args.size(); ++i )
+	{
+		m_argv[i + 1] = strdup(args[i].c_str());
+		CPPUNIT_ASSERT(m_argv[i + 1]);
+	}
+	
+	uvdInit();
+	
+	m_config = g_config;
+	rc = m_config->parseMain(m_argc, m_argv);
+	CPPUNIT_ASSERT(UV_SUCCEEDED(rc));
+	
+	if( configOut )
+	{
+		*configOut = g_config;
+	}
+	return rc;
+}
+
+void UVDUnitTest::configDeinit()
+{
+	//This should be deleted before tearing down the library
+	CPPUNIT_ASSERT(m_uvd == NULL);
+	
+	//Config is created by UVDInit(), so it is not users responsibility to free
+	UVCPPUNIT_ASSERT(UVDDeinit());
+	//This will be deleted by UVDDeinit()
+	m_config = NULL;
+	
+	//Library depends on these being present while active, now we can delete them
+	if( m_argv )
+	{
+		for( int i = 0; i < m_argc; ++i )
+		{
+			delete m_argv[i];
+		}
+		delete m_argv;
+	}
+	m_argc = 0;
+	m_argv = NULL;	
+}
+
+void UVDUnitTest::configDeinitSafe()
+{
+	/*
+	Don't delete anything
+	Don't throw exceptions
+	*/
+	try
+	{
+		m_argc = 0;
+		m_argv = NULL;
+		m_config = NULL;
+		m_uvd = NULL;
+		UVDDeinit();
+	}
+	catch(...)
+	{
+	}
+}
+
+void UVDUnitTest::generalInit(const std::vector<std::string> &args, UVD **uvdOut)
+{
+	std::string file = DEFAULT_DECOMPILE_FILE;
+	
+	CPPUNIT_ASSERT(configInit(args) == UV_ERR_OK);
 	
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
-	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-	CPPUNIT_ASSERT(data != NULL);	
-
-	UVCPPUNIT_ASSERT(UVD::getUVD(&uvd, data));
-	CPPUNIT_ASSERT(uvd != NULL);
+	UVCPPUNIT_ASSERT(UVD::getUVD(&m_uvd, file));
+	CPPUNIT_ASSERT(m_uvd != NULL);
 	CPPUNIT_ASSERT(g_uvd != NULL);
 
-	UVCPPUNIT_ASSERT(uvd->disassemble(output));
+	if( uvdOut )
+	{
+		*uvdOut = m_uvd;
+	}
+}
 
-	UVCPPUNIT_ASSERT(UVDDeinit());
-	CPPUNIT_ASSERT(g_config == NULL);
-	CPPUNIT_ASSERT(g_uvd == NULL);
+void UVDUnitTest::generalDeinit()
+{
+	//This should be deleted before tearing down the library
+	delete m_uvd;
+	m_uvd = NULL;
 
-	delete data;
+	configDeinit();
+}
+
+void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args, std::string &output)
+{
+	try
+	{
+		generalInit(args);
+		UVCPPUNIT_ASSERT(m_uvd->disassemble(output));
+		generalDeinit();
+	}
+	catch(...)
+	{
+		configDeinitSafe();
+		throw;
+	}
 }
 
 void UVDUnitTest::uvudecBasicRun(void)
@@ -446,3 +429,4 @@ void UVDUnitTest::uvudecBasicRun(void)
 
 	UVCPPUNIT_ASSERT(uvudec_uvmain(argc, (char **)argv));
 }
+
