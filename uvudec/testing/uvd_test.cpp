@@ -49,6 +49,8 @@ void UVDUnitTest::defaultDecompileFileTest(void)
 	UVDData *data = NULL;
 	std::string file = DEFAULT_DECOMPILE_FILE;
 	
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
+
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
@@ -57,6 +59,8 @@ void UVDUnitTest::defaultDecompileFileTest(void)
 	CPPUNIT_ASSERT(data != NULL);	
 	
 	delete data;
+
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::versionArgTest(void)
@@ -100,7 +104,7 @@ void UVDUnitTest::engineInitTest(void)
 	char *argv[] = {arg0};
 	std::string file = DEFAULT_DECOMPILE_FILE;
 	UVD *uvd = NULL;
-	UVDData *data = NULL;
+	UVDDataFile *data = NULL;
 	
 	strncpy(arg0, "uvudec", sizeof(arg0)); 
 	argc = sizeof(argv) / sizeof(argv[0]);
@@ -116,7 +120,8 @@ void UVDUnitTest::engineInitTest(void)
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
 	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-	CPPUNIT_ASSERT(data != NULL);	
+	CPPUNIT_ASSERT(data != NULL);
+	UVD_POKE(data);
 
 	UVCPPUNIT_ASSERT(UVD::getUVD(&uvd, data));
 	CPPUNIT_ASSERT(uvd != NULL);
@@ -281,6 +286,8 @@ void UVDUnitTest::disassembleRangeTestDeliminators(void)
 	std::string output;
 	
 	printf("Range deliminator tests\n");
+
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
 	
 	//Try all possible range delminators
 	
@@ -301,6 +308,7 @@ void UVDUnitTest::disassembleRangeTestDeliminators(void)
 	args.push_back("--addr-include=0x0000,0x0010");
 	generalDisassemble(args, output);
 	CPPUNIT_ASSERT(output == smallRangeTarget);
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
@@ -312,6 +320,7 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	std::string uselessExcludedrange;
 	
 	printf("Default range equivilence to specified\n");
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
 	
 	//Full analysis
 	args.clear();
@@ -330,6 +339,7 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	printf("\n\n\ndefaultRange\n<%s>\n\n\n", limitString(defaultRange, 200).c_str());
 	printf("\n\n\nuselessExcludedrange\n<%s>\n\n\n", limitString(uselessExcludedrange, 200).c_str());
 	CPPUNIT_ASSERT(defaultRange == uselessExcludedrange);
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::disassembleRangeTestComplex(void)
@@ -352,6 +362,7 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	std::string output;
 	
 	printf("Range deliminator compound\n");
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDInit()));
 	
 	//Try all possible range delminators
 	
@@ -363,6 +374,7 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	printf("\n\n\noutput<%s>\n\n\n", limitString(output, 200).c_str());
 	printf("\n\n\ntarget<%s>\n\n\n", limitString(target, 200).c_str());
 	CPPUNIT_ASSERT(output == target);
+	CPPUNIT_ASSERT(UV_SUCCEEDED(UVDDeinit()));
 }
 
 void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args)
