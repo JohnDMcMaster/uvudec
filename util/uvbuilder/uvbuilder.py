@@ -100,6 +100,7 @@ class Builder:
 		self.project_dir = None
 		self.new_version = True
 		self.should_send_email = False
+		self.revision = None
 	
 	def send_email(self, message):
 		global debug_email
@@ -108,7 +109,9 @@ class Builder:
 		toaddr  = self.email_to
 		subject = self.email_subject_prefix + self.email_subject
 		# Later we might add some standard footer or something
-		body = message
+		body = ''
+		body += 'Revision: %s\n' % self.revision
+		body += message
 
 		# Credentials (if needed)
 		username = self.email_username
@@ -204,10 +207,17 @@ class Builder:
 				if simple_shell_exec("git clone %s %d" % (self.VCS_URL, self.project_dir)):
 					print 'ERROR: failed clone'
 					sys.exit(1)
+			(rc_temp, revision) = shell_exec("cd %s && git rev-parse HEAD" % self.project_dir)
+			self.revision = revision.strip()
 		else:
 			raise Exception('unknown VCS: %s' % self.VCS)
 		
+		# This was getting mucked up into build output
+		print 'Revision %s' % revision
+		sys.stdout.flush()
+
 	def run_make(self):
+
 		# We need to make it only e-mail if the result changed
 		if os.path.exists(self.file_current):
 			# Rotate log files
