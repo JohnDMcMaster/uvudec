@@ -209,6 +209,8 @@ uv_err_t UVDAddressSpace::getMaxValidAddress(uv_addr_t *out)
 	uv_addr_t maxConfigAddress = 0;
 	uv_addr_t maxPhysicalAddress = 0;
 	
+	uv_assert_ret(g_uvd);
+	uv_assert_ret(g_uvd->m_config);
 	uv_assert_err_ret(g_uvd->m_config->getAddressMax(&maxConfigAddress));
 	uv_assert_ret(m_data);
 	uv_assert_err_ret(m_data->size(&maxPhysicalAddress));
