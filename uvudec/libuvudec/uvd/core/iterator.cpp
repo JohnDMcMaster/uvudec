@@ -63,10 +63,13 @@ UVDIteratorCommon::~UVDIteratorCommon()
 
 uv_err_t UVDIteratorCommon::init(UVD *uvd, UVDAddressSpace *addressSpace)
 {
+	uv_addr_t minAddress = 0;
+	
 	uv_assert_ret(uvd);
 	uv_assert_ret(addressSpace);	
+	uv_assert_err_ret(addressSpace->getMinValidAddress(&minAddress));
 	
-	return UV_DEBUG(init(uvd, UVDAddress(addressSpace->m_min_addr, addressSpace)));
+	return UV_DEBUG(init(uvd, UVDAddress(minAddress, addressSpace)));
 }
 
 uv_err_t UVDIteratorCommon::init(UVD *uvd, UVDAddress address)
