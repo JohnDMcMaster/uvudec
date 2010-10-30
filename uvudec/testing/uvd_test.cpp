@@ -15,6 +15,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 CPPUNIT_TEST_SUITE_REGISTRATION (UVDUnitTest);
 
+void dumpAssembly(const std::string &header, const std::string &assembly)
+{
+	printf("\n\n\n%s\n<%s>\n\n\n", header.c_str(), limitString(assembly, 200).c_str());
+}
+
 void UVDUnitTest::setUp(void)
 {
 	m_argc = 0;
@@ -157,7 +162,7 @@ void UVDUnitTest::disassembleTest(void)
 	std::string output;
 	
 	generalDisassemble(args, output);
-	printf("sample output:\n%s", limitString(output, 200).c_str());
+	dumpAssembly("sample output", output);
 }
 
 
@@ -209,19 +214,46 @@ void UVDUnitTest::disassembleRangeTestDeliminators(void)
 	args.clear();
 	args.push_back("--addr-include=0x0000-0x0010");
 	generalDisassemble(args, output);
-	CPPUNIT_ASSERT(output == smallRangeTarget);
-
+	try
+	{
+		CPPUNIT_ASSERT(output == smallRangeTarget);
+	}
+	catch(...)
+	{
+		dumpAssembly("smallRangeTarget", smallRangeTarget);
+		dumpAssembly("output", output);
+		throw;
+	}
+	
 	printf(": range deliminator\n");
 	args.clear();
 	args.push_back("--addr-include=0x0000:0x0010");
 	generalDisassemble(args, output);
-	CPPUNIT_ASSERT(output == smallRangeTarget);
+	try
+	{
+		CPPUNIT_ASSERT(output == smallRangeTarget);
+	}
+	catch(...)
+	{
+		dumpAssembly("smallRangeTarget", smallRangeTarget);
+		dumpAssembly("output", output);
+		throw;
+	}
 
 	printf(", range deliminator\n");
 	args.clear();
 	args.push_back("--addr-include=0x0000,0x0010");
 	generalDisassemble(args, output);
-	CPPUNIT_ASSERT(output == smallRangeTarget);
+	try
+	{
+		CPPUNIT_ASSERT(output == smallRangeTarget);
+	}
+	catch(...)
+	{
+		dumpAssembly("smallRangeTarget", smallRangeTarget);
+		dumpAssembly("output", output);
+		throw;
+	}
 }
 
 void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
@@ -242,15 +274,31 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	args.clear();
 	args.push_back("--addr-include=0x0000,0xFFFF");
 	generalDisassemble(args, sameAsDefaultRange);
-	CPPUNIT_ASSERT(defaultRange == sameAsDefaultRange);
+	try
+	{
+		CPPUNIT_ASSERT(defaultRange == sameAsDefaultRange);
+	}
+	catch(...)
+	{
+		dumpAssembly("default range", defaultRange);
+		dumpAssembly("sameAsDefaultRange", sameAsDefaultRange);
+		throw;
+	}
 
 	//A range excluded outside of the analysis shouldn't effect output
 	args.clear();
 	args.push_back("--addr-exclude=0x10000,0x20000");
 	generalDisassemble(args, sameAsDefaultRange);
-	printf("\n\n\ndefaultRange\n<%s>\n\n\n", limitString(defaultRange, 200).c_str());
-	printf("\n\n\nuselessExcludedrange\n<%s>\n\n\n", limitString(uselessExcludedrange, 200).c_str());
-	CPPUNIT_ASSERT(defaultRange == uselessExcludedrange);
+	try
+	{
+		CPPUNIT_ASSERT(defaultRange == uselessExcludedrange);
+	}
+	catch(...)
+	{
+		dumpAssembly("default range", defaultRange);
+		dumpAssembly("useless excluded range", uselessExcludedrange);
+		throw;
+	}
 }
 
 void UVDUnitTest::disassembleRangeTestComplex(void)
@@ -281,9 +329,17 @@ void UVDUnitTest::disassembleRangeTestComplex(void)
 	args.push_back("--addr-include=0x0000-0x0002");
 	args.push_back("--addr-include=0x000B-0x000E");
 	generalDisassemble(args, output);
-	printf("\n\n\noutput\n<%s>\n\n\n", limitString(output, 200).c_str());
-	printf("\n\n\ntarget\n<%s>\n\n\n", limitString(target, 200).c_str());
-	CPPUNIT_ASSERT(output == target);
+
+	try
+	{
+		CPPUNIT_ASSERT(output == target);
+	}
+	catch(...)
+	{
+		dumpAssembly("target", target);
+		dumpAssembly("output", output);
+		throw;
+	}
 }
 
 void UVDUnitTest::generalDisassemble(const std::vector<std::string> &args)
