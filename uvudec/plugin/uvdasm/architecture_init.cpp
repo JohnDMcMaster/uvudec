@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvdasm/architecture.h"
+#include "uvdasm/config.h"
 
 #if 0
 /* Internal RAM */
@@ -273,14 +274,14 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 		UV_ERR(rc);
 		goto error;
 	}
-	g_config->m_mcu_name = value_name;
+	g_asmConfig->m_mcu_name = value_name;
 	
 	//MCU desc is optional
-	g_config->m_mcu_desc = value_desc;
-	g_config->m_asm_imm_prefix = value_prefix;
-	g_config->m_asm_imm_prefix_hex = value_prefix_hex;
-	g_config->m_asm_imm_postfix_hex = value_postfix_hex;
-	g_config->m_asm_imm_suffix = value_suffix;
+	g_asmConfig->m_mcu_desc = value_desc;
+	g_asmConfig->m_asm_imm_prefix = value_prefix;
+	g_asmConfig->m_asm_imm_prefix_hex = value_prefix_hex;
+	g_asmConfig->m_asm_imm_postfix_hex = value_postfix_hex;
+	g_asmConfig->m_asm_imm_suffix = value_suffix;
 
 	printf_debug("Misc init OK\n");
 

@@ -70,6 +70,7 @@ UVDAsmConfig::UVDAsmConfig()
 	m_configInterpreterLanguage = UVD_LANGUAGE_UNKNOWN;
 	m_configInterpreterLanguageInterface = UVD_LANGUAGE_INTERFACE_UNKNOWN;
 	g_asmConfig = this;
+
 }
 
 UVDAsmConfig::~UVDAsmConfig()

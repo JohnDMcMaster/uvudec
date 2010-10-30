@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/language/format.h"
 #include "uvd/core/runtime.h"
 #include "uvdasm/architecture.h"
+#include "uvdasm/config.h"
 #include "uvdasm/instruction.h"
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"
@@ -524,10 +525,12 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 		}
 		snprintf(format_string, 32, "%%s%%s%s%%s%%s", int_formatter);
 		
-		printf_debug("Print string: %s, pre: <%s>, post: <%s>\n", format_string, g_config->m_asm_imm_prefix.c_str(), g_config->m_asm_imm_suffix.c_str());
+		//printf_debug("Print string: %s, pre: <%s>, post: <%s>\n", format_string, g_config->m_asm_imm_prefix.c_str(), g_config->m_asm_imm_suffix.c_str());
 		
 		char buff[256];
-		snprintf(buff, sizeof(buff), format_string, g_config->m_asm_imm_prefix.c_str(), g_config->m_asm_imm_prefix_hex.c_str(), print_int, g_config->m_asm_imm_postfix_hex.c_str(), g_config->m_asm_imm_suffix.c_str());
+		snprintf(buff, sizeof(buff), format_string,
+				g_asmConfig->m_asm_imm_prefix.c_str(), g_asmConfig->m_asm_imm_prefix_hex.c_str(),
+				print_int, g_asmConfig->m_asm_imm_postfix_hex.c_str(), g_asmConfig->m_asm_imm_suffix.c_str());
 		out += buff;
 		break;
 	}
@@ -623,10 +626,10 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 						uv_assert(memArgShared->m_immediate_size < 128);
 						
 						//XXX we are acess m_ui32, is this an x86 specific thing we should be careful of?
-						printf_debug("imm prefix hex: <%s>, ui32: %d, %X\n", g_config->m_asm_imm_prefix_hex.c_str(), memArg->m_ui32, memArg->m_ui32);
+						//printf_debug("imm prefix hex: <%s>, ui32: %d, %X\n", g_config->m_asm_imm_prefix_hex.c_str(), memArg->m_ui32, memArg->m_ui32);
 						//FIXME: if this is a relative address, we need to compute the correct virtual address
 						uv_assert_err_ret(g_uvd->m_format->formatAddress(memArg->m_ui32, formattedAddress));
-						out += g_config->m_asm_imm_prefix_hex;
+						out += g_asmConfig->m_asm_imm_prefix_hex;
 						out += formattedAddress;
 
 						out += mem_shared->m_print_suffix;

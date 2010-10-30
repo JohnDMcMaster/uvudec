@@ -27,6 +27,19 @@ public:
 	//Default interpreter to use for script files
 	uint32_t m_configInterpreterLanguage;
 	uint32_t m_configInterpreterLanguageInterface;
+
+	//std::string g_mcu_name;
+	std::string m_mcu_name;
+	//std::string g_mcu_desc;
+	std::string m_mcu_desc;
+	//std::string g_asm_imm_prefix;
+	std::string m_asm_imm_prefix;
+	//std::string g_asm_imm_prefix_hex;
+	std::string m_asm_imm_prefix_hex;
+	//std::string g_asm_imm_postfix_hex;
+	std::string m_asm_imm_postfix_hex;
+	//std::string g_asm_imm_suffix;
+	std::string m_asm_imm_suffix;
 };
 
 extern UVDAsmConfig *g_asmConfig;

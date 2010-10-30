@@ -55,10 +55,11 @@ UVDConfig::UVDConfig()
 	m_debugLevel = UVD_DEBUG_NONE;
 	clearVerboseAll();
 
+	m_hex_addr_print_width = 4;
+
 	m_haltOnTruncatedInstruction = FALSE;
 	m_haltOnInvalidOpcode = FALSE;
 
-	m_hex_addr_print_width = 4;
 	m_caps = false;
 	m_binary = false;
 	m_memoric = false;
