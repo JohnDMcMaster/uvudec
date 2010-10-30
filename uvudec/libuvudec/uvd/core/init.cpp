@@ -62,6 +62,7 @@ architecture: hint about what we are trying to disassemble
 */
 uv_err_t UVD::init(const std::string &file, const UVDRuntimeHints &hints)
 {
+	uv_err_t rc = UV_ERR_GENERAL;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	UVDData *data = NULL;
 	
@@ -73,20 +74,35 @@ uv_err_t UVD::init(const std::string &file, const UVDRuntimeHints &hints)
 		printf_error("could not open file: %s\n", file.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	return init(data, hints);
+	uv_assert(init(data, hints));
+	return UV_ERR_OK;
+
+error:
+	delete data;
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 uv_err_t UVD::init(UVDData *data, const UVDRuntimeHints &hints)
 {
+	uv_err_t rc = UV_ERR_GENERAL;
 	UVDObject *object = NULL;
 	UVDArchitecture *architecture = NULL;
 	
 	uv_assert_err_ret(initEarly());
 
 	//Object wraps data and architectures, so it seems reasonable to instantiate first
-	uv_assert_err_ret(initObject(data, hints, &object));
-	uv_assert_err_ret(initArchitecture(object, hints, &architecture));
+	uv_assert_err(initObject(data, hints, &object));
+	uv_assert_err(initArchitecture(object, hints, &architecture));
 	return UV_DEBUG(init(object, architecture));	
+
+error:
+	if( object )
+	{
+		object->m_data = NULL;
+		delete object;
+	}
+	delete architecture;
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
@@ -96,13 +112,57 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 	//This should be a switch instead
 	//m_architecture->m_architecture = architecture;
 	UVDObject *object = NULL;
+	std::vector<UVDPlugin *> best;
+	uvd_priority_t bestPriority = UVD_MATCH_NONE;
 	
+	UVD_POKE(data);
 	//Iterate over all plugins until one accepts our input
 	uv_assert_ret(m_pluginEngine);
 	for( std::map<std::string, UVDPlugin *>::iterator iter = m_pluginEngine->m_loadedPlugins.begin();
 		iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
 	{
 		UVDPlugin *plugin = (*iter).second;
+		uv_err_t rcTemp = UV_ERR_GENERAL;
+		uvd_priority_t loadPriority = 0;
+		
+		uv_assert_ret(plugin);
+		rcTemp = plugin->canGetObject(data, hints,  &loadPriority);
+		if( rcTemp == UV_ERR_NOTSUPPORTED )
+		{
+			continue;
+		}
+		else if( UV_FAILED(rcTemp) )
+		{
+			printf_error("plugin %s failed to canLoad object\n", (*iter).first.c_str());
+			continue;
+		}
+
+		if( loadPriority <= bestPriority )
+		{
+			if( loadPriority < bestPriority )
+			{
+				best.clear();
+				bestPriority = loadPriority;
+			}
+			best.push_back(plugin);
+		}
+	}
+	
+	UVD_POKE(data);
+	printf_plugin_debug("best priorty: 0x%08X, plugins: %d\n", bestPriority, best.size());
+	if( bestPriority == UVD_MATCH_NONE )
+	{
+		printf_error("could not find a suitable object loader\n");
+		return UV_ERR_NOTFOUND;
+	}
+	uv_assert_ret(!best.empty());
+
+	//Iterate over all plugins until one accepts our input
+	uv_assert_ret(m_pluginEngine);
+	for( std::vector<UVDPlugin *>::iterator iter = best.begin();
+		iter != best.end(); ++iter )
+	{
+		UVDPlugin *plugin = *iter;
 		uv_err_t rcTemp = UV_ERR_GENERAL;
 		
 		uv_assert_ret(plugin);
@@ -113,12 +173,12 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		}
 		else if( UV_FAILED(rcTemp) )
 		{
-			printf_error("plugin %s failed to load object\n", (*iter).first.c_str());
+			printf_error("plugin %s failed to load object\n", plugin->getName().c_str());
 			continue;
 		}
 		else if( !object )
 		{
-			printf_error("plugin %s claimed successed but didn't set object\n", (*iter).first.c_str());
+			printf_error("plugin %s claimed successed but didn't set object\n", plugin->getName().c_str());
 			continue;
 		}
 		else
@@ -149,15 +209,55 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 	//This should be a switch instead
 	//m_architecture->m_architecture = architecture;
 	UVDArchitecture *architecture = NULL;
+	std::vector<UVDPlugin *> best;
+	uvd_priority_t bestPriority = UVD_MATCH_NONE;
 	
-	//Iterate over all plugins until one accepts our input
 	for( std::map<std::string, UVDPlugin *>::iterator iter = m_pluginEngine->m_loadedPlugins.begin();
 		iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
 	{
 		UVDPlugin *plugin = (*iter).second;
 		uv_err_t rcTemp = UV_ERR_GENERAL;
+		uvd_priority_t loadPriority = 0;
 		
 		uv_assert_ret(plugin);
+		rcTemp = plugin->canGetArchitecture(object, hints,  &loadPriority);
+		if( rcTemp == UV_ERR_NOTSUPPORTED )
+		{
+			continue;
+		}
+		else if( UV_FAILED(rcTemp) )
+		{
+			printf_error("plugin %s failed to canLoad object\n", (*iter).first.c_str());
+			continue;
+		}
+
+		if( loadPriority <= bestPriority )
+		{
+			if( loadPriority < bestPriority )
+			{
+				best.clear();
+				bestPriority = loadPriority;
+			}
+			best.push_back(plugin);
+		}
+	}
+	
+	printf_plugin_debug("best priorty: 0x%08X, plugins: %d\n", bestPriority, best.size());
+	if( bestPriority == UVD_MATCH_NONE )
+	{
+		printf_error("could not find a suitable architecture loader\n");
+		return UV_ERR_NOTFOUND;
+	}
+	uv_assert_ret(!best.empty());
+
+	//Iterate over all plugins until one accepts our input
+	for( std::vector<UVDPlugin *>::iterator iter = best.begin();
+		iter != best.end(); ++iter )
+	{
+		UVDPlugin *plugin = *iter;
+		uv_err_t rcTemp = UV_ERR_GENERAL;
+		
+		uv_assert_ret(plugin);		
 		rcTemp = plugin->getArchitecture(object, hints, &architecture);
 		if( rcTemp == UV_ERR_NOTSUPPORTED )
 		{
@@ -165,12 +265,12 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 		}
 		else if( UV_FAILED(rcTemp) )
 		{
-			printf_error("plugin %s failed to load architecture\n", (*iter).first.c_str());
+			printf_error("plugin %s failed to load architecture\n", plugin->getName().c_str());
 			continue;
 		}
 		else if( !architecture )
 		{
-			printf_error("plugin %s claimed successed but didn't set architecture\n", (*iter).first.c_str());
+			printf_error("plugin %s claimed successed but didn't set architecture\n", plugin->getName().c_str());
 			continue;
 		}
 		else
@@ -182,8 +282,8 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 	
 	if( !architecture )
 	{
-		printf_error("could not find a suitable architecture module\n");
-		return UV_ERR_GENERAL;
+		printf_error("could not find a suitable architecture loader\n");
+		return UV_ERR_NOTFOUND;
 	}
 	
 	uv_assert_err_ret(architecture->init());
@@ -206,16 +306,19 @@ uv_err_t UVD::initEarly()
 //int init_count = 0;
 uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 {
+	uv_err_t rc = UV_ERR_GENERAL;
+	UVDBenchmark engineInitBenchmark;
+
 	if( !m_config->m_argv )
 	{
 		printf_warn("initializing UVD without parsing main\n");
 	}
-	uv_assert_err_ret(initEarly());
+	uv_assert_err(initEarly());
 
 	//We might want to make this more dynamic just in case
 	m_runtime = new UVDRuntime();
-	uv_assert_ret(m_runtime);
-	uv_assert_err_ret(m_runtime->init(object, architecture));
+	uv_assert(m_runtime);
+	uv_assert_err(m_runtime->init(object, architecture));
 
 	//printf("plugins to load: %d\n", m_config->m_plugin.m_toLoad.size());
 	for( std::vector<std::string>::iterator iter = m_config->m_plugin.m_toLoad.begin();
@@ -223,46 +326,45 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	{
 		std::string &pluginName = *iter;
 		
-		uv_assert_err_ret(m_pluginEngine->initPlugin(pluginName));
+		uv_assert_err(m_pluginEngine->initPlugin(pluginName));
 	}
 	//printf("loaded plugins: %d\n", m_pluginEngine->m_loadedPlugins.size());
 
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
-	UVDBenchmark engineInitBenchmark;
 	engineInitBenchmark.start();
 
-	uv_assert_ret(m_config);
+	uv_assert(m_config);
 		
 	m_config->m_verbose = m_config->m_verbose_init;
 
 	/*
 	m_CPU = new UVDCPU();
-	uv_assert_ret(m_CPU);
-	uv_assert_err_ret(m_CPU->init());
+	uv_assert(m_CPU);
+	uv_assert_err(m_CPU->init());
 	*/
 
 	m_analyzer = new UVDAnalyzer();
-	uv_assert_ret(m_analyzer);
+	uv_assert(m_analyzer);
 	m_analyzer->m_uvd = this;
-	uv_assert_err_ret(m_analyzer->init());
+	uv_assert_err(m_analyzer->init());
 	//Default to our global config, which should have already been initialized since its program dependent
 	m_config = g_config;
-	uv_assert_ret(m_config);
+	uv_assert(m_config);
 	m_format = new UVDFormat();
-	uv_assert_ret(m_format);
+	uv_assert(m_format);
 	m_eventEngine = new UVDEventEngine();
-	uv_assert_ret(m_eventEngine);
-	uv_assert_err_ret(m_eventEngine->init());
+	uv_assert(m_eventEngine);
+	uv_assert_err(m_eventEngine->init());
 	m_flirt = new UVDFLIRT();
-	uv_assert_ret(m_flirt);
+	uv_assert(m_flirt);
 	m_flirt->m_uvd = this;
-	uv_assert_err_ret(m_flirt->init());
+	uv_assert_err(m_flirt->init());
 	/*
 	Read file
 	This is raw dat, NOT null terminated string
 	*/
 
-	uv_assert_err_ret(m_config->m_plugin.m_pluginEngine.onUVDInit());
+	uv_assert_err(m_config->m_plugin.m_pluginEngine.onUVDInit());
 
 	printFormatting();
 	printf_debug("UVD: init OK!\n\n\n");
@@ -273,6 +375,17 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	printf_debug_level(UVD_DEBUG_PASSES, "engine init time: %s\n", engineInitBenchmark.toString().c_str());
 
 	return UV_ERR_OK;
+	
+error:
+	//If we fail, we do not own its subobjects
+	if( m_runtime )
+	{
+		m_runtime->m_object = NULL;
+		m_runtime->m_architecture = NULL;
+		delete m_runtime;
+		m_runtime = NULL;
+	}
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 uv_err_t UVD::initPlugins()

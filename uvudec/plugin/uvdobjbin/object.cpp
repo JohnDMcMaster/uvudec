@@ -15,7 +15,8 @@ UVDBinaryObject::~UVDBinaryObject()
 	//Since we directly map the data into the section, prevent double free
 	if( !m_sections.empty() )
 	{
-		m_data = NULL;
+		//We own the data object and there are some other hacks that make it best to remove it the section instead of us
+		(*m_sections.begin())->m_data = NULL;
 	}
 }
 

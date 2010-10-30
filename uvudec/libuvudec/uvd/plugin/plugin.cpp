@@ -114,14 +114,20 @@ uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hin
 	
 	uv_assert_ret(confidence);
 	
+	UVD_POKE(data);
 	if( UV_SUCCEEDED(getObject((UVDData *)data, hints, &object)) )
 	{
+		printf_plugin_debug("canGetObject acceptable match by getObject\n");
+		UVD_POKE(data);
+		object->m_data = NULL;
 		delete object;
+		UVD_POKE(data);
 		*confidence = UVD_MATCH_ACCEPTABLE;
 		return UV_ERR_OK;
 	}
 	else
 	{
+		UVD_POKE(data);
 		return UV_ERR_NOTSUPPORTED;
 	}
 }
@@ -142,6 +148,7 @@ uv_err_t UVDPlugin::canGetArchitecture(const UVDObject *object, const UVDRuntime
 	
 	if( UV_SUCCEEDED(getArchitecture((UVDObject *)object, hints, &architecture)) )
 	{
+		printf_plugin_debug("canGetArchitecture acceptable match by getArchitecture\n");
 		delete architecture;
 		*confidence = UVD_MATCH_ACCEPTABLE;
 		return UV_ERR_OK;
