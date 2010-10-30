@@ -77,14 +77,18 @@ public:
 	//Terse name to identify the plugin
 	//No spaces, use [a-z][A-Z][0-9][-]
 	virtual uv_err_t getName(std::string &out) = 0;
+	std::string getName();
 	//Human readable one liner description of what it does
-	virtual uv_err_t getDescription(std::string &out) = 0;	
+	virtual uv_err_t getDescription(std::string &out) = 0;
+	std::string getDescription();
 	//One liner contact info of who wrote it
 	//Should be in form like "John McMaster <JohnDMcMaster@gmail.com>"
 	//If more than one, put in comma separated list
-	virtual uv_err_t getAuthor(std::string &out) = 0;	
+	virtual uv_err_t getAuthor(std::string &out) = 0;
+	std::string getAuthor();
 	//Should be obvious enough
 	virtual uv_err_t getVersion(UVDVersion &out) = 0;
+	UVDVersion getVersion();
 	/*
 	If we require another plugin loaded, get it
 	Default is no dependencies

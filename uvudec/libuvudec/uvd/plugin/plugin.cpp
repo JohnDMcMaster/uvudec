@@ -55,6 +55,50 @@ uv_err_t UVDPlugin::onUVDDeinit(UVD *uvd)
 	return UV_ERR_OK;
 }
 
+std::string UVDPlugin::getName()
+{
+	std::string ret;
+	
+	if( UV_FAILED(getName(ret)) )
+	{
+		return "";
+	}
+	return ret;
+}
+
+std::string UVDPlugin::getDescription()
+{
+	std::string ret;
+	
+	if( UV_FAILED(getDescription(ret)) )
+	{
+		return "";
+	}
+	return ret;
+}
+
+std::string UVDPlugin::getAuthor()
+{
+	std::string ret;
+	
+	if( UV_FAILED(getAuthor(ret)) )
+	{
+		return "";
+	}
+	return ret;
+}
+
+UVDVersion UVDPlugin::getVersion()
+{
+	UVDVersion ret;
+	
+	if( UV_FAILED(getVersion(ret)) )
+	{
+		return UVDVersion();
+	}
+	return ret;
+}
+
 uv_err_t UVDPlugin::getDependencies(PluginDependencies &out)
 {
 	out.clear();
