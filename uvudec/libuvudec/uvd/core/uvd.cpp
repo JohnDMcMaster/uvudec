@@ -538,8 +538,8 @@ UVDIterator UVD::begin(uv_addr_t offset)
 	UVDIterator iter;
 	UVDAddressSpace *addressSpace = NULL;
 	
-	UV_DEBUG(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));	
-	UV_DEBUG(iter.init(this, addressSpace));
+	UV_DEBUG(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
+	UV_DEBUG(iter.init(this, UVDAddress(offset, addressSpace), 0));
 
 	return iter;
 }
