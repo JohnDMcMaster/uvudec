@@ -123,6 +123,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		}
 		else
 		{
+			printf_debug_level(UVD_DEBUG_PASSES, "loaded object from plugin %s\n", plugin->getName().c_str());
 			break;
 		}
 	}
@@ -174,6 +175,7 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 		}
 		else
 		{
+			printf_debug_level(UVD_DEBUG_PASSES, "loaded architecture from plugin %s\n", plugin->getName().c_str());
 			break;
 		}
 	}
