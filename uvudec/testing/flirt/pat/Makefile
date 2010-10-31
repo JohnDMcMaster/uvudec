@@ -26,7 +26,7 @@ PATS = $(OBJS:.o=.pat)
 
 %.pat: %.o
 ifeq ($(USED),$(UVUDEC_USED))
-	@(echo 'pats currently unsupported')
+	$(UVOBJ2PAT) $< $@
 endif
 ifeq ($(USED),$(FLAIR_USED))
 	pelf $< $@
