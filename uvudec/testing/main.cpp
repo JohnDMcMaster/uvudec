@@ -24,6 +24,8 @@ std::vector<std::string> g_extraArgs;
 
 int main(int argc, char **argv)
 {
+	std::vector<std::string> testsToRun;
+	
 	printf("main: begin\n");
 	uint32_t wasSuccessful = false;
 
@@ -36,32 +38,56 @@ int main(int argc, char **argv)
 
 	if( true )
 	{
-		/// Get the top level suite from the registry
-		CPPUNIT_NS::Test *suite = NULL;
-		CPPUNIT_NS::TextUi::TestRunner uiTestRunner;
+		CPPUNIT_NS::TextUi::TestRunner textUiTestRunner;
 		CPPUNIT_NS::BriefTestProgressListener progress;
 
-		//getRegistry(): return all registered tests
-		//.makeTest(): make a test object out off all of the registered tests
-		//Aparantly of type TestSuite, but function returns of subclass type Test
-		suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
-		
-		/// Adds the test to the list of test to run
-		uiTestRunner.addTest(suite);
+		//Run all if none specified
+		if( testsToRun.empty() )
+		{
+			CPPUNIT_NS::Test *test = NULL;
+			
+			/// Get the top level suite from the registry
+			//getRegistry(): return all registered tests
+			//.makeTest(): make a test object out off all of the registered tests
+			//Aparantly of type TestSuite, but function returns of subclass type Test
+			test = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
+
+			/// Adds the test to the list of test to run
+			textUiTestRunner.addTest(test);
+		}
+		/*
+		else
+		{
+			for( std::vector<std::string>::iterator iter = testsToRun.begin();
+					iter != testsToRun.end(); ++iter )
+			{
+				const std::string &testName = *iter;	
+				CPPUNIT_NS::Test *test = NULL;
+				
+				//textUiTestRunner.addTest(new CppUnit::TestCaller<MathTest>(
+				//	"testAdd", &MathTest::testAdd));
+				//ick how to get the symbol name?
+				//they must be registered somewhere since makeTest() knows them...but TestFactoryRegistry doesn't seem to expose much
+				textUiTestRunner.addTest(new CppUnit::TestCaller<UVDUnitTest>(testName, testAdd));
+
+				//textUiTestRunner.addTest(test);
+			}
+		}
+		*/
 
 		// Change the default outputter to a compiler error format outputter 
 		// uncomment the following line if you need a compiler outputter.
-		uiTestRunner.setOutputter(new CPPUNIT_NS::CompilerOutputter(&uiTestRunner.result(),
+		textUiTestRunner.setOutputter(new CPPUNIT_NS::CompilerOutputter(&textUiTestRunner.result(),
 				std::cout));
-		uiTestRunner.eventManager().addListener(&progress);
+		textUiTestRunner.eventManager().addListener(&progress);
 
 		// Change the default outputter to a xml error format outputter 
 		// uncomment the following line if you need a xml outputter.
-		//runner.setOutputter( new CppUnit::XmlOutputter( &uiTestRunner.result(),
+		//runner.setOutputter( new CppUnit::XmlOutputter( &textUiTestRunner.result(),
 		//                                                    std::cerr ) );
 
 		/// Run the tests.
-		wasSuccessful = uiTestRunner.run();
+		wasSuccessful = textUiTestRunner.run();
 	}
 	else
 	{
