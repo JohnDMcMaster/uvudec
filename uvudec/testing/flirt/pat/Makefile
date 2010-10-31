@@ -38,6 +38,11 @@ endif
 %.o: %.cpp
 	$(CXX) -c $< -o $@
 
+# If we don't omit the frame pointer, the function is much larger
+# If we omit -Os, it will use a move statement
+short.o:
+	$(CC) -c -Os -fomit-frame-pointer $< -o $@	
+	
 # Of course, only run this if you are REALLY sure this is what the output should be
 pats: $(PATS)	
 	@true
