@@ -29,6 +29,7 @@ protected:
 	void configDeinit();
 	//Try to reset us to a sane state for the next test afer an error
 	//This version will not throw exceptions and will not clean up memory
+	//FIXME: migrate this to teardown.  Need to figure out how to only call UVDDeinit if necessary
 	void configDeinitSafe();
 	
 	//Initialize config and a UVD engine object
