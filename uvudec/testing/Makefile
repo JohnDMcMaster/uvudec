@@ -9,9 +9,17 @@ EXE_NAME=$(TESTING_EXE)
 CC_SRCS =   \
 
 CXX_SRCS = 	\
+			$(TESTING_DIR)/common_fixture.cpp \
+			$(TESTING_DIR)/flirtutil.cpp \
+			$(TESTING_DIR)/flirtutil_main_hook.cpp \
+			$(TESTING_DIR)/libuvudec.cpp \
 			$(TESTING_DIR)/main.cpp \
-			$(TESTING_DIR)/main_hook.cpp \
-			$(TESTING_DIR)/uvd_test.cpp \
+			$(TESTING_DIR)/obj2pat.cpp \
+			$(TESTING_DIR)/obj2pat_main_hook.cpp \
+			$(TESTING_DIR)/pat2sig.cpp \
+			$(TESTING_DIR)/pat2sig_main_hook.cpp \
+			$(TESTING_DIR)/uvudec.cpp \
+			$(TESTING_DIR)/uvudec_main_hook.cpp \
 
 USING_LIB_UVUDEC=Y
 
