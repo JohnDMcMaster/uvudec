@@ -155,7 +155,7 @@ uv_err_t uvmain(int argc, char **argv)
 		goto error;
 	}
 
-	flirtConfig = &g_config->m_flirt;;
+	flirtConfig = &g_config->m_flirt;
 	uv_assert_ret(flirtConfig);
 
 	if( flirtConfig->m_targetFiles.empty() )
