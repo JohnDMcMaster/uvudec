@@ -14,9 +14,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 class UVDUvudecUnitTest : public UVDTestingCommonFixture
 {
 	CPPUNIT_TEST_SUITE(UVDUvudecUnitTest);
-	CPPUNIT_TEST(versionTest);
 	CPPUNIT_TEST(defaultDecompileFileTest);
-	CPPUNIT_TEST(initDeinitTest);
 	CPPUNIT_TEST(versionArgTest);
 	CPPUNIT_TEST(helpArgTest);
 	CPPUNIT_TEST(engineInitTest);
@@ -30,21 +28,10 @@ class UVDUvudecUnitTest : public UVDTestingCommonFixture
 
 protected:
 	/*
-	Checks our exe compiled version aginst the library compiled version
-	They should be equal
-	*/
-	void versionTest(void);
-	/*
 	Make sure that our default decompile file is accessible
 	It is required for engine initialization
 	*/
 	void defaultDecompileFileTest(void);
-	/*
-	Early initialization
-	Logging, argument parsing structures
-	Should NOT initialize the actual decompiler engine
-	*/
-	void initDeinitTest(void);
 	/*
 	Test the "--version" option
 	*/

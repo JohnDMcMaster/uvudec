@@ -20,26 +20,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UVDUvudecUnitTest);
 Tests
 */
 
-void UVDUvudecUnitTest::initDeinitTest(void)
-{
-	try
-	{
-		m_args.clear();	
-		CPPUNIT_ASSERT_EQUAL(UV_ERR_OK, configInit());
-		generalDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
-}
-
-void UVDUvudecUnitTest::versionTest(void)
-{
-	CPPUNIT_ASSERT(strcmp(UVUDEC_VER_STRING, UVDGetVersion()) == 0);
-}
-
 void UVDUvudecUnitTest::defaultDecompileFileTest(void)
 {
 	try
