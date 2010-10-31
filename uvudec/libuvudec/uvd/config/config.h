@@ -81,6 +81,8 @@ public:
 	uv_err_t parseMain(int argc, char *const *argv, char *const *envp); 
 	
 	//Include or exclude addresses from analysis
+	//This is an absolute exclusion...treat this address as if it doesn't exist
+	//FIXME: we need to divide this up more to mark RWX sort of stuff
 	uv_err_t addAddressInclusion(uint32_t low, uint32_t high);
 	uv_err_t addAddressExclusion(uint32_t low, uint32_t high);
 	//As per configuration, get a strictly increasing range of all valid analysis address ranges

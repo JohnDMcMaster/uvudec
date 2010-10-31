@@ -236,7 +236,6 @@ uv_err_t UVDAddressSpace::nextValidAddress(uv_addr_t start, uv_addr_t *ret)
 	uv_addr_t addressMax = 0;
 	uv_err_t rc = UV_ERR_GENERAL;
 
-	uv_assert_err_ret(getMaxValidAddress(&addressMax));
 	rc = g_uvd->m_config->nextValidAddress(start, &configRet);
 	uv_assert_err_ret(rc);
 	
@@ -246,6 +245,7 @@ uv_err_t UVDAddressSpace::nextValidAddress(uv_addr_t start, uv_addr_t *ret)
 		//printf("config says address 0x%04X is out of bounds\n", start);  
 		return UV_ERR_DONE;
 	}
+	uv_assert_err_ret(getMaxValidAddress(&addressMax));
 	//We may have also exceeded the practical file bounds
 	if( configRet > addressMax )
 	{
@@ -334,6 +334,8 @@ uv_err_t UVDAddressSpace::nextValidExecutableAddress(uv_addr_t start, uint32_t *
 		}
 	}
 
+	uv_assert_ret(ret);
+	*ret = cur;
 	return UV_ERR_OK;
 }
 
