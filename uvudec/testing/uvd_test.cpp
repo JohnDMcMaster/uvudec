@@ -324,7 +324,8 @@ void UVDUnitTest::disassembleTest(void)
 	m_args.clear();
 
 	generalDisassemble(output);
-	dumpAssembly("sample output", output);
+	//This just dumps unneeded junk to output
+	//dumpAssembly("sample output", output);
 }
 
 
