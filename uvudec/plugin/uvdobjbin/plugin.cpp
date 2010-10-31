@@ -49,6 +49,11 @@ uv_err_t UVDObjbinPlugin::getAuthor(std::string &out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDObjbinPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+{
+	return UV_DEBUG(UVDBinaryObject::canLoad(data, hints, confidence, this));
+}
+
 uv_err_t UVDObjbinPlugin::getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
 {
 	return UV_DEBUG(UVDBinaryObject::tryLoad(data, hints, out, this));
