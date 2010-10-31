@@ -284,6 +284,7 @@ class Builder:
 		
 		output_file.close()
 
+		self.email_subject = 'success'
 		# This is so a failure count can be seen that the bugs were fixed
 		if os.path.exists(self.file_previous):
 			# Returns true if the files are equal, we want to send email for differences
