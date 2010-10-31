@@ -145,8 +145,9 @@ uv_err_t UVDProjectWriter::doSave(const std::string &canonicalProjectFile)
 	uv_assert_ret(g_config);
 	
 	out += "{";
-	out += "\"" UVD_PROP_TARGET_FILE "\": \"" + g_config->m_targetFileName + "\",";
-	out += "\"" UVD_PROP_ARCH_FILE "\": \"" + g_config->m_architectureFileName + "\"";
+	out += "\"" UVD_PROP_TARGET_FILE "\": \"" + g_config->m_targetFileName + "\"";
+	//This is plugin specific
+	//out += "\"" UVD_PROP_ARCH_FILE "\": \"" + g_config->m_architectureFileName + "\"";
 	out += "}";
 	
 printf("save target: %s\n", canonicalProjectFile.c_str());
