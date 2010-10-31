@@ -8,17 +8,18 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdbfd/object.h"
 #include <typeinfo>
 
-uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	bfd *abfd = NULL;
 	std::string file;
 	UVDDataFile *dataFile = NULL;
 	
 	uv_assert_ret(data);
+	uv_assert_ret(confidence);
 	if( typeid(data) != typeid(UVDDataFile) )
 	{
-		return UV_ERR_NOTSUPPORTED;
+		*confidence = UVD_MATCH_NONE;
+		return UV_ERR_OK;
 	}
 	dataFile = (UVDDataFile *)data;
 	file = dataFile->m_sFile;
@@ -28,43 +29,41 @@ uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints
 	if( abfd == NULL )
 	{
 		printf_error("Could not open file <%s>\n", file.c_str());
-		return UV_ERR_GENERAL;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
 	//Needs to be an object...maybe an archive?	
 	if( bfd_check_format(abfd, bfd_object) == TRUE
 			|| bfd_check_format(abfd, bfd_archive) == TRUE )
 	{
-		rc = UV_ERR_OK;
+		*confidence = UVD_MATCH_ACCEPTABLE;
 	}
 	else
 	{
-		rc = UV_ERR_NOTSUPPORTED;
+		*confidence = UVD_MATCH_NONE;
 	}
 	bfd_close(abfd);
-printf_debug("rc %d\n", rc);
 
-	return rc;
+	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDObject::tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
+uv_err_t UVDBFDObject::tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out, void *user)
 {
+	uv_err_t rc = UV_ERR_GENERAL;
 	UVDBFDObject *ret = NULL;
-	uv_err_t rc;
 	
 	ret = new UVDBFDObject();
 	uv_assert_ret(ret);
-	rc = UV_DEBUG(ret->init(data));
-	if( UV_FAILED(rc) )
-	{
-		delete ret;
-		return rc;
-	}
+	uv_assert_err(ret->init(data));
 	
 	uv_assert_ret(out);
 	*out = ret;
 	
 	return UV_ERR_OK;
+
+error:
+	delete ret;
+	return UV_DEBUG(rc);
 }
 
 UVDBFDObject::UVDBFDObject()

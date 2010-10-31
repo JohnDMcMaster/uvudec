@@ -11,12 +11,22 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdbfd/plugin.h"
 #include "uvdbfd/flirt/flirt.h"
 
+UVDBFDPlugin *g_bfdPlugin = NULL;
+
 UVDBFDPlugin::UVDBFDPlugin()
 {
+	g_bfdPlugin = this;
 }
 
 UVDBFDPlugin::~UVDBFDPlugin()
 {
+}
+
+uv_err_t UVDBFDPlugin::init(UVDConfig *config)
+{
+	uv_assert_err_ret(UVDPlugin::init(config));
+	uv_assert_err_ret(m_config.init(config));
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBFDPlugin::onUVDInit(UVD *uvd)
@@ -60,31 +70,23 @@ uv_err_t UVDBFDPlugin::getAuthor(std::string &out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPlugin::getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out)
+uv_err_t UVDBFDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
 {
-	UVDBFDArchitecture *ret = NULL;
-	
-	ret = new UVDBFDArchitecture();
-	uv_assert_ret(ret);
-	uv_assert_err_ret(ret->init());
-	
-	uv_assert_ret(out);
-	*out = ret;
-	
-	return UV_ERR_OK;
+	return UV_DEBUG(UVDBFDObject::canLoad(data, hints, confidence, this));
 }
 
 uv_err_t UVDBFDPlugin::getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
 {
-	UVDBFDObject *ret = NULL;
-	
-	ret = new UVDBFDObject();
-	uv_assert_ret(ret);
-	uv_assert_err_ret_rc(ret->init(data));
-	
-	uv_assert_ret(out);
-	*out = ret;
-	
-	return UV_ERR_OK;
+	return UV_DEBUG(UVDBFDObject::tryLoad(data, hints, out, this));
+}
+
+uv_err_t UVDBFDPlugin::canGetArchitecture(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+{
+	return UV_DEBUG(UVDBFDArchitecture::canLoad(object, hints, confidence, this));
+}
+
+uv_err_t UVDBFDPlugin::getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out)
+{
+	return UV_DEBUG(UVDBFDArchitecture::tryLoad(object, hints, out, this));
 }
 

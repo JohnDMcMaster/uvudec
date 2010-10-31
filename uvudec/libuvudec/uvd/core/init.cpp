@@ -74,7 +74,7 @@ uv_err_t UVD::init(const std::string &file, const UVDRuntimeHints &hints)
 		printf_error("could not open file: %s\n", file.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	uv_assert(init(data, hints));
+	uv_assert_err(init(data, hints));
 	return UV_ERR_OK;
 
 error:
@@ -127,13 +127,9 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		
 		uv_assert_ret(plugin);
 		rcTemp = plugin->canGetObject(data, hints,  &loadPriority);
-		if( rcTemp == UV_ERR_NOTSUPPORTED )
+		if( UV_FAILED(rcTemp) )
 		{
-			continue;
-		}
-		else if( UV_FAILED(rcTemp) )
-		{
-			printf_error("plugin %s failed to canLoad object\n", (*iter).first.c_str());
+			printf_plugin_debug("plugin %s failed to canLoad object\n", (*iter).first.c_str());
 			continue;
 		}
 
@@ -152,7 +148,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 	printf_plugin_debug("best priorty: 0x%08X, plugins: %d\n", bestPriority, best.size());
 	if( bestPriority == UVD_MATCH_NONE )
 	{
-		printf_error("could not find a suitable object loader\n");
+		printf_warn("could not find a suitable object loader\n");
 		return UV_ERR_NOTFOUND;
 	}
 	uv_assert_ret(!best.empty());
@@ -167,11 +163,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		
 		uv_assert_ret(plugin);
 		rcTemp = plugin->getObject(data, hints, &object);
-		if( rcTemp == UV_ERR_NOTSUPPORTED )
-		{
-			continue;
-		}
-		else if( UV_FAILED(rcTemp) )
+		if( UV_FAILED(rcTemp) )
 		{
 			printf_error("plugin %s failed to load object\n", plugin->getName().c_str());
 			continue;
@@ -221,13 +213,9 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 		
 		uv_assert_ret(plugin);
 		rcTemp = plugin->canGetArchitecture(object, hints,  &loadPriority);
-		if( rcTemp == UV_ERR_NOTSUPPORTED )
+		if( UV_FAILED(rcTemp) )
 		{
-			continue;
-		}
-		else if( UV_FAILED(rcTemp) )
-		{
-			printf_error("plugin %s failed to canLoad object\n", (*iter).first.c_str());
+			printf_plugin_debug("plugin %s failed to canLoad object\n", (*iter).first.c_str());
 			continue;
 		}
 
@@ -245,7 +233,7 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 	printf_plugin_debug("best priorty: 0x%08X, plugins: %d\n", bestPriority, best.size());
 	if( bestPriority == UVD_MATCH_NONE )
 	{
-		printf_error("could not find a suitable architecture loader\n");
+		printf_warn("could not find a suitable architecture loader\n");
 		return UV_ERR_NOTFOUND;
 	}
 	uv_assert_ret(!best.empty());
@@ -259,11 +247,7 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 		
 		uv_assert_ret(plugin);		
 		rcTemp = plugin->getArchitecture(object, hints, &architecture);
-		if( rcTemp == UV_ERR_NOTSUPPORTED )
-		{
-			continue;
-		}
-		else if( UV_FAILED(rcTemp) )
+		if( UV_FAILED(rcTemp) )
 		{
 			printf_error("plugin %s failed to load architecture\n", plugin->getName().c_str());
 			continue;
@@ -319,16 +303,6 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	m_runtime = new UVDRuntime();
 	uv_assert(m_runtime);
 	uv_assert_err(m_runtime->init(object, architecture));
-
-	//printf("plugins to load: %d\n", m_config->m_plugin.m_toLoad.size());
-	for( std::vector<std::string>::iterator iter = m_config->m_plugin.m_toLoad.begin();
-			iter != m_config->m_plugin.m_toLoad.end(); ++iter )
-	{
-		std::string &pluginName = *iter;
-		
-		uv_assert_err(m_pluginEngine->initPlugin(pluginName));
-	}
-	//printf("loaded plugins: %d\n", m_pluginEngine->m_loadedPlugins.size());
 
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing engine...\n");
 	engineInitBenchmark.start();
@@ -387,19 +361,4 @@ error:
 	}
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
-
-uv_err_t UVD::initPlugins()
-{
-	//Load plugins as specified in config
-	for( std::vector<std::string>::iterator iter = m_config->m_plugin.m_toLoad.begin();
-			iter != m_config->m_plugin.m_toLoad.end(); ++iter )
-	{
-		const std::string &curPluginName = *iter;
-		
-		uv_assert_err_ret(m_config->m_plugin.m_pluginEngine.initPlugin(curPluginName));
-	}
-	
-	return UV_ERR_OK;
-}
-
 

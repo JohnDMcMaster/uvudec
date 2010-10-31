@@ -5,19 +5,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdasm/architecture.h"
+#include "uvdasm/config.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/core/iterator.h"
-
-static uv_err_t getDefaultCPUFile(std::string &ret)
-{
-	ret = DEFAULT_CPU_FILE;
-	//This should be relative to installed directory if not absolute
-	if( ret[0] != '/' )
-	{
-		ret = g_config->m_installDir + "/" + ret;
-	}
-	return UV_ERR_OK;
-}
 
 UVDDisasmArchitecture::UVDDisasmArchitecture()
 {
@@ -37,16 +27,17 @@ UVDDisasmArchitecture::~UVDDisasmArchitecture()
 
 uv_err_t UVDDisasmArchitecture::init()
 {
-	if( g_config->m_architectureFileName.empty() )
+	if( !g_asmConfig->m_architectureFileName.empty() )
 	{
-		//In theory if not specified, should search dir
-		//Doing en mass brute force analysis to find best matching file is an interesting topic by itself
-		switch( m_architecture )
-		{
-		default:
-			uv_assert_err_ret(getDefaultCPUFile(g_config->m_architectureFileName));
-		};
+		m_architectureFileName = g_asmConfig->m_architectureFileName;
 	}
+	else if( UV_FAILED(g_asmConfig->getDefaultArchitectureFile(m_architectureFileName)) || m_architectureFileName.empty() )
+	{
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	
+	printf_plugin_debug("config file: %s\n", m_architectureFileName.c_str());
+	
 	
 	m_opcodeTable = new UVDDisasmOpcodeLookupTable();
 	//printf_debug("Initializing opcode table, address: 0x%.8X\n", (unsigned int)m_opcodeTable);

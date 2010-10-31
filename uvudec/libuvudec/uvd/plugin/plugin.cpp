@@ -19,6 +19,7 @@ In any case, its highly reccomend you implement one if you implement the other
 #include "uvd/object/object.h"
 #include "uvd/plugin/plugin.h"
 #include <dlfcn.h>
+#include <typeinfo>
 
 UVDPlugin::UVDPlugin()
 {

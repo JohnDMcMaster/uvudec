@@ -13,8 +13,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 class UVDBFDObject : public UVDObject
 {
 public:
-	static uv_err_t canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
-	static uv_err_t tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+	static uv_err_t canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user);
+	static uv_err_t tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out, void *user);
 
 public:
 	UVDBFDObject();

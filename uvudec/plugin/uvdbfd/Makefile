@@ -17,6 +17,7 @@ CXX_SRCS = 	\
 			flirt/relocation.cpp \
 			flirt/section.cpp \
 			architecture.cpp \
+			config.cpp \
 			instruction.cpp \
 			main.cpp \
 			object.cpp \

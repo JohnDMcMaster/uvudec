@@ -79,11 +79,15 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		config->m_sDebugFile = firstArg;
 	}
 	//Plugins
+	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_FILE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		uv_assert_err_ret(config->m_plugin.addToLoad(firstArg));
+	}
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_NAME )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->m_plugin.addPlugin(firstArg));
-		config->m_plugin.m_toLoad.push_back(firstArg);
+		uv_assert_err_ret(config->m_plugin.addToInitialize(firstArg));
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_APPEND_PATH )
 	{
@@ -119,14 +123,9 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	//So we can ignore arg meant for later
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, "", 0, true, true, true));
 
-	//FIXME XXX TODO: hack until I can have startup config files
+	//FIXME XXX TODO: hack until I can have startup config file variables
 	mainPluginDir = config->m_installDir + "/lib/plugin";
 	m_dirs.push_back(mainPluginDir);
-	/*
-	m_toLoad.push_back("uvdasm");
-	m_toLoad.push_back("uvdbfd");
-	m_toLoad.push_back("uvdobjbin");
-	*/
 
 	return UV_ERR_OK;
 }

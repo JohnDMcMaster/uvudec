@@ -173,8 +173,6 @@ public:
 	//The binary we are analyzing, it from a file
 	//The primary source of this information should be uvd's UVDData and this is more for init purposes
 	std::string m_targetFileName;
-	//The file that will be used to load the CPU module and such
-	std::string m_architectureFileName;
 
 	//Canonical name where our install was to
 	std::string m_installDir;

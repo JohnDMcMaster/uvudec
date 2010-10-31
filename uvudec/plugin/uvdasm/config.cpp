@@ -54,6 +54,11 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_ARCH_FILE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		g_asmConfig->m_architectureFileName = firstArg;
+	}
 	else
 	{
 		printf_error("Property not recognized in callback: %s\n", argConfig->m_propertyForm.c_str());
@@ -126,7 +131,6 @@ uv_err_t UVDAsmConfig::init(UVDConfig *config)
 				"\n",
 			1, argParser, true));
 	
-
 	return UV_ERR_OK;
 }
 
@@ -181,6 +185,18 @@ uv_err_t UVDAsmConfig::setConfigInterpreterLanguageInterface(const std::string &
 	{
 		printf_error("unknown language interface: <%s>\n", in.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAsmConfig::getDefaultArchitectureFile(std::string &ret)
+{
+	ret = DEFAULT_CPU_FILE;
+	//FIXME: instead we should search dirs during actual load
+	//This should be relative to installed directory if not absolute
+	if( ret[0] != '/' )
+	{
+		ret = g_config->m_installDir + "/" + ret;
 	}
 	return UV_ERR_OK;
 }

@@ -27,9 +27,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //Config
 #define UVD_PROP_CONFIG_LANGUAGE				"config.language"
 #define UVD_PROP_CONFIG_LANGUAGE_INTERFACE		"config.language_interface"
-//Architecture
-#define UVD_PROP_ARCH_FILE						"arch.file"
-#define UVD_PROP_ARCH_PATHS						"arch.paths"
 //Target
 #define UVD_PROP_TARGET_ADDRESS_INCLUDE			"target.address_include"
 #define UVD_PROP_TARGET_ADDRESS_EXCLUDE			"target.address_exclude"
@@ -49,6 +46,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_OUTPUT_ADDRESS_LABEL			"output.address_label"
 #define UVD_PROP_OUTPUT_FILE					"output.file"
 //Plugin
+#define UVD_PROP_PLUGIN_FILE					"plugin.file"
 #define UVD_PROP_PLUGIN_NAME					"plugin.name"
 #define UVD_PROP_PLUGIN_APPEND_PATH				"plugin.path.append"
 #define UVD_PROP_PLUGIN_PREPEND_PATH			"plugin.path.prepend"

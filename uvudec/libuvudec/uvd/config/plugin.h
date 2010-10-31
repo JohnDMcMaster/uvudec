@@ -20,16 +20,17 @@ public:
 	uv_err_t earlyArgParse(UVDConfig *config);
 	uv_err_t deinit();
 
-	//Add a plugin to be loaded
-	uv_err_t addPlugin(const std::string &pluginLibraryName);
+	//Add a plugin to be loaded by file name
+	uv_err_t addToLoad(const std::string &fileName);
+	uv_err_t addToInitialize(const std::string &logicalName);
 	uv_err_t appendPluginPath(const std::string &path);
 	uv_err_t prependPluginPath(const std::string &path);
 
 public:
+	//Load find the libraries and add them to the availible plugin list
+	std::vector<std::string> m_pluginFiles;
 	//To activate at startup
-	//std::vector<std::string> m_plugins;
-	//renamed
-	std::vector<std::string> m_toLoad;
+	std::vector<std::string> m_toInitialize;
 
 	//All of these will be added to plugin selection lists and have their main called
 	//std::vector<std::string> m_pluginDirs;

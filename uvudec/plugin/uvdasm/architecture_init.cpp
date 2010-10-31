@@ -87,9 +87,9 @@ uv_err_t UVDDisasmArchitecture::init_config()
 	UV_ENTER();
 
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(UVDAsmUtil::uvd_read_sections(g_config->m_architectureFileName, &sections, &n_sections)) )
+	if( UV_FAILED(UVDAsmUtil::uvd_read_sections(m_architectureFileName, &sections, &n_sections)) )
 	{
-		printf_error("Could not read config file: %s\n", g_config->m_architectureFileName.c_str());
+		printf_error("Could not read config file: %s\n", g_asmConfig->m_architectureFileName.c_str());
 		UV_ERR(rc);
 		goto error;
 	}

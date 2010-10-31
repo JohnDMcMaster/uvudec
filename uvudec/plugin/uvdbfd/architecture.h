@@ -28,6 +28,9 @@ public:
 
 	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
 
+	static uv_err_t canLoad(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user);
+	static uv_err_t tryLoad(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out, void *user);
+
 public:	
 };
 

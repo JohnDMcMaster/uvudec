@@ -63,8 +63,11 @@ public:
 	Necessary for raw binary images
 	If an ELF file or similar that contains architecture info in it is given, 
 	it may be possible to determine this information dynamically
+	FIXME: don't know what this really is for, it should probably be removed
 	*/
 	int m_architecture;
+	
+	std::string m_architectureFileName;
 
 	//Registers, mapped by name
 	std::map<std::string, UVDRegisterShared *> m_registers;

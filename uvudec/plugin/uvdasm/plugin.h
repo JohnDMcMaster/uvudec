@@ -23,6 +23,7 @@ public:
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
 	virtual uv_err_t getAuthor(std::string &out);
+	virtual uv_err_t canGetArchitecture(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
 	virtual uv_err_t getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out);
 
 public:

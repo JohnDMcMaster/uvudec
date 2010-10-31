@@ -154,6 +154,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 				{
 					if( printErrors )
 					{
+						printf_error("unknown argument: %s\n", parsedArg.m_raw.c_str());
 						return UV_DEBUG(matchRc);
 					}
 					else
@@ -325,11 +326,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		config->m_targetFileName = firstArg;
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_ARCH_FILE )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		config->m_architectureFileName = firstArg;
 	}
 	/*
 	Analysis target specific

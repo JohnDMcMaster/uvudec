@@ -9,6 +9,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/config/config.h"
 
+//Architecture
+#define UVD_PROP_ARCH_FILE						"arch.file"
+#define UVD_PROP_ARCH_PATHS						"arch.paths"
+
 class UVDAsmPlugin;
 class UVDAsmConfig
 {
@@ -21,6 +25,7 @@ public:
 
 	uv_err_t setConfigInterpreterLanguageInterface(const std::string &in);
 	uv_err_t setConfigInterpreterLanguage(const std::string &in);
+	uv_err_t getDefaultArchitectureFile(std::string &ret);
 
 public:
 	//UVDAsmPlugin *m_plugin;
@@ -40,6 +45,8 @@ public:
 	std::string m_asm_imm_postfix_hex;
 	//std::string g_asm_imm_suffix;
 	std::string m_asm_imm_suffix;
+	//The file that will be used to load the CPU module and such
+	std::string m_architectureFileName;
 };
 
 extern UVDAsmConfig *g_asmConfig;

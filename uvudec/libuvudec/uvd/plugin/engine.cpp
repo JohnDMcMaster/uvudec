@@ -42,8 +42,9 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 	/*
 	And initialize those plugins that should be initially loaded
 	*/
-	for( std::vector<std::string>::iterator iter = config->m_plugin.m_toLoad.begin();
-			iter != config->m_plugin.m_toLoad.end(); ++iter )
+	printf_plugin_debug("plugins to initialize: %d\n", config->m_plugin.m_toInitialize.size());
+	for( std::vector<std::string>::iterator iter = config->m_plugin.m_toInitialize.begin();
+			iter != config->m_plugin.m_toInitialize.end(); ++iter )
 	{
 		const std::string &toInit = *iter;
 		
@@ -309,9 +310,15 @@ uv_err_t UVDPluginEngine::initPlugin(const std::string &name)
 	std::map<std::string, UVDPlugin *>::iterator iter = m_plugins.find(name);
 	UVDPlugin *plugin = NULL;
 
+	printf_plugin_debug("initializing plugin %s\n", name.c_str());
 	if( iter == m_plugins.end() )
 	{
 		printf_error("no plugin loaded named %s\n", name.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	if( m_loadedPlugins.find(name) != m_loadedPlugins.end() )
+	{
+		printf_warn("skipping double load of plugin %s\n", name.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	plugin = (*iter).second;

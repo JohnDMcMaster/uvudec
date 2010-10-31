@@ -37,9 +37,15 @@ uv_err_t UVDPluginConfig::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPluginConfig::addPlugin(const std::string &pluginLibraryName)
+uv_err_t UVDPluginConfig::addToLoad(const std::string &pluginLibraryName)
 {
-	m_toLoad.push_back(pluginLibraryName);
+	m_pluginFiles.push_back(pluginLibraryName);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginConfig::addToInitialize(const std::string &pluginName)
+{
+	m_toInitialize.push_back(pluginName);
 	return UV_ERR_OK;
 }
 
