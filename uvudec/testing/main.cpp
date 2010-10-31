@@ -19,14 +19,18 @@ Unit test
 #include <stdint.h>
 #include <stdio.h>
 #include "testing/main.h"
+#include "uvd/util/benchmark.h"
 
 std::vector<std::string> g_extraArgs;
 
 int main(int argc, char **argv)
 {
 	std::vector<std::string> testsToRun;
+	//Report time for ALL tests
+	UVDBenchmark benchmark;
 	
 	printf("main: begin\n");
+	benchmark.start();
 	uint32_t wasSuccessful = false;
 
 	for( int i = 1; i < argc; ++i )
@@ -114,7 +118,8 @@ int main(int argc, char **argv)
 		wasSuccessful = collectedresults.wasSuccessful();
 	}
 
-	printf("main: done, wasSuccessful: %d\n", wasSuccessful);
+	benchmark.stop();
+	printf("main: done after %s, wasSuccessful: %d\n", benchmark.toString().c_str(), wasSuccessful);	
 
 	// return 0 if tests were successful
 	return wasSuccessful ? 0 : 1;
