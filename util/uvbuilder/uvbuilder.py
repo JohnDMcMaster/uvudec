@@ -265,7 +265,7 @@ class Builder:
 			failed_tests = int(status_line.split()[4])
 		elif ok_line:
 			# OK (11)
-			total_tests = int(status_line.split("()")[1])
+			total_tests = int(ok_line.split("()")[1])
 			failed_tests = 0
 		if rc or failed_tests > 0:
 			print 'ERROR: failed test run'
