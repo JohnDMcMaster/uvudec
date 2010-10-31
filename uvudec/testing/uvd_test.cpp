@@ -450,7 +450,7 @@ void UVDUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	//A range excluded outside of the analysis shouldn't effect output
 	m_args.clear();
 	m_args.push_back("--addr-exclude=0x10000,0x20000");
-	generalDisassemble(sameAsDefaultRange);
+	generalDisassemble(uselessExcludedrange);
 	try
 	{
 		CPPUNIT_ASSERT(defaultRange == uselessExcludedrange);
