@@ -290,13 +290,21 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 		uv_assert_ret(!symbolName.empty());
 		alreadyPrintedSymbols.insert(symbolName);
 
-		//Do we have a single unknown public name to print a ? entry?
-		if( validPublicNames.empty() && invalidPublicNameCount <= 1 )
+		/*
+		Do we have a single unknown public name to print a ? entry?
+		Behavior with multiple is somewhat unclear
+		FLIRT has a "better to give the user reliable data" than more data approach,
+		so for now going to say if no valid public names are present, always mark as ?
+		FIXME: multiple short names
+		*/
+		if( validPublicNames.empty() /*&& invalidPublicNameCount <= 1*/ )
 		{
 			printf_flirt_debug("unknown public name\n");
 			publicName = UVD_FLIRT_PAT_UNKNOWN_PUBLIC_NAME_CHAR;
 			publicNameSymbolPrefix = "";
-			uv_assert_ret(publicNameOffset == 0);
+			//FIXME: multiple short names
+			//uv_assert_ret(publicNameOffset == 0);
+			publicNameOffset = 0;
 		}
 		//Skip if wasn't a valid public name AND we have public names
 		else if( !validPublicNames.empty() && validPublicNames.find(symbolName) == validPublicNames.end() )
@@ -314,7 +322,8 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 				publicNameSymbolPrefix.c_str(), publicName.c_str());
 
 		//Only print the ? entry if we had a single invalid public name
-		if( validPublicNames.empty() && invalidPublicNameCount <= 1 )
+		//FIXME: multiple short names
+		if( validPublicNames.empty() /*&& invalidPublicNameCount <= 1*/ )
 		{
 			break;
 		}
