@@ -245,10 +245,16 @@ class Builder:
 		print 'main test rc: %d' % rc
 		output_file.write(self.build_result_text)
 		status_line = None
+		ok_line = None
 		severe_error = False
 		for line in self.build_result_text.split('\n'):
+			# Run: 11   Failure total: 3   Failures: 3   Errors: 0
 			if line.find('Run: ') >= 0:
 				status_line = line
+				break
+			# OK (11)
+			elif line.find('OK (') >= 0:
+				ok_line = line
 				break
 			elif line.find('SEVERE ERROR') >= 0:
 				severe_error = True
@@ -257,7 +263,11 @@ class Builder:
 			# Run: 11   Failure total: 3   Failures: 3   Errors: 0
 			total_tests = int(status_line.split()[1])
 			failed_tests = int(status_line.split()[4])
-		if rc:
+		elif ok_line:
+			# OK (11)
+			total_tests = int(status_line.split("()")[1])
+			failed_tests = 0
+		if rc or failed_tests > 0:
 			print 'ERROR: failed test run'
 			if status_line:
 				self.email_subject = "failed %d / %d tests" % (failed_tests, total_tests)
