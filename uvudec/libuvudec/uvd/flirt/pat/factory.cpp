@@ -125,7 +125,7 @@ uv_err_t UVDFLIRTPatFactory::tryLoad(const UVDRuntime *runtime, UVDFLIRTPatternG
 	uv_assert_err_ret(canLoad(runtime, bestCandidates));
 	if( bestCandidates.empty() )
 	{
-		printf_error("no valid pattern generators for given runtime\n");
+		printf_warn("no valid pattern generators for given runtime\n");
 		return UV_ERR_NOTSUPPORTED;
 	}
 
