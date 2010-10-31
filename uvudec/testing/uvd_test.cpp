@@ -59,6 +59,7 @@ void UVDUnitTest::argsToArgv()
 	}
 
 	//Copy in so we have for debugging	
+	m_argsFinal.clear();
 	for( int j = 0; j < m_argc; ++j )
 	{
 		m_argsFinal.push_back(m_argv[j]);
