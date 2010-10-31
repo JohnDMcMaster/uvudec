@@ -55,6 +55,18 @@ void UVDObj2patUnitTest::shortTest()
 Utility
 */
 
+char safePrintChar(char c)
+{
+	if( isprint(c) )
+	{
+		return c;
+	}
+	else
+	{
+		return '.';
+	}
+}
+
 void UVDObj2patUnitTest::verifyObj2Pat(const std::string &filePrefix)
 {
 	//g_config->m_installDir;
@@ -82,7 +94,25 @@ void UVDObj2patUnitTest::verifyObj2Pat(const std::string &filePrefix)
 		
 		//UVCPPUNIT_ASSERT(readFile(outputPatFileName, outputPatFileContents));
 		UVCPPUNIT_ASSERT(readFile(expectedPatFileName, expectedPatFileContents));
-		CPPUNIT_ASSERT_EQUAL(expectedPatFileContents, outputPatFileContents);
+		try
+		{
+			CPPUNIT_ASSERT_EQUAL(expectedPatFileContents, outputPatFileContents);
+		}
+		catch(...)
+		{
+			for( std::string::size_type i = 0; i < expectedPatFileContents.size() && i < outputPatFileContents.size(); ++i )
+			{
+				if( expectedPatFileContents[i] != outputPatFileContents[i] )
+				{
+					printf("difference at offset %d, %c/0x%02X (expected) vs %c/0x%02X (given)\n",
+							i,
+							safePrintChar(expectedPatFileContents[i]), expectedPatFileContents[i],
+							safePrintChar(outputPatFileContents[i]), outputPatFileContents[i]);
+					break;
+				}
+			}
+			throw;
+		}
 	}
 	catch(...)
 	{
