@@ -126,6 +126,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		uvd_priority_t loadPriority = 0;
 		
 		uv_assert_ret(plugin);
+		printf_plugin_debug("plugin %s trying canLoad object\n", (*iter).first.c_str());
 		rcTemp = plugin->canGetObject(data, hints,  &loadPriority);
 		if( UV_FAILED(rcTemp) )
 		{
@@ -135,12 +136,22 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 
 		if( loadPriority <= bestPriority )
 		{
+			printf_plugin_debug("plugin %s candidate at priority %d\n", (*iter).first.c_str(), loadPriority);
 			if( loadPriority < bestPriority )
 			{
+				if( !best.empty() )
+				{
+					printf_plugin_debug("clearing %d plugins due to better priorty\n", best.size());
+				}
 				best.clear();
 				bestPriority = loadPriority;
 			}
 			best.push_back(plugin);
+		}
+		else
+		{
+			printf_plugin_debug("plugin %s skipped due to worse priority (cur: %d, plugin: %d)\n",
+					(*iter).first.c_str(), bestPriority, loadPriority);
 		}
 	}
 	
