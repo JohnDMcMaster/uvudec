@@ -18,12 +18,21 @@ Unit test
 #include <cppunit/ui/text/TestRunner.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "testing/main.h"
 
+std::vector<std::string> g_extraArgs;
 
-int main(int argc, char* argv[])
+int main(int argc, char **argv)
 {
 	printf("main: begin\n");
 	uint32_t wasSuccessful = false;
+
+	for( int i = 1; i < argc; ++i )
+	{
+		const char *arg = argv[i];
+		
+		g_extraArgs.push_back(arg);
+	}
 
 	if( true )
 	{

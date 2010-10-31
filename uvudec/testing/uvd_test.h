@@ -29,86 +29,92 @@ class UVDUnitTest : public CPPUNIT_NS::TestFixture
 	CPPUNIT_TEST(uvudecBasicRun);
 	CPPUNIT_TEST_SUITE_END();
 
-	public:
-		void setUp(void);
-		void tearDown(void);
+public:
+	void setUp(void);
+	void tearDown(void);
 
-	protected:
-		/*
-		Checks our exe compiled version aginst the library compiled version
-		They should be equal
-		*/
-		void versionTest(void);
-		/*
-		Make sure that our default decompile file is accessible
-		It is required for engine initialization
-		*/
-		void defaultDecompileFileTest(void);
-		/*
-		Early initialization
-		Logging, argument parsing structures
-		Should NOT initialize the actual decompiler engine
-		*/
-		void initDeinitTest(void);
-		/*
-		Test the "--version" option
-		*/
-		void versionArgTest(void);
-		/*
-		Test the "--help" option
-		*/
-		void helpArgTest(void);
-		/*
-		Perform a full engine init, but don't do any analysis
-		*/
-		void engineInitTest(void);
-		/*
-		Generate analysis output such as object files
-		*/
-		void analysisDirTest(void);
-		/*
-		Disassemble the default binary
-		*/
-		void disassembleTest(void);
-		/*
-		Disassemble the default binary with inclusion/exclusion ranges
-		*/
-		void disassembleRangeTestDeliminators(void);
-		void disassembleRangeTestDefaultEquivilence(void);
-		void disassembleRangeTestComplex(void);
-		/*
-		Actually calls uvudec's uvmain using the hooks
-		Does a basic test where as most of hte thorough test test libuvudec rather than what the uvudec exe can do
-		*/
-		void uvudecBasicRun(void);
+protected:
+	/*
+	Checks our exe compiled version aginst the library compiled version
+	They should be equal
+	*/
+	void versionTest(void);
+	/*
+	Make sure that our default decompile file is accessible
+	It is required for engine initialization
+	*/
+	void defaultDecompileFileTest(void);
+	/*
+	Early initialization
+	Logging, argument parsing structures
+	Should NOT initialize the actual decompiler engine
+	*/
+	void initDeinitTest(void);
+	/*
+	Test the "--version" option
+	*/
+	void versionArgTest(void);
+	/*
+	Test the "--help" option
+	*/
+	void helpArgTest(void);
+	/*
+	Perform a full engine init, but don't do any analysis
+	*/
+	void engineInitTest(void);
+	/*
+	Generate analysis output such as object files
+	*/
+	void analysisDirTest(void);
+	/*
+	Disassemble the default binary
+	*/
+	void disassembleTest(void);
+	/*
+	Disassemble the default binary with inclusion/exclusion ranges
+	*/
+	void disassembleRangeTestDeliminators(void);
+	void disassembleRangeTestDefaultEquivilence(void);
+	void disassembleRangeTestComplex(void);
+	/*
+	Actually calls uvudec's uvmain using the hooks
+	Does a basic test where as most of hte thorough test test libuvudec rather than what the uvudec exe can do
+	*/
+	void uvudecBasicRun(void);
+
+private:
+	//Only call UVDInit(), but also check expected state variables
+	void uvdInit();
+	//Initialize UVDInit() and parse main
+	uv_err_t configInit(UVDConfig **configOut = NULL);
+	//Do standard deinit, including report errors
+	void configDeinit();
+	//Try to reset us to a sane state for the next test afer an error
+	//This version will not throw exceptions and will not clean up memory
+	void configDeinitSafe();
 	
-	private:
-		//Only call UVDInit(), but also check expected state variables
-		void uvdInit();
-		//Initialize UVDInit() and parse main
-		uv_err_t configInit(const std::vector<std::string> &args, UVDConfig **configOut = NULL);
-		//Do standard deinit, including report errors
-		void configDeinit();
-		//Try to reset us to a sane state for the next test afer an error
-		//This version will not throw exceptions and will not clean up memory
-		void configDeinitSafe();
-		
-		//Initialize config and a UVD engine object
-		//Returns the main parse code
-		void generalInit(const std::vector<std::string> &args, UVD **uvdOut = NULL);
-		void generalDeinit();
-		
-		//Initize and verify that we don't have any errors running these args
-		//program name does not need to be supplied
-		void generalDisassemble(const std::vector<std::string> &args);
-		void generalDisassemble(const std::vector<std::string> &args, std::string &output);
+	//Initialize config and a UVD engine object
+	//Returns the main parse code
+	void generalInit(UVD **uvdOut = NULL);
+	void generalDeinit();
+	
+	void argsToArgv();
 
-		int m_argc;
-		char **m_argv;
-		//Last initialized config
-		UVDConfig *m_config;
-		//Last initialized uvd
-		UVD *m_uvd;
+	//Initize and verify that we don't have any errors running these args
+	//program name does not need to be supplied
+	void generalDisassemble();
+	void generalDisassemble(std::string &output);
+
+public:
+	std::vector<std::string> m_args;
+	//After applying additional supplied args
+	std::vector<std::string> m_argsFinal;
+	int m_argc;
+	char **m_argv;
+	//Last initialized config
+	UVDConfig *m_config;
+	//Last initialized uvd
+	UVD *m_uvd;
 };
 
 #endif
