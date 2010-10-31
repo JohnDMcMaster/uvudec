@@ -286,7 +286,9 @@ class Builder:
 
 		# This is so a failure count can be seen that the bugs were fixed
 		if os.path.exists(self.file_previous):
-			self.should_send_email = filecmp.cmp(self.file_current, self.file_previous)
+			# Returns true if the files are equal, we want to send email for differences
+			# Although really we should record last status since timestamps and such make no two runs (statistically) alike
+			self.should_send_email = not filecmp.cmp(self.file_current, self.file_previous)
 		else:
 			self.should_send_email = True
 
