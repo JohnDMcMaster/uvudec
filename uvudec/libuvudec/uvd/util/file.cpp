@@ -23,6 +23,17 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <sys/types.h>
 #include <unistd.h>
 
+uv_err_t UVDGetInstallDir(std::string &installDir)
+{
+	std::string programName;
+
+	uv_assert_err_ret(getProgramName(programName));
+	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
+	installDir = uv_dirname(uv_dirname(programName));
+
+	return UV_ERR_OK;
+}
+
 uv_err_t getProgramName(std::string &programName)
 {
 	//read /proc/$PID/exe
@@ -370,7 +381,7 @@ uv_err_t read_file(const char *file, uint8_t **ret, unsigned int *size)
 	if( !p_file )
 	{
 		//printf_debug("not opened: %s\n", strerror(errno));
-		printf_debug("File not found/opened: %s\n", file);
+		printf_error("File not found/opened: %s\n", file);
 		UV_ERR(rc);
 		goto error;
 	}

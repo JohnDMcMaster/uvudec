@@ -40,10 +40,10 @@ Put in namespace maybe and do some template magic?
 	template <typename T> T uvnet::uvd_minCore<T>(T a, T b) ...
 */
 #ifndef uvd_min
-#define uvd_min(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) ret; if( _a > _b ) ret = _b; else ret = _a; ret;})
+#define uvd_min(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) _ret; if( _a > _b ) _ret = _b; else _ret = _a; _ret;})
 #endif //uvd_min
 #ifndef uvd_max
-#define uvd_max(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) ret; if( _a < _b ) ret = _a; else ret = _b; ret;})
+#define uvd_max(a, b) ({typeof(a) _a = a; typeof(b) _b = b; typeof(a) _ret; if( _a < _b ) _ret = _b; else _ret = _a; _ret;})
 #endif //uvd_max
 
 class UVDFileUtil
@@ -56,6 +56,9 @@ public:
 
 std::string uv_basename(const std::string &file);
 std::string uv_dirname(const std::string &file);
+//Return the directory we were installed to
+//Valid before UVDInit()
+uv_err_t UVDGetInstallDir(std::string &installDir);
 //Return the canonical path to the currently executing program name
 uv_err_t getProgramName(std::string &programName);
 //Given symbolic link file, give canonical path
