@@ -98,12 +98,8 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv)
 
 static uv_err_t setupInstallDir()
 {
-	std::string programName;
-
-	uv_assert_err_ret(getProgramName(programName));
 	uv_assert_ret(g_config);
-	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
-	g_config->m_installDir = uv_dirname(uv_dirname(programName));
+	uv_assert_err_ret(UVDGetInstallDir(g_config->m_installDir));
 	g_config->m_archDir = g_config->m_installDir + "/arch";
 
 	return UV_ERR_OK;
