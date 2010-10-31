@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "testing/common_fixture.h"
 #include "uvd/core/init.h"
 #include "uvd/core/uvd.h"
+#include "uvd/util/util.h"
 #include <vector>
 #include <string>
 #include <string.h>
@@ -18,6 +19,7 @@ void UVDTestingCommonFixture::setUp(void)
 	m_argv = NULL;
 	m_config = NULL;
 	m_uvd = NULL;
+	m_uvdInpuFileName = DEFAULT_DECOMPILE_FILE;
 }
 
 void UVDTestingCommonFixture::tearDown(void) 
@@ -112,7 +114,10 @@ void UVDTestingCommonFixture::configDeinit()
 		free(m_argv);
 	}
 	m_argc = 0;
-	m_argv = NULL;	
+	m_argv = NULL;
+	
+	deleteTempFiles();
+	deleteTempDirectories();
 }
 
 void UVDTestingCommonFixture::configDeinitSafe()
@@ -128,6 +133,8 @@ void UVDTestingCommonFixture::configDeinitSafe()
 		m_config = NULL;
 		m_uvd = NULL;
 		UVDDeinit();
+		deleteTempFiles();
+		deleteTempDirectories();
 	}
 	catch(...)
 	{
@@ -136,14 +143,13 @@ void UVDTestingCommonFixture::configDeinitSafe()
 
 void UVDTestingCommonFixture::generalInit(UVD **uvdOut)
 {
-	std::string file = DEFAULT_DECOMPILE_FILE;
-	
 	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
 	
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
-	UVCPPUNIT_ASSERT(UVD::getUVD(&m_uvd, file));
+	printf("General init on %s\n", m_uvdInpuFileName.c_str());
+	UVCPPUNIT_ASSERT(UVD::getUVD(&m_uvd, m_uvdInpuFileName));
 	CPPUNIT_ASSERT(m_uvd != NULL);
 	CPPUNIT_ASSERT(g_uvd != NULL);
 
@@ -187,5 +193,66 @@ void UVDTestingCommonFixture::generalDisassemble(std::string &output)
 		configDeinitSafe();
 		throw;
 	}
+}
+
+std::string UVDTestingCommonFixture::getTempFileName()
+{
+	std::string tempFileName;
+	
+	UVCPPUNIT_ASSERT(m_tempFileNames.empty());
+	tempFileName = "/tmp/uvtest_file";
+	m_tempFileNames.push_back(tempFileName);
+	
+	return tempFileName;
+}
+
+std::string UVDTestingCommonFixture::getTempDirectoryName()
+{
+	std::string tempDirectoryName;
+	
+	UVCPPUNIT_ASSERT(m_tempDirectoryNames.empty());
+	tempDirectoryName = "/tmp/uvtest_dir";
+	m_tempDirectoryNames.push_back(tempDirectoryName);
+	
+	return tempDirectoryName;
+}
+
+void UVDTestingCommonFixture::deleteTempFiles()
+{
+	for( std::vector<std::string>::iterator iter = m_tempFileNames.begin();
+			iter != m_tempFileNames.end(); ++iter )
+	{
+		std::string fileName = *iter;
+		std::string command;
+		
+		command += "rm -f ";
+		command += fileName;
+		system(command.c_str());
+	}
+	m_tempFileNames.clear();
+}
+
+void UVDTestingCommonFixture::deleteTempDirectories()
+{
+	for( std::vector<std::string>::iterator iter = m_tempDirectoryNames.begin();
+			iter != m_tempDirectoryNames.end(); ++iter )
+	{
+		std::string directoryName = *iter;
+		std::string command;
+		
+		command += "rm -rf ";
+		command += directoryName;
+		system(command.c_str());
+	}
+	m_tempDirectoryNames.clear();
+}
+
+std::string UVDTestingCommonFixture::getUnitTestDir()
+{
+	std::string installDir;
+	
+	//Assume we are doing local dev and not really installing for now
+	UVCPPUNIT_ASSERT(UVDGetInstallDir(installDir));
+	return installDir + "/testing";
 }
 

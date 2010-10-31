@@ -43,8 +43,17 @@ protected:
 	//program name does not need to be supplied
 	void generalDisassemble();
 	void generalDisassemble(std::string &output);
+	
+	std::string getTempFileName();
+	void deleteTempFiles();
+	std::string getTempDirectoryName();
+	void deleteTempDirectories();
+	std::string getUnitTestDir();
 
 public:
+	std::string m_uvdInpuFileName;
+	std::vector<std::string> m_tempFileNames;
+	std::vector<std::string> m_tempDirectoryNames;
 	std::vector<std::string> m_args;
 	//After applying additional supplied args
 	std::vector<std::string> m_argsFinal;
@@ -55,6 +64,8 @@ public:
 	//Last initialized uvd
 	UVD *m_uvd;
 };
+
+void UVDUnitTestDir(const std::string &unitTestDir);
 
 #endif
 
