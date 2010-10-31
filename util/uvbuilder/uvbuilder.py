@@ -15,6 +15,7 @@ from os import path
 import sys
 import time
 import filecmp
+import re
 
 debug_email = False 
 ever_send_email = True 
@@ -265,7 +266,8 @@ class Builder:
 			failed_tests = int(status_line.split()[4])
 		elif ok_line:
 			# OK (11)
-			total_tests = int(ok_line.split("()")[1])
+			# Splits into words...apparantly paranthesis are discarded as part of this
+			total_tests = int(re.findall(r'\w+', ok_line)[1])
 			failed_tests = 0
 		if rc or failed_tests > 0:
 			print 'ERROR: failed test run'
