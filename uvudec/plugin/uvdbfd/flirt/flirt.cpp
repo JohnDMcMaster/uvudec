@@ -65,6 +65,7 @@ uv_err_t UVDFLIRTPatternGeneratorBFD::canLoad(const UVDRuntime *runtime, uvd_pri
 	uv_assert_ret(runtime->m_object);
 	if( typeid(*runtime->m_object) != typeid(UVDBFDObject) )
 	{
+		printf_flirt_debug("not a UVDBFDObject\n");
 		return UV_ERR_NOTSUPPORTED;
 	}
 	uv_assert_ret(confidence);

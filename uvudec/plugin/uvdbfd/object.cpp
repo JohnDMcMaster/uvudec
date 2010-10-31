@@ -16,8 +16,9 @@ uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints
 	
 	uv_assert_ret(data);
 	uv_assert_ret(confidence);
-	if( typeid(data) != typeid(UVDDataFile) )
+	if( typeid(*data) != typeid(UVDDataFile) )
 	{
+		printf_plugin_debug("not UVDDataFile, is %s\n", typeid(data).name());
 		*confidence = UVD_MATCH_NONE;
 		return UV_ERR_OK;
 	}
@@ -28,18 +29,21 @@ uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints
 	abfd = bfd_openr(file.c_str(), "default");
 	if( abfd == NULL )
 	{
-		printf_error("Could not open file <%s>\n", file.c_str());
-		return UV_DEBUG(UV_ERR_GENERAL);
+		printf_plugin_debug("Could not open file <%s>\n", file.c_str());
+		*confidence = UVD_MATCH_NONE;
+		return UV_ERR_OK;
 	}
 
 	//Needs to be an object...maybe an archive?	
 	if( bfd_check_format(abfd, bfd_object) == TRUE
 			|| bfd_check_format(abfd, bfd_archive) == TRUE )
 	{
+		printf_plugin_debug("good format\n");
 		*confidence = UVD_MATCH_ACCEPTABLE;
 	}
 	else
 	{
+		printf_plugin_debug("bad format\n");
 		*confidence = UVD_MATCH_NONE;
 	}
 	bfd_close(abfd);
