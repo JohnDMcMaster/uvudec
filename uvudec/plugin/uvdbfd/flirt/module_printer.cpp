@@ -206,7 +206,7 @@ static bool isValidPublicName(const std::string &symbolName)
 {
 	bool ret = false;
 	ret = symbolName.size() >= g_config->m_flirt.m_patternPublicNameLengthMin;
-	//printf_flirt_debug("check public name validity: %s, %d\n", symbolName.c_str(), ret);
+	printf_flirt_debug("check public name validity: %s, %d\n", symbolName.c_str(), ret);
 	return ret;
 }
 
@@ -254,6 +254,8 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 			++invalidPublicNameCount;
 		}
 	}
+	
+	printf_flirt_debug("valid public names: %d, invalid public names: %d\n", validPublicNames.size(), invalidPublicNameCount);
 
 	for( std::vector<UVDBFDPatFunction *>::iterator iter = m_toPrint.begin();
 			iter != m_toPrint.end(); ++iter )
@@ -266,6 +268,7 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 		std::string offsetSuffix;
 		std::string symbolName;
 		std::string publicName;
+		std::string publicNameSymbolPrefix = symbolPrefix;
 		
 		uv_assert_ret(function);
 
@@ -290,7 +293,9 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 		//Do we have a single unknown public name to print a ? entry?
 		if( validPublicNames.empty() && invalidPublicNameCount <= 1 )
 		{
+			printf_flirt_debug("unknown public name\n");
 			publicName = UVD_FLIRT_PAT_UNKNOWN_PUBLIC_NAME_CHAR;
+			publicNameSymbolPrefix = "";
 			uv_assert_ret(publicNameOffset == 0);
 		}
 		//Skip if wasn't a valid public name AND we have public names
@@ -306,7 +311,7 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 		
 		getStringWriter()->print(" %c%.4X%s %s%s",
 				UVD_FLIRT_PAT_PUBLIC_NAME_CHAR, publicNameOffset, offsetSuffix.c_str(),
-				symbolPrefix.c_str(), symbolName.c_str());
+				publicNameSymbolPrefix.c_str(), publicName.c_str());
 
 		//Only print the ? entry if we had a single invalid public name
 		if( validPublicNames.empty() && invalidPublicNameCount <= 1 )
