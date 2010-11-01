@@ -86,6 +86,15 @@ endif
 
 include $(ROOT_DIR)/Makefile.interpreter
 
+# Need to make macro for this
+ifeq ($(USING_LIB_UVUDEC),Y)
+ifeq ($(LINKAGE),static)
+LIBS += $(LIB_UVUDEC_STATIC)
+else
+LIBS += -l$(LIB_UVUDEC_DYNAMIC_USED)
+endif
+endif
+
 ifeq ($(USING_LIBBFD),Y)
 FLAGS_SHARED += -DUSING_LIBBFD
 FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD
@@ -128,6 +137,9 @@ LIBS += -ljansson
 FLAGS_SHARED += -DUSING_JANSSON
 endif
 
+ifeq ($(USING_PYTHON),Y)
+INCLUDES += -I$(PYTHON_INCLUDE_DIR)
+endif
 
 # General libc stuff
 ifeq ($(LINKAGE),static)
