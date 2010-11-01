@@ -96,8 +96,8 @@ void UVDObj2patUnitTest::verifyObj2Pat(const std::string objectFileNameIn, const
 		std::string expectedPatFileName;
 		
 		unitTestDir = getUnitTestDir();
-		objectFileName = unitTestDir + "/flirt/pat/" + objectFileNameIn;
-		expectedPatFileName = unitTestDir + "/flirt/pat/" + expectedPatFileNameIn;
+		objectFileName = unitTestDir + "/flirt/ELF/" + objectFileNameIn;
+		expectedPatFileName = unitTestDir + "/flirt/ELF/" + expectedPatFileNameIn;
 
 		m_args.clear();
 		m_uvdInpuFileName = objectFileName;
