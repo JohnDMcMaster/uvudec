@@ -119,10 +119,27 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
 	}
 
-	/*
-	FIXME: why don't we have input file listed here?
-	*/
-	if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_FILE )
+	if( argConfig->isNakedHandler() )
+	{
+		/*
+		Try to guess type based on file suffixes
+		*/
+		
+		if( argumentArguments.size() >= 1 )
+		{
+			config->m_targetFileName = argumentArguments[0];
+		}
+		if( argumentArguments.size() >= 2 )
+		{
+			g_outputFile = argumentArguments[1];
+		}
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		config->m_targetFileName = firstArg;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_FILE )
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		g_outputFile = firstArg;
@@ -141,6 +158,7 @@ uv_err_t initProgConfig()
 	uv_assert_ret(g_config);
 	
 	//Arguments
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input binary, analyzed program]"));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output program (default: stdout)", 1, argParser, false));
 

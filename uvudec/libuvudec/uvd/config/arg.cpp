@@ -210,7 +210,11 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 			if( !ignoreEarlyArg )
 			{
 				uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments);
-				uv_assert_err_ret(handlerRc);
+				if( UV_FAILED(handlerRc) )
+				{
+					printf_error("argument registered but not processed: %s\n", parsedArg.m_raw.c_str());
+					return UV_DEBUG(UV_ERR_GENERAL);
+				}
 				//Some option like help() has been called that means we should abort program
 				if( handlerRc == UV_ERR_DONE )
 				{
@@ -318,14 +322,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_USELESS_ASCII_ART )
 	{
 		printf("Have too much time on our hands do we?\n%s\n\n", getRandomUVNetASCIIArt().c_str());
-	}
-	/*
-	Misc
-	*/
-	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
-	{
-		uv_assert_ret(!argumentArguments.empty());
-		config->m_targetFileName = firstArg;
 	}
 	/*
 	Analysis target specific
