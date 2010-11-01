@@ -48,15 +48,6 @@ LIBS +=
 
 endif
 
-# Need to make macro for this
-ifeq ($(USING_LIB_UVUDEC),Y)
-ifeq ($(LINKAGE),static)
-LIBS += $(LIB_UVUDEC_STATIC)
-else
-LIBS += -l$(LIB_UVUDEC_DYNAMIC_USED)
-endif
-endif
-
 INFO_TARGETS=infoExe
 infoExe:
 	@(echo "Exe info")
