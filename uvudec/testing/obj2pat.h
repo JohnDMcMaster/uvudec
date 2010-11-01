@@ -27,6 +27,7 @@ class UVDObj2patUnitTest : public UVDTestingCommonFixture
 	CPPUNIT_TEST(shortNamesTest);
 	CPPUNIT_TEST(shortNamesRefTest);
 	CPPUNIT_TEST(shortTest);
+	CPPUNIT_TEST(libmTest);
 	CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -64,12 +65,17 @@ protected:
 	It should be excluded from the pat file
 	*/
 	void shortTest();
+	/*
+	A real library
+	*/
+	void libmTest();
 
 	/*
 	Utility functions
 	*/
 	//
 	void verifyObj2Pat(const std::string &filePrefix);
+	void verifyObj2Pat(const std::string objectFileName, const std::string &expectedPatFileName);
 	//void verifyObj2Pat(const std::string &file, const std::string &expectedPatFileContents, bool fixupPaths = false);
 };
 

@@ -21,10 +21,11 @@ CC_SRCS=$(shell ls *.c)
 CXX_SRCS=$(shell ls *.cpp)
 
 OBJS = $(CC_SRCS:.c=.o) $(CXX_SRCS:.cpp=.o)
+STATIC_LIBS = libm.a
 
-PATS = $(OBJS:.o=.pat)
+PATS = $(OBJS:.o=.pat) $(STATIC_LIBS:.a=.pat)
 
-%.pat: %.o
+%.pat: %.o %.a
 ifeq ($(USED),$(UVUDEC_USED))
 	$(UVOBJ2PAT) $< $@
 endif

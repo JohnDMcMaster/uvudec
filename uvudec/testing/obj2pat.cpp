@@ -51,6 +51,11 @@ void UVDObj2patUnitTest::shortTest()
 	verifyObj2Pat("short");
 }
 
+void UVDObj2patUnitTest::libmTest()
+{
+	verifyObj2Pat("libm.a", "libm.pat");
+}
+
 /*
 Utility
 */
@@ -69,10 +74,11 @@ char safePrintChar(char c)
 
 void UVDObj2patUnitTest::verifyObj2Pat(const std::string &filePrefix)
 {
-	//g_config->m_installDir;
-	std::string objectFileName = filePrefix + ".o";
-	std::string expectedPatFileName = filePrefix + ".pat";
+	verifyObj2Pat(filePrefix + ".o", filePrefix + ".pat");
+}
 
+void UVDObj2patUnitTest::verifyObj2Pat(const std::string objectFileNameIn, const std::string &expectedPatFileNameIn)
+{
 	std::string tempFile;
 
 	try
@@ -81,10 +87,12 @@ void UVDObj2patUnitTest::verifyObj2Pat(const std::string &filePrefix)
 		//std::string outputPatFileName = getTempFileName();
 		std::string outputPatFileContents;
 		std::string expectedPatFileContents;
+		std::string objectFileName;
+		std::string expectedPatFileName;
 		
 		unitTestDir = getUnitTestDir();
-		objectFileName = unitTestDir + "/flirt/pat/" + objectFileName;
-		expectedPatFileName = unitTestDir + "/flirt/pat/" + expectedPatFileName;
+		objectFileName = unitTestDir + "/flirt/pat/" + objectFileNameIn;
+		expectedPatFileName = unitTestDir + "/flirt/pat/" + expectedPatFileNameIn;
 
 		m_args.clear();
 		m_uvdInpuFileName = objectFileName;
