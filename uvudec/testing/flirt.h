@@ -5,14 +5,15 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#ifndef UVD_TESTING_LIBUVUDEC_H
-#define UVD_TESTING_LIBUVUDEC_H
+#ifndef UVD_TESTING_FLIRT_H
+#define UVD_TESTING_FLIRT_H
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "testing/common_fixture.h"
+#include "uvd/flirt/flirt.h"
 
-class UVDFLIRTUnitTest : public UVDTestingCommonFixture
+class UVDTestingFLIRTFixture : public UVDTestingCommonFixture
 {
 protected:
 	void FLIRTInit(void);

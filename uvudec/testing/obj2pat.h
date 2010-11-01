@@ -9,8 +9,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#ifndef UVD_TESTING_LIBUVUDEC_H
-#define UVD_TESTING_LIBUVUDEC_H
+#ifndef UVD_TESTING_OBJ2PAT_H
+#define UVD_TESTING_OBJ2PAT_H
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -80,7 +80,7 @@ protected:
 	*/
 	//
 	void verifyObj2Pat(const std::string &filePrefix);
-	void verifyObj2Pat(const std::string objectFileName, const std::string &expectedPatFileName);
+	void verifyObj2Pat(const std::string &objectFileName, const std::string &expectedPatFileName);
 	//void verifyObj2Pat(const std::string &file, const std::string &expectedPatFileContents, bool fixupPaths = false);
 };
 

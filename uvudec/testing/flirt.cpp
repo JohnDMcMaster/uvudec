@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/flirt.h"
 
-void UVDFLIRTUnitTest::FLIRTInit()
+void UVDTestingFLIRTFixture::FLIRTInit()
 {
 	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
 	
@@ -17,7 +17,7 @@ void UVDFLIRTUnitTest::FLIRTInit()
 	CPPUNIT_ASSERT(m_flirt != NULL);
 }
 
-void UVDFLIRTUnitTest::FLIRTDeinit()
+void UVDTestingFLIRTFixture::FLIRTDeinit()
 {
 	delete m_flirt;
 	m_flirt = NULL;
@@ -25,7 +25,7 @@ void UVDFLIRTUnitTest::FLIRTDeinit()
 	configDeinit();
 }
 
-void UVDFLIRTUnitTest::FLIRTDeinitSafe()
+void UVDTestingFLIRTFixture::FLIRTDeinitSafe()
 {
 	m_flirt = NULL;
 	

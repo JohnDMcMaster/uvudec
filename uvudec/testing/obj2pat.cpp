@@ -82,7 +82,7 @@ void UVDObj2patUnitTest::verifyObj2Pat(const std::string &filePrefix)
 	verifyObj2Pat(filePrefix + ".o", filePrefix + ".pat");
 }
 
-void UVDObj2patUnitTest::verifyObj2Pat(const std::string objectFileNameIn, const std::string &expectedPatFileNameIn)
+void UVDObj2patUnitTest::verifyObj2Pat(const std::string &objectFileNameIn, const std::string &expectedPatFileNameIn)
 {
 	std::string tempFile;
 

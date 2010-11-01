@@ -10,6 +10,7 @@ CC_SRCS =   \
 
 CXX_SRCS = 	\
 			$(TESTING_DIR)/common_fixture.cpp \
+			$(TESTING_DIR)/flirt.cpp \
 			$(TESTING_DIR)/flirtutil.cpp \
 			$(TESTING_DIR)/flirtutil_main_hook.cpp \
 			$(TESTING_DIR)/libuvudec.cpp \
