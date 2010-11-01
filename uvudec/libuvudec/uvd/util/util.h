@@ -184,7 +184,7 @@ void hexdump(const void *data, size_t size);
 void hexdumpCore(const char *data, size_t size, const std::string &prefix);
 
 //printf like formatting to a std::string
-std::string UVDSprintf(const std::string &format, ...);
+std::string UVDSprintf(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
 
 #define UVD_WARN_IF_VERSION_MISMATCH()\
 		do \

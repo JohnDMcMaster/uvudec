@@ -455,7 +455,7 @@ uint32_t nonBlankLinesRemaining(std::vector<std::string> &lines, std::vector<std
 	return nonBlankLines;
 }
 
-std::string UVDSprintf(const std::string &format, ...)
+std::string UVDSprintf(const char *format, ...)
 {
 	//TODO: should we try buffering the memory to increase performance?
 	//Think during UVDInit we should reserve a modest buffer for the common case
@@ -465,7 +465,7 @@ std::string UVDSprintf(const std::string &format, ...)
 	va_list ap;
 	
 	va_start(ap, format);
-	needed = vsnprintf(NULL, 0, format.c_str(), ap) + 1;
+	needed = vsnprintf(NULL, 0, format, ap) + 1;
 	va_end(ap);
  	
 	buff = (char *)malloc(sizeof(buff[0]) * needed);
@@ -475,7 +475,7 @@ std::string UVDSprintf(const std::string &format, ...)
 	}
 
 	va_start(ap, format);
-	vsnprintf(buff, needed, format.c_str(), ap);
+	vsnprintf(buff, needed, format, ap);
 	va_end(ap);
 
 	ret = buff;
