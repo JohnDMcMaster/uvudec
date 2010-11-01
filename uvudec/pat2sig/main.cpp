@@ -17,8 +17,9 @@ obj2pat entry point
 #include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
 #include "uvd/flirt/args.h"
+#include "uvd/flirt/args_property.h"
+#include "uvd/flirt/flirt.h"
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
 #include "uvd/assembly/address.h"
@@ -98,6 +99,46 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			}
 		}
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_VERSION )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigVersion = firstArgNum;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_LIB_NAME )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_libName = firstArg;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_FEATURES )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigFeatures = firstArgNum;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_PAD )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigPad = firstArgNum;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_PROCESSOR_ID )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigProcessorID = firstArgNum;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_OS_TYPES )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigOSTypes = firstArgNum;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_APP_TYPES )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigAppTypes = firstArgNum;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FLIRT_SIG_FILE_TYPES )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_sigFileTypes = firstArgNum;
+	}
 	else
 	{
 		//return UV_DEBUG(argParserDefault(argConfig, argumentArguments));
@@ -115,6 +156,15 @@ uv_err_t initProgConfig()
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
 
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [.pat files, .sig file]"));	
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "functions-as-modules", "functions will not be grouped into object modules", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_VERSION, 0, "sig-version", "signature format version", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_LIB_NAME, 0, "lib-name", "library name string", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_FEATURES, 0, "features", "feature flags", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_PAD, 0, "unknown-pad", "set at your own risk/intuition/boredom", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_PROCESSOR_ID, 0, "processor-ID", "processor-ID", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_OS_TYPES, 0, "OS-types", "OS-types", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_APP_TYPES, 0, "app-types", "app-types", 1, argParser, true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_FILE_TYPES, 0, "file-types", "file-types", 1, argParser, true));
 
 	return UV_ERR_OK;	
 }
