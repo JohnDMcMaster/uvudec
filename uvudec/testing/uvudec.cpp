@@ -97,30 +97,6 @@ void UVDUvudecUnitTest::engineInitTest(void)
 	}
 }
 
-#define UNITTEST_ANALYSIS_DIR	"analysis.unittest"
-void UVDUvudecUnitTest::analysisDirTest(void)
-{
-	try
-	{
-		m_args.clear();	
-		m_args.push_back("--analysis-dir=" UNITTEST_ANALYSIS_DIR);
-
-		generalInit();
-		//TODO: can we use objdump to do a sanity check on output files?
-		//ie give it an expected symbol list and verify they exist
-		UVCPPUNIT_ASSERT(m_uvd->createAnalysisDir());
-		generalDeinit();
-		//Lame...what is a good C func to do this recursivly?
-		CPPUNIT_ASSERT(system("rm -rf " UNITTEST_ANALYSIS_DIR) == 0);
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		system("rm -rf " UNITTEST_ANALYSIS_DIR);
-		throw;
-	}
-}
-
 void UVDUvudecUnitTest::disassembleTest(void)
 {
 	std::string output;
