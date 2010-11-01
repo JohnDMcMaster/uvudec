@@ -46,6 +46,25 @@ public:
 	//UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN
 	uint32_t m_patternPublicNameLengthMin;
 
+	/*
+	Signature creation
+	*/
+	//UVD_PROP_FLIRT_SIG_LIB_NAME
+	std::string m_libName;
+	//UVD_PROP_FLIRT_SIG_VERSION
+	uint32_t m_sigVersion;
+	//UVD_PROP_FLIRT_SIG_FEATURES
+	uint32_t m_sigFeatures;
+	//UVD_PROP_FLIRT_SIG_PAD
+	uint32_t m_sigPad;
+	//UVD_PROP_FLIRT_SIG_PROCESSOR_ID
+	uint32_t m_sigProcessorID;
+	//UVD_PROP_FLIRT_SIG_OS_TYPES
+	uint32_t m_sigOSTypes;
+	//UVD_PROP_FLIRT_SIG_APP_TYPES
+	uint32_t m_sigAppTypes;
+	//UVD_PROP_FLIRT_SIG_FILE_TYPES
+	uint32_t m_sigFileTypes;
 	
 	/*
 	Triming heuristics

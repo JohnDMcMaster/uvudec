@@ -7,8 +7,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_ARGS_PROPERTY_H
 #define UVD_FLIRT_ARGS_PROPERTY_H
 
+#include "uvd/flirt/sig/format.h"
 #include "uvd/flirt/sig/sig.h"
-#include "uvd/flirt/pat/pat.h"
 
 //Enable options that make output more closely resemble what FLAIR would do
 #define UVD_PROP_FLIRT_FLAIR_COMPATIBILITY						"flirt.flair_compatibility"
@@ -70,6 +70,58 @@ Should be set to a bool val
 /*
 .sig file related
 */
+
+/*
+Version to use when creating files
+*/
+#define UVD_PROP_FLIRT_SIG_VERSION								"flirt.sig.version"
+#define UVD_PROP_FLIRT_SIG_VERSION_DEFAULT						7
+
+/*
+Library name field
+Also helps to advertise uvudec and tag files for lazy users
+*/
+#define UVD_PROP_FLIRT_SIG_LIB_NAME								"flirt.sig.lib_name"
+#define UVD_PROP_FLIRT_SIG_LIB_NAME_DEFAULT						"uvudec unnamed library"
+
+/*
+File features flags
+Includes things such as is startup signature, is compressed, etc
+*/
+#define UVD_PROP_FLIRT_SIG_FEATURES								"flirt.sig.features"
+#define UVD_PROP_FLIRT_SIG_FEATURES_DEFAULT						UVD_FLIRT_SIG_FEATURE_NONE
+
+/*
+An unknown importance field
+(pad ie was needed to make structure alignment correct)
+Seem to be set to 0 in reference files
+*/
+#define UVD_PROP_FLIRT_SIG_PAD									"flirt.sig.pad"
+#define UVD_PROP_FLIRT_SIG_PAD_DEFAULT							0x00
+
+/*
+Processor ID enum
+*/
+#define UVD_PROP_FLIRT_SIG_PROCESSOR_ID							"flirt.sig.processor_id"
+#define UVD_PROP_FLIRT_SIG_PROCESSOR_ID_DEFAULT					UVD_FLIRT_SIG_PROCESSOR_ID_80X86
+
+/*
+Operating system flags
+*/
+#define UVD_PROP_FLIRT_SIG_OS_TYPES								"flirt.sig.OS_types"
+#define UVD_PROP_FLIRT_SIG_OS_TYPES_DEFAULT						UVD_FLIRT_SIG_OS_WIN
+
+/*
+Applicable application type flags
+*/
+#define UVD_PROP_FLIRT_SIG_APP_TYPES							"flirt.sig.app_types"
+#define UVD_PROP_FLIRT_SIG_APP_TYPES_DEFAULT					(UVD_FLIRT_SIG_APP_CONSOLE | UVD_FLIRT_SIG_APP_GRAPHICS | UVD_FLIRT_SIG_APP_EXE | UVD_FLIRT_SIG_APP_DLL | UVD_FLIRT_SIG_APP_DRV | UVD_FLIRT_SIG_APP_SINGLE_THREADED | UVD_FLIRT_SIG_APP_MULTI_THREADED | UVD_FLIRT_SIG_APP_32_BIT)
+
+/*
+Applicable object type flags
+*/
+#define UVD_PROP_FLIRT_SIG_FILE_TYPES							"flirt.sig.file_types"
+#define UVD_PROP_FLIRT_SIG_FILE_TYPES_DEFAULT					UVD_FLIRT_SIG_FILE_PE
 
 #endif
 

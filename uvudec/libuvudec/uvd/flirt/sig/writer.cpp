@@ -85,23 +85,10 @@ uv_err_t UVDFLIRTSignatureDBWriter::updateHeader()
 	uint32_t n_modules;
 	*/
 	
-	memcpy(&m_header.magic, UVD__IDASIG__MAGIC, UVD__IDASIG__MAGIC_SIZE);
-	//Since thats the only published version
-	m_header.version = 7;
-	//FIXME: set to proper arch
-	m_header.processor = UVD__IDASIG__ARCH__80X86;
-	//FIXME: set to proper type
-	m_header.file_types = UVD__IDASIG__FILE__PE;
-	//FIXME: set to OS
-	m_header.OS_types = UVD__IDASIG__OS__WIN;
-	//FIXME: set to app type
-	m_header.app_types = UVD__IDASIG__APP__CONSOLE | UVD__IDASIG__APP__GRAPHICS | UVD__IDASIG__APP__EXE | UVD__IDASIG__APP__DLL | UVD__IDASIG__APP__DRV | UVD__IDASIG__APP__SINGLE_THREADED | UVD__IDASIG__APP__MULTI_THREADED | UVD__IDASIG__APP__32_BIT;
-	//FIXME: see about implementing compression
-	///and find out what the other feature flags mean
-	m_header.feature_flags = 0;
-	//Set to 0 in test file
-	m_header.pad = 0x00;
-
+	//Copy over pre-defined values
+	m_header = m_db->m_header;
+	memcpy(&m_header.magic, UVD_FLIRT_SIG_MAGIC, UVD_FLIRT_SIG_MAGIC_SIZE);
+	
 	uint32_t numberFunctions = 0;
 	uv_assert_err_ret(m_db->size(&numberFunctions));
 	printf_flirt_debug("numberFunctions: 0x%08X\n", numberFunctions);
@@ -109,14 +96,17 @@ uv_err_t UVDFLIRTSignatureDBWriter::updateHeader()
 	m_header.old_number_modules = numberFunctions;
 	m_header.n_modules = numberFunctions;
 
-	//FIXME: this needs to be set
+	//FIXME: this needs to be set?
 	//Eh I actually don't know what this is calculated from or why its there
 	//A file integrity checksum on the tree maybe?
+	//I think maybe this was set in previous versions...but I see it seemingly unset in some files
+	//So maybe its only set on certain object formats?
 	m_header.crc16 = 0;
 	
 	//FIXME: what does this mean?
 	//Looks like its suppose to be null terminated
-	strcpy(&m_header.ctype[0], "ctp_");
+	//I've seen blank in files, so thats good enough for me
+	strcpy(&m_header.ctype[0], "");
 	
 	//Not null terminated
 	m_header.library_name_sz = m_db->m_libraryName.size();
@@ -354,7 +344,7 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 					char c = *iterName;
 					
 					//Chars less than 0x20 (space) need to be escaped
-					if( c <= UVD__IDASIG__NAME__ESCAPE_MAX )
+					if( c <= UVD_FLIRT_SIG_NAME_ESCAPE_MAX )
 					{
 						//Somewhat arbitrary which char we use I guess
 						uv_assert_err_ret(uint8Append(c));
@@ -365,25 +355,25 @@ uv_err_t UVDFLIRTSignatureDBWriter::constructCRCNode(UVDFLIRTSignatureTreeLeadin
 				//String terminator should include next flags
 				//Note these flags are all less than 0x20
 				/*
-				#define UVD__IDASIG__NAME__MORE_NAMES					0x01
-				#define UVD__IDASIG__NAME__MORE_BASIC					0x08
-				#define UVD__IDASIG__NAME__MORE_HASH					0x10
+				#define UVD_FLIRT_SIG_NAME_MORE_NAMES					0x01
+				#define UVD_FLIRT_SIG_NAME_MORE_BASIC					0x08
+				#define UVD_FLIRT_SIG_NAME_MORE_HASH					0x10
 				*/
 				if( (refIter + 1) != allReferences.end() )
 				{
-					flags |= UVD__IDASIG__NAME__MORE_NAMES;
+					flags |= UVD_FLIRT_SIG_NAME_MORE_NAMES;
 				}
 				UVDFLIRTSignatureTreeHashNode::BasicSet::iterator basicIterNext = basicIter;
 				++basicIterNext;
 				if( basicIterNext != hashNode->m_bucket.end() )
 				{
-					flags |= UVD__IDASIG__NAME__MORE_BASIC;
+					flags |= UVD_FLIRT_SIG_NAME_MORE_BASIC;
 				}
 				UVDFLIRTSignatureTreeHashNodes::HashSet::iterator hashIterNext = hashIter;
 				++hashIterNext;
 				if( hashIterNext != node->m_crcNodes.m_nodes.end() )
 				{
-					flags |= UVD__IDASIG__NAME__MORE_HASH;
+					flags |= UVD_FLIRT_SIG_NAME_MORE_HASH;
 				}
 				printf_flirt_debug("ref write flag: 0x%02X\n", flags);
 				uv_assert_err_ret(uint8Append(flags));				

@@ -148,7 +148,7 @@ uv_err_t UVDFLIRTSigReader::load(const std::string &in)
 	uv_assert_err_ret(preparse());
 	uv_assert_err_ret(parse_header());
 
-	if( m_db->m_header.feature_flags & UVD__IDASIG__FEATURE__COMPRESSED)
+	if( m_db->m_header.feature_flags & UVD_FLIRT_SIG_FEATURE_COMPRESSED)
 	{
 		uv_assert_err_ret(decompress());
 	}
@@ -300,11 +300,11 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 							return UV_DEBUG(UV_ERR_GENERAL);
 						}
 					
-						if( read_flags <= UVD__IDASIG__NAME__ESCAPE_MAX )
+						if( read_flags <= UVD_FLIRT_SIG_NAME_ESCAPE_MAX )
 						{
 							read_flags = read_byte();
 						}
-						if( read_flags <= UVD__IDASIG__NAME__ESCAPE_MAX )
+						if( read_flags <= UVD_FLIRT_SIG_NAME_ESCAPE_MAX )
 						{
 							break;
 						}
@@ -316,11 +316,11 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 					uv_assert_err_ret(publicName.setOffset(ref_cur_offset));
 					//printf_flirt_debug(" %04X:%s", ref_cur_offset, publicName.m_name.c_str());
 					m_module.m_publicNames.push_back(publicName);
-				} while( read_flags & UVD__IDASIG__NAME__MORE_NAMES );
+				} while( read_flags & UVD_FLIRT_SIG_NAME_MORE_NAMES );
 				
 				//FIXME: not sure what this is
 				//Looks like some offset + value?
-				if( read_flags & UVD__IDASIG__NAME__PAREN )
+				if( read_flags & UVD_FLIRT_SIG_NAME_PAREN )
 				{
 					uint32_t first;
 					uint32_t second;
@@ -342,7 +342,7 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 				
 				//Symbol linked references
 				//This indicates we only preserve one of the references from the .pat file since there is no loop here
-				if( read_flags & UVD__IDASIG__NAME__SYMBOL_LINKED_REFERENCE)
+				if( read_flags & UVD_FLIRT_SIG_NAME_SYMBOL_LINKED_REFERENCE)
 				{
 					UVDFLIRTSignatureReference reference;
 					uint32_t ref_name_len;
@@ -365,8 +365,8 @@ uv_err_t UVDFLIRTSigReader::parse_tree()
 				}
 				//Ready to roll
 				uv_assert_err_ret(m_db->insert(&m_module));
-			} while( read_flags & UVD__IDASIG__NAME__MORE_BASIC );
-		} while( read_flags & UVD__IDASIG__NAME__MORE_HASH );
+			} while( read_flags & UVD_FLIRT_SIG_NAME_MORE_BASIC );
+		} while( read_flags & UVD_FLIRT_SIG_NAME_MORE_HASH );
 	}
 	
 	return UV_ERR_OK;

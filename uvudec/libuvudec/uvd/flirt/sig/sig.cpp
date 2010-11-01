@@ -4,6 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvd/flirt/args_property.h"
 #include "uvd/flirt/flirt.h"
 #include "uvd/flirt/pat/pat.h"
 #include "uvd/flirt/pat/reader.h"
@@ -106,7 +107,16 @@ UVDFLIRTSignatureDB::~UVDFLIRTSignatureDB()
 
 uv_err_t UVDFLIRTSignatureDB::init()
 {
-	m_libraryName = "Unnamed library";
+	m_libraryName = g_config->m_flirt.m_libName;
+
+	m_header.version = g_config->m_flirt.m_sigVersion;
+	m_header.feature_flags = g_config->m_flirt.m_sigFeatures;
+	m_header.pad = g_config->m_flirt.m_sigPad;
+	m_header.processor = g_config->m_flirt.m_sigProcessorID;
+	m_header.OS_types = g_config->m_flirt.m_sigOSTypes;
+	m_header.app_types = g_config->m_flirt.m_sigAppTypes;
+	m_header.file_types = g_config->m_flirt.m_sigFileTypes;
+
 	return UV_ERR_OK;
 }
 
