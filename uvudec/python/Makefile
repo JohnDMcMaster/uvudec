@@ -13,18 +13,19 @@ CREATE_LIB_LINKS=N
 USING_LIB_UVUDEC=Y
 
 CC_SRCS =   \
-			uvudec_wrap.c
 
 CXX_SRCS = 	\
 			example.cpp \
 			main.cpp \
+			uvudec_wrap.cpp \
 
 include $(ROOT_DIR)/Makefile.mk
 
 # Python seems to require the _
 #LIB_PREFIX=_
 
-uvudec_wrap.c: uvudec.i
-	swig -python uvudec.i
+uvudec_wrap.cpp: uvudec.i
+	swig -c++ -python uvudec.i
+	mv uvudec_wrap.cxx uvudec_wrap.cpp
 	mv uvudec.py $(LIB_DIR)
 
