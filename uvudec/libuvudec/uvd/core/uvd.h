@@ -190,9 +190,9 @@ public:
 	Object files and such
 	for now, outputDir is ignored and controlled through config
 	*/
-	uv_err_t createAnalysisDir(const std::string &file, const std::string &outputDir);
+	//uv_err_t createAnalysisDir(const std::string &file, const std::string &outputDir);
 	//Use config options
-	uv_err_t createAnalysisDir();
+	//uv_err_t createAnalysisDir();
 	/*
 	Disassemble binary file to output string
 	*/
@@ -229,7 +229,7 @@ public:
 	//Analyze control structures: if, else, etc
 	uv_err_t analyzeBlock(UVDAnalyzedBlock *block);
 	//Create output suitible for building analysis database
-	uv_err_t generateAnalysisDir();
+	uv_err_t generateAnalysisDir(const std::string &m_analysisDir);
 	uv_err_t analyze();
 	
 	//Convert a block (should be UVDDataChunk?) suspected to be a function to a skeleton analyzed function structure

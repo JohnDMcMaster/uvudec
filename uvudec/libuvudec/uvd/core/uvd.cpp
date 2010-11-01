@@ -660,6 +660,7 @@ uv_err_t UVD::stringListAppend(UVDInstruction *inst, std::vector<std::string> &l
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVD::createAnalysisDir(const std::string &file, const std::string &outputDir)
 {
 	std::string oldDir;
@@ -689,6 +690,7 @@ uv_err_t UVD::createAnalysisDir()
 	
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVD::disassemble(std::string &output)
 {

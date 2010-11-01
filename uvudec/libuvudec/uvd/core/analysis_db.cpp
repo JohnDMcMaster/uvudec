@@ -372,11 +372,11 @@ uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *funct
 	}
 }
 
-uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
+uv_err_t UVDAnalysisDBArchive::saveData(const std::string &outputDbFile)
 {
 	std::string outputDir;
 	
-	UV_ENTER();
+	printf_analysis_debug("saving data\n");
 	
 	//Assume directory
 	if( UV_FAILED(isDir(outputDbFile)) )
@@ -390,8 +390,8 @@ uv_err_t UVDAnalysisDBArchive::saveData(std::string &outputDbFile)
 	std::string configFile = outputDbFile + "/" + g_config->m_functionIndexFilename;
 	std::string config;
 	
-	printf_debug("this = %p\n", this);
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Iterating over functions: %d\n", m_functions.size());
+	printf_analysis_debug("Iterating over functions: %d\n", m_functions.size());
 	
 	//Loop for each function
 	for( std::vector<UVDBinaryFunctionShared *>::size_type i = 0; i < m_functions.size(); ++i )

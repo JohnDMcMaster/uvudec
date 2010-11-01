@@ -336,15 +336,12 @@ uv_err_t UVD::analyzeBlock(UVDAnalyzedBlock *block)
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVD::generateAnalysisDir()
+uv_err_t UVD::generateAnalysisDir(const std::string &analysisDir)
 {
 	UVDAnalysisDBArchive *curDb = NULL;
 
 	uv_assert_ret(m_config);
-	if( m_config->m_analysisDir.empty() )
-	{
-		return UV_ERR_OK;
-	}
+	uv_assert_ret(!analysisDir.empty());
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "uvd: generating analysis save files...\n");
 	UVDBenchmark analysisSaveBenchmark;
@@ -358,7 +355,7 @@ uv_err_t UVD::generateAnalysisDir()
 	printf_debug_level(UVD_DEBUG_SUMMARY, "going to save functions: %d\n", curDb->m_functions.size());
 
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving data...\n");
-	uv_assert_err_ret(curDb->saveData(m_config->m_analysisDir));
+	uv_assert_err_ret(curDb->saveData(analysisDir));
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Data saved!\n");
 	
 	analysisSaveBenchmark.stop();
@@ -627,8 +624,6 @@ uv_err_t UVD::analyze()
 	//Now that instructions have undergone basic processing,
 	//turn code into blocks using the control flow
 	uv_assert_err(constructBlocks());
-	//And output analysis files, if requested
-	uv_assert_err(generateAnalysisDir());
 	
 	rc = UV_ERR_OK;
 	

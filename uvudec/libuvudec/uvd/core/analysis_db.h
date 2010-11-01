@@ -36,7 +36,7 @@ public:
 		-If it does not exist, it will be created as if with mkdir -p
 		-If it does exist, it will assume is destination dir and files should be ovverwritten (ie an update)
 	*/
-	virtual uv_err_t saveData(std::string &file) = 0;
+	virtual uv_err_t saveData(const std::string &file) = 0;
 	
 	/*
 	Whats with the clear params here?
@@ -82,7 +82,7 @@ public:
 		-If it does not exist, it will be created as if with mkdir -p
 		-If it does exist, it will assume is destination dir and files should be ovverwritten (ie an update)
 	*/
-	uv_err_t saveData(std::string &file);
+	uv_err_t saveData(const std::string &file);
 	uv_err_t saveFunctionInstanceSharedData(UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionCode, const std::string &outputDir, int functionIndex, std::string &config);
 	uv_err_t saveFunctionData(UVDBinaryFunctionShared *function, const std::string &outputDir, std::string &config);
 	

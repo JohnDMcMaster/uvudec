@@ -182,7 +182,6 @@ public:
 	//TODO: make this a vector of search paths, either absolute or relative to current dir
 	std::string m_archDir;
 
-	std::string m_analysisDir;
 	int m_analysisOnly;
 	int m_uselessASCIIArt;
 	//Which type of flow analysis to do
