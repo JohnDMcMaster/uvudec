@@ -8,7 +8,7 @@ CC_SRCS =   \
 
 UVD_DIR=$(LIBUVUDEC_DIR)/uvd
 
-CXX_SRCS = 	\
+REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/architecture/architecture.cpp \
 			$(UVD_DIR)/assembly/address.cpp \
 			$(UVD_DIR)/assembly/function.cpp \
@@ -96,7 +96,27 @@ CXX_SRCS = 	\
 			$(UVD_DIR)/util/file.cpp \
 			$(UVD_DIR)/util/version.cpp \
 
+CXX_SRCS = $(REAL_CXX_SRCS) \
+			$(UVD_DIR)/all.cpp \
+
+ALL_TARGETS += $(UVD_DIR)/all.h
+
 ROOT_DIR=..
 # Suppose to be able to find makefile in dir above...but doesn't seem to
 include $(ROOT_DIR)/Makefile.mk
+
+# Dependency isn't quite right, but its close enough
+# Chances are every usable .h file was included by some source file
+uvd/all.h: $(UVD_DIR)/all.h
+$(UVD_DIR)/all.h: $(REAL_CXX_SRCS)
+	echo -n "" >$(UVD_DIR)/all.h
+	echo "/*" >>$(UVD_DIR)/all.h
+	echo "UVNet Universal Decompiler (uvudec)" >>$(UVD_DIR)/all.h
+	echo "Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>" >>$(UVD_DIR)/all.h
+	echo "Licensed under the terms of the LGPL V3 or later, see COPYING for details" >>$(UVD_DIR)/all.h
+	echo "*/" >>$(UVD_DIR)/all.h
+	echo "" >>$(UVD_DIR)/all.h
+	echo "//This file was generated automatically " $(shell date) >>$(UVD_DIR)/all.h
+	
+	find -name '*.h' -exec echo '#include "{}"' ';' |fgrep -v all.h |sed sX./uvd/Xuvd/Xg >>$(UVD_DIR)/all.h
 
