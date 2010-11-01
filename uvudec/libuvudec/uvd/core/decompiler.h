@@ -4,7 +4,8 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#pragma once
+#ifndef UVD_CORE_DECOMPILER_H
+#define UVD_CORE_DECOMPILER_H
 
 #include "uvd/core/uvd.h"
 #include "uvd/util/types.h"
@@ -36,7 +37,7 @@ public:
 	//Class specific deinit function
 	virtual uv_err_t deinit();
 
-	virtual uv_err_t decompile(std::vector<UVDInstruction *> disassembledCode, std::string &highLevelCode, UVDDecompileNotes *notes) = NULL;
+	virtual uv_err_t decompile(std::vector<UVDInstruction *> disassembledCode, std::string &highLevelCode, UVDDecompileNotes *notes) = 0;
 
 	//Get the best matching decompiler for given compiler
 	static uv_err_t getDecompiler(UVDCompiler *compiler, UVDDecompiler **decompiler);
@@ -46,3 +47,6 @@ public:
 	//The specific compiler we are targetting
 	UVDCompiler *m_compiler;
 };
+
+#endif
+
