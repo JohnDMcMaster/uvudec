@@ -51,6 +51,11 @@ void UVDObj2patUnitTest::shortTest()
 	verifyObj2Pat("short");
 }
 
+void UVDObj2patUnitTest::testingMainTest()
+{
+	verifyObj2Pat("uvtest_main");
+}
+
 void UVDObj2patUnitTest::libmTest()
 {
 	verifyObj2Pat("libm.a", "libm.pat");

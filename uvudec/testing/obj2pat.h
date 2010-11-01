@@ -27,6 +27,7 @@ class UVDObj2patUnitTest : public UVDTestingCommonFixture
 	CPPUNIT_TEST(shortNamesTest);
 	CPPUNIT_TEST(shortNamesRefTest);
 	CPPUNIT_TEST(shortTest);
+	CPPUNIT_TEST(testingMainTest);
 	CPPUNIT_TEST(libmTest);
 	CPPUNIT_TEST_SUITE_END();
 
@@ -65,6 +66,10 @@ protected:
 	It should be excluded from the pat file
 	*/
 	void shortTest();
+	/*
+	A real object file
+	*/
+	void testingMainTest();
 	/*
 	A real library
 	*/
