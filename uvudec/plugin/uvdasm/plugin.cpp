@@ -39,7 +39,7 @@ uv_err_t UVDAsmPlugin::onUVDInit(UVD *uvd)
 
 uv_err_t UVDAsmPlugin::getName(std::string &out)
 {
-	out = "uvdasm";
+	out = UVD_PLUGIN_NAME;
 	return UV_ERR_OK;
 }
 
