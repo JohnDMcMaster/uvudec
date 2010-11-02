@@ -1,9 +1,17 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+# UVNet Universal Decompiler (uvudec)
+# Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
+# Licensed under GPL V3+, see COPYING for details
+
+# It can be easily argued that autoconf is an archaic piece of software
+# and I should use CMake sort of stuff instead
+# This may be the case, but this was better than nothing and its good to know
+# WHY I'd prefer CMake instead of "it looked better" than the long standing
+# traditionional tools
 
 AC_PREREQ([2.65])
-AC_INIT([uvudec], [3.0.0], [johndmcmaster@gmail.com])
-AC_CONFIG_SRCDIR([plugin/uvdstrings/main.cpp])
+# FIXME: copy this into Makefile.configure, split apart
+AC_INIT([uvudec], [0.3.0], [JohnDMcMaster@gmail.com])
+AC_CONFIG_SRCDIR([libuvudec/uvd/core/uvd.cpp])
 AC_CONFIG_HEADERS([libuvudec/uvd/config.h])
 
 # Checks for programs.
@@ -99,5 +107,69 @@ AS_IF([test "x$enable_GUI" != "xno"], [
 AC_SUBST(enable_GUI)
 AC_DEFINE([enable_GUI], [], [graphical user interface])
 
+# Dependencies
+# FIXME: I don't think I'm doing this correctly, but it works for now
+
+# Qt
+AC_ARG_ENABLE([qt-prefix],
+	AS_HELP_STRING([--enable-qt-prefix], [Set Qt installed dir prefix]),
+	[
+		qt_prefix=$enableval
+	],
+	[qt_prefix=/opt/qtsdk-2010.04])
+AC_SUBST(qt_prefix)
+AC_DEFINE([qt_prefix], [], [Qt installed dir])
+
+# X11 (Qt dep)
+AC_ARG_ENABLE([x11r6-lib-dir],
+	AS_HELP_STRING([--enable-x11r6-lib-dir], [Set X11R6 lib dir]),
+	[
+		x11r6_lib_dir=$enableval
+	],
+	[x11r6_lib_dir=/usr/X11R6/lib])
+AC_SUBST(x11r6_lib_dir)
+AC_DEFINE([x11r6_lib_dir], [], [X11R6 lib dir])
+
+# binutils
+AC_ARG_ENABLE([binutils-prefix],
+	AS_HELP_STRING([--enable-binutils-prefix], [Set binutils installed dir prefix]),
+	[
+		binutils_prefix=$enableval
+	],
+	[binutils_prefix=/])
+AC_SUBST(binutils_prefix)
+AC_DEFINE([binutils_prefix], [], [binutils installed dir])
+
+# Python
+AC_ARG_ENABLE([python-include-dir],
+	AS_HELP_STRING([--enable-python-include-dir], [Set directory with Python.h]),
+	[
+		python_include_dir=$enableval
+	],
+	[python_include_dir=/usr/include/python2.6])
+AC_SUBST(python_include_dir)
+AC_DEFINE([python_include_dir], [], [Python.h dir])
+
+# Default decompile file
+AC_ARG_ENABLE([default-decompile-file],
+	AS_HELP_STRING([--enable-default-decompile-file], [Set default file to decompile]),
+	[
+		default_decompile_file=$enableval
+	],
+	[default_decompile_file=])
+AC_SUBST(default_decompile_file)
+AC_DEFINE([default_decompile_file], [], [Default decompiled file])
+
+# Default decompile file
+AC_ARG_ENABLE([uvdasm-default-cpu-file],
+	AS_HELP_STRING([--enable-uvdasm-default-cpu-file=<val>], [Set uvdasm plugin's default architecture file]),
+	[
+		uvdasm_default_cpu_file=$enableval
+	],
+	[uvdasm_default_cpu_file=8051/8051.op])
+AC_SUBST(uvdasm_default_cpu_file)
+AC_DEFINE([uvdasm_default_cpu_file], [], [Default uvdasm plugin architecture file])
+
 AC_CONFIG_FILES([Makefile.configure libuvudec/libuvudec.pc])
 AC_OUTPUT
+

@@ -14,25 +14,24 @@ USING_QT=Y
 USING_PYTHON=Y
 USING_PYTHON_API=Y
 USING_PYTHON_EXEC=Y
-PYTHON_INCLUDE_DIR=/usr/include/python2.6
+PYTHON_INCLUDE_DIR=@python_include_dir@
+# Unused (was experimental for uvdasm)
 USING_LUA=N
+# Unused (was experimental for uvdasm)
 USING_SPIDERAPE=N
 USING_LIB_JANSSON=Y
 # To make testing nice
-DEFAULT_DECOMPILE_FILE='"/home/mcmaster/document/mass_personal/ROM/arch/8051/80C32/candela_pltl1/candela_pltl1_rev_3.bin"'
+DEFAULT_DECOMPILE_FILE='"@default_decompile_file@"'
 # For playing around, use the build dir config, not the installed
 DEFAULT_CPU_DIR='"arch"'
-DEFAULT_CPU_FILE=$(DEFAULT_CPU_DIR)'"/8051/8051.op"'
+DEFAULT_CPU_FILE=$(DEFAULT_CPU_DIR)'"/@uvdasm_default_cpu_file@"'
 
-LUA_DIR=/home/mcmaster/document/software/lua/lua-5.1.4
-SPIDERAPE_DIR=/home/mcmaster/document/build/spider_ape/SpiderApe-2007.09.26
-BINUTILS_PREFIX=/home/mcmaster/document/prefix/GNU/binutils/2.20.1
-ifeq ($(USING_QT_RC),Y)
-QT_PREFIX=/opt/qtsdk-2010.05-rc1
-else
-QT_PREFIX=/opt/qtsdk-2010.04
-endif
-X11R6_LIB_DIR = /usr/X11R6/lib
+# LUA_DIR=/home/mcmaster/document/software/lua/lua-5.1.4
+# SPIDERAPE_DIR=/home/mcmaster/document/build/spider_ape/SpiderApe-2007.09.26
+BINUTILS_PREFIX=@binutils_prefix@
+QT_PREFIX=@qt_prefix@
+# Qt dependency
+X11R6_LIB_DIR=@x11r6_lib_dir@
 
 USING_LIBBFD=Y
 
