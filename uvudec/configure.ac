@@ -27,7 +27,8 @@ AC_CHECK_LIB([pthread], [main])
 AC_CHECK_HEADERS([float.h limits.h stddef.h stdint.h stdlib.h string.h sys/time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_STDBOOL
+# I don't use this
+#AC_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
