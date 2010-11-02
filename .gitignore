@@ -1,3 +1,7 @@
 Makefile.configure
 Makefile.depend*
 *.o
+autom4te.cache
+config.log
+config.status
+configure
