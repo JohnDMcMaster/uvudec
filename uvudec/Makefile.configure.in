@@ -5,6 +5,8 @@ EXE_BUILD_SUFFIX=Y
 # Speed up dev
 USING_UPX=N
 
+PREFIX=@prefix@
+
 # Doesn't seem to help
 USING_ROPE=N
 
