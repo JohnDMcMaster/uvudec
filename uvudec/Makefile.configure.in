@@ -1,0 +1,49 @@
+# Runs faster
+USING_STATIC=Y
+USING_DYNAMIC=Y
+EXE_BUILD_SUFFIX=Y
+# Speed up dev
+USING_UPX=N
+
+# Doesn't seem to help
+USING_ROPE=N
+
+USING_QT=Y
+USING_GUI=Y
+USING_PYTHON=Y
+USING_PYTHON_API=Y
+USING_PYTHON_EXEC=Y
+PYTHON_INCLUDE_DIR=/usr/include/python2.6
+USING_LUA=N
+USING_SPIDERAPE=N
+USING_LIB_JANSSON=Y
+# To make testing nice
+DEFAULT_DECOMPILE_FILE='"/home/mcmaster/document/mass_personal/ROM/arch/8051/80C32/candela_pltl1/candela_pltl1_rev_3.bin"'
+# For playing around, use the build dir config, not the installed
+DEFAULT_CPU_DIR='"arch"'
+DEFAULT_CPU_FILE=$(DEFAULT_CPU_DIR)'"/8051/8051.op"'
+
+LUA_DIR=/home/mcmaster/document/software/lua/lua-5.1.4
+SPIDERAPE_DIR=/home/mcmaster/document/build/spider_ape/SpiderApe-2007.09.26
+BINUTILS_PREFIX=/home/mcmaster/document/prefix/GNU/binutils/2.20.1
+ifeq ($(USING_QT_RC),Y)
+QT_PREFIX=/opt/qtsdk-2010.05-rc1
+else
+QT_PREFIX=/opt/qtsdk-2010.04
+endif
+X11R6_LIB_DIR = /usr/X11R6/lib
+
+USING_UVUDEC=Y
+USING_BIN2OBJ=Y
+USING_OBJ2PAT=Y
+USING_PAT2SIG=Y
+USING_FLIRTUTIL=Y
+
+USING_LIBBFD=Y
+
+
+# Enable dep gen
+MAKEDEPEND=makedepend
+
+# Work off of current directory
+INSTALLED_FILES_RELATIVE=Y
