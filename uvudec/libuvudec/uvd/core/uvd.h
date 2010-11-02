@@ -146,7 +146,7 @@ public:
 	static uv_err_t getUVD(UVD **uvdOut, const std::string &file);
 	static uv_err_t getUVD(UVD **uvdOut, UVDData *data);
 	//Without a specific assembly implementation loaded
-	static uv_err_t getUVD(UVD **uvdIn);
+	//static uv_err_t getUVD(UVD **uvdIn);
 
 	/*
 	file: data file to target
@@ -244,8 +244,8 @@ public:
 	uv_err_t stringListAppend(UVDInstruction *inst, std::vector<std::string> &list);
 
 
-	uv_err_t analyzeFunction(UVDBinaryFunctionShared *functionShared);
-	uv_err_t analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared);
+	//uv_err_t analyzeFunction(UVDBinaryFunctionShared *functionShared);
+	//uv_err_t analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunctionCodeShared);
 
 	//Change data to correspond to given file
 	//uv_err_t setFile(const std::string &file);	
@@ -303,9 +303,11 @@ public:
 	UVDPluginEngine *m_pluginEngine;
 };
 
+#ifndef SWIG
 //TODO: this is a hack, needs to be fixed
 //Deprecated
 extern UVD *g_uvd;
+#endif
 //For internal use only
 //We may not always be singleton
 UVD *UVDGetUVD();

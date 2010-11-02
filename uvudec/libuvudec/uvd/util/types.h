@@ -181,7 +181,7 @@ In theory, one could ignore the concept of prefixes and just write a bajillion i
 */
 
 
-const char *uv_disasm_data_str(int uv_disasm_data);
+//const char *uv_disasm_data_str(int uv_disasm_data);
 
 #if 0
 struct uv_disasm_reg_shared_t

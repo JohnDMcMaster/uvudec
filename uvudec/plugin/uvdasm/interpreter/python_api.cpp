@@ -6,11 +6,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #ifdef USING_PYTHON_API
 
+//This file has to go first or it gets angry
+//#include "python2.6/Python.h"
+#include <Python.h>
 #include <sstream>
 #include <string>
 #include <vector>
-//#include "python2.6/Python.h"
-#include "Python.h"
 #include "uvd/config/config.h"
 #include "uvd/util/util.h"
 #include "uvdasm/interpreter/python.h"

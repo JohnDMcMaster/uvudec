@@ -116,9 +116,15 @@ $(UVD_DIR)/all.h: $(REAL_CXX_SRCS)
 	echo "UVNet Universal Decompiler (uvudec)" >>$(UVD_DIR)/all.h
 	echo "Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>" >>$(UVD_DIR)/all.h
 	echo "Licensed under the terms of the LGPL V3 or later, see COPYING for details" >>$(UVD_DIR)/all.h
+	echo "" >>$(UVD_DIR)/all.h
+	echo "This file was generated automatically " $(shell date) >>$(UVD_DIR)/all.h
 	echo "*/" >>$(UVD_DIR)/all.h
 	echo "" >>$(UVD_DIR)/all.h
-	echo "//This file was generated automatically " $(shell date) >>$(UVD_DIR)/all.h
-	
+	echo "#ifndef UVD_ALL_H" >>$(UVD_DIR)/all.h
+	echo "#define UVD_ALL_H" >>$(UVD_DIR)/all.h
+	echo "" >>$(UVD_DIR)/all.h
 	find -name '*.h' -exec echo '#include "{}"' ';' |fgrep -v all.h |sed sX./uvd/Xuvd/Xg >>$(UVD_DIR)/all.h
+	echo "" >>$(UVD_DIR)/all.h
+	echo "#endif" >>$(UVD_DIR)/all.h
+	echo "" >>$(UVD_DIR)/all.h
 

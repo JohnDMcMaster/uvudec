@@ -25,7 +25,7 @@ include $(ROOT_DIR)/Makefile.mk
 #LIB_PREFIX=_
 
 uvudec_wrap.cpp: uvudec.i
-	swig -c++ -python uvudec.i
+	swig -c++ -python -I../libuvudec uvudec.i
 	mv uvudec_wrap.cxx uvudec_wrap.cpp
 	mv uvudec.py $(LIB_DIR)
 
