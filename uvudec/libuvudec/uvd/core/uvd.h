@@ -156,7 +156,7 @@ public:
 	uv_err_t init(const std::string &file, const UVDRuntimeHints &hints = UVDRuntimeHints());
 	uv_err_t init(UVDData *data, const UVDRuntimeHints &hints = UVDRuntimeHints());
 	uv_err_t initEarly();
-	uv_err_t initPlugins();
+	//uv_err_t initPlugins();
 	uv_err_t initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
 	uv_err_t initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out);
 	//Core version with a pre-supplied object and architecture

@@ -19,7 +19,6 @@ Do something instead like create a list of optional and required members, with p
 
 uv_err_t UVDInit()
 {
-return UV_ERR_GENERAL;
 	//Create the g_config object so we can start to take values from it
 	uv_assert_err_ret(UVDInitConfigEarly());
 	//Setup signal handling and basic logging
