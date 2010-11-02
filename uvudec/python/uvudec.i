@@ -105,4 +105,19 @@ void deinit();
 //extern int UVDInit();
 //extern int UVDDeinit();
 
+%pythoncode %{
+# Seems to work
+class InitDeinit:
+    def __init__(self):
+        # print 'Calling UVDInit()'
+        init()
+
+    def __del__(self):
+        # print 'Calling UVDDeinit()'
+        deinit()
+# Dummy instance to get created and destroyed
+# We could get init to be executed globally...but I don't know about deinit
+obj = InitDeinit()
+
+%}
 
