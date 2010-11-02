@@ -1,0 +1,18 @@
+{
+	"VCS": "git",
+	"VCS_URL": "git://github.com/JohnDMcMaster/uvudec.git",
+	"project_dir": "uvudec",
+	"make_dir": "uvudec/uvudec/",
+	"make_args": ["all", "test"],
+	"file_current": "build_0.txt",
+	"file_previous": "build_1.txt",
+	"email_protocol": "SMTP",
+	"email_server": "smtp.gmail.com",
+	"email_port": 587,
+	"email_username": "my.username",
+	"email_password": "my.password",
+	"email_from": "builder",
+	"email_to": "build.subscribers@example.com",
+	"email_subject_prefix": "UVUDEC-BUILD:"
+}
+
