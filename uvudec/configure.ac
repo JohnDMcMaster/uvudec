@@ -89,5 +89,14 @@ AS_IF([test "x$enable_flirtutil" != "xno"], [
 AC_SUBST(enable_flirtutil)
 AC_DEFINE([enable_flirtutil], [], [binary to object program])
 
+# USING_GUI=@enable_GUI@
+AC_ARG_ENABLE([GUI],
+    AS_HELP_STRING([--disable-GUI], [Disable building GUI]))
+AS_IF([test "x$enable_GUI" != "xno"], [
+	enable_GUI=Y
+])
+AC_SUBST(enable_GUI)
+AC_DEFINE([enable_GUI], [], [graphical user interface])
+
 AC_CONFIG_FILES([Makefile.configure libuvudec/libuvudec.pc])
 AC_OUTPUT

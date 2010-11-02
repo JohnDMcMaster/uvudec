@@ -11,7 +11,6 @@ PREFIX=@prefix@
 USING_ROPE=N
 
 USING_QT=Y
-USING_GUI=Y
 USING_PYTHON=Y
 USING_PYTHON_API=Y
 USING_PYTHON_EXEC=Y
@@ -35,13 +34,14 @@ QT_PREFIX=/opt/qtsdk-2010.04
 endif
 X11R6_LIB_DIR = /usr/X11R6/lib
 
+USING_LIBBFD=Y
+
 USING_UVUDEC=@enable_uvudec@
 USING_BINTOOBJ=@enable_bin2obj@
 USING_OBJ2PAT=@enable_obj2pat@
 USING_PAT2SIG=@enable_pat2sig@
 USING_FLIRTUTIL=@enable_flirtutil@
-
-USING_LIBBFD=Y
+USING_GUI=@enable_GUI@
 
 # Enable dep gen
 MAKEDEPEND=makedepend
