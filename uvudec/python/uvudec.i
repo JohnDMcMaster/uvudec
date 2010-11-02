@@ -78,10 +78,6 @@ static void deinit()
 }
 
 %}
-//extern double My_variable;
-//extern int fact(int n);
-//extern int my_mod(int x, int y);
-//extern char *get_time();
 
 //stdint recreated...
 typedef int int32_t;
@@ -91,10 +87,12 @@ typedef unsigned short uint16_t;
 typedef char int8_t;
 typedef unsigned char uint8_t;
 
+//Also, it seems that these aren't getting properly defined either
 typedef int32_t uv_err_t;
 typedef int32_t uvd_tri_t;
 typedef uv_err_t (*uv_thunk_t)();
 typedef uint32_t uv_addr_t;
+
 %include "uvd/all.h"
 %include "uvd/util/types.h"
 %include "uvd/core/init.h"
@@ -102,8 +100,6 @@ typedef uint32_t uv_addr_t;
 
 void init();
 void deinit();
-//extern int UVDInit();
-//extern int UVDDeinit();
 
 %pythoncode %{
 # Seems to work

@@ -15,7 +15,6 @@ USING_LIB_UVUDEC=Y
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			example.cpp \
 			main.cpp \
 			uvudec_wrap.cpp \
 
