@@ -35,17 +35,17 @@ QT_PREFIX=/opt/qtsdk-2010.04
 endif
 X11R6_LIB_DIR = /usr/X11R6/lib
 
-USING_UVUDEC=Y
-USING_BIN2OBJ=Y
-USING_OBJ2PAT=Y
-USING_PAT2SIG=Y
-USING_FLIRTUTIL=Y
+USING_UVUDEC=@enable_uvudec@
+USING_BINTOOBJ=@enable_bin2obj@
+USING_OBJ2PAT=@enable_obj2pat@
+USING_PAT2SIG=@enable_pat2sig@
+USING_FLIRTUTIL=@enable_flirtutil@
 
 USING_LIBBFD=Y
-
 
 # Enable dep gen
 MAKEDEPEND=makedepend
 
 # Work off of current directory
 INSTALLED_FILES_RELATIVE=Y
+
