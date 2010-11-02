@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=${prefix}/opt/uvudec/bin
+libdir=${exec_prefix}/opt/uvudec/lib
+includedir=${exec_prefix}/opt/uvudec/include
+ 
+Name: libuvudec
+Description: Embedded orientated binary analysis framework
+Version: 3.0.0
+Libs: -L${libdir} -luvudec
+Cflags: -I${includedir}
+
