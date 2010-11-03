@@ -13,7 +13,7 @@ uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const 
 {
 	if( !UVDAnyDebugActive() )
 	{
-		return UV_ERR_OK;
+		return rc;
 	}
 
 	if( UV_FAILED(rc) )
