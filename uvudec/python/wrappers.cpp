@@ -34,3 +34,13 @@ UVD *uvd::getUVDFromFileName(const char *fileName)
 	return ret;
 }
 
+uv_err_t always_fails()
+{
+	return UV_ERR_GENERAL;
+}
+
+uv_err_t always_succeeds()
+{
+	return UV_ERR_OK;
+}
+

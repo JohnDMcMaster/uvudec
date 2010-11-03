@@ -42,5 +42,9 @@ public:
 	static UVD *getUVDFromFileName(const char *fileName);
 };
 
+//Test function that always fails
+uv_err_t always_fails();
+uv_err_t always_succeeds();
+
 #endif
 

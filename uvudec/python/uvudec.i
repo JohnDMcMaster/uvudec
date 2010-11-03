@@ -15,6 +15,16 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 // Language independent exception handler
 %include exception.i       
+//Lots of STL fixups
+%include "std_list.i"
+%include "std_map.i"
+%include "std_pair.i"
+%include "std_set.i"
+//TODO: figure out how to type map member variables
+//something like...
+//%apply const std::string& {std::string* foo};
+%include "std_string.i"
+%include "std_vector.i"
 
 %exception
 {
@@ -60,6 +70,24 @@ typedef int32_t uv_err_t;
 typedef int32_t uvd_tri_t;
 typedef uv_err_t (*uv_thunk_t)();
 typedef uint32_t uv_addr_t;
+
+
+/* Convert from Python --> C */
+//Take the default behavior
+/*
+%typemap(in) uv_err_t {
+    $1 = PyInt_AsLong($input);
+}
+*/
+
+/* Convert from C --> Python */
+%typemap(out) uv_err_t {
+    if( UV_FAILED($1) )
+    {
+	 	SWIG_exception(SWIG_RuntimeError, uv_err_str($1));	
+    }
+    $result = PyInt_FromLong($1);
+}
 
 %include "uvd/all.h"
 %include "uvd/config/config.h"
