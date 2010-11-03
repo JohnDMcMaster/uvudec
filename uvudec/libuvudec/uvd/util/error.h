@@ -16,61 +16,63 @@ Error classes
 //Delcare success
 #define UV_ERR_DECL_SUCC(x)				(x)
 //Check success
-#define UV_SUCCEEDED(x) 					((x) >= 0)
+//Note that this includes warnings
+#define UV_SUCCEEDED(x) 				((x) >= 0)
 
 //Delcare warning
 #define UV_ERR_DECL_WAR(x)				(0x0100 + x)
 //Check warning
-#define UV_WARNING(x) 					(x > 0x0100)
+#define UV_WARNING(x) 					(x >= 0x0100)
 
 //Delcare error
-#define UV_ERR_DECL_ERR(x)				(-x)
+#define UV_ERR_DECL_ERR(x)				(-(x + 1))
 //Check error
 #define UV_FAILED(x)					((x) < 0)
 
 /*
 Full success codes
 */
-#define UV_ERR_OK						0
+#define UV_ERR_OK						UV_ERR_DECL_SUCC(0)
 //No more data to process
-#define UV_ERR_DONE						1
+#define UV_ERR_DONE						UV_ERR_DECL_SUCC(1)
 //No error occured, but the item did not contain any data to generate output
-#define UV_ERR_BLANK					2
+#define UV_ERR_BLANK					UV_ERR_DECL_SUCC(2)
 
 /*
 Warning codes
 */
-#define UV_ERR_WARNING					128
+#define UV_ERR_WARNING					UV_ERR_DECL_WAR(0)
 
 /*
 Error codes
 */
 //General error
-#define UV_ERR_GENERAL					UV_ERR_DECL_ERR(1)
+#define UV_ERR_GENERAL					UV_ERR_DECL_ERR(0)
 //Access denied	
-#define UV_ERR_ACCESS					UV_ERR_DECL_ERR(2)
+#define UV_ERR_ACCESS					UV_ERR_DECL_ERR(1)
 //Out of memory
-#define UV_ERR_OUTMEM					UV_ERR_DECL_ERR(3)
+#define UV_ERR_OUTMEM					UV_ERR_DECL_ERR(2)
 //Not found
-#define UV_ERR_NOTFOUND					UV_ERR_DECL_ERR(4)
+#define UV_ERR_NOTFOUND					UV_ERR_DECL_ERR(3)
 //Operation unexpected aborted
-#define UV_ERR_ABORTED					UV_ERR_DECL_ERR(5)
+#define UV_ERR_ABORTED					UV_ERR_DECL_ERR(4)
 //Invalid arguments
-#define UV_ERR_ARGS						UV_ERR_DECL_ERR(6)
+#define UV_ERR_ARGS						UV_ERR_DECL_ERR(5)
 //Not supported.  It is unlikely it will be in any future release either
-#define UV_ERR_NOTSUPPORTED				UV_ERR_DECL_ERR(7)
+#define UV_ERR_NOTSUPPORTED				UV_ERR_DECL_ERR(6)
 //Passed in buffer too small
-#define UV_ERR_BUFFERSIZE				UV_ERR_DECL_ERR(8)
+#define UV_ERR_BUFFERSIZE				UV_ERR_DECL_ERR(7)
 //An arbitrary limit, such as an internal buffer size, has been it
-#define UV_ERR_ARBITRARYLIMIT			UV_ERR_DECL_ERR(9)
+#define UV_ERR_ARBITRARYLIMIT			UV_ERR_DECL_ERR(8)
 //Operation could succeed, but would not be compatible as specified
 //Created originally for IDASIG vs UVDSIG files which support additional architectures
-#define UV_ERR_COMPATIBILITY			UV_ERR_DECL_ERR(10)
+#define UV_ERR_COMPATIBILITY			UV_ERR_DECL_ERR(9)
 //Just not there yet 
-#define UV_ERR_NOTIMPLEMENTED			UV_ERR_DECL_ERR(11)
+#define UV_ERR_NOTIMPLEMENTED			UV_ERR_DECL_ERR(10)
 
 /*
 Disassembly codes
+XXX: are these actually used?
 */
 #define UV_ERR_DECL_DIS(x)				(UV_ERR_DECL_ERR(0x0100 + x))
 //Invalid instruction combination
@@ -93,3 +95,4 @@ typedef const char * uv_const_char_ptr;
 #include "uvd/util/debug.h"
 
 #endif // ifndef UV_ERR_H
+
