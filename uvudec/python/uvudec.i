@@ -8,28 +8,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 %{
 
 #include "uvd/all.h"
+#include "wrappers.h"
 #include <exception>
-
-class UVDException
-{
-public:
-	UVDException(int rc)
-	{
-		m_rc = rc;
-	}
-public:
-	int m_rc;
-};
-
-#define UVD_SWIG_ASSERT_ERR(rcIn) \
-do \
-{ \
-	uv_err_t rc = rcIn; \
-	if( UV_FAILED(rc) ) \
-	{ \
-		throw UVDException(rc); \
-	} \
-} while( 0 ) \
 
 %}
 
@@ -67,18 +47,6 @@ do \
 	}
 }
 
-%{
-static void init()
-{
-	UVD_SWIG_ASSERT_ERR(UVDInit());
-}
-static void deinit()
-{
-	UVD_SWIG_ASSERT_ERR(UVDDeinit());
-}
-
-%}
-
 //stdint recreated...
 typedef int int32_t;
 typedef unsigned int uint32_t;
@@ -97,9 +65,7 @@ typedef uint32_t uv_addr_t;
 %include "uvd/util/types.h"
 %include "uvd/core/init.h"
 %include "uvd/core/uvd.h"
-
-void init();
-void deinit();
+%include "wrappers.h"
 
 %pythoncode %{
 # Seems to work
@@ -115,5 +81,9 @@ class InitDeinit:
 # We could get init to be executed globally...but I don't know about deinit
 obj = InitDeinit()
 
+%}
+
+%{
+#include "wrappers.cpp"
 %}
 
