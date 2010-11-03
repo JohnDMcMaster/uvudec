@@ -242,6 +242,7 @@ PHONY += all .c.o .cpp.o clean dist depend info cleanLocal
 
 info: $(INFO_TARGETS)
 	@(echo "Shared info")
+	@(echo "VERSION: $(PACKAGE_VERSION)")
 	@(echo "USING_UPX: $(USING_UPX)")
 	@(echo "LINKAGE: $(LINKAGE)")
 	@(echo "USING_STATIC: $(USING_STATIC)")
