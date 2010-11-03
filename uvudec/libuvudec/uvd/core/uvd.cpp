@@ -457,7 +457,7 @@ uv_err_t UVD::getUVDFromFileName(UVD **uvdOut, const std::string &file)
 		uv_assert_ret(g_config);
 		uvd->m_config = g_config;
 		
-		if( UV_FAILED(uvd->init(file)) )
+		if( UV_FAILED(uvd->initFromFileName(file)) )
 		{
 			delete uvd;
 			return UV_DEBUG(UV_ERR_GENERAL);
@@ -491,7 +491,7 @@ uv_err_t UVD::getUVDFromData(UVD **uvdOut, UVDData *data)
 		uv_assert_ret(g_config);
 		uvd->m_config = g_config;
 		
-		if( UV_FAILED(uvd->init(data)) )
+		if( UV_FAILED(uvd->initFromData(data)) )
 		{
 			delete uvd;
 			return UV_DEBUG(UV_ERR_GENERAL);

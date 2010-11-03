@@ -153,8 +153,8 @@ public:
 	object: hint about the file format
 	architecture: hint about what we are trying to disassemble
 	*/
-	uv_err_t init(const std::string &file, const UVDRuntimeHints &hints = UVDRuntimeHints());
-	uv_err_t init(UVDData *data, const UVDRuntimeHints &hints = UVDRuntimeHints());
+	uv_err_t initFromFileName(const std::string &file, const UVDRuntimeHints &hints = UVDRuntimeHints());
+	uv_err_t initFromData(UVDData *data, const UVDRuntimeHints &hints = UVDRuntimeHints());
 	uv_err_t initEarly();
 	//uv_err_t initPlugins();
 	uv_err_t initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
