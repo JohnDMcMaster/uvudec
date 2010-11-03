@@ -18,6 +18,9 @@ endif
 
 FLAGS_SHARED += -DUVD_PLUGIN_NAME='"'$(PLUGIN_NAME)'"'
 
+# I didn't notice this for a while because most of our main programs link against libuvudec
+# However, when loaded into python, this will cause plugins not to load
+USING_LIB_UVUDEC=Y
 THIS_LIB_DIR=$(PLUGIN_LIB_DIR)
 # Creates duplicate plugin loading
 CREATE_LIB_LINKS=N

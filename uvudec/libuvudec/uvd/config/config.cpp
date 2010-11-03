@@ -91,11 +91,6 @@ uv_err_t UVDConfig::ensureDebugLevel(uint32_t level)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDConfig::parseMain(int argc, char *const *argv)
-{
-	return UV_DEBUG(parseMain(argc, argv, NULL));
-}
-
 static uv_err_t setupInstallDir()
 {
 	uv_assert_ret(g_config);
@@ -130,7 +125,14 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	m_argc = argc;
 	m_argv = argv;
 	
-	m_args = charPtrArrayToVector(m_argv, m_argc);
+	if( m_argv )
+	{
+		m_args = charPtrArrayToVector(m_argv, m_argc);
+	}
+	else
+	{
+		m_args.clear();
+	}
 	m_argsEffective = m_args;
 	//printf("parse main, effective args: %d\n", m_argsEffective.size());
 
@@ -175,6 +177,12 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	uv_assert_err_ret(processParseMain());
 
 	return UV_ERR_OK;
+}
+
+static const char *g_argvHack[] = {"test", "--__verbose"};
+uv_err_t UVDConfig::parseArgs()
+{
+	return UV_DEBUG(parseMain(1, (char **)g_argvHack));
 }
 
 /*

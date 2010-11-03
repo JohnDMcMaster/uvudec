@@ -62,9 +62,10 @@ typedef uv_err_t (*uv_thunk_t)();
 typedef uint32_t uv_addr_t;
 
 %include "uvd/all.h"
-%include "uvd/util/types.h"
+%include "uvd/config/config.h"
 %include "uvd/core/init.h"
 %include "uvd/core/uvd.h"
+%include "uvd/util/types.h"
 %include "wrappers.h"
 
 %pythoncode %{
@@ -73,6 +74,7 @@ class InitDeinit:
     def __init__(self):
         # print 'Calling UVDInit()'
         init()
+        get_config().parseArgs()
 
     def __del__(self):
         # print 'Calling UVDDeinit()'

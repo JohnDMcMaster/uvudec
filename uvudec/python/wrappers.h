@@ -33,6 +33,7 @@ public:
 
 void init();
 void deinit();
+UVDConfig *get_config();
 
 class uvd : public UVD
 {

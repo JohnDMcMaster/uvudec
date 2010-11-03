@@ -28,6 +28,7 @@ UVDConfigFileLoader::~UVDConfigFileLoader()
 
 uv_err_t UVDConfigFileLoader::init(UVDConfig *config)
 {
+	uv_assert_ret(config);
 	uv_assert_err_ret(earlyArgParse(config));
 	printf_args_debug("init done\n");
 	return UV_ERR_OK;

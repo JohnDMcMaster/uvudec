@@ -76,9 +76,13 @@ public:
 	
 	/*
 	Parse info from main to setup our configuration
+	TODO: we should move these to init function(s)
 	*/
-	uv_err_t parseMain(int argc, char *const *argv); 
-	uv_err_t parseMain(int argc, char *const *argv, char *const *envp); 
+	uv_err_t parseMain(int argc, char *const *argv, char *const *envp = NULL); 
+	//Don't pass any args, but do the same sort of init
+	//Equivilent to above except no args given
+	//Just do config file based init and accept user options as given
+	uv_err_t parseArgs();
 	
 	//Include or exclude addresses from analysis
 	//This is an absolute exclusion...treat this address as if it doesn't exist
@@ -311,9 +315,11 @@ public:
 uv_err_t UVDInitConfig();
 uv_err_t UVDInitConfigEarly();
 
+#ifndef SWIG
 //Default configuration options
 //Deprecated, this will be removed as an exported symbol in the future
 extern UVDConfig *g_config;
+#endif
 //Internal use only
 //Returns the singleton config instance
 //In future, we may (although unlikely for some time) allow multiple engines to be loaded with separate configs

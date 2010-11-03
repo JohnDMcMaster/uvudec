@@ -9,7 +9,6 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 			$(UVUDEC_DIR)/main.cpp \
 
-# Why is this needed?
 USING_LIB_UVUDEC=Y
 
 ROOT_DIR=..
