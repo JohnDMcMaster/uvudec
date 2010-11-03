@@ -1,14 +1,15 @@
 # UVNet Universal Decompiler (uvudec)
 # Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
+# Defined separatly than the other config directives so it can be used from the util programs
+# ...although this sounded good at the time, this probably should be changed
+
+PACKAGE_VERSION=0.3.0
 
 # version stuff
-UVUDEC_VER_MAJOR=0
-UVUDEC_VER_MINOR=3
-UVUDEC_VER_PATCH=0
-# Deprecated
-UVUDEC_VER_BUILD=0
+PACKAGE_VER_MAJOR=$(shell echo $(PACKAGE_VERSION) |cut -d. -f1)
+PACKAGE_VER_MINOR=$(shell echo $(PACKAGE_VERSION) |cut -d. -f2)
+PACKAGE_VER_PATCH=$(shell echo $(PACKAGE_VERSION) |cut -d. -f3)
 
-UVUDEC_VER=$(UVUDEC_VER_MAJOR).$(UVUDEC_VER_MINOR).$(UVUDEC_VER_PATCH)
-UVUDEC_VER_FLAGS=-DUVUDEC_VER_MAJOR=$(UVUDEC_VER_MAJOR) -DUVUDEC_VER_MINOR=$(UVUDEC_VER_MINOR) -DUVUDEC_VER_PATCH=$(UVUDEC_VER_PATCH)
+PACKAGE_VER_FLAGS=-DPACKAGE_VER_MAJOR=$(PACKAGE_VER_MAJOR) -DPACKAGE_VER_MINOR=$(PACKAGE_VER_MINOR) -DPACKAGE_VER_PATCH=$(PACKAGE_VER_PATCH)
 

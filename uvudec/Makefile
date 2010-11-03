@@ -135,13 +135,13 @@ man:
 	$(PERL) -pi -e "s/UVUDEC_VER/$(UVUDEC_VER)/" $(MAN_UNCOMPRESSED)
 	$(GZIP) $(MAN_UNCOMPRESSED)
 
-INSTALL_DIR=$(INSTALL_DIR_BASE)/$(UVUDEC_VER)
+#INSTALL_DIR=$(INSTALL_DIR_BASE)/$(UVUDEC_VER)
 
 install: man
 # Might be upgrading
 	rm -rf $(INSTALL_DIR)
 	mkdir -p $(INSTALL_DIR)
-	cp -r arch bin $(INSTALL_DIR)
+	cp -r arch bin lib $(INSTALL_DIR)
 # Make a generic link for convenience if we were using suffixes
 ifeq ($(EXE_BUILD_SUFFIX),Y)
 # Arbitrarily favor static exe's if both specified
@@ -158,7 +158,7 @@ endif
 # if file to create link to exists as a directory and file to create link at exists
 # the link is instead placed into the target directory
 # so, we must remove the old link first and -f doesn't help
-	cd $(INSTALL_DIR_BASE) && rm -f current && ln -sf $(UVUDEC_VER) current
+#	cd $(INSTALL_DIR_BASE) && rm -f current && ln -sf $(UVUDEC_VER) current
 
 installer:
 	@(echo 'Oh noes!')

@@ -118,7 +118,7 @@ AC_ARG_ENABLE([qt-prefix],
 	],
 	[qt_prefix=/opt/qtsdk-2010.04])
 AC_SUBST(qt_prefix)
-AC_DEFINE([qt_prefix], [], [Qt installed dir])
+#AC_DEFINE([qt_prefix], [], [Qt installed dir])
 
 # X11 (Qt dep)
 AC_ARG_ENABLE([x11r6-lib-dir],
@@ -128,7 +128,7 @@ AC_ARG_ENABLE([x11r6-lib-dir],
 	],
 	[x11r6_lib_dir=/usr/X11R6/lib])
 AC_SUBST(x11r6_lib_dir)
-AC_DEFINE([x11r6_lib_dir], [], [X11R6 lib dir])
+#AC_DEFINE([x11r6_lib_dir], [], [X11R6 lib dir])
 
 # binutils
 AC_ARG_ENABLE([binutils-prefix],
@@ -138,7 +138,7 @@ AC_ARG_ENABLE([binutils-prefix],
 	],
 	[binutils_prefix=/])
 AC_SUBST(binutils_prefix)
-AC_DEFINE([binutils_prefix], [], [binutils installed dir])
+#AC_DEFINE([binutils_prefix], [], [binutils installed dir])
 
 # Python
 AC_ARG_ENABLE([python-include-dir],
@@ -148,7 +148,7 @@ AC_ARG_ENABLE([python-include-dir],
 	],
 	[python_include_dir=/usr/include/python2.6])
 AC_SUBST(python_include_dir)
-AC_DEFINE([python_include_dir], [], [Python.h dir])
+#AC_DEFINE([python_include_dir], [], [Python.h dir])
 
 # Default decompile file
 AC_ARG_ENABLE([default-decompile-file],
@@ -158,7 +158,7 @@ AC_ARG_ENABLE([default-decompile-file],
 	],
 	[default_decompile_file=])
 AC_SUBST(default_decompile_file)
-AC_DEFINE([default_decompile_file], [], [Default decompiled file])
+#AC_DEFINE([default_decompile_file], [], [Default decompiled file])
 
 # Default decompile file
 AC_ARG_ENABLE([uvdasm-default-cpu-file],
@@ -168,8 +168,20 @@ AC_ARG_ENABLE([uvdasm-default-cpu-file],
 	],
 	[uvdasm_default_cpu_file=8051/8051.op])
 AC_SUBST(uvdasm_default_cpu_file)
-AC_DEFINE([uvdasm_default_cpu_file], [], [Default uvdasm plugin architecture file])
+#AC_DEFINE([uvdasm_default_cpu_file], [], [Default uvdasm plugin architecture file])
 
-AC_CONFIG_FILES([Makefile.configure libuvudec/libuvudec.pc])
+# Default decompile file
+AC_ARG_ENABLE([install_dir],
+	AS_HELP_STRING([--enable-install-dir=<val>], [Set install directory]),
+	[
+		install_dir=$enableval
+	],
+	[install_dir=\$\(PREFIX\)/opt/\$\(PACKAGE_NAME\)/\$\(PACKAGE_VERSION\)])
+AC_SUBST(install_dir)
+#AC_DEFINE([install_dir], [], [install directory])
+
+
+
+AC_CONFIG_FILES([Makefile.configure Makefile.version libuvudec/libuvudec.pc])
 AC_OUTPUT
 

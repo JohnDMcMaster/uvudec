@@ -25,12 +25,21 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 uv_err_t UVDGetInstallDir(std::string &installDir)
 {
+/*
+UVD_INSTALL_DIR won't be installed if we want a drag and drop deploy executable
+*/
+//Static compile
+#ifdef UVD_INSTALL_DIR
+	installDir = UVD_INSTALL_DIR;
+#else
 	std::string programName;
 
+	//FIXME: this doesn't quite work
+	//eg: from python since we aren't in the correct dir
 	uv_assert_err_ret(getProgramName(programName));
 	//Like /opt/uvudec/3.0.0/bin/uvudec, need to remove two dirs
 	installDir = uv_dirname(uv_dirname(programName));
-
+#endif
 	return UV_ERR_OK;
 }
 
