@@ -128,8 +128,13 @@ typedef uint32_t uv_addr_t;
     $result = PyInt_FromLong($1);
 }
 
-//FIXME: figure out how to do UVD** in to UVD * ret style translations
-//Currently fails due to some typemap issue
+/*
+FIXME: figure out how to do UVD** in to UVD * ret style translations
+Currently fails due to some typemap issue
+All of the ** types used
+find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/[)].*$//g' |awk -F ',' '{ for(i=1;i<=NF;++i) print $i  }' |fgrep '**' |fgrep -v '***' |tr -d '[:blank:]' |grep -v '^$' |sort -u |wc -l
+71
+*/
 //%apply UVD **OUTPUT { UVD **out };
 
 %include "uvd/all.h"
