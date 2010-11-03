@@ -62,7 +62,6 @@ architecture: hint about what we are trying to disassemble
 */
 uv_err_t UVD::initFromFileName(const std::string &file, const UVDRuntimeHints &hints)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	UVDData *data = NULL;
 	
@@ -84,7 +83,6 @@ error:
 
 uv_err_t UVD::initFromData(UVDData *data, const UVDRuntimeHints &hints)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDObject *object = NULL;
 	UVDArchitecture *architecture = NULL;
 	

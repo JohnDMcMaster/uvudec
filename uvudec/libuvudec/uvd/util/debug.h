@@ -69,9 +69,9 @@ uv_assert_all is always enabled
 uv_assert_err is always enabled
 	It is like above, except checks for UV_SUCCEDED rather than being false
 */
-#define uv_assert_all(x) if( !(x) ) { UV_DEBUG(rc); goto error; }
-#define uv_assert_all_ret(x) if( !(x) ) { return UV_DEBUG(rc); }
-#define uv_assert_err(x) if( UV_FAILED(x) ) { UV_DEBUG(rc); goto error; }
+#define uv_assert_all(x) if( !(x) ) { UV_DEBUG(UV_ERR_GENERAL); goto error; }
+#define uv_assert_all_ret(x) if( !(x) ) { return UV_DEBUG(UV_ERR_GENERAL); }
+#define uv_assert_err(x) if( UV_FAILED(x) ) { UV_DEBUG(UV_ERR_GENERAL); goto error; }
 #define uv_assert_err_ret(x) if( UV_FAILED(x) ) { return UV_DEBUG(UV_ERR_GENERAL); }
 #define uv_assert_err_ret_rc(x) do { uv_err_t _rc = x; if( UV_FAILED(_rc) ) { return UV_DEBUG(_rc); } } while( 0 )
 
@@ -84,7 +84,7 @@ uv_assert_err is always enabled
 #define uv_assert_ret(x) do{ } while(0)
 
 /* Disable such messages if not debugging, probably signifigant binary size reduction, speed improvement */
-#define UV_DEBUG(x) x
+#define UV_DEBUG(x) (x)
 #define UV_ENTER()
 #define UV_CHECKED(x)
 

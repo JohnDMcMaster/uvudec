@@ -16,7 +16,7 @@ Error classes
 //Delcare success
 #define UV_ERR_DECL_SUCC(x)				(x)
 //Check success
-#define UV_SUCCEEDED(x) 					(x >= 0)
+#define UV_SUCCEEDED(x) 					((x) >= 0)
 
 //Delcare warning
 #define UV_ERR_DECL_WAR(x)				(0x0100 + x)
@@ -26,7 +26,7 @@ Error classes
 //Delcare error
 #define UV_ERR_DECL_ERR(x)				(-x)
 //Check error
-#define UV_FAILED(x)					(x < 0)
+#define UV_FAILED(x)					((x) < 0)
 
 /*
 Full success codes
