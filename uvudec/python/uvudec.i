@@ -134,6 +134,9 @@ Currently fails due to some typemap issue
 All of the ** types used
 find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/[)].*$//g' |awk -F ',' '{ for(i=1;i<=NF;++i) print $i  }' |fgrep '**' |fgrep -v '***' |tr -d '[:blank:]' |grep -v '^$' |sort -u |wc -l
 71
+Unique UVD only types
+find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/[)].*$//g' |awk -F ',' '{ for(i=1;i<=NF;++i) print $i  }' |fgrep '**' |fgrep -v '***' |tr -d '[:blank:]' |grep -v '^$' |fgrep UVD |awk -F '**' '{ print $1 }' |sort -u |wc -l
+43
 */
 //%apply UVD **OUTPUT { UVD **out };
 
