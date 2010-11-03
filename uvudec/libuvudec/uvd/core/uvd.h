@@ -143,8 +143,8 @@ public:
 	~UVD();
 	
 	//Factory function for construction
-	static uv_err_t getUVDFromFileName(UVD **uvdOut, const std::string &file);
-	static uv_err_t getUVDFromData(UVD **uvdOut, UVDData *data);
+	static uv_err_t getUVDFromFileName(UVD **out, const std::string &file);
+	static uv_err_t getUVDFromData(UVD **out, UVDData *data);
 	//Without a specific assembly implementation loaded
 	//static uv_err_t getUVD(UVD **uvdIn);
 

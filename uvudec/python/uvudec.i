@@ -4,6 +4,23 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+/*
+Ex relativly complicated function:
+uv_err_t getUVDFromFileName(UVD **out, const std::string &file);
+-uv_err_t return value needs to be translated to exception handling
+-const std::string & needs to be translated to Python string
+-UVD **out needs to be translated to a return value
+
+Success codes
+-UV_ERR_OK: don't do anything special
+-UV_ERR_DONE: return None
+	In particular, this is seen during argument parsing
+	If a special wrapper is given over the parseMain() or w/e function, this issue should go away from the Python side
+-UV_ERR_BLANK: return None
+	This is only used in internal utility functions
+	Since its not really exported from the API, this isn't so much an issue
+*/
+
 %module uvudec
 %{
 
@@ -80,14 +97,40 @@ typedef uint32_t uv_addr_t;
 }
 */
 
+%include "typemaps.i"
+
 /* Convert from C --> Python */
 %typemap(out) uv_err_t {
     if( UV_FAILED($1) )
     {
 	 	SWIG_exception(SWIG_RuntimeError, uv_err_str($1));	
     }
+    //Maybe all of UV_SUCCEEDED()?
+    //else if( $1 == UV_ERR_DONE || $1 == UV_ERR_BLANK )
+    else
+    {
+    	//returns Py_None with proper reference counting math
+    	Py_RETURN_NONE;
+    }
+    /*
+    else
+    {
+	    $result = PyInt_FromLong($1);
+    }
+    */
+}
+
+%typemap(out) UVD ** {
+    if( UV_FAILED($1) )
+    {
+	 	SWIG_exception(SWIG_RuntimeError, uv_err_str($1));	
+    }
     $result = PyInt_FromLong($1);
 }
+
+//FIXME: figure out how to do UVD** in to UVD * ret style translations
+//Currently fails due to some typemap issue
+//%apply UVD **OUTPUT { UVD **out };
 
 %include "uvd/all.h"
 %include "uvd/config/config.h"

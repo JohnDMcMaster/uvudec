@@ -43,8 +43,7 @@ public:
 };
 
 //Test function that always fails
-uv_err_t always_fails();
-uv_err_t always_succeeds();
+uv_err_t always_return_rc(int rc);
 
 #endif
 
