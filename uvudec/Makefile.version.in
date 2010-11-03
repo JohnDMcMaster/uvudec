@@ -4,7 +4,7 @@
 # Defined separatly than the other config directives so it can be used from the util programs
 # ...although this sounded good at the time, this probably should be changed
 
-PACKAGE_VERSION=0.3.0
+PACKAGE_VERSION=@PACKAGE_VERSION@
 
 # version stuff
 PACKAGE_VER_MAJOR=$(shell echo $(PACKAGE_VERSION) |cut -d. -f1)
