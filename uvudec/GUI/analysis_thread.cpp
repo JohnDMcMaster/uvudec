@@ -165,7 +165,7 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	
 	//Create a runTasksr engine active on that input
 	printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
-	uv_assert_err_ret(UVD::getUVD(&uvd, data));
+	uv_assert_err_ret(UVD::getUVDFromData(&uvd, data));
 	uv_assert_ret(uvd);
 	uv_assert_ret(g_uvd);
 	m_mainWindow->m_project->m_uvd = uvd;

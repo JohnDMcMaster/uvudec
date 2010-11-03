@@ -149,7 +149,7 @@ void UVDTestingCommonFixture::generalInit(UVD **uvdOut)
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
 	printf("General init on %s\n", m_uvdInpuFileName.c_str());
-	UVCPPUNIT_ASSERT(UVD::getUVD(&m_uvd, m_uvdInpuFileName));
+	UVCPPUNIT_ASSERT(UVD::getUVDFromFileName(&m_uvd, m_uvdInpuFileName));
 	CPPUNIT_ASSERT(m_uvd != NULL);
 	CPPUNIT_ASSERT(g_uvd != NULL);
 

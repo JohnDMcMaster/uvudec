@@ -64,7 +64,7 @@ static uv_err_t runTasks()
 	
 	//Create a runTasksr engine active on that input
 	printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
-	if( UV_FAILED(UVD::getUVD(&uvd, data)) )
+	if( UV_FAILED(UVD::getUVDFromData(&uvd, data)) )
 	{
 		printf_error("Failed to initialize engine\n");
 		uv_assert_err(UV_ERR_GENERAL);

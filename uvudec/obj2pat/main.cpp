@@ -170,7 +170,7 @@ uv_err_t uvmain(int argc, char **argv)
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	inputFile = flirtConfig->m_targetFiles[0];
-	if( UV_FAILED(UVD::getUVD(&uvd, inputFile)) )
+	if( UV_FAILED(UVD::getUVDFromFileName(&uvd, inputFile)) )
 	{
 		printf_error("Failed to initialize FLIRT engine\n");
 		rc = UV_ERR_OK;

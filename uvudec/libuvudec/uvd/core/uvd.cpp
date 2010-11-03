@@ -438,7 +438,7 @@ uv_err_t UVD::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::getUVD(UVD **uvdOut, const std::string &file)
+uv_err_t UVD::getUVDFromFileName(UVD **uvdOut, const std::string &file)
 {
 	UVD *uvd = NULL;
 	
@@ -472,7 +472,7 @@ uv_err_t UVD::getUVD(UVD **uvdOut, const std::string &file)
 }
 
 //Factory function for construction
-uv_err_t UVD::getUVD(UVD **uvdOut, UVDData *data)
+uv_err_t UVD::getUVDFromData(UVD **uvdOut, UVDData *data)
 {
 	UVD *uvd = NULL;
 	
