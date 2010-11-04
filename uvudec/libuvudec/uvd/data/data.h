@@ -10,6 +10,28 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string>
 #include "uvd/util/types.h"
 
+#define UVD_DATA_ENDIAN_UNKNOWN				0
+/*
+MSB at lowest address
+*/
+#define UVD_DATA_ENDIAN_BIG					1
+/*
+LSB at lowest address
+*/
+#define UVD_DATA_ENDIAN_LITTLE				2
+/*
+PDP mixed endian
+*/
+#define UVD_DATA_ENDIAN_PDP					3
+//Default to x86 since eventually this will be the lazy common use case
+//I always remember x86 bi tordering because I RE'd an API and got the data size wronng, but LSB first meant it worked anyway
+//This might be a really bad idea if people use inline funcs, but they should be explicit
+#ifdef UVD_DATA_ENDIAN_USER
+#define UVD_DATA_ENDIAN_DEFAULT				UVD_DATA_ENDIAN_USER
+#else
+#define UVD_DATA_ENDIAN_DEFAULT				UVD_DATA_ENDIAN_LITTLE
+#endif
+
 /*
 Abstracts how we get the data for the disassembly
 Similar in concept to BFD
@@ -24,6 +46,8 @@ public:
 	//Returns human readable string representation of the source
 	virtual std::string getSource() const;
 	
+	//FIXME: de-overload all of these
+	//Some of these may be deprecated
 	//Read all of the data
 	virtual uv_err_t readData(char **buffer) const;	
 	virtual uv_err_t readData(uint32_t offset, char **buffer) const;
@@ -35,6 +59,22 @@ public:
 	virtual uv_err_t readData(uint32_t offset, char *c) const;	
 	virtual uv_err_t readData(uint32_t offset, uint8_t *c) const;	
 	
+	//Omit endianness on single byte values
+	uv_err_t readU8(uint32_t offset, uint8_t *out) const;
+	uv_err_t read8(uint32_t offset, int8_t *out) const;
+	uv_err_t readU16(uint32_t offset, uint16_t *out, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT) const;
+	uv_err_t read16(uint32_t offset, int16_t *out, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT) const;
+	uv_err_t readU32(uint32_t offset, uint32_t *out, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT) const;
+	uv_err_t read32(uint32_t offset, int32_t *out, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT) const;
+	
+	//Omit endianness on single byte values
+	uv_err_t writeU8(uint32_t offset, uint8_t in);
+	uv_err_t write8(uint32_t offset, int8_t in);
+	uv_err_t writeU16(uint32_t offset, uint16_t in, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT);
+	uv_err_t write16(uint32_t offset, int16_t in, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT);
+	uv_err_t writeU32(uint32_t offset, uint32_t in, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT);
+	uv_err_t write32(uint32_t offset, int32_t in, uint32_t endianness = UVD_DATA_ENDIAN_DEFAULT);
+
 	//WARNING: next 2 read implementations will rely on each other, you must implement at least one
 	//Somewhat dangerous for new classes...maybe should do something different
 	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	

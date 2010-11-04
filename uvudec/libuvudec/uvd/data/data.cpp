@@ -1,10 +1,11 @@
 /*
 UVNet Universal Decompiler (uvudec)
-Copyright 2008 John McMaster
-JohnDMcMaster@gmail.com
+Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+//I've read this is unreliable, but good enough for current needs
+#include <endian.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -302,5 +303,135 @@ void UVDData::hexdump()
 	
 	//::hexdump(buffer, dataSize);
 	free(buffer);
+}
+
+uv_err_t UVDData::readU8(uint32_t offset, uint8_t *out) const
+{
+	return UV_DEBUG(readData(offset, (uint8_t *)out));	
+}
+
+uv_err_t UVDData::read8(uint32_t offset, int8_t *out) const
+{
+	return UV_DEBUG(readData(offset, (uint8_t *)out));	
+}
+
+uv_err_t UVDData::readU16(uint32_t offset, uint16_t *out, uint32_t endianness) const
+{
+	uint16_t data;
+	uv_assert_err_ret(readData(offset, (char *)&data, sizeof(uint16_t)));
+	switch( endianness )
+	{
+	case UVD_DATA_ENDIAN_BIG:
+		data = be16toh(data);
+		break;
+	case UVD_DATA_ENDIAN_LITTLE:
+		data = le16toh(data);
+		break;
+	/*
+	Hmm I guess they don't define macros for this for some reason
+	case UVD_DATA_ENDIAN_PDP:
+		data = be16toh(data);
+		break;
+	*/
+	default:
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	uv_assert_ret(out);
+	*out = data;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::read16(uint32_t offset, int16_t *out, uint32_t endianness) const
+{
+	return UV_DEBUG(readU16(offset, (uint16_t *)out, endianness));	
+}
+
+uv_err_t UVDData::readU32(uint32_t offset, uint32_t *out, uint32_t endianness) const
+{
+	uint32_t data;
+	uv_assert_err_ret(readData(offset, (char *)&data, sizeof(uint32_t)));
+	switch( endianness )
+	{
+	case UVD_DATA_ENDIAN_BIG:
+		data = be32toh(data);
+		break;
+	case UVD_DATA_ENDIAN_LITTLE:
+		data = le32toh(data);
+		break;
+	/*
+	Hmm I guess they don't define macros for this for some reason
+	case UVD_DATA_ENDIAN_PDP:
+		data = be16toh(data);
+		break;
+	*/
+	default:
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	uv_assert_ret(out);
+	*out = data;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::read32(uint32_t offset, int32_t *out, uint32_t endianness) const
+{
+	return UV_DEBUG(readU32(offset, (uint32_t *)out, endianness));	
+}
+
+uv_err_t UVDData::writeU8(uint32_t offset, uint8_t in)
+{
+	return UV_DEBUG(writeData(offset, (const char *)&in, sizeof(in)));	
+}
+
+uv_err_t UVDData::write8(uint32_t offset, int8_t in)
+{
+	return UV_DEBUG(writeU8(offset, in));	
+}
+
+uv_err_t UVDData::writeU16(uint32_t offset, uint16_t in, uint32_t endianness)
+{
+	uint16_t data = 0;
+	
+	switch( endianness )
+	{
+	case UVD_DATA_ENDIAN_BIG:
+		data = htobe16(in);
+		break;
+	case UVD_DATA_ENDIAN_LITTLE:
+		data = htole16(in);
+		break;
+	default:
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	uv_assert_err_ret(writeData(offset, (const char *)&data, sizeof(data)));	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::write16(uint32_t offset, int16_t in, uint32_t endianness)
+{
+	return UV_DEBUG(writeU16(offset, (uint16_t)in, endianness));	
+}
+
+uv_err_t UVDData::writeU32(uint32_t offset, uint32_t in, uint32_t endianness)
+{
+	uint32_t data = 0;
+	
+	switch( endianness )
+	{
+	case UVD_DATA_ENDIAN_BIG:
+		data = htobe32(in);
+		break;
+	case UVD_DATA_ENDIAN_LITTLE:
+		data = htole32(in);
+		break;
+	default:
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	uv_assert_err_ret(writeData(offset, (const char *)&data, sizeof(data)));
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::write32(uint32_t offset, int32_t in, uint32_t endianness)
+{
+	return UV_DEBUG(writeU32(offset, (uint32_t)in, endianness));	
 }
 
