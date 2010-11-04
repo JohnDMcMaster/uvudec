@@ -15,7 +15,6 @@ USING_LIB_UVUDEC=Y
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			main.cpp \
 			uvudec_wrap.cpp \
 
 include $(ROOT_DIR)/Makefile.mk
