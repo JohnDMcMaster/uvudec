@@ -21,7 +21,7 @@ UVDObject::~UVDObject()
 	}
 }
 	
-uv_err_t UVDObject::init(const UVDData *data)
+uv_err_t UVDObject::init(UVDData *data)
 {
 	m_data = data;
 	return UV_ERR_OK;

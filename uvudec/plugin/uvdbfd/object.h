@@ -20,7 +20,7 @@ public:
 	UVDBFDObject();
 	virtual ~UVDBFDObject();
 	
-	virtual uv_err_t init(const UVDData *data);
+	virtual uv_err_t init(UVDData *data);
 	//Rebuild section table off of m_bfd
 	uv_err_t rebuildSections();
 
