@@ -30,7 +30,15 @@ Eventually a C interface will be exposed again with at least basic capabilities
 /* Maximum length, in bytes, of a instruction (opcode, prefix, operands) */
 #define MAX_INST_SIZE			16
 
+//FIXME: s/uv_err_t/uvd_err_t/g
 typedef int32_t uv_err_t;
+//I have certain reservations about ABI stability and predictably due to boolean packing
+//So, make it standard type, but allow for rapid change as needed
+typedef bool uvd_bool_t;
+//Don't stress too much about setting these to the "correct" values...
+//I'm probably not going to make UVD_TRUE 0 just to screw with people
+#define UVD_FALSE				0
+#define UVD_TRUE				1
 
 /*
 Tristate type
