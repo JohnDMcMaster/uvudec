@@ -15,6 +15,7 @@ CXX_SRCS = 	\
 			$(TESTING_DIR)/flirtutil_main_hook.cpp \
 			$(TESTING_DIR)/libuvudec.cpp \
 			$(TESTING_DIR)/main.cpp \
+			$(TESTING_DIR)/object.cpp \
 			$(TESTING_DIR)/obj2pat.cpp \
 			$(TESTING_DIR)/obj2pat_main_hook.cpp \
 			$(TESTING_DIR)/pat2sig.cpp \
