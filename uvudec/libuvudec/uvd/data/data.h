@@ -115,6 +115,12 @@ public:
 	
 	//For debugging
 	void hexdump();
+	
+	//Returns > 1 if we are greater, 0 if equal
+	int compare(const UVDData *other);
+	uv_err_t compareEx(const UVDData *other, int *out);
+	int compareBytes(const uint8_t *other, size_t otherSize);
+	uv_err_t compareBytesEx(const uint8_t *other, size_t otherSize, int *out);
 
 protected:
 	//Do not instantiate this class by itself ... it has pure virtual funcs anyway

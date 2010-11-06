@@ -435,3 +435,55 @@ uv_err_t UVDData::write32(uint32_t offset, int32_t in, uint32_t endianness)
 	return UV_DEBUG(writeU32(offset, (uint32_t)in, endianness));	
 }
 
+uv_err_t UVDData::compare(const UVDData *other)
+{
+	int ret = 0;
+	
+	UV_DEBUG(compareEx(other, &ret));
+	return ret;
+}
+
+uv_err_t UVDData::compareEx(const UVDData *other, int *out)
+{
+	for( uint32_t i = 0; i < size() && i < other->size(); ++i )
+	{
+		uint8_t cur = 0;
+		uint8_t curOther = 0;
+
+		uv_assert_err_ret(readU8(i, &cur));
+		uv_assert_err_ret(other->readU8(i, &curOther));
+		
+		if( cur - curOther )
+		{
+			*out = cur - curOther;
+			return UV_ERR_OK;
+		}
+	}
+	
+	*out = size() - other->size();
+	return UV_ERR_OK;
+}
+
+int UVDData::compareBytes(const uint8_t *other, size_t otherSize)
+{
+	int ret = 0;
+
+	UV_DEBUG(compareBytesEx(other, otherSize, &ret));
+	return ret;
+}
+
+uv_err_t UVDData::compareBytesEx(const uint8_t *other, size_t otherSize, int *out)
+{
+	UVDDataMemory *temp = NULL;
+	
+	uv_assert_err_ret(UVDDataMemory::getUVDDataMemoryByTransfer(&temp,
+			(char *)other, otherSize,
+			false));
+
+	uv_assert_ret(temp);
+	uv_assert_err_ret(compareEx(temp, out));
+	delete temp;
+
+	return UV_ERR_OK;
+}
+

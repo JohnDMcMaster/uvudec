@@ -27,7 +27,7 @@ typedef uint32_t uvd_priority_t;
 #define UVD_MATCH_POOR					0x00100000
 //Would not produce coherent analysis
 //Ex: we know its x86 ISA and its an ARM module
-//These shouldn't even be presented as an option to the user as a match (unless manually selected for w/ reason)
+//These shouldn't even be presented as an option to the user as a match (unless manually selected for w/e reason)
 #define UVD_MATCH_NONE					UINT_MAX
 
 #endif
