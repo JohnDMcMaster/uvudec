@@ -12,6 +12,22 @@ http://nocash.emubase.de/pandocs.htm#thecartridgeheader
 
 #include "uvdobjgb/object.h"
 
+#define UVDOBJGB_LOGO_ADDR_MIN					0x0104
+#define UVDOBJGB_LOGO_ADDR_MAX					0x0133
+#define UVDOBJGB_TITLE_ADDR_MIN					0x0134
+#define UVDOBJGB_TITLE_ADDR_MAX					0x0143
+#define UVDOBJGB_CGB_ADDR_MIN					0x0143
+#define UVDOBJGB_NEW_LICENSEE_CODE_ADDR_MIN		0x0144
+#define UVDOBJGB_SGB_ADDR_MIN					0x0146
+#define UVDOBJGB_CARTRIDGE_TYPE_ADDR_MIN		0x0147
+#define UVDOBJGB_ROM_SIZE_ADDR_MIN				0x0148
+#define UVDOBJGB_RAM_SIZE_ADDR_MIN				0x0149
+#define UVDOBJGB_DEST_CODE_ADDR_MIN				0x014A
+#define UVDOBJGB_OLD_LIC_CODE_ADDR_MIN			0x014B
+#define UVDOBJGB_MASK_ROM_VER_ADDR_MIN			0x014C
+#define UVDOBJGB_HEADER_CHECKSUM_ADDR_MIN		0x014D
+#define UVDOBJGB_GLOBAL_CHECKSUM_ADDR_MIN		0x014E
+
 UVDGBObject::UVDGBObject()
 {
 }
@@ -40,11 +56,16 @@ uv_err_t UVDGBObject::init(UVDData *data)
 	m_sections.push_back(section);
 	*/
 	
+	m_nintendoLogo = new UVDDataChunk();
+	uv_assert_ret(m_nintendoLogo);
+	uv_assert_err_ret(m_nintendoLogo->init(m_data, UVDOBJGB_LOGO_ADDR_MIN, UVDOBJGB_LOGO_ADDR_MAX));
+
 	return UV_ERR_OK;
 }
 
 //XXX: this should probably be a generic object function
 //Also, figure out how to resolve address space nicely
+//Probably needs to be paired with a section
 uv_err_t UVDGBObject::getEntryPoint(uv_addr_t entryPoint)
 {
 	return UV_DEBUG(UV_ERR_GENERAL);
@@ -61,21 +82,32 @@ the gameboy gets turned on. The hexdump of this bitmap is:
 We retain ownership of the data
 Data is only valid as long as this object is valid
 */
+static uint8_t g_nintendoLogo[] = 
+{
+	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B, 0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
+	0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E, 0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99,
+	0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC, 0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E
+};
+
 uv_err_t UVDGBObject::getStartupLogo(const UVDData **out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uv_assert_ret(out);
+	*out = m_nintendoLogo;
+	return UV_ERR_OK;
 }
 
 //out set to true if matches expected value
 uv_err_t UVDGBObject::isNintendoLogo(uvd_bool_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	*out = m_data->compareBytes(g_nintendoLogo, sizeof(g_nintendoLogo)) == 0;
+	return UV_ERR_OK;
 }
 
 //"0134-0143 - Title"
-uv_err_t UVDGBObject::getTitle(std::string &title)
+uv_err_t UVDGBObject::getTitle(std::string &out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readData(UVDOBJGB_TITLE_ADDR_MIN, out,
+			UVDOBJGB_TITLE_ADDR_MAX - UVDOBJGB_TITLE_ADDR_MIN + 1));
 }
 
 /*
@@ -104,7 +136,7 @@ that include fixed palette data at a special location in ROM.
 */
 uv_err_t UVDGBObject::getCGBFlags(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_CGB_ADDR_MIN, out));
 }
 
 /*
@@ -116,7 +148,7 @@ using the header entry at 014B instead.
 */
 uv_err_t UVDGBObject::getNewLicenseeCode(uint16_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU16(UVDOBJGB_NEW_LICENSEE_CODE_ADDR_MIN, out, UVD_DATA_ENDIAN_BIG));
 }
 
 /*
@@ -129,7 +161,7 @@ than 03h.
 */
 uv_err_t UVDGBObject::getSGBFlags(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_SGB_ADDR_MIN, out));
 }
 
 uv_err_t UVDGBObject::isSGBEnabled(uvd_bool_t *out)
@@ -160,7 +192,7 @@ and if further external hardware exists in the cartridge.
 */
 uv_err_t UVDGBObject::getCartridgeType(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_CARTRIDGE_TYPE_ADDR_MIN, out));
 }
 
 /*
@@ -183,13 +215,18 @@ Specifies the ROM Size of the cartridge. Typically calculated as
 //Return in bytes
 uv_err_t UVDGBObject::getROMSize(uint32_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uint8_t raw = 0;
+	
+	uv_assert_err_ret(getROMSizeRaw(&raw));
+	*out = 1 << (15 + raw);
+
+	return UV_ERR_OK;
 }
 
 //Raw byte value
 uv_err_t UVDGBObject::getROMSizeRaw(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_ROM_SIZE_ADDR_MIN, out));
 }
 
 /*
@@ -204,16 +241,39 @@ Specifies the size of the external RAM in the cartridge (if any).
 When using a MBC2 chip 00h must be specified in this entry, even though
 the MBC2 includes a built-in RAM of 512 x 4 bits.
 */
-//Return in bytes
 uv_err_t UVDGBObject::getRAMSize(uint32_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uint8_t raw = 0;
+	
+	uv_assert_err_ret(getRAMSizeRaw(&raw));
+	switch( raw )
+	{
+	case 0x00:
+		*out = 0;
+		break;
+	case 0x01:
+		//2KB
+		*out = 1 << 11;
+		break;
+	case 0x02:
+		//8KB
+		*out = 1 << 13;
+		break;
+	case 0x03:
+		//32KB
+		*out = 1 << 15;
+		break;
+	default:
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+
+	return UV_ERR_OK;
 }
 
 //Raw byte value
 uv_err_t UVDGBObject::getRAMSizeRaw(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_RAM_SIZE_ADDR_MIN, out));
 }
 
 /*
@@ -226,7 +286,7 @@ anywhere else. Only two values are defined.
 */
 uv_err_t UVDGBObject::getDestinationCode(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_DEST_CODE_ADDR_MIN, out));
 }
 
 /*
@@ -237,7 +297,7 @@ signalizes that the New License Code in header bytes 0144-0145 is used instead.
 */
 uv_err_t UVDGBObject::getOldLicenseeCode(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_OLD_LIC_CODE_ADDR_MIN, out));
 }
 
 /*
@@ -246,7 +306,7 @@ Specifies the version number of the game. That is usually 00h.
 */
 uv_err_t UVDGBObject::getMaskROMVersioNumber(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_MASK_ROM_VER_ADDR_MIN, out));
 }
 
 /*
@@ -259,22 +319,36 @@ The GAME WON'T WORK if this checksum is incorrect.
 */
 uv_err_t UVDGBObject::getHeaderChecksum(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_HEADER_CHECKSUM_ADDR_MIN, out));
 }
 
-uv_err_t UVDGBObject::computetHeaderChecksum(uint8_t *out)
+uv_err_t UVDGBObject::computeHeaderChecksum(uint8_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uint8_t checksum = 0;
+
+	for( uv_addr_t addr = 0x0134; addr <= 0x014C; ++addr )
+	{
+		uint8_t cur = 0;
+		
+		uv_assert_err_ret(m_data->readU8(addr, &cur));
+		checksum -= cur - 1;
+	}
+	*out = checksum;
+
+	return UV_ERR_OK;
 }
 		
 uv_err_t UVDGBObject::isHeaderChecksumValid(uvd_bool_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
+	uint8_t fileChecksum = 0;
+	uint8_t computedChecksum = 0;
 
-uv_err_t UVDGBObject::computeGlobalChecksum(uint16_t *out)
-{
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uv_assert_err_ret(getHeaderChecksum(&fileChecksum));
+	uv_assert_err_ret(computeHeaderChecksum(&computedChecksum));
+	uv_assert_ret(out);
+	*out = fileChecksum == computedChecksum;
+
+	return UV_ERR_OK;
 }
 
 /*
@@ -285,14 +359,55 @@ bytes). The Gameboy doesn't verify this checksum.
 */
 uv_err_t UVDGBObject::getGlobalChecksum(uint16_t *out)
 {
+	//Upper byte first: 
+	return UV_DEBUG(m_data->readU16(UVDOBJGB_GLOBAL_CHECKSUM_ADDR_MIN, out, UVD_DATA_ENDIAN_BIG));
+}
+
+uv_err_t UVDGBObject::computeGlobalChecksum(uint16_t *out)
+{
+	//uint16_t checksum = 0;
 	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+uv_err_t UVDGBObject::isGlobalChecksumValid(uvd_bool_t *out)
+{
+	uint16_t fileGlobalChecksum = 0;
+	uint16_t computedGlobalChecksum = 0;
+
+	uv_assert_err_ret(getGlobalChecksum(&fileGlobalChecksum));
+	uv_assert_err_ret(computeGlobalChecksum(&computedGlobalChecksum));
+	uv_assert_ret(out);
+	*out = fileGlobalChecksum == computedGlobalChecksum;
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDGBObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,
 		void *user)
 {
-	//While this may work, likely its not a good loader and should be a last resort
-	*confidence = UVD_MATCH_POOR;
+	UVDGBObject temp;
+	//Required for the game to work
+	uvd_bool_t headerChecksumValid = false;
+	//Optional
+	uvd_bool_t globalChecksumValid = true;
+	
+	uv_assert_err_ret(temp.init((UVDData *)data));
+	uv_assert_err_ret(temp.isHeaderChecksumValid(&headerChecksumValid));
+	//uv_assert_err_ret(isGlobalChecksumValid(&globalChecksumValid));
+	//Think I read this is required to be correct
+	//uv_err_t isNintendoLogo(uvd_bool_t *out);
+	
+	if( headerChecksumValid && globalChecksumValid )
+	{
+		*confidence = UVD_MATCH_ACCEPTABLE;
+	}
+	else
+	{
+		//At best the checksums are improperly calculated
+		//we could check the nintendo logo as well
+		*confidence = UVD_MATCH_POOR;
+	}
+	
 	return UV_ERR_OK;
 }
 

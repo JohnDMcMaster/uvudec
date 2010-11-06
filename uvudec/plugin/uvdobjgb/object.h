@@ -26,10 +26,11 @@ public:
 	//XXX: this should probably be a generic object function
 	//Also, figure out how to resolve address space nicely
 	uv_err_t getEntryPoint(uv_addr_t entryPoint);
+	
 	uv_err_t getStartupLogo(const UVDData **out);
 	//out set to true if matches expected value
 	uv_err_t isNintendoLogo(uvd_bool_t *out);
-	uv_err_t getTitle(std::string &title);
+	uv_err_t getTitle(std::string &out);
 	uv_err_t getManufacturerCode(uint32_t *out);
 	uv_err_t getCGBFlags(uint8_t *out);
 	uv_err_t getNewLicenseeCode(uint16_t *out);
@@ -51,7 +52,7 @@ public:
 	//From the actual ROM
 	uv_err_t getHeaderChecksum(uint8_t *out);
 	//Calculate what it "should" be
-	uv_err_t computetHeaderChecksum(uint8_t *out);
+	uv_err_t computeHeaderChecksum(uint8_t *out);
 	uv_err_t isHeaderChecksumValid(uvd_bool_t *out);
 		
 	//From the actual ROM
@@ -69,7 +70,7 @@ public:
 			void *user);
 
 public:
-	UVDData *m_nintendoLogo;
+	UVDDataChunk *m_nintendoLogo;
 };
 
 #endif
