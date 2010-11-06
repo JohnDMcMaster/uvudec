@@ -17,25 +17,21 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 class UVDTestingCommonFixture : public CPPUNIT_NS::TestFixture
 {
 public:
-	void setUp(void);
-	void tearDown(void);
+	//This does NOT call any init functions
+	//Only tries to clean up the current state
+	virtual void setUp(void);
+	virtual void tearDown(void);
 
 protected:
-	//Only call UVDInit(), but also check expected state variables
-	void uvdInit();
+	//Not only call UVDInit(), but also check expected state variables
+	virtual void libraryInit();
 	//Initialize UVDInit() and parse main
 	uv_err_t configInit(UVDConfig **configOut = NULL);
 	//Do standard deinit, including report errors
-	void configDeinit();
-	//Try to reset us to a sane state for the next test afer an error
-	//This version will not throw exceptions and will not clean up memory
-	//FIXME: migrate this to teardown.  Need to figure out how to only call UVDDeinit if necessary
-	void configDeinitSafe();
-	
+	virtual void deinit();
 	//Initialize config and a UVD engine object
 	//Returns the main parse code
 	void generalInit(UVD **uvdOut = NULL);
-	void generalDeinit();
 	
 	void argsToArgv();
 
@@ -64,6 +60,7 @@ public:
 	UVDConfig *m_config;
 	//Last initialized uvd
 	UVD *m_uvd;
+	bool m_wasUVDInitCalled;
 };
 
 void UVDUnitTestDir(const std::string &unitTestDir);

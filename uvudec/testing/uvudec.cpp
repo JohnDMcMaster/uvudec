@@ -22,94 +22,56 @@ Tests
 
 void UVDUvudecUnitTest::defaultDecompileFileTest(void)
 {
-	try
-	{
-		UVDData *data = NULL;
-		std::string file = DEFAULT_DECOMPILE_FILE;
-	
-		uvdInit();
+	UVDData *data = NULL;
+	std::string file = DEFAULT_DECOMPILE_FILE;
 
-		/*
-		Currently requires a file at engine init because its suppose to guess the type
-		*/
-		printf("Opening on %s\n", file.c_str());
-		UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
-		CPPUNIT_ASSERT(data != NULL);	
-	
-		delete data;
+	libraryInit();
 
-		configDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
+	/*
+	Currently requires a file at engine init because its suppose to guess the type
+	*/
+	printf("Opening on %s\n", file.c_str());
+	UVCPPUNIT_ASSERT(UVDDataFile::getUVDDataFile(&data, file));
+	CPPUNIT_ASSERT(data != NULL);	
+
+	delete data;
+
+	deinit();
 }
 
 void UVDUvudecUnitTest::versionArgTest(void)
 {
-	try
-	{
-		m_args.clear();
-		m_args.push_back("--version");
-		
-		CPPUNIT_ASSERT_EQUAL(UV_ERR_DONE, configInit());
-		generalDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
+	m_args.push_back("--version");
+	
+	CPPUNIT_ASSERT_EQUAL(UV_ERR_DONE, configInit());
+	deinit();
 }
 
 void UVDUvudecUnitTest::helpArgTest(void)
 {
-	try
-	{
-		m_args.clear();
-		m_args.push_back("--help");		
+	m_args.push_back("--help");		
 
-		CPPUNIT_ASSERT(configInit() == UV_ERR_DONE);
-		generalDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
+	CPPUNIT_ASSERT(configInit() == UV_ERR_DONE);
+	deinit();
 }
 
 void UVDUvudecUnitTest::engineInitTest(void)
 {
-	try
-	{
-		m_args.clear();
-
-		generalInit();
-		generalDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
+	generalInit();
+	deinit();
 }
 
 void UVDUvudecUnitTest::disassembleTest(void)
 {
 	std::string output;
 	
-	m_args.clear();
-
 	generalDisassemble(output);
 	//This just dumps unneeded junk to output
 	//dumpAssembly("sample output", output);
 }
 
 
-void UVDUvudecUnitTest::disassembleRangeTestDeliminators(void)
+void UVDUvudecUnitTest::disassembleRangeTestDeliminatorsTest(void)
 {
 	/*
 	This asssumes using the candela image
@@ -198,7 +160,7 @@ void UVDUvudecUnitTest::disassembleRangeTestDeliminators(void)
 	}
 }
 
-void UVDUvudecUnitTest::disassembleRangeTestDefaultEquivilence(void)
+void UVDUvudecUnitTest::disassembleRangeTestDefaultEquivilenceTest(void)
 {
 	//Default and full range should be identical
 	std::string defaultRange;
@@ -242,7 +204,7 @@ void UVDUvudecUnitTest::disassembleRangeTestDefaultEquivilence(void)
 	}
 }
 
-void UVDUvudecUnitTest::disassembleRangeTestComplex(void)
+void UVDUvudecUnitTest::disassembleRangeTestComplexTest(void)
 {
 	/*
 	This asssumes using the candela image
@@ -265,7 +227,6 @@ void UVDUvudecUnitTest::disassembleRangeTestComplex(void)
 	//Try all possible range delminators
 
 	printf("Multiple inclusion range\n");
-	m_args.clear();
 	m_args.push_back("--addr-include=0x0000-0x0002");
 	m_args.push_back("--addr-include=0x000B-0x000E");
 	generalDisassemble(output);
@@ -282,21 +243,11 @@ void UVDUvudecUnitTest::disassembleRangeTestComplex(void)
 	}
 }
 
-void UVDUvudecUnitTest::uvudecBasicRun(void)
+void UVDUvudecUnitTest::uvudecBasicRunTest(void)
 {
-	m_args.clear();
 	m_args.push_back("--output=/dev/null");
 	argsToArgv();
 
-	try
-	{
-		UVCPPUNIT_ASSERT(uvudec_uvmain(m_argc, m_argv));
-	}
-	catch(...)
-	{
-		delete m_argv;
-		m_argv = NULL;
-		throw;
-	}
+	UVCPPUNIT_ASSERT(uvudec_uvmain(m_argc, m_argv));
 }
 

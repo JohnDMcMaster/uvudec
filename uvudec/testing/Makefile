@@ -19,6 +19,8 @@ CXX_SRCS = 	\
 			$(TESTING_DIR)/obj2pat_main_hook.cpp \
 			$(TESTING_DIR)/pat2sig.cpp \
 			$(TESTING_DIR)/pat2sig_main_hook.cpp \
+			$(TESTING_DIR)/plugin.cpp \
+			$(TESTING_DIR)/uvdobjgb.cpp \
 			$(TESTING_DIR)/uvudec.cpp \
 			$(TESTING_DIR)/uvudec_main_hook.cpp \
 

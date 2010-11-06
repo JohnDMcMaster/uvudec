@@ -86,50 +86,42 @@ void UVDObj2patUnitTest::verifyObj2Pat(const std::string &objectFileNameIn, cons
 {
 	std::string tempFile;
 
+	std::string unitTestDir;
+	//std::string outputPatFileName = getTempFileName();
+	std::string outputPatFileContents;
+	std::string expectedPatFileContents;
+	std::string objectFileName;
+	std::string expectedPatFileName;
+	
+	unitTestDir = getUnitTestDir();
+	objectFileName = unitTestDir + "/flirt/ELF/" + objectFileNameIn;
+	expectedPatFileName = unitTestDir + "/flirt/ELF/" + expectedPatFileNameIn;
+
+	m_args.clear();
+	m_uvdInpuFileName = objectFileName;
+	generalInit();
+	UVCPPUNIT_ASSERT(m_uvd->m_flirt->toPat(outputPatFileContents));
+	deinit();
+	
+	//UVCPPUNIT_ASSERT(readFile(outputPatFileName, outputPatFileContents));
+	UVCPPUNIT_ASSERT(readFile(expectedPatFileName, expectedPatFileContents));
 	try
 	{
-		std::string unitTestDir;
-		//std::string outputPatFileName = getTempFileName();
-		std::string outputPatFileContents;
-		std::string expectedPatFileContents;
-		std::string objectFileName;
-		std::string expectedPatFileName;
-		
-		unitTestDir = getUnitTestDir();
-		objectFileName = unitTestDir + "/flirt/ELF/" + objectFileNameIn;
-		expectedPatFileName = unitTestDir + "/flirt/ELF/" + expectedPatFileNameIn;
-
-		m_args.clear();
-		m_uvdInpuFileName = objectFileName;
-		generalInit();
-		UVCPPUNIT_ASSERT(m_uvd->m_flirt->toPat(outputPatFileContents));
-		generalDeinit();
-		
-		//UVCPPUNIT_ASSERT(readFile(outputPatFileName, outputPatFileContents));
-		UVCPPUNIT_ASSERT(readFile(expectedPatFileName, expectedPatFileContents));
-		try
-		{
-			CPPUNIT_ASSERT_EQUAL(expectedPatFileContents, outputPatFileContents);
-		}
-		catch(...)
-		{
-			for( std::string::size_type i = 0; i < expectedPatFileContents.size() && i < outputPatFileContents.size(); ++i )
-			{
-				if( expectedPatFileContents[i] != outputPatFileContents[i] )
-				{
-					printf("difference at offset %d, %c/0x%02X (expected) vs %c/0x%02X (given)\n",
-							i,
-							safePrintChar(expectedPatFileContents[i]), expectedPatFileContents[i],
-							safePrintChar(outputPatFileContents[i]), outputPatFileContents[i]);
-					break;
-				}
-			}
-			throw;
-		}
+		CPPUNIT_ASSERT_EQUAL(expectedPatFileContents, outputPatFileContents);
 	}
 	catch(...)
 	{
-		configDeinitSafe();
+		for( std::string::size_type i = 0; i < expectedPatFileContents.size() && i < outputPatFileContents.size(); ++i )
+		{
+			if( expectedPatFileContents[i] != outputPatFileContents[i] )
+			{
+				printf("difference at offset %d, %c/0x%02X (expected) vs %c/0x%02X (given)\n",
+						i,
+						safePrintChar(expectedPatFileContents[i]), expectedPatFileContents[i],
+						safePrintChar(outputPatFileContents[i]), outputPatFileContents[i]);
+				break;
+			}
+		}
 		throw;
 	}
 }

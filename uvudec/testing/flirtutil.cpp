@@ -78,33 +78,25 @@ void UVDFlirtutilFixture::verifyDump(const std::string &sigFileNameIn, const std
 {
 	std::string tempFile;
 
-	try
-	{
-		std::string unitTestDir;
-		//std::string outputPatFileName = getTempFileName();
-		std::string output;
-		std::string expectedOutput;
-		std::string inputFileName;
-		std::string expectedOutputFileName;
-		
-		unitTestDir = getUnitTestDir();
-		inputFileName = unitTestDir + "/flirt/ELF/" + sigFileNameIn;
-		expectedOutputFileName = unitTestDir + "/flirt/ELF/" + expectedDumpFileNameIn;
+	std::string unitTestDir;
+	//std::string outputPatFileName = getTempFileName();
+	std::string output;
+	std::string expectedOutput;
+	std::string inputFileName;
+	std::string expectedOutputFileName;
+	
+	unitTestDir = getUnitTestDir();
+	inputFileName = unitTestDir + "/flirt/ELF/" + sigFileNameIn;
+	expectedOutputFileName = unitTestDir + "/flirt/ELF/" + expectedDumpFileNameIn;
 
-		m_args.clear();
-		FLIRTInit();
-		UVCPPUNIT_ASSERT(m_flirt->dumpSigFile(inputFileName));
-		FLIRTDeinit();
-		
-		//FIXME: we aren't verifying right now...
-		//we need a way to capture the output
-		//probably by changing the dump API		
-		printf_warn("FIXME: no dump verify support\n");
-	}
-	catch(...)
-	{
-		FLIRTDeinitSafe();
-		throw;
-	}
+	m_args.clear();
+	init();
+	UVCPPUNIT_ASSERT(m_flirt->dumpSigFile(inputFileName));
+	deinit();
+	
+	//FIXME: we aren't verifying right now...
+	//we need a way to capture the output
+	//probably by changing the dump API		
+	printf_warn("FIXME: no dump verify support\n");
 }
 

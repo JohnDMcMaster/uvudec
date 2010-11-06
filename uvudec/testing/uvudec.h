@@ -19,10 +19,10 @@ class UVDUvudecUnitTest : public UVDTestingCommonFixture
 	CPPUNIT_TEST(helpArgTest);
 	CPPUNIT_TEST(engineInitTest);
 	CPPUNIT_TEST(disassembleTest);
-	CPPUNIT_TEST(disassembleRangeTestDeliminators);
-	CPPUNIT_TEST(disassembleRangeTestDefaultEquivilence);
-	CPPUNIT_TEST(disassembleRangeTestComplex);
-	CPPUNIT_TEST(uvudecBasicRun);
+	CPPUNIT_TEST(disassembleRangeTestDeliminatorsTest);
+	CPPUNIT_TEST(disassembleRangeTestDefaultEquivilenceTest);
+	CPPUNIT_TEST(disassembleRangeTestComplexTest);
+	CPPUNIT_TEST(uvudecBasicRunTest);
 	CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -50,14 +50,14 @@ protected:
 	/*
 	Disassemble the default binary with inclusion/exclusion ranges
 	*/
-	void disassembleRangeTestDeliminators(void);
-	void disassembleRangeTestDefaultEquivilence(void);
-	void disassembleRangeTestComplex(void);
+	void disassembleRangeTestDeliminatorsTest(void);
+	void disassembleRangeTestDefaultEquivilenceTest(void);
+	void disassembleRangeTestComplexTest(void);
 	/*
 	Actually calls uvudec's uvmain using the hooks
 	Does a basic test where as most of hte thorough test test libuvudec rather than what the uvudec exe can do
 	*/
-	void uvudecBasicRun(void);
+	void uvudecBasicRunTest(void);
 };
 
 #endif

@@ -17,17 +17,9 @@ void UVDLibuvudecUnitTest::versionTest(void)
 
 void UVDLibuvudecUnitTest::initDeinitTest(void)
 {
-	try
-	{
-		m_args.clear();	
-		CPPUNIT_ASSERT_EQUAL(UV_ERR_OK, configInit());
-		generalDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
+	m_args.clear();	
+	CPPUNIT_ASSERT_EQUAL(UV_ERR_OK, configInit());
+	deinit();
 }
 
 

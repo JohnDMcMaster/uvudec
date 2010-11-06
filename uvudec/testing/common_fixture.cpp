@@ -20,10 +20,36 @@ void UVDTestingCommonFixture::setUp(void)
 	m_config = NULL;
 	m_uvd = NULL;
 	m_uvdInpuFileName = DEFAULT_DECOMPILE_FILE;
+	m_args.clear();
+	m_wasUVDInitCalled = false;
 }
 
 void UVDTestingCommonFixture::tearDown(void) 
 {
+	/*
+	Don't delete anything local
+	Don't throw exceptions
+	*/
+	printf("UVDTestingCommonFixture::tear down\n");
+	try
+	{
+		m_argc = 0;
+		m_argv = NULL;
+		m_config = NULL;
+		m_uvd = NULL;
+		//Try to clean up the library state
+		//If this is going to crash, future tests probably would anyway
+		if( m_wasUVDInitCalled )
+		{
+			UVDDeinit();
+			m_wasUVDInitCalled = false;
+		}
+		deleteTempFiles();
+		deleteTempDirectories();
+	}
+	catch(...)
+	{
+	}
 }
 
 void UVDTestingCommonFixture::argsToArgv()
@@ -63,12 +89,13 @@ void UVDTestingCommonFixture::argsToArgv()
 Utility functions
 */
 
-void UVDTestingCommonFixture::uvdInit()
+void UVDTestingCommonFixture::libraryInit()
 {
 	CPPUNIT_ASSERT(g_config == NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
 	CPPUNIT_ASSERT(m_config == NULL);
 	UVCPPUNIT_ASSERT(UVDInit());
+	m_wasUVDInitCalled = true;
 	CPPUNIT_ASSERT(g_config != NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
 }
@@ -81,7 +108,7 @@ uv_err_t UVDTestingCommonFixture::configInit(UVDConfig **configOut)
 	printf("To exec : %s\n", stringVectorToSystemArgument(m_argsFinal).c_str());
 	fflush(stdout);
 
-	uvdInit();
+	libraryInit();
 	
 	m_config = g_config;
 	rc = m_config->parseMain(m_argc, m_argv);
@@ -94,10 +121,11 @@ uv_err_t UVDTestingCommonFixture::configInit(UVDConfig **configOut)
 	return rc;
 }
 
-void UVDTestingCommonFixture::configDeinit()
+void UVDTestingCommonFixture::deinit()
 {
 	//This should be deleted before tearing down the library
-	CPPUNIT_ASSERT(m_uvd == NULL);
+	delete m_uvd;
+	m_uvd = NULL;
 	
 	//Config is created by UVDInit(), so it is not users responsibility to free
 	UVCPPUNIT_ASSERT(UVDDeinit());
@@ -120,27 +148,6 @@ void UVDTestingCommonFixture::configDeinit()
 	deleteTempDirectories();
 }
 
-void UVDTestingCommonFixture::configDeinitSafe()
-{
-	/*
-	Don't delete anything
-	Don't throw exceptions
-	*/
-	try
-	{
-		m_argc = 0;
-		m_argv = NULL;
-		m_config = NULL;
-		m_uvd = NULL;
-		UVDDeinit();
-		deleteTempFiles();
-		deleteTempDirectories();
-	}
-	catch(...)
-	{
-	}
-}
-
 void UVDTestingCommonFixture::generalInit(UVD **uvdOut)
 {
 	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
@@ -159,15 +166,6 @@ void UVDTestingCommonFixture::generalInit(UVD **uvdOut)
 	}
 }
 
-void UVDTestingCommonFixture::generalDeinit()
-{
-	//This should be deleted before tearing down the library
-	delete m_uvd;
-	m_uvd = NULL;
-
-	configDeinit();
-}
-
 void UVDTestingCommonFixture::dumpAssembly(const std::string &header, const std::string &assembly)
 {
 	printf("\n\n\n%s\n<%s>\n\n\n", header.c_str(), limitString(assembly, 200).c_str());
@@ -182,17 +180,9 @@ void UVDTestingCommonFixture::generalDisassemble()
 
 void UVDTestingCommonFixture::generalDisassemble(std::string &output)
 {
-	try
-	{
-		generalInit();
-		UVCPPUNIT_ASSERT(m_uvd->disassemble(output));
-		generalDeinit();
-	}
-	catch(...)
-	{
-		configDeinitSafe();
-		throw;
-	}
+	generalInit();
+	UVCPPUNIT_ASSERT(m_uvd->disassemble(output));
+	deinit();
 }
 
 std::string UVDTestingCommonFixture::getTempFileName()

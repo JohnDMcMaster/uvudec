@@ -13,16 +13,17 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "testing/common_fixture.h"
 #include "uvd/flirt/flirt.h"
 
-class UVDTestingFLIRTFixture : public UVDTestingCommonFixture
+class UVDTestingPluginFixture : public UVDTestingCommonFixture
 {
 public:
-	virtual void tearDown(void);
+	void tearDown(void);
 protected:
-	virtual void init(void);
-	//virtual void deinit(void);
+	void init(void);
+	void deinit(void);
 
 protected:
-	UVDFLIRT *m_flirt;
+	UVDPlugin *m_plugin;
+	std::string m_pluginName;
 };
 
 #endif
