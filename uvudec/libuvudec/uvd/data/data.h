@@ -52,7 +52,7 @@ public:
 	virtual uv_err_t readData(char **buffer) const;	
 	virtual uv_err_t readData(uint32_t offset, char **buffer) const;
 	virtual uv_err_t readData(uint32_t offset, char **buffer, uint32_t bufferSize) const;	
-	virtual uv_err_t readData(uint32_t offset, std::string &s, uint32_t readSize) const;	
+	virtual uv_err_t readDataAsString(uint32_t offset, std::string &s, uint32_t readSize) const;	
 	//Core readData() implementation: child classes should implement this
 	//By default, this calls read()
 	virtual uv_err_t readData(uint32_t offset, char *buffer, uint32_t bufferSize) const;	

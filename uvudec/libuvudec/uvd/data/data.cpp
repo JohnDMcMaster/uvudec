@@ -67,13 +67,13 @@ uv_err_t UVDData::readData(unsigned int offset, char *buffer, unsigned int buffe
 	uv_assert_ret(readVal >= 0);
 	if( ((unsigned int)readVal) != bufferSize )
 	{
-		printf("Read bytes: %d, expected: %d\n", readVal, bufferSize);
+		//printf("Read bytes: %d, expected: %d\n", readVal, bufferSize);
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDData::readData(unsigned int offset, std::string &s, unsigned int readSize) const
+uv_err_t UVDData::readDataAsString(unsigned int offset, std::string &s, unsigned int readSize) const
 {
 	int readValue = read(offset, s, readSize);
 	uv_assert_ret(readValue >= 0);
@@ -152,8 +152,12 @@ int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize) co
 	{
 		return -1;
 	}
+	//printf("reading %s at offset 0x%08X\n", getSource().c_str(), offset);	
 	rc = read(offset, buff, readSize);
-	s = buff;
+	if( rc >= 0 )
+	{
+		s = std::string(buff, rc);
+	}
 	free(buff);
 	buff = NULL;
 	return rc;
@@ -312,7 +316,8 @@ uv_err_t UVDData::readU8(uint32_t offset, uint8_t *out) const
 
 uv_err_t UVDData::read8(uint32_t offset, int8_t *out) const
 {
-	return UV_DEBUG(readData(offset, (uint8_t *)out));	
+	//printf("this: 0x%08X, offset: 0x%08X, out: 0x%08X\n", (int)this, offset, (int)out);
+	return UV_DEBUG(readData(offset, (char *)out, sizeof(uint8_t)));	
 }
 
 uv_err_t UVDData::readU16(uint32_t offset, uint16_t *out, uint32_t endianness) const
@@ -445,6 +450,7 @@ uv_err_t UVDData::compare(const UVDData *other)
 
 uv_err_t UVDData::compareEx(const UVDData *other, int *out)
 {
+	uv_assert_ret(out);
 	for( uint32_t i = 0; i < size() && i < other->size(); ++i )
 	{
 		uint8_t cur = 0;
