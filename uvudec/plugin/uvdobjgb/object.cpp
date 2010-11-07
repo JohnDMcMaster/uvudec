@@ -71,9 +71,86 @@ error:
 //XXX: this should probably be a generic object function
 //Also, figure out how to resolve address space nicely
 //Probably needs to be paired with a section
-uv_err_t UVDGBObject::getEntryPoint(uv_addr_t entryPoint)
+uv_err_t UVDGBObject::getEntryPoint(uv_addr_t *entryPoint)
 {
 	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+void UVDGBObject::debugPrint()
+{
+	printf("\n\n");
+
+	uv_addr_t entryPoint = 0;
+	UV_DEBUG(getEntryPoint(&entryPoint));
+	printf_plugin_debug("entry point: 0x%08X\n", entryPoint);
+
+	/*
+	uvd_bool_t bIsNintendoLogo = false;
+	UV_DEBUG(isNintendoLogo(&bIsNintendoLogo));
+	printf_plugin_debug("is nintendo logo: %d\n", bIsNintendoLogo);
+	*/
+
+	std::string title;
+	UV_DEBUG(getTitle(title));
+	printf_plugin_debug("title: %s\n", title.c_str());
+
+	uint32_t manufacturerCode = 0;
+	UV_DEBUG(getManufacturerCode(&manufacturerCode));
+	printf_plugin_debug("manufacturer code: 0x%08X\n", manufacturerCode);
+
+	/*
+	UV_DEBUG(getCGBFlags(uint8_t *out));
+
+	UV_DEBUG(getNewLicenseeCode(uint16_t *out));
+
+	UV_DEBUG(getSGBFlags(uint8_t *out));
+
+	UV_DEBUG(isSGBEnabled(uvd_bool_t *out));
+
+	UV_DEBUG(getCartridgeType(uint8_t *out));
+	*/
+
+	uint32_t ROMSize = 0;
+	UV_DEBUG(getROMSize(&ROMSize));
+	printf_plugin_debug("ROM size (bytes): 0x%08X\n", ROMSize);
+	uint8_t ROMSizeRaw = 0;
+	UV_DEBUG(getROMSizeRaw(&ROMSizeRaw));
+	printf_plugin_debug("ROM size (raw): 0x%02X\n", ROMSizeRaw);
+
+	uint32_t RAMSize = 0;
+	UV_DEBUG(getRAMSize(&RAMSize));
+	printf_plugin_debug("RAM size (bytes): 0x%08X\n", RAMSize);
+	uint8_t RAMSizeRaw = 0;
+	UV_DEBUG(getRAMSizeRaw(&RAMSizeRaw));
+	printf_plugin_debug("RAM size (raw): 0x%02X\n", RAMSizeRaw);
+
+	/*
+	UV_DEBUG(getDestinationCode(uint8_t *out));
+
+	UV_DEBUG(getOldLicenseeCode(uint8_t *out));
+
+	UV_DEBUG(getMaskROMVersioNumber(uint8_t *out));
+	*/
+
+	uvd_bool_t headerChecksumValid = false;
+	uint8_t headerChecksumFromFile = 0;
+	uint8_t headerChecksumComputed = 0;
+	UV_DEBUG(getHeaderChecksum(&headerChecksumFromFile));
+	UV_DEBUG(computeHeaderChecksum(&headerChecksumComputed));
+	UV_DEBUG(isHeaderChecksumValid(&headerChecksumValid));
+	printf_plugin_debug("header checksum, computed: 0x%02X, from file: 0x%02X, valid: %d\n",
+			headerChecksumComputed, headerChecksumFromFile, headerChecksumValid);
+
+	uvd_bool_t globalChecksumValid = false;
+	uint16_t globalChecksumFromFile = 0;
+	uint16_t globalChecksumComputed = 0;
+	UV_DEBUG(getGlobalChecksum(&globalChecksumFromFile));
+	UV_DEBUG(computeGlobalChecksum(&globalChecksumComputed));
+	UV_DEBUG(isGlobalChecksumValid(&globalChecksumValid));
+	printf_plugin_debug("global checksum, computed: 0x%04X, from file: 0x%04X, valid: %d\n",
+			globalChecksumComputed, globalChecksumFromFile, globalChecksumValid);
+
+	printf("\n\n");
 }
 
 /*
@@ -104,6 +181,8 @@ uv_err_t UVDGBObject::getStartupLogo(const UVDData **out)
 //out set to true if matches expected value
 uv_err_t UVDGBObject::isNintendoLogo(uvd_bool_t *out)
 {
+	uv_assert_ret(out);
+	uv_assert_ret(m_data);
 	*out = m_data->compareBytes(g_nintendoLogo, sizeof(g_nintendoLogo)) == 0;
 	return UV_ERR_OK;
 }
@@ -111,7 +190,7 @@ uv_err_t UVDGBObject::isNintendoLogo(uvd_bool_t *out)
 //"0134-0143 - Title"
 uv_err_t UVDGBObject::getTitle(std::string &out)
 {
-	return UV_DEBUG(m_data->readData(UVDOBJGB_TITLE_ADDR_MIN, out,
+	return UV_DEBUG(m_data->readDataAsString(UVDOBJGB_TITLE_ADDR_MIN, out,
 			UVDOBJGB_TITLE_ADDR_MAX - UVDOBJGB_TITLE_ADDR_MIN + 1));
 }
 
@@ -336,7 +415,7 @@ uv_err_t UVDGBObject::computeHeaderChecksum(uint8_t *out)
 		uint8_t cur = 0;
 		
 		uv_assert_err_ret(m_data->readU8(addr, &cur));
-		checksum -= cur - 1;
+		checksum -= cur + 1;
 	}
 	*out = checksum;
 
@@ -399,11 +478,14 @@ uv_err_t UVDGBObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints,
 	
 	uv_assert_ret(confidence);
 	uv_assert_err(temp.init((UVDData *)data));
+	temp.debugPrint();
 	uv_assert_err(temp.isHeaderChecksumValid(&headerChecksumValid));
 	//uv_assert_err_ret(isGlobalChecksumValid(&globalChecksumValid));
 	//Think I read this is required to be correct
 	//uv_err_t isNintendoLogo(uvd_bool_t *out);
-	
+	temp.debugPrint();
+	printf_plugin_debug("header checksum valid: %d\n", headerChecksumValid);
+	printf_plugin_debug("global checksum valid: %d\n", globalChecksumValid);
 	if( headerChecksumValid && globalChecksumValid )
 	{
 		*confidence = UVD_MATCH_ACCEPTABLE;

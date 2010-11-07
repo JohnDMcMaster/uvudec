@@ -23,9 +23,11 @@ public:
 
 	virtual uv_err_t init(UVDData *data);
 
+	void debugPrint();
+
 	//XXX: this should probably be a generic object function
 	//Also, figure out how to resolve address space nicely
-	uv_err_t getEntryPoint(uv_addr_t entryPoint);
+	uv_err_t getEntryPoint(uv_addr_t *entryPoint);
 	
 	uv_err_t getStartupLogo(const UVDData **out);
 	//out set to true if matches expected value
