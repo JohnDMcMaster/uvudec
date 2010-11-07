@@ -485,7 +485,7 @@ uv_err_t UVDFLIRTSignatureRawSequence::fromStringCore(const std::string &s, uint
 	if( pos >= size )
 	{
 		printf_flirt_debug("pos: %d, size: %d, target length: %d\n", pos, size, lengthIn);
-		hexdump(m_bytes, size);
+		UVD_HEXDUMP(m_bytes, size);
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	m_bytes[pos] = SIGNATURE_ESCAPED_CHAR_END;
@@ -644,7 +644,7 @@ uint32_t UVDFLIRTSignatureRawSequence::allocSizeFrom(const_iterator start, uint3
 	//Room needed for termination
 	uint32_t ret = 2;
 	//printf_flirt_debug("allocSizeFrom()\n");
-	//hexdump(m_bytes, 0x40);
+	//UVD_HEXDUMP(m_bytes, 0x40);
 	for( const_iterator iter = start; iter != const_end(); UV_DEBUG(iter.next()) )
 	{
 		if( n == 0 )

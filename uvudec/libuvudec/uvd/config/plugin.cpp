@@ -30,12 +30,6 @@ uv_err_t UVDPluginConfig::init(UVDConfig *config)
 
 uv_err_t UVDPluginConfig::deinit()
 {
-	for( UVDArgConfigs::iterator iter = m_earlyConfigArgs.begin(); iter != m_earlyConfigArgs.end(); ++iter )
-	{
-		delete (*iter).second;
-	}
-	m_earlyConfigArgs.clear();
-
 	return UV_ERR_OK;
 }
 

@@ -73,7 +73,7 @@ bool UVDArgToBool(const std::string &sArg)
 /*
 short forms return all short args as the key
 */
-uv_err_t processArgCore(const std::string &arg, UVDParsedArg &parsedArg)
+uv_err_t UVDProcessArgCore(const std::string &arg, UVDParsedArg &parsedArg)
 {
 	parsedArg.m_keyForm = UVD_ARG_FORM_UNKNOWN;
 	parsedArg.m_embeddedValPresent = false;
@@ -128,10 +128,10 @@ uv_err_t processArgCore(const std::string &arg, UVDParsedArg &parsedArg)
 	return UV_ERR_OK;
 }
 
-uv_err_t processArg(const std::string &arg, std::vector<UVDParsedArg> &parsedArgs)
+uv_err_t UVDProcessArg(const std::string &arg, std::vector<UVDParsedArg> &parsedArgs)
 {
 	UVDParsedArg parsedArg;
-	uv_assert_err_ret(processArgCore(arg, parsedArg));
+	uv_assert_err_ret(UVDProcessArgCore(arg, parsedArg));
 	
 	parsedArgs.clear();
 	//Do we need to split this up due to packed short args?
@@ -153,11 +153,11 @@ uv_err_t processArg(const std::string &arg, std::vector<UVDParsedArg> &parsedArg
 	return UV_ERR_OK;
 }
 
-uv_err_t matchArgConfig(const UVDArgConfigs &argConfigs, UVDParsedArg &arg, UVDArgConfig const**matchedArgConfig)
+uv_err_t UVDMatchArgConfig(const UVDArgConfigs &argConfigs, UVDParsedArg &arg, UVDArgConfig const**matchedArgConfig)
 {
 	uv_assert_ret(matchedArgConfig);
-	for( UVDArgConfigs::const_iterator iter = argConfigs.begin();
-			iter != argConfigs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::const_iterator iter = argConfigs.m_argConfigs.begin();
+			iter != argConfigs.m_argConfigs.end(); ++iter )
 	{
 		const UVDArgConfig *argConfig = (*iter).second;
 		uv_assert_ret(argConfig);

@@ -489,8 +489,7 @@ uv_err_t UVDIterator::initialProcessStringTable()
 		std::vector<std::string> lines;
 		
 		//Read a string
-		m_addressSpace->m_data->read(mem->m_min_addr, sData, mem->m_max_addr - mem->m_min_addr);
-
+		uv_assert_err_ret(m_addressSpace->m_data->readDataAsSafeString(mem->m_min_addr, mem->m_max_addr - mem->m_min_addr, sData));
 		
 		lines = split(sData, '\n', true);
 		

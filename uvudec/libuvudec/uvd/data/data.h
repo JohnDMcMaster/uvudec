@@ -52,7 +52,8 @@ public:
 	virtual uv_err_t readData(char **buffer) const;	
 	virtual uv_err_t readData(uint32_t offset, char **buffer) const;
 	virtual uv_err_t readData(uint32_t offset, char **buffer, uint32_t bufferSize) const;	
-	virtual uv_err_t readDataAsString(uint32_t offset, std::string &s, uint32_t readSize) const;	
+	virtual uv_err_t readDataAsString(unsigned int  offset, size_t readSize, std::string &out) const;	
+	virtual uv_err_t readDataAsSafeString(unsigned int  offset, size_t readSize, std::string &out) const;	
 	//Core readData() implementation: child classes should implement this
 	//By default, this calls read()
 	virtual uv_err_t readData(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
@@ -79,7 +80,6 @@ public:
 	//Somewhat dangerous for new classes...maybe should do something different
 	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
 	virtual int read(uint32_t offset) const;
-	virtual int read(uint32_t offset, std::string &s, uint32_t readSize) const;	
 
 	//Try to move away from returning int
 	virtual uv_err_t writeData(uint32_t offset, const char *buffer, uint32_t bufferSize);
@@ -125,6 +125,9 @@ public:
 protected:
 	//Do not instantiate this class by itself ... it has pure virtual funcs anyway
 	UVDData();
+
+	//FIXME: remove this
+	virtual int read(uint32_t offset, std::string &s, uint32_t readSize) const;	
 
 private:
 	//NOTE: this is not currently implemented, but may be in the future

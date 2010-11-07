@@ -23,6 +23,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/core/uvd.h"
 #include <linux/limits.h>
 
+static unsigned int uv_get_num_tokens_core(const char *text, char delim, int ret_blanks);
+
 uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t *second)
 {
 	char delim = 0;
@@ -127,11 +129,6 @@ char **uv_split_lines(const char *str, unsigned int *n_ret)
 	return uv_split_core(str, '\n', n_ret, TRUE);
 }
 
-char **uv_split(const char *str, char delim)
-{
-	return uv_split_core(str, delim, NULL, 1);
-}
-
 /*
 XXX: this is really old code that seems to work, but really should be phased out
 
@@ -210,12 +207,7 @@ error:
 	return NULL;
 }
 
-unsigned int uv_get_num_lines(const char *str)
-{
-	return uv_get_num_tokens_core(str, '\n', TRUE);
-}
-
-unsigned int uv_get_num_tokens_core(const char *text, char delim, int ret_blanks)
+static unsigned int uv_get_num_tokens_core(const char *text, char delim, int ret_blanks)
 {
 	int ret = 1;
 	unsigned int i = 0;
@@ -480,6 +472,25 @@ std::string UVDSprintf(const char *format, ...)
 
 	ret = buff;
 	free(buff);
+	return ret;
+}
+
+std::string UVDSafeStringFromBuffer(const char *buff, size_t size)
+{
+	std::string ret;
+	for( size_t i = 0; i < size; ++i )
+	{
+		char c = buff[i];
+		
+		if( isprint(c) )
+		{
+			ret += c;
+		}
+		else if( !c )
+		{
+			break;
+		}
+	}
 	return ret;
 }
 

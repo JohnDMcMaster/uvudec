@@ -147,13 +147,13 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	//printf("effective args: %d\n", m_argsEffective.size());
 	//for( unsigned int i = 0; i < m_argsEffective.size(); ++i ) printf("arg[%d] = %s\n", i, m_argsEffective[i].c_str());
 	//Early config parsing for debugging, especially during plugin loading/initialization
-	UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false);
+	UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false, &m_configArgs);
 
 	//This must be done early since command line options depend upon which plugins are loaded
 	uv_assert_err_ret(m_plugin.m_pluginEngine.init(this));
 
 	//Parse the data
-	processRc = UVDArgConfig::process(m_configArgs, m_argsEffective);
+	processRc = UVDArgConfig::process(m_configArgs, m_argsEffective, true, &m_plugin.m_earlyConfigArgs);
 	if( processRc == UV_ERR_DONE )
 	{
 		return processRc;
@@ -223,13 +223,7 @@ uv_err_t UVDConfig::init()
 }
 
 uv_err_t UVDConfig::deinit()
-{
-	for( UVDArgConfigs::iterator iter = m_configArgs.begin(); iter != m_configArgs.end(); ++iter )
-	{
-		delete (*iter).second;
-	}
-	m_configArgs.clear();
-	
+{	
 	return UV_ERR_OK;
 }
 
@@ -565,17 +559,13 @@ uv_err_t UVDConfig::registerDefaultArgument(UVDArgConfigHandler handler,
 		bool alwaysCall,
 		bool early)
 {
-	UVDArgConfig *argConfig = NULL;
-
-	argConfig = new UVDArgConfig(handler, helpMessage, minRequired, combine, alwaysCall);
-	uv_assert_ret(argConfig);
 	if( early )
 	{
-		m_plugin.m_earlyConfigArgs[""] = argConfig;
+		uv_assert_err_ret(m_plugin.m_earlyConfigArgs.registerDefaultArgument(handler, helpMessage, minRequired, combine, alwaysCall));
 	}
 	else
 	{
-		m_configArgs[""] = argConfig;
+		uv_assert_err_ret(m_configArgs.registerDefaultArgument(handler, helpMessage, minRequired, combine, alwaysCall));
 	}
 
 	return UV_ERR_OK;
@@ -611,32 +601,33 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		const std::string &plugin,
 		bool early)
 {
-	UVDArgConfig *argConfig = NULL;
-		
-	/*
-	FIXME: migrate all argument instantiation to these funcs and make UVDArgConfig have a single constructor
-	*/
-	if( helpMessageExtra.empty() )
-	{
-		argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, numberExpectedValues, handler, hasDefault);
-	}
-	else
-	{
-		argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
-	}
-	uv_assert_ret(argConfig);
 	//Should this be parsed before plugins are loaded?
 	if( early )
 	{
-		g_config->m_plugin.m_earlyConfigArgs[propertyForm] = argConfig;
+		uv_assert_err_ret(m_plugin.m_earlyConfigArgs.registerArgument(propertyForm,
+				shortForm, longForm, 
+				helpMessage,
+				helpMessageExtra,
+				numberExpectedValues,
+				handler,
+				hasDefault));
 	}
 	else
 	{
-		g_config->m_configArgs[propertyForm] = argConfig;
+		uv_assert_err_ret(m_configArgs.registerArgument(propertyForm,
+				shortForm, longForm, 
+				helpMessage,
+				helpMessageExtra,
+				numberExpectedValues,
+				handler,
+				hasDefault));
 		
 		if( !plugin.empty() )
 		{
-			g_config->m_plugin.m_pluginEngine.m_pluginArgMap[argConfig] = plugin;
+			UVDArgConfig *argConfig = NULL;
+		
+			argConfig = m_configArgs.m_argConfigs[propertyForm];
+			m_plugin.m_pluginEngine.m_pluginArgMap[argConfig] = plugin;
 		}
 	}
 

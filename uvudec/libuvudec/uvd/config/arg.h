@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_ARG_H
 
 #include "uvd/util/types.h"
+#include <set>
 #include <string>
 
 #define UVD_OPTION_FILE_STDIN		"-"
@@ -27,7 +28,54 @@ typedef uv_err_t (*UVDArgConfigHandler)(const UVDArgConfig *UVDArgConfig, std::v
 //Map of property to arg config
 //Naked handler has empty property
 class UVDArgConfig;
-typedef std::map<std::string, UVDArgConfig *> UVDArgConfigs;
+
+/*
+A group of UVDArgConfigs that represents a logical zone where an argument is valid
+This class should not have any knowledge of UVD engine specifics
+It should be as if it was in a separate argument parsing library
+*/
+class UVDArgConfigs
+{
+public:
+	typedef std::map<std::string, UVDArgConfig *> ArgConfigs;
+
+public:
+	UVDArgConfigs();
+	~UVDArgConfigs();
+	
+	uv_err_t registerDefaultArgument(UVDArgConfigHandler handler,
+			const std::string &helpMessage = "",
+			uint32_t minRequired = 0,
+			bool combine = true,
+			bool alwaysCall = true);
+
+	uv_err_t registerArgument(const std::string &propertyForm,
+			char shortForm, std::string longForm, 
+			std::string helpMessage,
+			std::string helpMessageExtra,
+			uint32_t numberExpectedValues,
+			UVDArgConfigHandler handler,
+			bool hasDefault);
+
+public:
+	ArgConfigs m_argConfigs;
+};
+
+/*
+Collection of all of the arg configs
+Allows arguments to be cleanly tracked even if they need to be parsed in multiple phases
+*/
+class UVDArgRegistry
+{
+public:
+	UVDArgRegistry();
+	//Convenience for simple programs that only have one arg pass
+	UVDArgRegistry(UVDArgConfigs *args);
+	~UVDArgRegistry();
+	
+public:
+	std::set<UVDArgConfigs *> m_argConfigsSet;
+};
 
 /*
 Argument parsing for startup
@@ -53,12 +101,6 @@ public:
 	UVDArgConfig(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
-			uint32_t numberExpectedValues,
-			UVDArgConfigHandler handler,
-			bool hasDefault);
-	UVDArgConfig(const std::string &propertyForm,
-			char shortForm, std::string longForm, 
-			std::string helpMessage,
 			std::string helpMessageExtra,
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
@@ -76,8 +118,8 @@ public:
 		if num args == 1
 	--arg=val or --arg val
 	*/
-	static uv_err_t process(const UVDArgConfigs &argConfig, std::vector<std::string> &args, bool printErrors = true);
-
+	static uv_err_t process(const UVDArgConfigs &argConfig, std::vector<std::string> &args,
+			bool printErrors = true, UVDArgConfigs *ignoredArgs = NULL);
 public:
 	/*
 	The argument property we are looking for in full form

@@ -526,14 +526,14 @@ uv_err_t isConfigIdentifier(const std::string &in)
 uint32_t g_bytesPerRow = 16;
 uint32_t g_bytesPerHalfRow = 8;
 
-static unsigned int hexdumpHalfRow(const char *data, size_t size, uint32_t start)
+static unsigned int hexdumpHalfRow(const uint8_t *data, size_t size, uint32_t start)
 {
 	uint32_t col = 0;
 
 	for( ; col < g_bytesPerHalfRow && start + col < size; ++col )
 	{
 		uint32_t index = start + col;
-		unsigned char c = data[index];
+		uint8_t c = data[index];
 		
 		printf("%.2X ", (unsigned int)c);
 		fflush(stdout);
@@ -554,12 +554,12 @@ static unsigned int hexdumpHalfRow(const char *data, size_t size, uint32_t start
 	return start + g_bytesPerHalfRow;
 }
 
-void hexdump(const void *data, size_t size)
+void UVDHexdump(const uint8_t *data, size_t size)
 {
-	hexdumpCore((const char *)data, size, "");
+	UVDHexdumpCore(data, size, "");
 }
 
-void hexdumpCore(const char *data, size_t size, const std::string &prefix)
+void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix)
 {
 	/*
 	[mcmaster@gespenst icd2prog-0.3.0]$ hexdump -C /bin/ls |head
@@ -568,7 +568,7 @@ void hexdumpCore(const char *data, size_t size, const std::string &prefix)
 	00017380  00 00 00 00 01 00 00 00  00 00 00 00              |............|
 	*/
 
-	unsigned int pos = 0;
+	size_t pos = 0;
 	while( pos < size )
 	{
 		uint32_t row_start = pos;

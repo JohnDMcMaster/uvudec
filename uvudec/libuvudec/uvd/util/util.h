@@ -6,8 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 /*
 NOTE NOTE NOTE
-Thee are intended for libuvudec internal use only
-I will be testing integration of boost::filesystem and many of these funcs could disappear
+These are intended for libuvudec internal use only
+But if you insist, be warned I will be testing integration of boost::filesystem and many of these funcs could disappear
 */
 
 #ifndef UV_UTIL_H
@@ -88,6 +88,10 @@ uv_err_t writeFile(const std::string &sFile, const std::string &sIn);
 uv_err_t writeFile(const std::string &sFile, const char *buff, size_t buffsz);
 uv_err_t parseFunc(const std::string &text, std::string &name, std::string &content);
 
+//Stop at null terminators and replace non-printables with .
+//I could swear std::string stopped at nulls on CentOS 5, but Fedora 13 seems to include them...so guess we need this
+std::string UVDSafeStringFromBuffer(const char *buff, size_t size);
+
 uv_err_t splitConfigLinesVector(const std::vector<std::string> &in, const std::string &delim, std::vector< std::vector<std::string> > &out);
 //"0x100-0x1FF" or "0x100,0x1FF" form
 //If a single number is given, assume from that number to itself
@@ -118,11 +122,8 @@ std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc);
 //Should mark these deprecated in favor of the C++ versions
 //they tend to be in old C code causing mem leaks
 char **uv_split_lines(const char *str, unsigned int *n_ret);
-char **uv_split(const char *str, char delim);
 char **uv_split_core(const char *str, char delim, unsigned int *n_ret, int ret_blanks);
 
-unsigned int uv_get_num_lines(const char *str);
-unsigned int uv_get_num_tokens_core(const char *text, char delim, int ret_blanks);
 /* Line numbering starts at 0 */
 char *uv_get_line(const char *text, unsigned int lineNumber);
 
@@ -180,8 +181,13 @@ Currently they must follow C symbol syntax
 */
 uv_err_t isConfigIdentifier(const std::string &in);
 
-void hexdump(const void *data, size_t size);
-void hexdumpCore(const char *data, size_t size, const std::string &prefix);
+#define UVD_HEXDUMP(data, size)			UVDHexdump((uint8_t *)data, size)
+#define UVD_HEXDUMP_OBJ(obj)			UVDHexdump((uint8_t *)obj, sizeof(*obj))
+#define UVD_HEXDUMP_STR(s)				UVDHexdump((uint8_t *)s.c_str(), s.size())
+#define UVD_HEXDUMP_CSTR(s)				UVDHexdump((uint8_t *)s, strlen(s))
+#define UVD_HEXDUMP_THIS()				UVD_HEXDUMP_OBJ(this)
+void UVDHexdump(const uint8_t *data, size_t size);
+void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix);
 
 //printf like formatting to a std::string
 std::string UVDSprintf(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));

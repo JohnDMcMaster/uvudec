@@ -73,11 +73,42 @@ uv_err_t UVDData::readData(unsigned int offset, char *buffer, unsigned int buffe
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDData::readDataAsString(unsigned int offset, std::string &s, unsigned int readSize) const
+int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize) const
 {
-	int readValue = read(offset, s, readSize);
+	char *buff = NULL;
+	int rc = 0;
+	
+	buff = (char *)malloc(readSize);
+	if( !buff )
+	{
+		return -1;
+	}
+	//printf("reading %s at offset 0x%08X\n", getSource().c_str(), offset);	
+	rc = read(offset, buff, readSize);
+	if( rc >= 0 )
+	{
+		s = std::string(buff, rc);
+	}
+	free(buff);
+	buff = NULL;
+	return rc;
+}
+
+uv_err_t UVDData::readDataAsString(unsigned int offset, size_t readSize, std::string &out) const
+{
+	int readValue = read(offset, out, readSize);
 	uv_assert_ret(readValue >= 0);
 	uv_assert_ret(((unsigned int)readValue) == readSize);
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDData::readDataAsSafeString(unsigned int offset, size_t readSize, std::string &out) const
+{
+	std::string unsafe;
+	
+	uv_assert_err_ret(readDataAsString(offset, readSize, unsafe));
+	out = UVDSafeStringFromBuffer(unsafe.c_str(), unsafe.size());
+	
 	return UV_ERR_OK;
 }
 
@@ -140,27 +171,6 @@ int UVDData::read(unsigned int offset) const
 		return -1;
 	}
 	return (unsigned int)(unsigned char)c;
-}
-
-int UVDData::read(unsigned int offset, std::string &s, unsigned int readSize) const
-{
-	char *buff = NULL;
-	int rc = 0;
-	
-	buff = (char *)malloc(readSize);
-	if( !buff )
-	{
-		return -1;
-	}
-	//printf("reading %s at offset 0x%08X\n", getSource().c_str(), offset);	
-	rc = read(offset, buff, readSize);
-	if( rc >= 0 )
-	{
-		s = std::string(buff, rc);
-	}
-	free(buff);
-	buff = NULL;
-	return rc;
 }
 
 uv_err_t UVDData::writeData(uint32_t offset, const char *buffer, unsigned int bufferSize)

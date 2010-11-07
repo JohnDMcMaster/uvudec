@@ -24,6 +24,76 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
 static void UVDPrintVersion(void);
 
+/*
+UVDArgConfigs
+*/
+
+UVDArgConfigs::UVDArgConfigs()
+{
+}
+
+UVDArgConfigs::~UVDArgConfigs()
+{
+	for( ArgConfigs::iterator iter = m_argConfigs.begin(); iter != m_argConfigs.end(); ++iter )
+	{
+		delete (*iter).second;
+	}
+	m_argConfigs.clear();
+}
+
+uv_err_t UVDArgConfigs::registerDefaultArgument(UVDArgConfigHandler handler,
+		const std::string &helpMessage,
+		uint32_t minRequired,
+		bool combine,
+		bool alwaysCall)
+{
+	UVDArgConfig *argConfig = NULL;
+
+	argConfig = new UVDArgConfig(handler, helpMessage, minRequired, combine, alwaysCall);
+	uv_assert_ret(argConfig);
+	m_argConfigs[""] = argConfig;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArgConfigs::registerArgument(const std::string &propertyForm,
+		char shortForm, std::string longForm, 
+		std::string helpMessage,
+		std::string helpMessageExtra,
+		uint32_t numberExpectedValues,
+		UVDArgConfigHandler handler,
+		bool hasDefault)
+{
+	UVDArgConfig *argConfig = NULL;
+		
+	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
+	uv_assert_ret(argConfig);
+	m_argConfigs[propertyForm] = argConfig;
+
+	return UV_ERR_OK;
+}
+
+/*
+UVDArgRegistry
+*/
+
+UVDArgRegistry::UVDArgRegistry()
+{
+}
+
+UVDArgRegistry::UVDArgRegistry(UVDArgConfigs *argConfigs)
+{
+	m_argConfigsSet.insert(argConfigs);
+}
+
+UVDArgRegistry::~UVDArgRegistry()
+{
+}
+
+/*
+UVDArgConfig
+*/
+
 UVDArgConfig::UVDArgConfig()
 {
 	m_hasDefault = false;
@@ -45,22 +115,6 @@ UVDArgConfig::UVDArgConfig(UVDArgConfigHandler handler,
 	m_alwaysCall = alwaysCall;
 	m_numberExpectedValues = minRequired;
 	m_helpMessage = helpMessage;
-}
-
-UVDArgConfig::UVDArgConfig(const std::string &propertyForm,
-		char shortForm, std::string longForm, 
-		std::string helpMessage,
-		uint32_t numberExpectedValues,
-		UVDArgConfigHandler handler,
-		bool hasDefault)
-{
-	m_propertyForm = propertyForm;
-	m_shortForm = shortForm;
-	m_longForm = longForm;
-	m_helpMessage = helpMessage;
-	m_numberExpectedValues = numberExpectedValues;
-	m_handler = handler;
-	m_hasDefault = hasDefault;
 }
 		
 UVDArgConfig::UVDArgConfig(const std::string &propertyForm,
@@ -97,14 +151,15 @@ bool UVDArgConfig::operator==(const std::string &r) const
 }
 */
 
-uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std::string> &args, bool printErrors)
+uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std::string> &args,
+		bool printErrors, UVDArgConfigs *ignoredArgs)
 {
 	//Used if m_alwaysCall or m_combine is used
 	std::vector<std::string> nakedArgs;
 	const UVDArgConfig *nakedConfig = NULL;
 
-	for( UVDArgConfigs::const_iterator iter = argConfigs.begin();
-			iter != argConfigs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::const_iterator iter = argConfigs.m_argConfigs.begin();
+			iter != argConfigs.m_argConfigs.end(); ++iter )
 	{
 		const UVDArgConfig *argConfig = (*iter).second;
 			
@@ -128,7 +183,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 		std::vector<UVDParsedArg> parsedArgs;
 
 		printf_args_debug("arg: %s\n", arg.c_str());
-		uv_assert_err_ret(processArg(arg, parsedArgs));
+		uv_assert_err_ret(UVDProcessArg(arg, parsedArgs));
 
 		//Now iterate for each logical command line argument (such as from -abc)
 		for( std::vector<UVDParsedArg>::iterator iter = parsedArgs.begin(); iter != parsedArgs.end(); ++iter )
@@ -139,13 +194,13 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 			uv_err_t matchRc = UV_ERR_GENERAL;
 			
 			//Extract the argument info for who should handle it
-			matchRc = matchArgConfig(argConfigs, parsedArg, &matchedConfig);
+			matchRc = UVDMatchArgConfig(argConfigs, parsedArg, &matchedConfig);
 			//Make sure to return UV_ERR_NOTFOUND if generated
 			if( UV_FAILED(matchRc) )
 			{
 				//FIXME: hack
 				//don't error if it was an early initialization arg
-				if( UV_SUCCEEDED(matchArgConfig(g_config->m_plugin.m_earlyConfigArgs, parsedArg, &matchedConfig)) )
+				if( ignoredArgs && UV_SUCCEEDED(UVDMatchArgConfig(*ignoredArgs, parsedArg, &matchedConfig)) )
 				{
 					ignoreEarlyArg = true;
 				}
@@ -470,8 +525,8 @@ static uv_err_t UVDPrintUsage()
 	uv_assert_ret(g_config);
 	pluginEngine = &g_config->m_plugin.m_pluginEngine;
 	
-	for( UVDArgConfigs::iterator iter = g_config->m_configArgs.begin();
-			iter != g_config->m_configArgs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::iterator iter = g_config->m_configArgs.m_argConfigs.begin();
+			iter != g_config->m_configArgs.m_argConfigs.end(); ++iter )
 	{
 		UVDArgConfig *argConfig = (*iter).second;
 		
@@ -492,8 +547,8 @@ static uv_err_t UVDPrintUsage()
 	printf_help("Args:\n");
 	//Maybe standard help should alphabatize these by -- form?
 	//Detailed print should do by property since not all might have --
-	for( UVDArgConfigs::iterator iter = g_config->m_configArgs.begin();
-			iter != g_config->m_configArgs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::iterator iter = g_config->m_configArgs.m_argConfigs.begin();
+			iter != g_config->m_configArgs.m_argConfigs.end(); ++iter )
 	{
 		UVDArgConfig *argConfig = (*iter).second;
 		
@@ -508,8 +563,8 @@ static uv_err_t UVDPrintUsage()
 	
 	//Print special argument handling last
 	printf_help("Pre plugin load args:\n");
-	for( UVDArgConfigs::iterator iter = g_config->m_plugin.m_earlyConfigArgs.begin();
-			iter != g_config->m_plugin.m_earlyConfigArgs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::iterator iter = g_config->m_plugin.m_earlyConfigArgs.m_argConfigs.begin();
+			iter != g_config->m_plugin.m_earlyConfigArgs.m_argConfigs.end(); ++iter )
 	{
 		UVDArgConfig *argConfig = (*iter).second;
 		
