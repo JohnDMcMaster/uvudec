@@ -46,6 +46,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_OUTPUT_ADDRESS_LABEL			"output.address_label"
 #define UVD_PROP_OUTPUT_FILE					"output.file"
 //Plugin
+#define UVD_PROP_PLUGIN_ACTIVATE_ALL			"plugin.activate_all"
+#define UVD_PROP_PLUGIN_ACTIVATE_ALL_DEFAULT	false
 #define UVD_PROP_PLUGIN_FILE					"plugin.file"
 #define UVD_PROP_PLUGIN_NAME					"plugin.name"
 #define UVD_PROP_PLUGIN_APPEND_PATH				"plugin.path.append"

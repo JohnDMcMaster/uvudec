@@ -87,7 +87,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_NAME )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		uv_assert_err_ret(config->m_plugin.addToInitialize(firstArg));
+		uv_assert_err_ret(config->m_plugin.addToActivate(firstArg));
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_APPEND_PATH )
 	{
@@ -99,6 +99,10 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		uv_assert_ret(!argumentArguments.empty());
 		uv_assert_err_ret(config->m_plugin.prependPluginPath(firstArg));
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_ACTIVATE_ALL )
+	{
+		config->m_plugin.m_activateAll = firstArgBool;
+	}
 	//Do not error on unrecognized args, they will be handled in the main case
 
 	return UV_ERR_OK;
@@ -109,9 +113,10 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	std::string mainPluginDir;
 	
 	//Plugin
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_NAME, 0, "plugin", "load given library name as plugin", 1, argParser, false, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin search path", 1, argParser, false, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin search path", 1, argParser, false, "", true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_NAME, 0, "plugin", "activate given plugin name", 1, argParser, false, "", true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin load search path", 1, argParser, false, "", true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin load search path", 1, argParser, false, "", true));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_ACTIVATE_ALL, 0, "all-plugins", "load/activate all plugins found (use with caution)", 1, argParser, true, "", true));
 	
 	//Debug
 	//NOTE: type debug flags are automaticlly registered along with the type

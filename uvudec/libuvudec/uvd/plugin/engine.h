@@ -58,8 +58,8 @@ public:
 	
 	//This actually activates a plugin for use
 	//Error if the plugin was not previously loaded
-	uv_err_t initPlugin(const std::string &name);
-	uv_err_t deinitPlugin(const std::string &name);
+	uv_err_t activatePluginByName(const std::string &name);
+	uv_err_t deactivatePluginByName(const std::string &name);
 	
 	uv_err_t onUVDInit();
 	uv_err_t onUVDDeinit();

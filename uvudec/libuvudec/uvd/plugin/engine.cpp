@@ -42,13 +42,27 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 	/*
 	And initialize those plugins that should be initially loaded
 	*/
-	printf_plugin_debug("plugins to initialize: %d\n", config->m_plugin.m_toInitialize.size());
-	for( std::vector<std::string>::iterator iter = config->m_plugin.m_toInitialize.begin();
-			iter != config->m_plugin.m_toInitialize.end(); ++iter )
+	if( config->m_plugin.m_activateAll )
 	{
-		const std::string &toInit = *iter;
+		printf_plugin_debug("Activating all plugins");
+		for( std::map<std::string, UVDPlugin *>::iterator iter = m_plugins.begin();
+				iter != m_plugins.end(); ++iter )
+		{
+			const std::string &toInit = (*iter).first;
 		
-		uv_assert_err_ret(initPlugin(toInit));		
+			uv_assert_err_ret(activatePluginByName(toInit));		
+		}		
+	}
+	else
+	{
+		printf_plugin_debug("plugins to activate: %d\n", config->m_plugin.m_toActivate.size());
+		for( std::vector<std::string>::iterator iter = config->m_plugin.m_toActivate.begin();
+				iter != config->m_plugin.m_toActivate.end(); ++iter )
+		{
+			const std::string &toInit = *iter;
+		
+			uv_assert_err_ret(activatePluginByName(toInit));		
+		}
 	}
 
 	return UV_ERR_OK;
@@ -305,7 +319,7 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPluginEngine::initPlugin(const std::string &name)
+uv_err_t UVDPluginEngine::activatePluginByName(const std::string &name)
 {
 	std::map<std::string, UVDPlugin *>::iterator iter = m_plugins.find(name);
 	UVDPlugin *plugin = NULL;
@@ -329,7 +343,7 @@ uv_err_t UVDPluginEngine::initPlugin(const std::string &name)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPluginEngine::deinitPlugin(const std::string &name)
+uv_err_t UVDPluginEngine::deactivatePluginByName(const std::string &name)
 {
 	std::map<std::string, UVDPlugin *>::iterator iter = m_loadedPlugins.find(name);
 	UVDPlugin *plugin = NULL;

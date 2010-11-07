@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/config/plugin.h"
+#include "uvd/config/arg_property.h"
 
 /*
 UVDPluginConfig
@@ -12,6 +13,7 @@ UVDPluginConfig
 
 UVDPluginConfig::UVDPluginConfig()
 {
+	m_activateAll = UVD_PROP_PLUGIN_ACTIVATE_ALL_DEFAULT;
 }
 
 UVDPluginConfig::~UVDPluginConfig()
@@ -43,9 +45,9 @@ uv_err_t UVDPluginConfig::addToLoad(const std::string &pluginLibraryName)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPluginConfig::addToInitialize(const std::string &pluginName)
+uv_err_t UVDPluginConfig::addToActivate(const std::string &pluginName)
 {
-	m_toInitialize.push_back(pluginName);
+	m_toActivate.push_back(pluginName);
 	return UV_ERR_OK;
 }
 

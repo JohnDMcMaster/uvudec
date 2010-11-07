@@ -22,7 +22,7 @@ public:
 
 	//Add a plugin to be loaded by file name
 	uv_err_t addToLoad(const std::string &fileName);
-	uv_err_t addToInitialize(const std::string &logicalName);
+	uv_err_t addToActivate(const std::string &logicalName);
 	uv_err_t appendPluginPath(const std::string &path);
 	uv_err_t prependPluginPath(const std::string &path);
 
@@ -30,7 +30,7 @@ public:
 	//Load find the libraries and add them to the availible plugin list
 	std::vector<std::string> m_pluginFiles;
 	//To activate at startup
-	std::vector<std::string> m_toInitialize;
+	std::vector<std::string> m_toActivate;
 
 	//All of these will be added to plugin selection lists and have their main called
 	//std::vector<std::string> m_pluginDirs;
@@ -41,6 +41,11 @@ public:
 
 	//Plugin related early parsing so that main argument parse goes correctly
 	UVDArgConfigs m_earlyConfigArgs;
+	
+	//Instead of explictly saying which plugins to activate, just load every plugin we find?
+	//Activating a plugin could imply altering analysis, so use with caution
+	//UVD_PROP_PLUGIN_LOAD_ALL
+	uvd_bool_t m_activateAll;
 };
 
 #endif
