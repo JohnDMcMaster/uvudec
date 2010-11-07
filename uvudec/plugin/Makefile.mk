@@ -12,7 +12,7 @@
 # We wrap this with PLUGIN_NAME since current dur uses it as well
 ifdef PLUGIN_NAME
 ifndef LIB_NAME
-LIB_NAME=$(PLUGIN_NAME)
+LIB_NAME=lib$(PLUGIN_NAME)
 endif
 endif
 

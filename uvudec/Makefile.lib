@@ -18,6 +18,10 @@ ifndef THIS_LIB_DIR
 THIS_LIB_DIR=$(LIB_DIR)
 endif
 
+# Disable across the board, makes issues linking to plugins
+# What we probably should do is link them in the lib dir with sonames and have a link in the plugin dir to one of the sonames
+LIB_VER_FILENAME_EXTENSIONS=N
+
 # Add .4.1.2 postfix to libblah.so.4.1.2
 ifndef LIB_VER_FILENAME_EXTENSIONS
 LIB_VER_FILENAME_EXTENSIONS=Y
