@@ -27,6 +27,8 @@ CXX_SRCS = 	\
 
 USING_LIB_UVUDEC=Y
 
+LIBS += -luvdobjgb
+LDFLAGS+=-L$(PLUGIN_LIB_DIR)
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk
 

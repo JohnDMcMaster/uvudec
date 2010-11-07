@@ -185,7 +185,7 @@ uv_err_t uvmain(int argc, char **argv)
 	else if( g_action == ACTION_NONE )
 	{
 		printf_error("target action not specified\n");
-		UVDHelp();
+		UVDPrintHelp();
 	}
 	else
 	{

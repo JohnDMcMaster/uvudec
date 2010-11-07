@@ -23,17 +23,21 @@ public:
 	virtual void tearDown(void);
 
 protected:
+	//Init functions in increasing order of amount of initialization
 	//Not only call UVDInit(), but also check expected state variables
 	virtual void libraryInit();
 	//Initialize UVDInit() and parse main
 	uv_err_t configInit(UVDConfig **configOut = NULL);
-	//Do standard deinit, including report errors
-	virtual void deinit();
 	//Initialize config and a UVD engine object
 	//Returns the main parse code
-	void generalInit(UVD **uvdOut = NULL);
+	uv_err_t generalInit(UVD **uvdOut = NULL);
+	//Do standard deinit, including report errors and deleting objects
+	//Implies at least libraryInit() was called
+	virtual void deinit();
 	
 	void argsToArgv();
+	//To "main"
+	void appendArgument(const std::string &arg);
 
 	void dumpAssembly(const std::string &header, const std::string &assembly);
 	//Initize and verify that we don't have any errors running these args

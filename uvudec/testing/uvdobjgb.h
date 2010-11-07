@@ -10,11 +10,18 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "testing/object.h"
+#include "plugin/uvdobjgb/object.h"
+#include "plugin/uvdobjgb/plugin.h"
 
 class UVDObjgbUnitTest : public UVDTestingObjectFixture
 {
 public:
-	//setUp();
+	void setUp();
+	
+	//From the plugin engine
+	UVDObjgbPlugin *getPlugin();
+	//From the runtime
+	UVDGBObject *getObject();
 	
 public:
 	CPPUNIT_TEST_SUITE(UVDObjgbUnitTest);

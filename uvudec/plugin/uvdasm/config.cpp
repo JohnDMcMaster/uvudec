@@ -40,7 +40,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		
 		if( UV_FAILED(g_asmConfig->setConfigInterpreterLanguage(firstArg)) )
 		{
-			UVDHelp();
+			UVDPrintHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
@@ -50,7 +50,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		
 		if( UV_FAILED(g_asmConfig->setConfigInterpreterLanguageInterface(firstArg)) )
 		{
-			UVDHelp();
+			UVDPrintHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}

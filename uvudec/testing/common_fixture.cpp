@@ -15,6 +15,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 void UVDTestingCommonFixture::setUp(void)
 {
+	printf("UVDTestingCommonFixture::setUp()\n");
 	m_argc = 0;
 	m_argv = NULL;
 	m_config = NULL;
@@ -30,7 +31,7 @@ void UVDTestingCommonFixture::tearDown(void)
 	Don't delete anything local
 	Don't throw exceptions
 	*/
-	printf("UVDTestingCommonFixture::tear down\n");
+	printf("UVDTestingCommonFixture::tearDown\n");
 	try
 	{
 		m_argc = 0;
@@ -50,6 +51,11 @@ void UVDTestingCommonFixture::tearDown(void)
 	catch(...)
 	{
 	}
+}
+
+void UVDTestingCommonFixture::appendArgument(const std::string &arg)
+{
+	m_args.push_back(arg);
 }
 
 void UVDTestingCommonFixture::argsToArgv()
@@ -148,15 +154,19 @@ void UVDTestingCommonFixture::deinit()
 	deleteTempDirectories();
 }
 
-void UVDTestingCommonFixture::generalInit(UVD **uvdOut)
+uv_err_t UVDTestingCommonFixture::generalInit(UVD **uvdOut)
 {
+	uv_err_t rc = UV_ERR_GENERAL;
+	
 	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
 	
 	/*
 	Currently requires a file at engine init because its suppose to guess the type
 	*/
 	printf("General init on %s\n", m_uvdInpuFileName.c_str());
-	UVCPPUNIT_ASSERT(UVD::getUVDFromFileName(&m_uvd, m_uvdInpuFileName));
+	rc = UVD::getUVDFromFileName(&m_uvd, m_uvdInpuFileName);
+	printf("rc: %d\n", rc);
+	UVCPPUNIT_ASSERT(rc);
 	CPPUNIT_ASSERT(m_uvd != NULL);
 	CPPUNIT_ASSERT(g_uvd != NULL);
 
@@ -164,6 +174,8 @@ void UVDTestingCommonFixture::generalInit(UVD **uvdOut)
 	{
 		*uvdOut = m_uvd;
 	}
+	
+	return rc;
 }
 
 void UVDTestingCommonFixture::dumpAssembly(const std::string &header, const std::string &assembly)

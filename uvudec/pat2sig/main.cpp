@@ -231,7 +231,7 @@ uv_err_t uvmain(int argc, char **argv)
 	if( flirtConfig->m_targetFiles.empty() )
 	{
 		printf_error("Target file(s) not specified\n");
-		UVDHelp();
+		UVDPrintHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	

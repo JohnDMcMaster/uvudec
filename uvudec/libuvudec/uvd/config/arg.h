@@ -73,6 +73,14 @@ public:
 	UVDArgRegistry(UVDArgConfigs *args);
 	~UVDArgRegistry();
 	
+	uv_err_t newArgConfgs(UVDArgConfigs **out = NULL);
+	uv_err_t processMain(int argc, char *const *argv);
+	uv_err_t processMainWithRemove(int argc, char **argv);
+	uv_err_t processStringVector(const std::vector<std::string> &args);
+	//Remove processed args
+	//Will not return error on unknown args, instead !args.empty()
+	uv_err_t processStringVectorWithRemove(std::vector<std::string> &args);
+	
 public:
 	std::set<UVDArgConfigs *> m_argConfigsSet;
 };
@@ -209,7 +217,8 @@ public:
 };
 
 uv_err_t UVDInitArgConfig();
-void UVDHelp();
+void UVDPrintHelp();
+void UVDPrintVersion();
 
 #endif
 

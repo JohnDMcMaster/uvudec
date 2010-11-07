@@ -22,7 +22,6 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 #include <vector>
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
-static void UVDPrintVersion(void);
 
 /*
 UVDArgConfigs
@@ -88,6 +87,65 @@ UVDArgRegistry::UVDArgRegistry(UVDArgConfigs *argConfigs)
 
 UVDArgRegistry::~UVDArgRegistry()
 {
+}
+
+uv_err_t UVDArgRegistry::newArgConfgs(UVDArgConfigs **out)
+{
+	UVDArgConfigs *ret = NULL;
+
+	ret = new UVDArgConfigs();
+	uv_assert_ret(ret);
+	m_argConfigsSet.insert(ret);
+	if( out )
+	{
+		*out = ret;
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArgRegistry::processMain(int argc, char *const *argv)
+{
+	return UV_DEBUG(processStringVector(charPtrArrayToVector(argv, argc)));
+}
+
+uv_err_t UVDArgRegistry::processMainWithRemove(int argc, char **argv)
+{
+	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+uv_err_t UVDArgRegistry::processStringVector(const std::vector<std::string> &argsIn)
+{
+	std::vector<std::string> args = argsIn;
+	
+	uv_assert_ret(m_argConfigsSet.size() == 1);
+	for( std::set<UVDArgConfigs *>::iterator iter = m_argConfigsSet.begin();
+			iter != m_argConfigsSet.end(); ++iter )
+	{
+		UVDArgConfigs *argConfigs = *iter;
+		uv_err_t rc = UV_ERR_GENERAL;
+
+		//FIXME: this will only work for one arg set b/c of urecognized args
+		//We need to parse args and dispatch to inivdidual parsers to preserve order
+		rc = UVDArgConfig::process(*argConfigs, args,
+				true, NULL);
+		uv_assert_err_ret(rc);
+		if( rc == UV_ERR_DONE )
+		{
+			return UV_ERR_DONE;
+		}
+		else
+		{
+			return UV_DEBUG(rc);
+		}
+	}
+	uv_assert_ret(args.empty());
+	
+	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+uv_err_t UVDArgRegistry::processStringVectorWithRemove(std::vector<std::string> &args)
+{
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 /*
@@ -266,7 +324,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 				uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments);
 				if( UV_FAILED(handlerRc) )
 				{
-					printf_error("argument registered but not processed: %s\n", parsedArg.m_raw.c_str());
+					printf_args_debug("handler returned error processing argument: %s\n", parsedArg.m_raw.c_str());
 					return UV_DEBUG(UV_ERR_GENERAL);
 				}
 				//Some option like help() has been called that means we should abort program
@@ -362,7 +420,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	*/
 	if( argConfig->m_propertyForm == UVD_PROP_ACTION_HELP )
 	{
-		UVDHelp();
+		UVDPrintHelp();
 		return UV_ERR_DONE;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_VERSION )
@@ -431,7 +489,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		else
 		{
 			printf_error("unknown flow analysis type: %s\n", arg.c_str());
-			UVDHelp();
+			UVDPrintHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
@@ -468,7 +526,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	return UV_ERR_OK;
 }
 
-static void UVDPrintVersion()
+void UVDPrintVersion()
 {
 	if( g_config && g_config->versionPrintPrefixThunk )
 	{
@@ -607,7 +665,7 @@ static uv_err_t UVDPrintUsage()
 	return UV_ERR_OK;
 }
 
-void UVDHelp()
+void UVDPrintHelp()
 {
 	UVDPrintVersion();
 	UVDPrintUsage();

@@ -1,0 +1,2 @@
+libm.a
+Taken from my Fedora 13 system around October 2010

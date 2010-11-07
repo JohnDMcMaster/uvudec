@@ -25,6 +25,8 @@ protected:
 protected:
 	UVDPlugin *m_plugin;
 	std::string m_pluginName;
+	//Takes a lot of deref otherwise
+	UVDPluginEngine *m_pluginEngine;
 };
 
 #endif

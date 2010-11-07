@@ -163,7 +163,7 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 		//From a bad input argument?
 		if( processRc == UV_ERR_NOTFOUND )
 		{
-			UVDHelp();
+			UVDPrintHelp();
 			return UV_ERR_NOTFOUND;
 		}
 		else

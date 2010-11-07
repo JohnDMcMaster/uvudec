@@ -10,12 +10,19 @@ void UVDTestingPluginFixture::setUp(void)
 {
 	UVDTestingCommonFixture::setUp();
 	m_plugin = NULL;
+	m_pluginEngine = NULL;
 }
 
 void UVDTestingPluginFixture::init(void)
 {
-	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
+	//Make sure we try to load this plugin regardless of config
+	CPPUNIT_ASSERT(!m_pluginName.empty());
+	appendArgument(std::string("--plugin=") + m_pluginName);
+	CPPUNIT_ASSERT(generalInit() == UV_ERR_OK);
+	m_pluginEngine = &m_uvd->m_config->m_plugin.m_pluginEngine;
 	//Assert plugin loaded
+	CPPUNIT_ASSERT(m_pluginEngine->m_loadedPlugins.find(m_pluginName) != m_pluginEngine->m_loadedPlugins.end());
+	m_plugin = m_pluginEngine->m_loadedPlugins[m_pluginName];
 }
 
 void UVDTestingPluginFixture::deinit(void)

@@ -53,7 +53,7 @@ static uv_err_t runTasks()
 	if( g_config->m_targetFileName.empty() )
 	{
 		printf_error("Target file not specified\n");
-		UVDHelp();
+		UVDPrintHelp();
 		uv_assert(UV_ERR_GENERAL);
 	}
 

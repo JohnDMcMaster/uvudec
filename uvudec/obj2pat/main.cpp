@@ -160,13 +160,13 @@ uv_err_t uvmain(int argc, char **argv)
 	if( flirtConfig->m_targetFiles.empty() )
 	{
 		printf_error("Target file(s) not specified\n");
-		UVDHelp();
+		UVDPrintHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	if( flirtConfig->m_targetFiles.size() != 1 )
 	{
 		printf_error("requires exactly 1 target file, got %d\n", flirtConfig->m_targetFiles.size());
-		UVDHelp();
+		UVDPrintHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	inputFile = flirtConfig->m_targetFiles[0];
