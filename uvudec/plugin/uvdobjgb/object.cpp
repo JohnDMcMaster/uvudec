@@ -14,9 +14,13 @@ http://nocash.emubase.de/pandocs.htm#thecartridgeheader
 
 #define UVDOBJGB_LOGO_ADDR_MIN					0x0104
 #define UVDOBJGB_LOGO_ADDR_MAX					0x0133
+//Beging conflicting ranges
 #define UVDOBJGB_TITLE_ADDR_MIN					0x0134
 #define UVDOBJGB_TITLE_ADDR_MAX					0x0143
+#define UVDOBJGB_MANUFACTURER_CODE_ADDR_MIN		0x013F
+#define UVDOBJGB_MANUFACTURER_CODE_ADDR_MAX		0x0142
 #define UVDOBJGB_CGB_ADDR_MIN					0x0143
+//End conflicting ranges
 #define UVDOBJGB_NEW_LICENSEE_CODE_ADDR_MIN		0x0144
 #define UVDOBJGB_SGB_ADDR_MIN					0x0146
 #define UVDOBJGB_CARTRIDGE_TYPE_ADDR_MIN		0x0147
@@ -191,8 +195,8 @@ uv_err_t UVDGBObject::isNintendoLogo(uvd_bool_t *out)
 //"0134-0143 - Title"
 uv_err_t UVDGBObject::getTitle(std::string &out)
 {
-	return UV_DEBUG(m_data->readDataAsString(UVDOBJGB_TITLE_ADDR_MIN, out,
-			UVDOBJGB_TITLE_ADDR_MAX - UVDOBJGB_TITLE_ADDR_MIN + 1));
+	return UV_DEBUG(m_data->readDataAsSafeString(UVDOBJGB_TITLE_ADDR_MIN,
+			UVDOBJGB_TITLE_ADDR_MAX - UVDOBJGB_TITLE_ADDR_MIN + 1, out));
 }
 
 /*
@@ -201,9 +205,9 @@ In older cartridges this area has been part of the Title (see above), in
 newer cartridges this area contains an 4 character uppercase manufacturer
 code. Purpose and Deeper Meaning unknown."
 */
-uv_err_t UVDGBObject::getManufacturerCode(uint32_t *code)
+uv_err_t UVDGBObject::getManufacturerCode(uint32_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	return UV_DEBUG(m_data->readU32(UVDOBJGB_MANUFACTURER_CODE_ADDR_MIN, out));
 }
 
 /*
@@ -234,6 +238,310 @@ using the header entry at 014B instead.
 uv_err_t UVDGBObject::getNewLicenseeCode(uint16_t *out)
 {
 	return UV_DEBUG(m_data->readU16(UVDOBJGB_NEW_LICENSEE_CODE_ADDR_MIN, out, UVD_DATA_ENDIAN_BIG));
+}
+
+uv_err_t UVDGBObject::licenseeCodeToString(uint32_t code, std::string &out)
+{
+	switch(code)
+	{
+	case 0x00:
+		out = "none";
+		break;
+	case 0x01:
+		out = "nintendo";
+		break;
+	case 0x09:
+		out = "hot-b";
+		break;
+	case 0x0A:
+		out = "jaleco";
+		break;
+	case 0x0C:
+		out = "elite systems";
+		break;
+	case 0x13:
+		out = "electronic arts";
+		break;
+	case 0x19:
+		out = "itc entertainment";
+		break;
+	case 0x1A:
+		out = "yanoman";
+		break;
+	case 0x1F:
+		out = "virgin";
+		break;
+	case 0x24:
+		out = "pcm complete";
+		break;
+	case 0x28:
+		out = "kotobuki systems";
+		break;
+	case 0x29:
+		out = "seta";
+		break;
+	case 0x31:
+		out = "nintendo";
+		break;
+	case 0x32:
+		out = "bandai";
+		break;
+	case 0x34:
+		out = "konami";
+		break;
+	case 0x35:
+		out = "hector";
+		break;
+	case 0x39:
+		out = "banpresto";
+		break;
+	case 0x3C:
+		out = "*entertainment i";
+		break;
+	case 0x41:
+		out = "ubi soft";
+		break;
+	case 0x42:
+		out = "atlus";
+		break;
+	case 0x46:
+		out = "angel";
+		break;
+	case 0x47:
+		out = "spectrum holoby";
+		break;
+	case 0x4A:
+		out = "virgin";
+		break;
+	case 0x4D:
+		out = "malibu";
+		break;
+	case 0x50:
+		out = "absolute";
+		break;
+	case 0x51:
+		out = "acclaim";
+		break;
+	case 0x53:
+		out = "american sammy";
+		break;
+	case 0x54:
+		out = "gametek";
+		break;
+	case 0x56:
+		out = "ljn";
+		break;
+	case 0x57:
+		out = "matchbox";
+		break;
+	case 0x5A:
+		out = "mindscape";
+		break;
+	case 0x5B:
+		out = "romstar";
+		break;
+	case 0x5D:
+		out = "tradewest";
+		break;
+	case 0x60:
+		out = "titus";
+		break;
+	case 0x67:
+		out = "ocean";
+		break;
+	case 0x69:
+		out = "electronic arts";
+		break;
+	case 0x6F:
+		out = "electro brain";
+		break;
+	case 0x70:
+		out = "infogrames";
+		break;
+	case 0x72:
+		out = "broderbund";
+		break;
+	case 0x73:
+		out = "sculptered soft";
+		break;
+	case 0x78:
+		out = "t*hq";
+		break;
+	case 0x79:
+		out = "accolade";
+		break;
+	case 0x7C:
+		out = "microprose";
+		break;
+	case 0x7F:
+		out = "kemco";
+		break;
+	case 0x83:
+		out = "lozc";
+		break;
+	case 0x86:
+		out = "*tokuma shoten i";
+		break;
+	case 0x8C:
+		out = "vic tokai";
+		break;
+	case 0x8E:
+		out = "ape";
+		break;
+	case 0x91:
+		out = "chun soft";
+		break;
+	case 0x92:
+		out = "video system";
+		break;
+	case 0x95:
+		out = "varie";
+		break;
+	case 0x96:
+		out = "yonezawa/s'pal";
+		break;
+	case 0x99:
+		out = "arc";
+		break;
+	case 0x9A:
+		out = "nihon bussan";
+		break;
+	case 0x9C:
+		out = "imagineer";
+		break;
+	case 0x9D:
+		out = "banpresto";
+		break;
+	case 0xA1:
+		out = "hori electric";
+		break;
+	case 0xA2:
+		out = "bandai";
+		break;
+	case 0xA6:
+		out = "kawada";
+		break;
+	case 0xA7:
+		out = "takara";
+		break;
+	case 0xAA:
+		out = "broderbund";
+		break;
+	case 0xAC:
+		out = "toei animation";
+		break;
+	case 0xAF:
+		out = "namco";
+		break;
+	case 0xB0:
+		out = "acclaim";
+		break;
+	case 0xB2:
+		out = "bandai";
+		break;
+	case 0xB4:
+		out = "enix";
+		break;
+	case 0xB7:
+		out = "snk";
+		break;
+	case 0xB9:
+		out = "pony canyon";
+		break;
+	case 0xBB:
+		out = "sunsoft";
+		break;
+	case 0xBD:
+		out = "sony imagesoft";
+		break;
+	case 0xC0:
+		out = "taito";
+		break;
+	case 0xC2:
+		out = "kemco";
+		break;
+	case 0xC4:
+		out = "*tokuma shoten i";
+		break;
+	case 0xC5:
+		out = "data east";
+		break;
+	case 0xC8:
+		out = "koei";
+		break;
+	case 0xC9:
+		out = "ufl";
+		break;
+	case 0xCB:
+		out = "vap";
+		break;
+	case 0xCC:
+		out = "use";
+		break;
+	case 0xCE:
+		out = "*pony canyon or";
+		break;
+	case 0xCF:
+		out = "angel";
+		break;
+	case 0xD1:
+		out = "sofel";
+		break;
+	case 0xD2:
+		out = "quest";
+		break;
+	case 0xD4:
+		out = "ask kodansha";
+		break;
+	case 0xD6:
+		out = "naxat soft";
+		break;
+	case 0xD9:
+		out = "banpresto";
+		break;
+	case 0xDA:
+		out = "tomy";
+		break;
+	case 0xDD:
+		out = "ncs";
+		break;
+	case 0xDE:
+		out = "human";
+		break;
+	case 0xE0:
+		out = "jaleco";
+		break;
+	case 0xE1:
+		out = "towachiki";
+		break;
+	case 0xE3:
+		out = "varie";
+		break;
+	case 0xE5:
+		out = "epoch";
+		break;
+	case 0xE8:
+		out = "asmik";
+		break;
+	case 0xE9:
+		out = "natsume";
+		break;
+	case 0xEB:
+		out = "atlus";
+		break;
+	case 0xEC:
+		out = "epic/sony records";
+		break;
+	case 0xF0:
+		out = "a wave";
+		break;
+	case 0xF3:
+		out = "extreme entertaint";
+		break;
+	default:
+		return UV_ERR_NOTFOUND;
+	}
+	return UV_ERR_OK;
 }
 
 /*

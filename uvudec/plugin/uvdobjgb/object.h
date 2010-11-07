@@ -63,6 +63,8 @@ public:
 	uv_err_t computeGlobalChecksum(uint16_t *out);
 	uv_err_t isGlobalChecksumValid(uvd_bool_t *out);
 
+	static uv_err_t licenseeCodeToString(uint32_t code, std::string &out);
+
 	//Returns UV_ERR_NOTSUPPORTED if can't load
 	static uv_err_t canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,
 			void *user);
