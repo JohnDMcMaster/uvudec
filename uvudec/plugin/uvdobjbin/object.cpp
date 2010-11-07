@@ -19,12 +19,12 @@ UVDBinaryObject::~UVDBinaryObject()
 		(*m_sections.begin())->m_data = NULL;
 	}
 }
-
 uv_err_t UVDBinaryObject::init(UVDData *data)
 {
-	uv_assert_err_ret(UVDObject::init(data));
 	//We have a single section, a raw binary blob
 	UVDSection *section = NULL;
+
+	uv_assert_err(UVDObject::init(data));
 
 	section = new UVDSection();
 	uv_assert_ret(section);
@@ -38,6 +38,10 @@ uv_err_t UVDBinaryObject::init(UVDData *data)
 	m_sections.push_back(section);
 	
 	return UV_ERR_OK;
+
+error:
+	m_data = NULL;
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 uv_err_t UVDBinaryObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,

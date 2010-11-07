@@ -88,13 +88,16 @@ uv_err_t UVDBFDObject::init(UVDData *data)
 {
 	std::string file;
 	UVDDataFile *dataFile = NULL;
+	uv_err_t rc = UV_ERR_GENERAL;
 
-	uv_assert_err_ret(UVDObject::init(data));
-
+	uv_assert_ret(data);
 	if( typeid(*data) != typeid(UVDDataFile) )
 	{
 		return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 	}
+
+	uv_assert_err(UVDObject::init(data));
+
 	dataFile = (UVDDataFile *)data;
 	file = dataFile->m_sFile;
 
@@ -103,7 +106,8 @@ uv_err_t UVDBFDObject::init(UVDData *data)
 	if( m_bfd == NULL )
 	{
 		printf_error("Could not open file <%s>\n", file.c_str());
-		return UV_DEBUG(UV_ERR_GENERAL);
+		rc = UV_DEBUG(UV_ERR_GENERAL);
+		goto error;
 	}
 
 	//Needs to be an object or an archive
@@ -111,13 +115,18 @@ uv_err_t UVDBFDObject::init(UVDData *data)
 			&& !bfd_check_format(m_bfd, bfd_archive) )
 	{
 		bfd_close(m_bfd);
-		return UV_DEBUG(UV_ERR_NOTSUPPORTED);
+		rc = UV_DEBUG(UV_ERR_NOTSUPPORTED);
+		goto error;
 	}
 	
 	//TODO: we should build the section table
-	uv_assert_err_ret(rebuildSections());
+	uv_assert_err(rebuildSections());
 
 	return UV_ERR_OK;
+
+error:
+	m_data = NULL;
+	return UV_DEBUG(rc);
 }
 
 uv_err_t UVDBFDObject::rebuildSections()

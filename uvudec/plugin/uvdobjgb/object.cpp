@@ -38,7 +38,7 @@ UVDGBObject::~UVDGBObject()
 
 uv_err_t UVDGBObject::init(UVDData *data)
 {
-	uv_assert_err_ret(UVDObject::init(data));
+	uv_assert_err(UVDObject::init(data));
 	//We have a single section, a raw binary blob
 
 	/*
@@ -57,10 +57,15 @@ uv_err_t UVDGBObject::init(UVDData *data)
 	*/
 	
 	m_nintendoLogo = new UVDDataChunk();
-	uv_assert_ret(m_nintendoLogo);
-	uv_assert_err_ret(m_nintendoLogo->init(m_data, UVDOBJGB_LOGO_ADDR_MIN, UVDOBJGB_LOGO_ADDR_MAX));
+	uv_assert(m_nintendoLogo);
+	uv_assert_err(m_nintendoLogo->init(m_data, UVDOBJGB_LOGO_ADDR_MIN, UVDOBJGB_LOGO_ADDR_MAX));
 
 	return UV_ERR_OK;
+
+error:
+	m_data = NULL;
+	delete m_nintendoLogo;
+	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
 //XXX: this should probably be a generic object function
@@ -385,14 +390,16 @@ uv_err_t UVDGBObject::isGlobalChecksumValid(uvd_bool_t *out)
 uv_err_t UVDGBObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,
 		void *user)
 {
+	uv_err_t rc = UV_ERR_GENERAL;
 	UVDGBObject temp;
 	//Required for the game to work
 	uvd_bool_t headerChecksumValid = false;
 	//Optional
 	uvd_bool_t globalChecksumValid = true;
 	
-	uv_assert_err_ret(temp.init((UVDData *)data));
-	uv_assert_err_ret(temp.isHeaderChecksumValid(&headerChecksumValid));
+	uv_assert_ret(confidence);
+	uv_assert_err(temp.init((UVDData *)data));
+	uv_assert_err(temp.isHeaderChecksumValid(&headerChecksumValid));
 	//uv_assert_err_ret(isGlobalChecksumValid(&globalChecksumValid));
 	//Think I read this is required to be correct
 	//uv_err_t isNintendoLogo(uvd_bool_t *out);
@@ -408,7 +415,11 @@ uv_err_t UVDGBObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints,
 		*confidence = UVD_MATCH_POOR;
 	}
 	
-	return UV_ERR_OK;
+	rc = UV_ERR_OK;
+	
+error:
+	temp.m_data = NULL;
+	return UV_DEBUG(rc);
 }
 
 uv_err_t UVDGBObject::tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out,
