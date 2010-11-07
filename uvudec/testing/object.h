@@ -14,10 +14,14 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 class UVDTestingObjectFixture : public UVDTestingPluginFixture
 {
+public:
+	void setUp();
+	
 protected:
-	void init();
+	void init();	
 
 protected:
+	UVDObject *m_object;
 };
 
 #endif

@@ -6,6 +6,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/object.h"
 
+void UVDTestingObjectFixture::setUp()
+{
+	m_object = NULL;
+}
+
 void UVDTestingObjectFixture::init()
 {
 	UVDTestingPluginFixture::init();

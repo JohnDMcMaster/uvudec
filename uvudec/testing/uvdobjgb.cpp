@@ -17,6 +17,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UVDObjgbUnitTest);
 
 void UVDObjgbUnitTest::loadsCorrectObjectTest(void)
 {
+	//m_objectTypeID = typeid(UVDGBObject *);
+	//CPPUNIT_ASSERT(typeid())
 }
 
 void UVDObjgbUnitTest::isNintendoLogoTest(void)

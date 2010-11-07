@@ -16,7 +16,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 class UVDTestingPluginFixture : public UVDTestingCommonFixture
 {
 public:
-	void tearDown(void);
+	void setUp(void);
+
 protected:
 	void init(void);
 	void deinit(void);

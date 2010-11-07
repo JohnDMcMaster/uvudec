@@ -13,6 +13,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 class UVDObjgbUnitTest : public UVDTestingObjectFixture
 {
+public:
+	//setUp();
+	
+public:
 	CPPUNIT_TEST_SUITE(UVDObjgbUnitTest);
 	CPPUNIT_TEST(loadsCorrectObjectTest);
 	CPPUNIT_TEST(isNintendoLogoTest);

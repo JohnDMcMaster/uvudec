@@ -6,20 +6,21 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/plugin.h"
 
-void UVDTestingPluginFixture::tearDown(void)
+void UVDTestingPluginFixture::setUp(void)
 {
-	//We don't own m_plugin, don't delete it
+	UVDTestingCommonFixture::setUp();
+	m_plugin = NULL;
 }
 
 void UVDTestingPluginFixture::init(void)
 {
 	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
-	m_plugin = NULL;
 	//Assert plugin loaded
 }
 
 void UVDTestingPluginFixture::deinit(void)
 {
+	//We don't own m_plugin, don't delete it
 	UVDTestingCommonFixture::deinit();
 }
 
