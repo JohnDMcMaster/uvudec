@@ -299,7 +299,6 @@ uv_err_t UVD::initEarly()
 //int init_count = 0;
 uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDBenchmark engineInitBenchmark;
 
 	if( !m_config->m_argv )

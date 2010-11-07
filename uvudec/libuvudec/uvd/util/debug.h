@@ -130,14 +130,23 @@ typedef uint32_t uvd_debug_flag_t;
 uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &prefix);
 //Get a free flag to register for debugging (and other operations?)
 uv_err_t UVDGetTypeFlag(uvd_debug_flag_t *typeFlag);
-
+/*
+TODO: get a printf that automatically prints to plugin type if in a plugin
+Trying to avoid relying on g_uvd...hard to do without that since otherwise lacking context
+#ifdef UVD_PLUGIN_NAME
+#define UVDPrintfDebug UVDPrintfDebugCore(
+#else
+#define UVDPrintfDebug printf_debug
+#endif
+*/
 #define printf_debug(format, ...) printf_debug_level(UVD_DEBUG_VERBOSE, format, ## __VA_ARGS__)
 #define printf_debug_type(type, format, ...) printf_debug_macro(UVD_DEBUG_TEMP, type, format, ## __VA_ARGS__)
 #define printf_debug_level(level, format, ...) printf_debug_macro(level, UVD_DEBUG_TYPE_ALL, format, ## __VA_ARGS__)
 #define printf_debug_macro(level, type, format, ...) printf_debug_core(level, type, UVD_FILE, __LINE__, __FUNCTION__, format, ## __VA_ARGS__)
 void printf_debug_core(uint32_t level, uint32_t type, const char *file, uint32_t line, const char *func, const char *format, ...);
+//void UVDPrintfDebugCore(uint32_t level, const std::string &type, const char *file, uint32_t line, const char *func, const char *format, ...);
 
-#define uv_assert(x) if( !(x) ) { UV_ERR(rc); goto error; }
+#define uv_assert(x) if( !(x) ) { UV_DEBUG(UV_ERR_GENERAL); goto error; }
 #define uv_assert_ret(x) if( !(x) ) { return UV_ERR(UV_ERR_GENERAL); }
 
 uv_err_t uv_err_ret_handler(uv_err_t rc, const char *file, uint32_t line, const char *func);

@@ -120,6 +120,7 @@ uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hin
 	{
 		printf_plugin_debug("%s: canGetObject acceptable match by getObject\n", getName().c_str());
 		UVD_POKE(data);
+		//Just in case...
 		object->m_data = NULL;
 		delete object;
 		UVD_POKE(data);
