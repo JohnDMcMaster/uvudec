@@ -58,19 +58,21 @@ static uv_err_t initArgs()
 	return UV_ERR_OK;
 }
 
-static void printfHelp()
+static uv_err_t printfHelp()
 {
 	const char *program_name = "uvtest";
 
 	printf_help("%s version %s\n", program_name, UVUDEC_VER_STRING);	
-	UVDPrintHelp();
-
+	UVDPrintVersion();
+	uv_assert_err_ret(g_argRegistry.printUsage());
 	printf_help("Fixtures:\n");	
 	for( std::map<std::string, CPPUNIT_NS::Test *>::iterator iter = g_fixtureNameMap.begin();
 			iter != g_fixtureNameMap.end(); ++iter )
 	{
 		printf_help("\t%s\n", (*iter).first.c_str());
 	}
+	
+	return UV_ERR_OK;
 }
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)

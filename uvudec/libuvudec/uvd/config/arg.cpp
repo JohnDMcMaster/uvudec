@@ -103,6 +103,32 @@ uv_err_t UVDArgRegistry::newArgConfgs(UVDArgConfigs **out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDArgRegistry::printUsage(const std::string &indent)
+{
+	for( std::set<UVDArgConfigs *>::iterator iter = m_argConfigsSet.begin();
+			iter != m_argConfigsSet.end(); ++iter )
+	{
+		UVDArgConfigs *argConfigs = *iter;
+
+		uv_assert_err_ret(argConfigs->printUsage(indent));
+	}
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArgConfigs::printUsage(const std::string &indent)
+{
+	for( ArgConfigs::iterator iter = m_argConfigs.begin();
+			iter != m_argConfigs.end(); ++iter )
+	{
+		UVDArgConfig *argConfig = (*iter).second;
+		
+		uv_assert_ret(argConfig);		
+		uv_assert_err_ret(argConfig->print(indent));
+	}
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDArgRegistry::processMain(int argc, char *const *argv)
 {
 	return UV_DEBUG(processStringVector(charPtrArrayToVector(argv, argc)));
@@ -558,18 +584,18 @@ static uv_err_t UVDPrintLoadedPlugins()
 	return UV_ERR_OK;
 }
 
-uv_err_t printArg(UVDArgConfig *argConfig, const std::string &indent)
+uv_err_t UVDArgConfig::print(const std::string &indent) const
 {
 	//Naked arguments don't have -- stuff
-	if( !argConfig->isNakedHandler() )
+	if( !isNakedHandler() )
 	{
 		printf_help("%s--%s (%s): %s\n",
-				indent.c_str(), argConfig->m_longForm.c_str(), argConfig->m_propertyForm.c_str(),
-				argConfig->m_helpMessage.c_str());
+				indent.c_str(), m_longForm.c_str(), m_propertyForm.c_str(),
+				m_helpMessage.c_str());
 	}
-	if( !argConfig->m_helpMessageExtra.empty() )
+	if( !m_helpMessageExtra.empty() )
 	{
-		printf_help("%s%s", indent.c_str(), argConfig->m_helpMessageExtra.c_str());
+		printf_help("%s%s", indent.c_str(), m_helpMessageExtra.c_str());
 	}
 	return UV_ERR_OK;
 }
@@ -615,21 +641,14 @@ static uv_err_t UVDPrintUsage()
 		//Print main config first
 		if( pluginEngine->m_pluginArgMap.find(argConfig) == pluginEngine->m_pluginArgMap.end() )
 		{
-			uv_assert_err_ret(printArg(argConfig, ""));
+			uv_assert_err_ret(argConfig->print( ""));
 		}
 	}
 	
 	//Print special argument handling last
 	printf_help("Pre plugin load args:\n");
-	for( UVDArgConfigs::ArgConfigs::iterator iter = g_config->m_plugin.m_earlyConfigArgs.m_argConfigs.begin();
-			iter != g_config->m_plugin.m_earlyConfigArgs.m_argConfigs.end(); ++iter )
-	{
-		UVDArgConfig *argConfig = (*iter).second;
-		
-		uv_assert_ret(argConfig);		
-		uv_assert_err_ret(printArg(argConfig, ""));
-	}
-
+	uv_assert_err_ret(g_config->m_plugin.m_earlyConfigArgs.printUsage());
+	
 	printf_help("\n");
 	UVDPrintLoadedPlugins();
 
@@ -655,7 +674,7 @@ static uv_err_t UVDPrintUsage()
 			
 			if( pluginName == currentPluginName )
 			{
-				uv_assert_err_ret(printArg(argConfig, ""));
+				uv_assert_err_ret(argConfig->print(""));
 			}
 		}
 	}

@@ -57,6 +57,8 @@ public:
 			UVDArgConfigHandler handler,
 			bool hasDefault);
 
+	uv_err_t printUsage(const std::string &indent = "");
+
 public:
 	ArgConfigs m_argConfigs;
 };
@@ -73,6 +75,7 @@ public:
 	UVDArgRegistry(UVDArgConfigs *args);
 	~UVDArgRegistry();
 	
+	uv_err_t printUsage(const std::string &indent = "");
 	uv_err_t newArgConfgs(UVDArgConfigs **out = NULL);
 	uv_err_t processMain(int argc, char *const *argv);
 	uv_err_t processMainWithRemove(int argc, char **argv);
@@ -82,6 +85,7 @@ public:
 	uv_err_t processStringVectorWithRemove(std::vector<std::string> &args);
 	
 public:
+	//TODO: define ordering on this, probably by property
 	std::set<UVDArgConfigs *> m_argConfigsSet;
 };
 
@@ -117,6 +121,8 @@ public:
 
 	bool isNakedHandler() const;
 	//bool operator ==(const std::string &r) const;
+
+	uv_err_t print(const std::string &indent) const;
 
 	/*
 	Do a main style parse, eliminating used args
