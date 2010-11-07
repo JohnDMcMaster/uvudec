@@ -22,8 +22,9 @@ include $(ROOT_DIR)/Makefile.mk
 # Python seems to require the _
 #LIB_PREFIX=_
 
+# FIXME: generate dependencies using -MM
+# swig -c++ -python -I../libuvudec -MM uvudec.i
+
 uvudec_wrap.cpp: uvudec.i
-	swig -c++ -python -I../libuvudec uvudec.i
-	mv uvudec_wrap.cxx uvudec_wrap.cpp
-	mv uvudec.py $(LIB_DIR)
+	swig -c++ -python -I../libuvudec -o uvudec_wrap.cpp -outdir $(LIB_DIR) uvudec.i
 
