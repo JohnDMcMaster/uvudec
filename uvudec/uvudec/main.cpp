@@ -30,8 +30,13 @@ Seems a solid architecture, should stick with it
 
 //typedef uv_err_t (*uv_disasm_func)(struct );
 
+#define UVD_PROP_INIT_ONLY			"uvudec.debug.init_only"
+#define UVD_PROP_INIT_ONLY_DEFAULT	false
+
 static std::string g_outputFile;
 static FILE *g_pOutputFile = NULL;
+//UVD_PROP_INIT_ONLY
+static uvd_bool_t g_initOnly = UVD_PROP_INIT_ONLY_DEFAULT;
 
 uv_err_t versionPrintPrefixThunk();
 
@@ -72,19 +77,22 @@ static uv_err_t runTasks()
 	uv_assert(uvd);
 	uv_assert(g_uvd);
 
-	if( g_config->m_analysisOnly )
+	if( !g_initOnly )
 	{
-		uv_assert_err_ret(uvd->analyze());
-	}
-	else
-	{
-		//Get string output
-		printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");
-		rc = uvd->disassemble(output);
-		if( UV_FAILED(rc) )
+		if( g_config->m_analysisOnly )
 		{
-			printf_error("Failed to runTasks!\n");
-			uv_assert_err(UV_ERR_GENERAL);
+			uv_assert_err_ret(uvd->analyze());
+		}
+		else
+		{
+			//Get string output
+			printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");
+			rc = uvd->disassemble(output);
+			if( UV_FAILED(rc) )
+			{
+				printf_error("Failed to runTasks!\n");
+				uv_assert_err(UV_ERR_GENERAL);
+			}
 		}
 	}
 
@@ -107,6 +115,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
+	bool firstArgBool = true;
 	
 	config = g_config;
 	uv_assert_ret(config);
@@ -117,6 +126,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		firstArg = argumentArguments[0];
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
+		firstArgBool = UVDArgToBool(firstArg);
 	}
 
 	if( argConfig->isNakedHandler() )
@@ -144,6 +154,10 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		uv_assert_ret(!argumentArguments.empty());
 		g_outputFile = firstArg;
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_INIT_ONLY )
+	{
+		g_initOnly = firstArgBool;
+	}
 	else
 	{
 		//return UV_DEBUG(argParserDefault(argConfig, argumentArguments));
@@ -161,6 +175,7 @@ uv_err_t initProgConfig()
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input binary, analyzed program]"));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output program (default: stdout)", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_INIT_ONLY, 0, "init-only", "only initialize, don't do anything (to debug plugin load selection)", 1, argParser, true));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
