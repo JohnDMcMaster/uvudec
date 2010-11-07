@@ -10,7 +10,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //Action
 #define UVD_PROP_ACTION_HELP					"action.help"
 #define UVD_PROP_ACTION_VERSION					"action.version"
-#define UVD_PROP_ACTION_USELESS_ASCII_ART		"action.print_ascii_art"
 //Debug
 #define UVD_PROP_DEBUG_IGNORE_ERRORS			"debug.ignore_errors"
 #define UVD_PROP_DEBUG_IGNORE_ERRORS_DEFAULT	true
@@ -34,6 +33,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_TARGET_ADDRESS					"target.address"
 //Analysis
 #define UVD_PROP_ANALYSIS_DIR					"analysis.dir"
+//FIXME: This was originally added as a hack to make binary to object operations more efficient
+//However, this has been made into a separate program, so this should be deprecated
 #define UVD_PROP_ANALYSIS_ONLY					"analysis.only"
 //Recursive descent, linear sweep, etc
 #define UVD_PROP_ANALYSIS_FLOW_TECHNIQUE		"analysis.flow_technique"
@@ -41,7 +42,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_OUTPUT_OPCODE_USAGE			"output.opcode_usage"
 #define UVD_PROP_OUTPUT_JUMPED_ADDRESSES		"output.jumped_addresses"
 #define UVD_PROP_OUTPUT_CALLED_ADDRESSES		"output.called_addresses"
-#define UVD_PROP_OUTPUT_USELESS_ASCII_ART		"output.useless_ascii_art"
 #define UVD_PROP_OUTPUT_ADDRESS_COMMENT			"output.address_comment"
 #define UVD_PROP_OUTPUT_ADDRESS_LABEL			"output.address_label"
 #define UVD_PROP_OUTPUT_FILE					"output.file"

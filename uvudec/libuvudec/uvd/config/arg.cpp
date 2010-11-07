@@ -11,7 +11,6 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 #include "uvd/config/arg.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
-#include "uvd/util/ascii_art.h"
 #include "uvd/config/config.h"
 #include "uvd/language/language.h"
 #include "uvd/util/debug.h"
@@ -257,7 +256,6 @@ uv_err_t UVDInitArgConfig()
 	//Actions
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", 0, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", 0, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_USELESS_ASCII_ART, 0, "print-useless-ascii-art", "print nifty ASCII art", 1, argParser, true));	
 	
 	//Analysis target related
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
@@ -277,7 +275,6 @@ uv_err_t UVDInitArgConfig()
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_OPCODE_USAGE, 0, "opcode-usage", "opcode usage count table", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_JUMPED_ADDRESSES, 0, "print-jumped-addresses", "whether to print information about jumped to addresses (*1)", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_CALLED_ADDRESSES, 0, "print-called-addresses", "whether to print information about called to addresses (*1)", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_USELESS_ASCII_ART, 0, "useless-ascii-art", "append nifty ascii art headers to output files", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
 
@@ -317,10 +314,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	{
 		UVDPrintVersion();
 		return UV_ERR_DONE;
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_USELESS_ASCII_ART )
-	{
-		printf("Have too much time on our hands do we?\n%s\n\n", getRandomUVNetASCIIArt().c_str());
 	}
 	/*
 	Analysis target specific
@@ -401,10 +394,6 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_CALLED_ADDRESSES )
 	{
 		config->m_calledSources = firstArgBool;
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_USELESS_ASCII_ART )
-	{
-		config->m_uselessASCIIArt = firstArgBool;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_ADDRESS_COMMENT )
 	{
