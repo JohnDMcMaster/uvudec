@@ -85,6 +85,7 @@ void UVDGBObject::debugPrint()
 	printf_plugin_debug("entry point: 0x%08X\n", entryPoint);
 
 	/*
+	FIXME: this causes a crash
 	uvd_bool_t bIsNintendoLogo = false;
 	UV_DEBUG(isNintendoLogo(&bIsNintendoLogo));
 	printf_plugin_debug("is nintendo logo: %d\n", bIsNintendoLogo);
@@ -183,7 +184,7 @@ uv_err_t UVDGBObject::isNintendoLogo(uvd_bool_t *out)
 {
 	uv_assert_ret(out);
 	uv_assert_ret(m_data);
-	*out = m_data->compareBytes(g_nintendoLogo, sizeof(g_nintendoLogo)) == 0;
+	*out = m_data->compareBytes(&g_nintendoLogo[0], sizeof(g_nintendoLogo)) == 0;
 	return UV_ERR_OK;
 }
 
@@ -449,8 +450,22 @@ uv_err_t UVDGBObject::getGlobalChecksum(uint16_t *out)
 
 uv_err_t UVDGBObject::computeGlobalChecksum(uint16_t *out)
 {
-	//uint16_t checksum = 0;
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uint16_t checksum = 0;
+
+	//We could move the if to outside the loop
+	for( uv_addr_t addr = 0; addr < m_data->size(); ++addr )
+	{
+		uint8_t cur = 0;
+		
+		if( addr < 0x014E || addr > 0x014F )
+		{
+			uv_assert_err_ret(m_data->readU8(addr, &cur));
+			checksum += cur;
+		}
+	}
+	*out = checksum;
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDGBObject::isGlobalChecksumValid(uvd_bool_t *out)
