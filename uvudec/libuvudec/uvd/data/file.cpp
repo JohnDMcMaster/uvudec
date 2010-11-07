@@ -22,6 +22,7 @@ UVDDataFile
 
 UVDDataFile::UVDDataFile()
 {
+	m_pFile = NULL;
 }
 
 uv_err_t UVDDataFile::init(const std::string &file)
