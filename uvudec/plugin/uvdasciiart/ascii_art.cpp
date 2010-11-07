@@ -5,7 +5,7 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/util/ascii_art.h"
+#include "uvdasciiart/ascii_art.h"
 #include <stdlib.h>
 
 #define UVNET_LOGO_0 \

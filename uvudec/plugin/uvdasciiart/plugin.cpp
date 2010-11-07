@@ -4,6 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvdasciiart/ascii_art.h"
 #include "uvdasciiart/plugin.h"
 #include "uvd/core/uvd.h"
 
@@ -49,4 +50,18 @@ uv_err_t UVDAsciiartPlugin::getAuthor(std::string &out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDAsciiartPlugin::outputHeader(std::vector<std::string> &lines)
+{
+	if( !m_config.m_outputASCIIArt )
+	{
+		return UV_ERR_OK;
+	}
+
+	std::string art = getRandomUVNetASCIIArt() + "\n";
+	lines.push_back(art);
+	lines.push_back("");
+	lines.push_back("");		
+
+	return UV_ERR_OK;
+}
 

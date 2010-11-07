@@ -106,6 +106,11 @@ uv_err_t UVDPlugin::getDependencies(PluginDependencies &out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDPlugin::outputHeader(std::vector<std::string> &lines)
+{
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
 {
 	/*

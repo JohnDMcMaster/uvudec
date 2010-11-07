@@ -22,6 +22,7 @@ public:
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
 	virtual uv_err_t getAuthor(std::string &out);
+	virtual uv_err_t outputHeader(std::vector<std::string> &lines);
 
 public:
 	UVDASCIIArtConfig m_config;

@@ -28,6 +28,7 @@ public:
 
 public:
 	uvd_bool_t m_outputASCIIArt;
+	int m_uselessASCIIArt;
 };
 
 extern UVDASCIIArtConfig *g_asciiArtConfig;

@@ -4,11 +4,11 @@ Copyright 2009 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvdasciiart/ascii_art.h"
 #include "uvdasciiart/config.h"
 #include "uvdasciiart/plugin.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
-#include "uvd/util/ascii_art.h"
 
 UVDASCIIArtConfig *g_asciiArtConfig = NULL;
 

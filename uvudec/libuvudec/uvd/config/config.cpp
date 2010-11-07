@@ -35,7 +35,6 @@ UVDConfig::UVDConfig()
 	//m_pDebugFile = NULL;
 
 	m_analysisOnly = false;
-	m_uselessASCIIArt = false;
 	m_flowAnalysisTechnique = UVD__FLOW_ANALYSIS__LINEAR;
 
 	m_rawFileSuffix = "_raw.bin";

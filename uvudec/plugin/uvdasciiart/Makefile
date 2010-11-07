@@ -9,6 +9,7 @@ PLUGIN_NAME=uvdasciiart
 CC_SRCS =   \
 
 CXX_SRCS = 	\
+			ascii_art.cpp \
 			config.cpp \
 			main.cpp \
 			plugin.cpp \

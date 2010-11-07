@@ -187,7 +187,6 @@ public:
 	std::string m_archDir;
 
 	int m_analysisOnly;
-	int m_uselessASCIIArt;
 	//Which type of flow analysis to do
 	int m_flowAnalysisTechnique;
 	//If any are set, will only output analysis of symbols at the given addresses

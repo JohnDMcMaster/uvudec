@@ -18,7 +18,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <sys/stat.h>
 #include <vector>
 #include <algorithm>
-#include "uvd/util/ascii_art.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
 #include "uvd/util/util.h"
@@ -472,16 +471,6 @@ uv_err_t UVDIterator::initialProcessHeader()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDIterator::initialProcessUselessASCIIArt()
-{
-	std::string art = getRandomUVNetASCIIArt() + "\n";
-	m_indexBuffer.push_back(art);
-	m_indexBuffer.push_back("");
-	m_indexBuffer.push_back("");		
-
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDIterator::initialProcessStringTable()
 {
 	char szBuff[256];
@@ -545,10 +534,20 @@ uv_err_t UVDIterator::initialProcess()
 	{
 		uv_assert_err_ret(initialProcessHeader());
 	}
-	
-	if( config->m_uselessASCIIArt )
+
+	//TODO: add a plugin header supression option
+	for( std::map<std::string, UVDPlugin *>::iterator iter = m_uvd->m_config->m_plugin.m_pluginEngine.m_loadedPlugins.begin();
+		iter != m_uvd->m_config->m_plugin.m_pluginEngine.m_loadedPlugins.end(); ++iter )
 	{
-		uv_assert_err_ret(initialProcessUselessASCIIArt());
+		UVDPlugin *plugin = (*iter).second;
+		std::vector<std::string> headerLines;
+		
+		uv_assert_ret(plugin);
+		if( UV_FAILED(plugin->outputHeader(headerLines)) )
+		{
+			printf_warn("plugin %s failed to print header\n", (*iter).first.c_str());
+		}
+		m_indexBuffer.insert(m_indexBuffer.begin(), headerLines.begin(), headerLines.end());
 	}
 
 	//String table

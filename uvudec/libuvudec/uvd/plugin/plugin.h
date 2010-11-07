@@ -99,6 +99,13 @@ public:
 	*/
 	virtual uv_err_t getDependencies(PluginDependencies &out);
 
+	/*
+	Called for the beginning of a file being rendered
+	If your plugin does SIGNIFIGANT work, consider printing name and version
+	Lines should be blank when given
+	*/
+	virtual uv_err_t outputHeader(std::vector<std::string> &lines);
+
 	//Plugins should register through here
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
