@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/plugin/plugin.h"
 #include "uvd/util/types.h"
+#include "uvdasciiart/config.h"
 
 class UVDAsciiartPlugin : public UVDPlugin
 {
@@ -23,6 +24,7 @@ public:
 	virtual uv_err_t getAuthor(std::string &out);
 
 public:
+	UVDASCIIArtConfig m_config;
 };
 
 extern UVDAsciiartPlugin *g_asciiArtPlugin;

@@ -21,6 +21,7 @@ UVDAsciiartPlugin::~UVDAsciiartPlugin()
 uv_err_t UVDAsciiartPlugin::init(UVDConfig *config)
 {
 	uv_assert_err_ret(UVDPlugin::init(config));
+	uv_assert_err_ret(m_config.init(config));
 	return UV_ERR_OK;
 }
 
@@ -32,7 +33,7 @@ uv_err_t UVDAsciiartPlugin::getName(std::string &out)
 
 uv_err_t UVDAsciiartPlugin::getDescription(std::string &out)
 {
-	out = "Game Boy ROM object loader";
+	out = "ASCII art example simple plugin";
 	return UV_ERR_OK;
 }
 
