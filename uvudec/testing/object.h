@@ -10,12 +10,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "testing/plugin.h"
-#include "uvd/flirt/flirt.h"
 
 class UVDTestingObjectFixture : public UVDTestingPluginFixture
 {
 public:
-	void setUp();
+	virtual void setUp();
 	
 protected:
 	void init();	

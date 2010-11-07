@@ -19,7 +19,11 @@ Unit test
 #include <stdint.h>
 #include <stdio.h>
 #include "testing/main.h"
+#include "testing/flirtutil.h"
+#include "testing/libuvudec.h"
+#include "testing/obj2pat.h"
 #include "testing/uvdobjgb.h"
+#include "testing/uvudec.h"
 #include "uvd/config/arg.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
@@ -38,7 +42,12 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 static uv_err_t initArgs()
 {
+	//g_fixtureNameMap["bin2obj" = UVDBin2objTestFixture::suite();
+	g_fixtureNameMap["flirtutil"] = UVDFlirtutilFixture::suite();
+	g_fixtureNameMap["libuvudec"] = UVDLibuvudecUnitTest::suite();
+	g_fixtureNameMap["obj2pat"] = UVDObj2patUnitTest::suite();
 	g_fixtureNameMap["uvdobjgb"] = UVDObjgbUnitTest::suite();
+	g_fixtureNameMap["uvudec"] = UVDUvudecUnitTest::suite();
 	
 	uv_assert_err_ret(g_argRegistry.newArgConfgs(&g_configArgs));
 	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", "", 0, argParser, false));

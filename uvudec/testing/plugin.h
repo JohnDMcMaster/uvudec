@@ -5,8 +5,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#ifndef UVD_TESTING_FLIRT_H
-#define UVD_TESTING_FLIRT_H
+#ifndef UVD_TESTING_PLUGIN_H
+#define UVD_TESTING_PLUGIN_H
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
