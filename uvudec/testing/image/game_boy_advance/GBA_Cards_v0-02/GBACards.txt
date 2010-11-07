@@ -1,0 +1,58 @@
+  / __/ /
+ / _// / . ||//.\/  ./
+/_/ /_/_/|_|_/\_/_/\_\
+GBA Card Games v0.02
+by Flavor (http://flavor.8k.com/GBA/ ICQ#17868116) 
+
+Well, here's my first release of my Card Games
+for the GameBoy Advance.
+
+I'm using this as a learning tool for myself.  Right now,
+it's just BlackJack, but I plan to extend this to other 
+card games like video-poker.  Right now, after the opening
+screen, you go straight to BlackJack.  Later, there will 
+be a menu to choose other games.
+
+This release is known to work with "iGBA beta 8" and
+"VGBA v0.5".
+
+I have also tried it with Mappy, but I have noticed some
+odd glitches when running it with Mappy.
+
+
+---------------------------
+     Keys/How To Play
+---------------------------
+A	Hit
+B	Stay
+UP	Raise Bet (between hands)
+DOWN	Lower Bet (between hands)
+START	Quit BlackJack (between hands)
+
+The counters show you your current score (money), your 
+bet ammount, the CPU's card total, your card total,
+and the number of cards in the deck.
+
+When the number of cards in the deck are below 20, 
+the deck will be shuffled at the start of the next hand.
+
+
+---------------------------
+Known Problems / To-Do List
+---------------------------
+- BlackJack
+	- You can't split.
+	- You can't double down.
+
+
+---------------------------
+    Special Thanks To
+---------------------------
+Jeff Frohwein		http://www.devrs.com
+Marat Fayzullin		http://www.komkon.org/fms/VGB/
+Mike Decker
+Jimmy Mårdell
+Anders Montonen
+Drunk Ass Jason
+GBADev Mailing List	http://groups.yahoo.com/group/gbadev
+GBADev IRC Channel	#GBADev on EFnet
