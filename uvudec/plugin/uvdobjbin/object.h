@@ -14,6 +14,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 /*
 A raw binary object as would be ripped off of a ROM (ex: EPROM)
+Assumed to be a ROM, but you can modify the section flags if you need to
 */
 class UVDBinaryObject : public UVDObject
 {

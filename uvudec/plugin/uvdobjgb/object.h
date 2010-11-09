@@ -11,11 +11,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/types.h"
 #include "uvd/data/data.h"
 #include "uvd/object/object.h"
+#include "uvdobjbin/object.h"
 
 /*
 A raw binary object as would be ripped off of a ROM (ex: EPROM)
 */
-class UVDGBObject : public UVDObject
+class UVDGBObject : public UVDBinaryObject
 {
 public:
 	UVDGBObject();
@@ -44,9 +45,9 @@ public:
 	//Raw byte value
 	uv_err_t getROMSizeRaw(uint8_t *out);
 	//Return in bytes
-	uv_err_t getRAMSize(uint32_t *out);
+	uv_err_t getSaveRAMSize(uint32_t *out);
 	//Raw byte value
-	uv_err_t getRAMSizeRaw(uint8_t *out);
+	uv_err_t getSaveRAMSizeRaw(uint8_t *out);
 	uv_err_t getDestinationCode(uint8_t *out);
 	uv_err_t getOldLicenseeCode(uint8_t *out);
 	uv_err_t getMaskROMVersioNumber(uint8_t *out);
@@ -64,6 +65,7 @@ public:
 	uv_err_t isGlobalChecksumValid(uvd_bool_t *out);
 
 	static uv_err_t licenseeCodeToString(uint32_t code, std::string &out);
+	static uv_err_t cartridgeTypeToString(uint8_t cartridgeType, std::string &out);
 
 	//Returns UV_ERR_NOTSUPPORTED if can't load
 	static uv_err_t canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence,

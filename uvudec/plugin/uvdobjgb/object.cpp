@@ -6,8 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 /*
 References:
-http://www.zophar.net/fileuploads/2/10597teazh/gbrom.txt
 http://nocash.emubase.de/pandocs.htm#thecartridgeheader
+http://www.zophar.net/fileuploads/2/10597teazh/gbrom.txt
 */
 
 #include "uvdobjgb/object.h"
@@ -25,7 +25,7 @@ http://nocash.emubase.de/pandocs.htm#thecartridgeheader
 #define UVDOBJGB_SGB_ADDR_MIN					0x0146
 #define UVDOBJGB_CARTRIDGE_TYPE_ADDR_MIN		0x0147
 #define UVDOBJGB_ROM_SIZE_ADDR_MIN				0x0148
-#define UVDOBJGB_RAM_SIZE_ADDR_MIN				0x0149
+#define UVDOBJGB_SAVE_RAM_SIZE_ADDR_MIN			0x0149
 #define UVDOBJGB_DEST_CODE_ADDR_MIN				0x014A
 #define UVDOBJGB_OLD_LIC_CODE_ADDR_MIN			0x014B
 #define UVDOBJGB_MASK_ROM_VER_ADDR_MIN			0x014C
@@ -42,23 +42,8 @@ UVDGBObject::~UVDGBObject()
 
 uv_err_t UVDGBObject::init(UVDData *data)
 {
-	uv_assert_err(UVDObject::init(data));
-	//We have a single section, a raw binary blob
-
-	/*
-	UVDSection *section = NULL;
-
-	section = new UVDSection();
-	uv_assert_ret(section);
-	section->m_data = data;
-	
-	//Basic assumptions for a ROM image.  W is probably most debatable as we could be in flash or ROM
-	section->m_R = UVD_TRI_TRUE;
-	section->m_W = UVD_TRI_FALSE;
-	section->m_X = UVD_TRI_TRUE;
-	
-	m_sections.push_back(section);
-	*/
+	//Seems to be a ROM object
+	uv_assert_err(UVDBinaryObject::init(data));
 	
 	m_nintendoLogo = new UVDDataChunk();
 	uv_assert(m_nintendoLogo);
@@ -75,14 +60,26 @@ error:
 //XXX: this should probably be a generic object function
 //Also, figure out how to resolve address space nicely
 //Probably needs to be paired with a section
+/*
+"0100-0103 - Entry Point
+After displaying the Nintendo Logo, the built-in boot procedure jumps to this
+address (100h), which should then jump to the actual main program in the
+cartridge. Usually this 4 byte area contains a NOP instruction, followed by a
+JP 0150h instruction. But not always.
+*/
 uv_err_t UVDGBObject::getEntryPoint(uv_addr_t *entryPoint)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	/*
+	XXX: do we want to report the "real" entry point if this is a jump statement as per above?
+	*/
+	//return UV_DEBUG(m_data->readU32(UVDOBJGB_MANUFACTURER_CODE_ADDR_MIN, out));
+	*entryPoint = 0x0100;
+	return UV_ERR_OK;
 }
 
 void UVDGBObject::debugPrint()
 {
-	printf("\n\n");
+	printf_plugin_debug("\n\n");
 
 	uv_addr_t entryPoint = 0;
 	UV_DEBUG(getEntryPoint(&entryPoint));
@@ -122,12 +119,12 @@ void UVDGBObject::debugPrint()
 	UV_DEBUG(getROMSizeRaw(&ROMSizeRaw));
 	printf_plugin_debug("ROM size (raw): 0x%02X\n", ROMSizeRaw);
 
-	uint32_t RAMSize = 0;
-	UV_DEBUG(getRAMSize(&RAMSize));
-	printf_plugin_debug("RAM size (bytes): 0x%08X\n", RAMSize);
-	uint8_t RAMSizeRaw = 0;
-	UV_DEBUG(getRAMSizeRaw(&RAMSizeRaw));
-	printf_plugin_debug("RAM size (raw): 0x%02X\n", RAMSizeRaw);
+	uint32_t saveRAMSize = 0;
+	UV_DEBUG(getSaveRAMSize(&saveRAMSize));
+	printf_plugin_debug("Save RAM size (bytes): 0x%08X\n", saveRAMSize);
+	uint8_t saveRAMSizeRaw = 0;
+	UV_DEBUG(getSaveRAMSizeRaw(&saveRAMSizeRaw));
+	printf_plugin_debug("save RAM size (raw): 0x%02X\n", saveRAMSizeRaw);
 
 	/*
 	UV_DEBUG(getDestinationCode(uint8_t *out));
@@ -155,11 +152,11 @@ void UVDGBObject::debugPrint()
 	printf_plugin_debug("global checksum, computed: 0x%04X, from file: 0x%04X, valid: %d\n",
 			globalChecksumComputed, globalChecksumFromFile, globalChecksumValid);
 
-	printf("\n\n");
+	printf_plugin_debug("\n\n");
 }
 
 /*
-0104-0133 - Nintendo Logo
+"0104-0133 - Nintendo Logo
 These bytes define the bitmap of the Nintendo logo that is displayed when
 the gameboy gets turned on. The hexdump of this bitmap is:
 	CE ED 66 66 CC 0D 00 0B 03 73 00 83 00 0C 00 0D
@@ -167,7 +164,7 @@ the gameboy gets turned on. The hexdump of this bitmap is:
 	BB BB 67 63 6E 0E EC CC DD DC 99 9F BB B9 33 3E
 
 We retain ownership of the data
-Data is only valid as long as this object is valid
+Data is only valid as long as this object is valid"
 */
 static uint8_t g_nintendoLogo[] = 
 {
@@ -221,7 +218,7 @@ Typical values are:
 Values with Bit 7 set, and either Bit 2 or 3 set, will switch the gameboy
 into a special non-CGB-mode with uninitialized palettes. Purpose unknown,
 eventually this has been supposed to be used to colorize monochrome games
-that include fixed palette data at a special location in ROM.
+that include fixed palette data at a special location in ROM."
 */
 uv_err_t UVDGBObject::getCGBFlags(uint8_t *out)
 {
@@ -229,11 +226,11 @@ uv_err_t UVDGBObject::getCGBFlags(uint8_t *out)
 }
 
 /*
-0144-0145 - New Licensee Code
+"0144-0145 - New Licensee Code
 Specifies a two character ASCII licensee code, indicating the company or
 publisher of the game. These two bytes are used in newer games only (games
 that have been released after the SGB has been invented). Older games are
-using the header entry at 014B instead.
+using the header entry at 014B instead."
 */
 uv_err_t UVDGBObject::getNewLicenseeCode(uint16_t *out)
 {
@@ -545,12 +542,12 @@ uv_err_t UVDGBObject::licenseeCodeToString(uint32_t code, std::string &out)
 }
 
 /*
-0146 - SGB Flag
+"0146 - SGB Flag
 Specifies whether the game supports SGB functions, common values are:
 	00h = No SGB functions (Normal Gameboy or CGB only game)
 	03h = Game supports SGB functions
 The SGB disables its SGB functions if this byte is set to another value
-than 03h.
+than 03h."
 */
 uv_err_t UVDGBObject::getSGBFlags(uint8_t *out)
 {
@@ -559,11 +556,26 @@ uv_err_t UVDGBObject::getSGBFlags(uint8_t *out)
 
 uv_err_t UVDGBObject::isSGBEnabled(uvd_bool_t *out)
 {
-	return UV_DEBUG(UV_ERR_GENERAL);
+	uint8_t flags = 0;
+	
+	uv_assert_err_ret(getSGBFlags(&flags));
+	if( flags == 0x03 )
+	{
+		*out = true;
+	}
+	else
+	{
+		*out = false;
+		if( flags != 0x00 )
+		{
+			UVDPrintfWarning("SGB flags usually has either 0x03 or 0x00, got 0x%002X\n", flags);
+		}
+	}
+	return UV_ERR_OK;
 }
 
 /*
-0147 - Cartridge Type
+"0147 - Cartridge Type
 Specifies which Memory Bank Controller (if any) is used in the cartridge,
 and if further external hardware exists in the cartridge.
 
@@ -581,15 +593,110 @@ and if further external hardware exists in the cartridge.
 0Fh  MBC3+TIMER+BATTERY       FDh  BANDAI TAMA5
 10h  MBC3+TIMER+RAM+BATTERY   FEh  HuC3
 11h  MBC3                     FFh  HuC1+RAM+BATTERY
-12h  MBC3+RAM
+12h  MBC3+RAM"
 */
 uv_err_t UVDGBObject::getCartridgeType(uint8_t *out)
 {
 	return UV_DEBUG(m_data->readU8(UVDOBJGB_CARTRIDGE_TYPE_ADDR_MIN, out));
 }
 
+uv_err_t UVDGBObject::cartridgeTypeToString(uint8_t cartridgeType, std::string &out)
+{
+	switch(cartridgeType)
+	{
+	case 0x00:
+		out = "ROM";
+		break;
+	case 0x01:
+		out = "MBC1";
+		break;
+	case 0x02:
+		out = "MBC1+RAM";
+		break;
+	case 0x03:
+		out = "MBC1+RAM+BATTERY";
+		break;
+	case 0x05:
+		out = "MBC2";
+		break;
+	case 0x06:
+		out = "MBC2+BATTERY";
+		break;
+	case 0x08:
+		out = "ROM+RAM";
+		break;
+	case 0x09:
+		out = "ROM+RAM+BATTERY";
+		break;
+	case 0x0B:
+		out = "MMM01";
+		break;
+	case 0x0C:
+		out = "MMM01+RAM";
+		break;
+	case 0x0D:
+		out = "MMM01+RAM+BATTERY";
+		break;
+	case 0x0F:
+		out = "MBC3+TIMER+BATTERY";
+		break;
+	case 0x10:
+		out = "MBC3+TIMER+RAM+BATTERY";
+		break;
+	case 0x11:
+		out = "MBC3";
+		break;
+	case 0x12:
+		out = "MBC3+RAM";
+		break;
+	case 0x13:
+		out = "MBC3+RAM+BATTERY";
+		break;
+	case 0x15:
+		out = "MBC4";
+		break;
+	case 0x16:
+		out = "MBC4+RAM";
+		break;
+	case 0x17:
+		out = "MBC4+RAM+BATTERY";
+		break;
+	case 0x19:
+		out = "MBC5";
+		break;
+	case 0x1A:
+		out = "MBC5+RAM";
+		break;
+	case 0x1B:
+		out = "MBC5+RAM+BATTERY";
+		break;
+	case 0x1C:
+		out = "MBC5+RUMBLE";
+		break;
+	case 0x1D:
+		out = "MBC5+RUMBLE+RAM";
+		break;
+	case 0x1E:
+		out = "MBC5+RUMBLE+RAM+BATTERY";
+		break;
+	case 0xFC:
+		out = "POCKET CAMERA";
+		break;
+	case 0xFD:
+		out = "Bandai TAMA5";
+		break;
+	case 0xFE:
+		out = "HuC3";
+		break;
+	case 0xFF:
+		out = "HuC1+RAM+BATTERY";
+		break;
+	}
+	return UV_ERR_OK;
+}
+
 /*
-0148 - ROM Size
+"0148 - ROM Size
 Specifies the ROM Size of the cartridge. Typically calculated as
 "32KB shl N".
 
@@ -603,7 +710,7 @@ Specifies the ROM Size of the cartridge. Typically calculated as
 07h -   4MByte (256 banks)
 52h - 1.1MByte (72 banks)
 53h - 1.2MByte (80 banks)
-54h - 1.5MByte (96 banks)
+54h - 1.5MByte (96 banks)"
 */
 //Return in bytes
 uv_err_t UVDGBObject::getROMSize(uint32_t *out)
@@ -623,7 +730,7 @@ uv_err_t UVDGBObject::getROMSizeRaw(uint8_t *out)
 }
 
 /*
-0149 - RAM Size
+"0149 - RAM Size
 Specifies the size of the external RAM in the cartridge (if any).
 
 00h - None
@@ -632,13 +739,19 @@ Specifies the size of the external RAM in the cartridge (if any).
 03h - 32 KBytes (4 banks of 8KBytes each)
 
 When using a MBC2 chip 00h must be specified in this entry, even though
-the MBC2 includes a built-in RAM of 512 x 4 bits.
+the MBC2 includes a built-in RAM of 512 x 4 bits."
+
+"Save RAM size
+=============
+One byte also, self-explanitory.  Sizes range from no RAM, to 32K.  The most
+common ones used are 8k and 32k.  HEX values:
+00- 0k          01- 2k          02- 8k          03- 32k"
 */
-uv_err_t UVDGBObject::getRAMSize(uint32_t *out)
+uv_err_t UVDGBObject::getSaveRAMSize(uint32_t *out)
 {
 	uint8_t raw = 0;
 	
-	uv_assert_err_ret(getRAMSizeRaw(&raw));
+	uv_assert_err_ret(getSaveRAMSizeRaw(&raw));
 	switch( raw )
 	{
 	case 0x00:
@@ -664,9 +777,9 @@ uv_err_t UVDGBObject::getRAMSize(uint32_t *out)
 }
 
 //Raw byte value
-uv_err_t UVDGBObject::getRAMSizeRaw(uint8_t *out)
+uv_err_t UVDGBObject::getSaveRAMSizeRaw(uint8_t *out)
 {
-	return UV_DEBUG(m_data->readU8(UVDOBJGB_RAM_SIZE_ADDR_MIN, out));
+	return UV_DEBUG(m_data->readU8(UVDOBJGB_SAVE_RAM_SIZE_ADDR_MIN, out));
 }
 
 /*
@@ -801,12 +914,12 @@ uv_err_t UVDGBObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints,
 	
 	uv_assert_ret(confidence);
 	uv_assert_err(temp.init((UVDData *)data));
-	temp.debugPrint();
+	//temp.debugPrint();
 	uv_assert_err(temp.isHeaderChecksumValid(&headerChecksumValid));
 	//uv_assert_err_ret(isGlobalChecksumValid(&globalChecksumValid));
 	//Think I read this is required to be correct
 	//uv_err_t isNintendoLogo(uvd_bool_t *out);
-	temp.debugPrint();
+	//temp.debugPrint();
 	printf_plugin_debug("header checksum valid: %d\n", headerChecksumValid);
 	printf_plugin_debug("global checksum valid: %d\n", globalChecksumValid);
 	if( headerChecksumValid && globalChecksumValid )

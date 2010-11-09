@@ -30,6 +30,3 @@ NO_INCLUDE_DOT=Y
 
 include $(ROOT_DIR)/Makefile.mk
 
-# UVD official plugins should prefix include paths with the plugin name
-INCLUDES += -I$(PLUGIN_DIR)
-

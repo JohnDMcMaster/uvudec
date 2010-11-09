@@ -103,6 +103,10 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		printfHelp();
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_TESTING_ARGS )
+	{
+		g_propagateArgs = true;
+	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_HELP )
 	{
 		printfHelp();
@@ -126,7 +130,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	}
 	else
 	{
-		printf_error("Property not recognized in callback: %s\n", argConfig->m_propertyForm.c_str());
+		printf_error("main: property not recognized in callback: %s\n", argConfig->m_propertyForm.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 

@@ -60,9 +60,12 @@ UVDGBObject *UVDObjgbUnitTest::getObject()
 
 void UVDObjgbUnitTest::loadsCorrectObjectTest(void)
 {
-	
 	//m_objectTypeID = typeid(UVDGBObject *);
 	//CPPUNIT_ASSERT(typeid())
+	init();
+	CPPUNIT_ASSERT(typeid(UVDGBObject) == typeid(*m_object));
+	getObject()->debugPrint();
+	deinit();
 }
 
 void UVDObjgbUnitTest::isNintendoLogoTest(void)
@@ -107,7 +110,7 @@ void UVDObjgbUnitTest::getCGBFlagsTest(void)
 	init();
 	UVCPPUNIT_ASSERT(getObject()->getCGBFlags(&flags));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x99, flags);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0xC0, flags);
 }
 
 void UVDObjgbUnitTest::getNewLicenseeCodeTest(void)
@@ -137,7 +140,7 @@ void UVDObjgbUnitTest::isSGBEnabledTest(void)
 	init();
 	UVCPPUNIT_ASSERT(getObject()->isSGBEnabled(&data));
 	deinit();
-	CPPUNIT_ASSERT(data);
+	CPPUNIT_ASSERT(!data);
 }
 
 void UVDObjgbUnitTest::getCartridgeTypeTest(void)
@@ -147,7 +150,7 @@ void UVDObjgbUnitTest::getCartridgeTypeTest(void)
 	init();
 	UVCPPUNIT_ASSERT(getObject()->getCartridgeType(&result));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0x01, result);
 }
 
 void UVDObjgbUnitTest::getROMSizeTest(void)
@@ -170,27 +173,24 @@ void UVDObjgbUnitTest::getROMSizeRawTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x02, result);
 }
 
-void UVDObjgbUnitTest::getRAMSizeTest(void)
+void UVDObjgbUnitTest::getSaveRAMSizeTest(void)
 {
-	//0x00000000?  
-	//Can't be right
 	uint32_t result = 0;
 
 	init();
-	UVCPPUNIT_ASSERT(getObject()->getRAMSize(&result));
+	UVCPPUNIT_ASSERT(getObject()->getSaveRAMSize(&result));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0x00, result);
 }
 
-void UVDObjgbUnitTest::getRAMSizeRawTest(void)
+void UVDObjgbUnitTest::getSaveRAMSizeRawTest(void)
 {
-	//0x00
 	uint8_t result = 0;
 
 	init();
-	UVCPPUNIT_ASSERT(getObject()->getRAMSizeRaw(&result));
+	UVCPPUNIT_ASSERT(getObject()->getSaveRAMSizeRaw(&result));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0x00, result);
 }
 
 void UVDObjgbUnitTest::getDestinationCodeTest(void)
@@ -200,7 +200,7 @@ void UVDObjgbUnitTest::getDestinationCodeTest(void)
 	init();
 	UVCPPUNIT_ASSERT(getObject()->getDestinationCode(&result));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0x01, result);
 }
 
 void UVDObjgbUnitTest::getOldLicenseeCodeTest(void)
@@ -210,7 +210,7 @@ void UVDObjgbUnitTest::getOldLicenseeCodeTest(void)
 	init();
 	UVCPPUNIT_ASSERT(getObject()->getOldLicenseeCode(&result));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0x00, result);
 }
 
 void UVDObjgbUnitTest::getMaskROMVersioNumberTest(void)
@@ -220,7 +220,7 @@ void UVDObjgbUnitTest::getMaskROMVersioNumberTest(void)
 	init();
 	UVCPPUNIT_ASSERT(getObject()->getMaskROMVersioNumber(&result));
 	deinit();
-	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
+	UVCPPUNIT_ASSERT_EQUAL_INT(0x01, result);
 }
 
 void UVDObjgbUnitTest::getHeaderChecksumTest(void)

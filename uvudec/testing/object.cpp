@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "testing/object.h"
+#include "uvd/core/runtime.h"
 
 void UVDTestingObjectFixture::setUp()
 {
@@ -14,5 +15,9 @@ void UVDTestingObjectFixture::setUp()
 void UVDTestingObjectFixture::init()
 {
 	UVDTestingPluginFixture::init();
+	CPPUNIT_ASSERT(m_uvd);
+	CPPUNIT_ASSERT(m_uvd->m_runtime);
+	CPPUNIT_ASSERT(m_uvd->m_runtime->m_object);
+	m_object = m_uvd->m_runtime->m_object;
 }
 

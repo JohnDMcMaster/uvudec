@@ -58,6 +58,8 @@ INCLUDES += -I$(ROOT_DIR)
 endif
 # hmm include are kinda weird, all projects use <dir_name>/<file_name>.h, but we include all invidual dirs
 INCLUDES += -I$(LIBUVUDEC_DIR)
+# UVD official plugins should prefix include paths with the plugin name
+INCLUDES += -I$(PLUGIN_DIR)
 
 #OPTIMIZATION_LEVEL=-O3
 DEBUG_FLAGS=-g
@@ -67,6 +69,7 @@ CCFLAGS += $(FLAGS_SHARED)
 CXXFLAGS += $(FLAGS_SHARED)
 
 LDFLAGS += -L$(LIB_DIR) -L.
+LDFLAGS+=-L$(PLUGIN_LIB_DIR)
 
 FLAGS_SHARED += -DDEFAULT_DECOMPILE_FILE=$(DEFAULT_DECOMPILE_FILE) -DDEFAULT_CPU_DIR=$(DEFAULT_CPU_DIR) -DDEFAULT_CPU_FILE=$(DEFAULT_CPU_FILE)
 FLAGS_SHARED += -DUVD_INSTALL_DIR='"$(INSTALL_DIR)"'

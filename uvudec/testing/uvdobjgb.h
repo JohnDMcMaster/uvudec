@@ -36,8 +36,8 @@ public:
 	CPPUNIT_TEST(getCartridgeTypeTest);
 	CPPUNIT_TEST(getROMSizeTest);
 	CPPUNIT_TEST(getROMSizeRawTest);
-	CPPUNIT_TEST(getRAMSizeTest);
-	CPPUNIT_TEST(getRAMSizeRawTest);
+	CPPUNIT_TEST(getSaveRAMSizeTest);
+	CPPUNIT_TEST(getSaveRAMSizeRawTest);
 	CPPUNIT_TEST(getDestinationCodeTest);
 	CPPUNIT_TEST(getOldLicenseeCodeTest);
 	CPPUNIT_TEST(getMaskROMVersioNumberTest);
@@ -81,9 +81,9 @@ protected:
 
 	void getROMSizeRawTest(void);
 
-	void getRAMSizeTest(void);
+	void getSaveRAMSizeTest(void);
 
-	void getRAMSizeRawTest(void);
+	void getSaveRAMSizeRawTest(void);
 
 	void getDestinationCodeTest(void);
 
