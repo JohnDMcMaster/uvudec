@@ -72,10 +72,7 @@ Ex:
 //Initialize the opcode tables
 uv_err_t UVDDisasmArchitecture::init_config()
 {
-	uv_err_t rc = UV_ERR_GENERAL;
-	UVDConfigSection **sections = NULL;
-	unsigned int n_sections = 0;
-	unsigned int cur_section = 0;
+	std::vector<UVDConfigSection> sections;
 		
 	UVDConfigSection *op_section = NULL;
 	UVDConfigSection *mem_section = NULL;
@@ -84,97 +81,56 @@ uv_err_t UVDDisasmArchitecture::init_config()
 	UVDConfigSection *pre_section = NULL;
 	UVDConfigSection *vec_section = NULL;
 
-	UV_ENTER();
-
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(UVDAsmUtil::uvd_read_sections(m_architectureFileName, &sections, &n_sections)) )
+	if( UV_FAILED(UVDAsmUtil::readSections(m_architectureFileName, sections)) )
 	{
 		printf_error("Could not read config file: %s\n", g_asmConfig->m_architectureFileName.c_str());
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
-	for( cur_section = 0; cur_section < n_sections; ++cur_section )
+	for( std::vector<UVDConfigSection>::size_type curSectionIndex = 0; curSectionIndex < sections.size(); ++curSectionIndex )
 	{
-		if( sections[cur_section]->m_name == "OP" )
+		UVDConfigSection &section = sections[curSectionIndex];
+		if( section.m_name == "OP" )
 		{
-			op_section = sections[cur_section];
+			op_section = &sections[curSectionIndex];
 		}
-		else if( sections[cur_section]->m_name == "MEM" )
+		else if( section.m_name == "MEM" )
 		{
-			mem_section = sections[cur_section];
+			mem_section = &sections[curSectionIndex];
 		}
-		else if( sections[cur_section]->m_name == "MISC" )
+		else if( section.m_name == "MISC" )
 		{
-			misc_section = sections[cur_section];
+			misc_section = &sections[curSectionIndex];
 		}
-		else if( sections[cur_section]->m_name == "REG" )
+		else if( section.m_name == "REG" )
 		{
-			reg_section = sections[cur_section];
+			reg_section = &sections[curSectionIndex];
 		}
-		else if( sections[cur_section]->m_name == "PRE" )
+		else if( section.m_name == "PRE" )
 		{
-			pre_section = sections[cur_section];
+			pre_section = &sections[curSectionIndex];
 		}
-		else if( sections[cur_section]->m_name == "VEC" )
+		else if( section.m_name == "VEC" )
 		{
-			vec_section = sections[cur_section];
+			vec_section = &sections[curSectionIndex];
 		}
 		else
 		{
-			printf_debug("Unrecognized section: <%s>\n", sections[cur_section]->m_name.c_str());
-			UV_ERR(rc);
-			goto error;
+			printf_debug("Unrecognized section: <%s>\n", section.m_name.c_str());
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
 	
-	if( UV_FAILED(init_misc(misc_section)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	
+	uv_assert_err_ret(init_misc(misc_section));
 	/* Because of register memory mapping, memory should be initialized first */
-	if( UV_FAILED(init_memory(mem_section)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
+	uv_assert_err_ret(init_memory(mem_section));
+	uv_assert_err_ret(m_opcodeTable->init_opcode(op_section));
+	uv_assert_err_ret(init_reg(reg_section));
+	uv_assert_err_ret(init_prefix(pre_section));
+	uv_assert_err_ret(init_vectors(vec_section));
 
-	if( UV_FAILED(m_opcodeTable->init_opcode(op_section)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-
-	if( UV_FAILED(init_reg(reg_section)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-
-	if( UV_FAILED(init_prefix(pre_section)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	
-	if( UV_FAILED(init_vectors(vec_section)) )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-
-	rc = UV_ERR_OK;
-
-error:
-	for( unsigned int i = 0; i < n_sections; ++i )
-	{
-		delete sections[i];
-	}
-	free(sections);
-	
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;	
 }
 
 int g_format_debug = false;
@@ -197,7 +153,6 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	std::string value_postfix_hex;
 	std::string value_suffix;
 
-	UV_ENTER();
 	printf_debug("Initializing misc data\n");
 	if( misc_section == NULL )
 	{
@@ -295,8 +250,6 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::vector< std::vector<std::string> > memSectionParts;
 	
-	UV_ENTER();
-
 	printf_debug("Initializing memory data\n");
 	if( mem_section == NULL )
 	{
@@ -741,8 +694,6 @@ uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::vector< std::vector<std::string> > regSectionParts;
 	
-	UV_ENTER();
-
 	printf_debug("Initializing register data\n");
 	if( reg_section == NULL )
 	{

@@ -98,8 +98,7 @@ public:
 class UVDAsmUtil
 {
 public:
-	static uv_err_t uvd_read_sections(const std::string &config_file, UVDConfigSection ***sections_in, unsigned int *n_sections_in);
-	static uv_err_t readSections(const std::string config_file, std::vector<UVDConfigSection> sectionsIn);
+	static uv_err_t readSections(const std::string config_file, std::vector<UVDConfigSection> &sectionsIn);
 
 	/*
 	a UVDConfigValue is a raw structural form of the text

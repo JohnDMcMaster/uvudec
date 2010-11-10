@@ -319,6 +319,11 @@ uv_err_t deleteFile(std::string &sFile)
 
 uv_err_t readFile(const std::string &sFile, std::string &sRet)
 {
+	return UVDReadFileByString(sFile, sRet);
+}
+
+uv_err_t UVDReadFileByString(const std::string &sFile, std::string &sRet)
+{
 	uv_err_t rc = UV_ERR_GENERAL;
 	char *sTemp = NULL;
 		

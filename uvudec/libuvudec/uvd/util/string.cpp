@@ -128,6 +128,23 @@ std::string parseSubstring(const std::string &in, const std::string &seek, const
 	}
 }
 
+std::vector<std::string> UVDSplitLines(const std::string &s)
+{
+	std::vector<std::string> ret;
+	unsigned int n_lines = 0;
+	char **lines = NULL;
+	
+	lines = uv_split_lines(s.c_str(), &n_lines);
+	ret = charPtrArrayToVector(lines, n_lines);
+	for( unsigned int i = 0; i < n_lines; ++i )
+	{
+		free(lines[i]);
+	}
+	free(lines);
+
+	return ret;
+}
+
 //FIXME: make this parse directly, will make O(n**2) -> O(n)
 char **uv_split_lines(const char *str, unsigned int *n_ret)
 {

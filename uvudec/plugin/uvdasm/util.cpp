@@ -200,141 +200,58 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAsmUtil::readSections(const std::string config_file, std::vector<UVDConfigSection> sectionsIn)
+uv_err_t UVDAsmUtil::readSections(const std::string configFileName, std::vector<UVDConfigSection> &sectionsOut)
 {
-	UVDConfigSection **sections = NULL;
-	uv_assert_err_ret(uvd_read_sections(config_file, &sections, NULL));
-	uv_assert_ret(sections)
-	while( *sections )
-	{
-		sectionsIn.push_back(**sections);
-		free(*sections);
-		*sections = NULL;
-		++sections;
-	}
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDAsmUtil::uvd_read_sections(const std::string &config_file, UVDConfigSection ***sections_in, unsigned int *n_sections_in)
-{
-	uv_err_t rc = UV_ERR_GENERAL;
-	char *config_file_data = NULL;
-	char **lines = NULL;
-	unsigned int n_lines = 0;
-	unsigned int i = 0;
-	UVDConfigSection **sections = NULL;
-	unsigned int n_sections = 0;
+	std::string configFileData;
+	std::vector<std::string> lines;
 	unsigned int start_index = 0;
-	unsigned int section_index = 0;
 	
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(read_filea(config_file.c_str(), &config_file_data)) )
-	{
-		goto error;
-		UV_ERR(rc);
-	}
+	uv_assert_err_ret(UVDReadFileByString(configFileName, configFileData));
 	
-	/* Find out how many sections we got */
-	lines = uv_split_lines(config_file_data, &n_lines);
-	if( !lines )
+	//Find out how many sections we got
+	lines = UVDSplitLines(configFileData);
+		
+	for( std::vector<std::string>::size_type i = 0; i < lines.size(); ++i )
 	{
-		UV_ERR(rc);
-		goto error;
-	}
-	/*
-	if( lines[0][0] != '.' )
-	{
-		printf_debug("File must start with a section\n");
-		UV_ERR(rc);
-		goto error;
-	}
-	*/
-	
-	/* Count number of section */
-	for( i = 0; i < n_lines; ++i )
-	{
-		if( lines[i][0] == '.' )
+		//Trigger on falling edges of sections
+		if( lines[i][0] == '.' || i == lines.size() - 1 )
 		{
-			++n_sections;
-		}
-	}
-	sections = (UVDConfigSection **)malloc(sizeof(UVDConfigSection *) * n_sections);
-	if( !sections )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	
-	for( i = 0; i < n_lines; ++i )
-	{
-		/* Trigger on falling edges of sections */
-		if( lines[i][0] == '.' || i == n_lines - 1 )
-		{
-			UVDConfigSection *cur_section = NULL;
+			UVDConfigSection cur_section;
 			unsigned int nLines = 0;
 
-			/* Initialize where the section starts */
+			//Initialize where the section starts
 			if( start_index == 0 )
 			{
 				start_index = i;
 				continue;
 			}
 
-			cur_section = new UVDConfigSection();
-			if( !cur_section )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-			cur_section->m_line = start_index;
+			cur_section.m_line = start_index;
 			
-			/* Skip the . */
-			cur_section->m_name = lines[start_index] + 1;
-			printf_debug("Reading section: %s\n", cur_section->m_name.c_str());
+			//Skip the .
+			cur_section.m_name = lines[start_index].c_str() + 1;
+			printf_debug("Reading section: %s\n", cur_section.m_name.c_str());
 			printf_debug("Start: %d, end: %d\n", start_index, i);
 			++start_index;
-			/* i is one greater than the range we want */
-			/*
-			cur_section->m_n_lines = i - start_index;
-			cur_section->m_lines = (std::string *)malloc(sizeof(std::string ) * cur_section->m_n_lines);
-			if( !cur_section->m_lines )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-			*/
-			/* Copy lines */
+			
+			//Copy lines
 			nLines = (unsigned int)(i - start_index);
 			printf_debug("Copying lines: %d\n", nLines);
 			for( unsigned int j = 0; j < nLines; ++j )
 			//while( start_index < i )
 			{
 				std::string s = lines[start_index];
-				cur_section->m_lines.push_back(s);
+				cur_section.m_lines.push_back(s);
 				++start_index;
 			}
 			start_index = i;
-			sections[section_index] = cur_section;
-			++section_index;
+			sectionsOut.push_back(cur_section);
 			printf_debug("Section read\n");
 		}
 	}
 	
-	*sections_in = sections;
-	*n_sections_in = n_sections;
-	rc = UV_ERR_OK;
-
-error:
-	free(config_file_data);
-
-	for( unsigned int i = 0; i < n_lines; ++i )
-	{
-		free(lines[i]);
-	}
-	free(lines);
-
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 /*

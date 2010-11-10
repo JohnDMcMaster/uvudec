@@ -84,8 +84,11 @@ uv_err_t createDir(const std::string &file, bool bestEffort);
 uv_err_t uvdPreprocessLine(const std::string &lineIn, std::string &lineOut);
 uv_err_t uvdParseLine(const std::string &line_in, std::string &key_in, std::string &value_in);
 uv_err_t readFile(const std::string &sFile, std::string &sRet);
+uv_err_t UVDReadFileByString(const std::string &sFile, std::string &sRet);
 uv_err_t writeFile(const std::string &sFile, const std::string &sIn);
+uv_err_t UVDWriteFileByString(const std::string &sFile, const std::string &sIn);
 uv_err_t writeFile(const std::string &sFile, const char *buff, size_t buffsz);
+uv_err_t UVDWriteFileByBuffer(const std::string &sFile, const char *buff, size_t buffsz);
 uv_err_t parseFunc(const std::string &text, std::string &name, std::string &content);
 
 //Stop at null terminators and replace non-printables with .
@@ -118,6 +121,8 @@ std::string trimString(const std::string &s);
 
 std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks = true);
 std::vector<std::string> UVDSplit(const std::string &s, char delim, bool ret_blanks = true);
+//Trims off line termination properly (eventually...)
+std::vector<std::string> UVDSplitLines(const std::string &s);
 std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc);
 
 //Should mark these deprecated in favor of the C++ versions
