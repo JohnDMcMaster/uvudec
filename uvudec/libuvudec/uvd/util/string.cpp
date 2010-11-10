@@ -63,6 +63,11 @@ uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t
 
 std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks)
 {
+	return UVDSplit(s, delim, ret_blanks);
+}
+
+std::vector<std::string> UVDSplit(const std::string &s, char delim, bool ret_blanks)
+{
 	char **coreRet = NULL;
 	char **cur = NULL;
 	std::vector<std::string> ret;

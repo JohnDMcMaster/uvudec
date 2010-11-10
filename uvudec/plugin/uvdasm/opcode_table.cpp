@@ -103,7 +103,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_syntax_operand(UVDDisasmOperandSh
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfigValue parsed_type;
 
-	UV_ENTER();
 
 	if( !op_shared_in )
 	{
@@ -152,7 +151,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_syntax(UVDDisasmInstructionShared
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::vector<std::string> syntaxParts;
 	
-	UV_ENTER();
 	
 	if( !inst_shared )
 	{
@@ -213,7 +211,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_match_syntax_usage_core(std::vector<UVD
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDDisasmOperandShared *op_shared = NULL;
 
-	UV_ENTER();
 
 	printf_debug("match syntax core\n");
 	if( !op_shared_out )
@@ -279,7 +276,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_match_syntax_usage(UVDDisasmInstruction
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
-	UV_ENTER();
 
 	if( !inst_shared )
 	{
@@ -309,39 +305,23 @@ The main job of this field is to
 */
 uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared *inst_shared, const std::string value_usage)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	//Ignore for now...
 	//FIXME: we need to know how many bytes this took at a minimum
 	/* USAGE=0x53 i0 i1 */
-	char **usage_parts = NULL;
-	unsigned int n_usage_parts = 0;
-	unsigned int cur_usage_parts = 0;
+	std::vector<std::string> usageParts;
 	
-	UV_ENTER();
-
-	usage_parts = uv_split_core(value_usage.c_str(), ',', &n_usage_parts, TRUE);
-	if( !usage_parts )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-						
+	usageParts =  UVDSplit(value_usage, ',', TRUE);
+	
 	/* Collect immediates and operands */
-	for( cur_usage_parts = 0; cur_usage_parts < n_usage_parts; ++cur_usage_parts )
+	for( std::vector<std::string>::size_type curUsagePart = 0; curUsagePart < usageParts.size(); ++curUsagePart )
 	{
-		std::string cur;
+		const std::string &cur = usageParts[curUsagePart];
 		/* Iterate over the fields already setup by usage */
 		UVDDisasmOperandShared *op_shared = NULL;
 		UVDConfigValue parsed_type;
 
-		cur = usage_parts[cur_usage_parts];
 		printf_debug("Current operand: %s\n", cur.c_str());
-		if( UV_FAILED(UVDConfigValue::parseType(cur, &parsed_type)) )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		
+		uv_assert_err_ret(UVDConfigValue::parseType(cur, &parsed_type));		
 		printf_debug("Type: %d\n", parsed_type.m_operand_type);
 		
 		if( parsed_type.m_operand_type == UV_DISASM_DATA_OPCODE )
@@ -349,10 +329,11 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 			if( inst_shared->m_opcode_length >= MAX_OPCODE_SIZE )
 			{
 				printf_debug("Maximum opcode length exceeded\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			inst_shared->m_opcode[inst_shared->m_opcode_length] = parsed_type.m_value;
+			inst_shared->m_opcodeRangeOffset[inst_shared->m_opcode_length] = parsed_type.m_opcodeRangeOffset;
+			inst_shared->m_bitmask[inst_shared->m_opcode_length] = parsed_type.m_bitmask;
 			++inst_shared->m_opcode_length;
 			inst_shared->m_total_length += 1;
 			continue;
@@ -362,25 +343,19 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 		Find the syntax field that matches parsed_type from the list of
 		syntax fields in inst_shared and place it in op_shared
 		*/
-		if( UV_FAILED(uvd_match_syntax_usage(inst_shared, &parsed_type, &op_shared)) )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert_err_ret(uvd_match_syntax_usage(inst_shared, &parsed_type, &op_shared));
 		
 		if( !op_shared )
 		{
 			printf_debug("Could not match up SHARED and USAGE fields\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		if( op_shared->m_type != parsed_type.m_operand_type )
 		{
 			printf_debug("USAGE/SYNTAX type mismatch\n");
 			printf_debug("shared: %s=%s(%d), parsed: %s=%s(%d)\n", op_shared->m_name.c_str(), uvd_data_str(op_shared->m_type), op_shared->m_type, 
 					parsed_type.m_name.c_str(), uvd_data_str(parsed_type.m_operand_type), parsed_type.m_operand_type);
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		
 		if( parsed_type.m_operand_type == UV_DISASM_DATA_IMMS
@@ -390,8 +365,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 			if( op_shared->m_immediate_size != parsed_type.m_num_bits )
 			{
 				printf_error("USAGE/SYNTAX size mismatch\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			inst_shared->m_total_length += op_shared->m_immediate_size / 8;
 		}
@@ -399,33 +373,22 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 		{
 			/* Mayber later some sort of Intel /r thing */
 			printf_error("No registers during usage\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		else if( parsed_type.m_operand_type == UV_DISASM_DATA_FUNC )
 		{
 			/* Likely this will involve a fork onto the linked list */
 			printf_error("Special modifier, not yet supported\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		else
 		{
 			printf_error("Unknown operand type\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
 		
-	rc = UV_ERR_OK;
-
-error:
-	for( unsigned int i = 0; i < n_usage_parts; ++i )
-	{
-		free(usage_parts[i]);
-	}
-	free(usage_parts);
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
@@ -435,7 +398,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 	unsigned int line_syntax = 0;
 	unsigned int line_usage = 0;
 
-	UV_ENTER();
 	printf_debug("Initializing opcodes\n");
 	if( op_section == NULL )
 	{
@@ -678,7 +640,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::init(UVDConfigSection *op_section)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
-	UV_ENTER();
 
 	memset(m_lookupTable, 0, sizeof(m_lookupTable));
 	
@@ -710,7 +671,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::getElement(unsigned int index, UVDDisasmIns
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 
-	UV_ENTER();
 	uv_assert(element);
 	uv_assert(index < 0x100);
 

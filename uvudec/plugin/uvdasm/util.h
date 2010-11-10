@@ -13,7 +13,6 @@ class UVDConfigValue;
 class UVDOperand;
 class UVDOperandShared;
 class UVDParsedFunction
-//struct uv_disasm_parsed_func_t
 {
 public:
 	UVDParsedFunction();
@@ -25,7 +24,6 @@ public:
 };
 
 class UVDConfigSection
-//struct uv_disasm_config_section_t
 {
 public:
 	UVDConfigSection();
@@ -57,7 +55,6 @@ Signed 16 bit
 	s16_0
 */
 class UVDConfigValue
-//struct uv_disasm_parsed_t
 {
 public:
 	UVDConfigValue();
@@ -81,8 +78,15 @@ public:
 	#define UV_DISASM_DATA_IMMS					32
 	#define UV_DISASM_DATA_IMMU					33
 	*/
-	unsigned int m_operand_type;
+	uint32_t m_operand_type;
 	int m_num_bits;
+	//To support ranges of values
+	//If set to 0, not specified
+	uint32_t m_bitmask;
+	//To support ranges of values
+	//If set to 0, not specified
+	//Else, set to how many additional opcodes are supported
+	uint32_t m_opcodeRangeOffset;
 	union
 	{
 		int m_value;

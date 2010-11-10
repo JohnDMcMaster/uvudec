@@ -47,10 +47,19 @@ public:
 	std::string m_action;
 	
 	/* The following two will likely have to be redesigned, probably better to store one byte at a time */
-	/* Base opcode */
-	uint8_t m_opcode[MAX_OPCODE_SIZE];
 	/* How many bytes the opcode is */
 	uint32_t m_opcode_length;
+	/* Base opcode */
+	uint8_t m_opcode[MAX_OPCODE_SIZE];
+	/*
+	Some instructions are valid for a range of opcodes, but aren't aligned on nice bit masks 
+	So, just use this
+	Discontinuous opcodes should be specified in different structures
+	A range of 0 means only this instruction, 1 would indicate the next one as well, etc
+	*/
+	uint32_t m_opcodeRangeOffset[MAX_OPCODE_SIZE];
+	uint32_t m_bitmask[MAX_OPCODE_SIZE];
+
 	/*
 	Including immediates, prefix, etc, how long 
 	Not valid for the following:
@@ -60,14 +69,6 @@ public:
 	This will likely server as an estimate only
 	*/
 	uint32_t m_total_length;
-	/*
-	Some instructions are valid for a range of opcodes, but aren't aligned on nice bit masks 
-	So, just use this
-	Discontinuous opcodes should be specified in different structures
-	A range of 0 means only this instruction, 1 would indicate the next one as well, etc
-	*/
-	uint32_t m_opcode_range_offset;
-
 	/* 
 	This can be trickey.
 	Ex: branch not taken: 2 cycles, branch taken: 3 cycles

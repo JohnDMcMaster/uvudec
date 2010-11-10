@@ -117,6 +117,7 @@ std::string limitString(const std::string &s, size_t maxLength);
 std::string trimString(const std::string &s);
 
 std::vector<std::string> split(const std::string &s, char delim, bool ret_blanks = true);
+std::vector<std::string> UVDSplit(const std::string &s, char delim, bool ret_blanks = true);
 std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc);
 
 //Should mark these deprecated in favor of the C++ versions

@@ -20,8 +20,10 @@ UVDDisasmInstructionShared::UVDDisasmInstructionShared()
 {
 	m_opcode_length = 0;
 	memset(m_opcode, 0, sizeof(m_opcode));
+	memset(m_opcodeRangeOffset, 0, sizeof(m_opcodeRangeOffset));
+	memset(m_bitmask, 0, sizeof(m_bitmask));
+
 	m_total_length = 0;
-	m_opcode_range_offset = 0;
 	m_cpi = 0;
 	m_cpi_low = 0;
 	m_cpi_hi = 0;
@@ -241,7 +243,6 @@ uv_err_t UVDDisasmInstruction::print_disasm(std::string &out)
 	
 	uv_assert_ret(config);
 	
-
 	printf_debug("inst size: %d\n", m_inst_size);
 	uv_assert(m_inst_size);
 
