@@ -45,9 +45,7 @@ uv_err_t UVDConfigValue::deinit()
 
 uv_err_t UVDConfigValue::parseTypeNumber(const std::string &in, UVDConfigValue *out)
 {
-	unsigned int n_operand_parts = 0;
-	char **operand_parts = NULL;
-	uv_err_t rc = UV_ERR_GENERAL;
+	std::vector<std::string> operandParts;
 	
 	if( in[0] == 's' )
 	{
@@ -60,40 +58,20 @@ uv_err_t UVDConfigValue::parseTypeNumber(const std::string &in, UVDConfigValue *
 	else
 	{
 		printf_error("Unrecognized operand: %s, expected u or s, got %c\n", in.c_str(), in[0]);
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
-	/* [u or i]_[size in bits] */
-	operand_parts = uv_split_core(in.c_str(), '_', &n_operand_parts, TRUE);
-	if( !operand_parts )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	if( n_operand_parts < 2 )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
-	/* Skip over the sign letter */
-	out->m_num_bits = atoi(operand_parts[0] + 1);
+	//[u or i]_[size in bits]
+	operandParts = UVDSplit(in, '_', TRUE);
+	uv_assert_ret(operandParts.size() >= 2);
+	//Skip over the sign letter
+	out->m_num_bits = atoi(operandParts[0].c_str() + 1);
 	if( out->m_num_bits % 8 != 0 || out->m_num_bits > 1000 )
 	{
 		printf_debug("Invalid operand size: %d\n", out->m_num_bits);
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	printf_debug("Operand data size: %d\n", out->m_num_bits);
-
-	rc = UV_ERR_OK;	
-	
-error:
-	for( unsigned int i = 0; i < n_operand_parts; ++i )
-	{
-		free(operand_parts[i]);
-	}
-	free(operand_parts);
 
 	return UV_ERR_OK;
 }
