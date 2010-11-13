@@ -1,0 +1,900 @@
+# Game Boy (Z80) MCU configuration file
+# 16 bit big endian
+
+.MISC
+MCU_NAME=game_boy
+MCU_DESC=Game Boy (Z80) system
+MCU_ENDIAN=BIG
+ASM_IMM_PREFIX=#
+ASM_IMM_PREFIX_HEX=0x
+ASM_IMM_POSTFIX_HEX=
+
+
+# Code vectoring (interrupt jump locations)
+# Start, reset, I/O, etc
+.VEC
+
+# LCD Interrupts...are these at the addresses mentioned?
+# INT 40 - V-Blank Interrupt
+# INT 48 - LCDC Status Interrupt
+# INT 50 - Timer Interrupt
+# INT 58 - Serial Interrupt
+# INT 60 - Joypad Interrupt
+
+# Jump Vectors in First ROM Bank
+# The following addresses are supposed to be used as jump vectors:
+# 0000,0008,0010,0018,0020,0028,0030,0038 for RST commands
+# 0040,0048,0050,0058,0060                for Interrupts
+
+# Note that often this address contains NOP + JMP to real entry point
+NAME=START
+DESC=Hard power on execution address
+OFFSET=0x0100
+
+NAME=RST0
+DESC=RST 0
+OFFSET=0x0000
+
+NAME=RST1
+DESC=RST 1
+OFFSET=0x0008
+
+NAME=RST2
+DESC=RST 2
+OFFSET=0x0010
+
+NAME=RST3
+DESC=RST 3
+OFFSET=0x0018
+
+NAME=RST4
+DESC=RST 4
+OFFSET=0x0020
+
+NAME=RST5
+DESC=RST 5
+OFFSET=0x0028
+
+NAME=RST6
+DESC=RST 6
+OFFSET=0x0030
+
+NAME=RST7
+DESC=RST 7
+OFFSET=0x0038
+
+NAME=INT0
+DESC=RST 7
+OFFSET=0x0040
+
+NAME=INT1
+DESC=RST 7
+OFFSET=0x0048
+
+NAME=INT2
+DESC=RST 7
+OFFSET=0x0050
+
+NAME=INT3
+DESC=RST 7
+OFFSET=0x0058
+
+NAME=INT4
+DESC=RST 7
+OFFSET=0x0060
+
+
+# Maybe should have some clock info?
+# "4.194304MHz (4.295454MHz for SGB, max. 8.4MHz for CGB)"
+
+# These should represent addressing modes rather than the actual physical locations
+# That way, multiple addressing modes can map correctly to the same data
+.MEM
+
+# The (virtual?) address space
+# "General Memory Map
+# 0000-3FFF 16KB ROM Bank 00     (in cartridge, fixed at bank 00)
+# 4000-7FFF 16KB ROM Bank 01..NN (in cartridge, switchable bank number)
+# 8000-9FFF 8KB Video RAM (VRAM) (switchable bank 0-1 in CGB Mode)
+# A000-BFFF 8KB External RAM     (in cartridge, switchable bank, if any)
+# C000-CFFF 4KB Work RAM Bank 0 (WRAM)
+# D000-DFFF 4KB Work RAM Bank 1 (WRAM) (switchable bank 1-7 in CGB Mode)
+# E000-FDFF Same as C000-DDFF (ECHO)    (typically not used)
+# FE00-FE9F Sprite Attribute Table (OAM)
+# FEA0-FEFF Not Usable
+# FF00-FF7F I/O Ports
+# FF80-FFFE High RAM (HRAM)
+# FFFF      Interrupt Enable Register"
+NAME=IRAM
+TYPE=RAM
+MAX=0xFFFF
+ASM_PREFIX=
+
+
+# "Work RAM: 8K Byte (32K Byte for CGB)"
+# TODO: look into mapping
+NAME=WRAM
+TYPE=RAM
+MAX=8192
+ASM_PREFIX=
+
+
+# 0000-3FFF 16KB ROM Bank 00     (in cartridge, fixed at bank 00)
+NAME=ROMBANK0
+TYPE=RAM
+MAX=0x3FFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0x0000
+MAPPING_DST_MAX=0x3FFF
+
+
+# 4000-7FFF 16KB ROM Bank 01..NN (in cartridge, switchable bank number)
+NAME=ROMBANK1
+TYPE=RAM
+MAX=0x3FFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0x4000
+MAPPING_DST_MAX=0x7FFF
+
+
+# "8000-9FFF 8KB Video RAM (VRAM) (switchable bank 0-1 in CGB Mode)"
+NAME=VRAM
+TYPE=RAM
+MAX=0x1FFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0x8000
+MAPPING_DST_MAX=0x9FFF
+
+
+# A000-BFFF 8KB External RAM     (in cartridge, switchable bank, if any)
+NAME=ERAM
+TYPE=RAM
+MAX=0x1FFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xA000
+MAPPING_DST_MAX=0xBFFF
+
+
+# C000-CFFF 4KB Work RAM Bank 0 (WRAM)
+NAME=WRAMBANK0
+TYPE=RAM
+MAX=0x1FFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xC000
+MAPPING_DST_MAX=0xCFFF
+
+
+# D000-DFFF 4KB Work RAM Bank 1 (WRAM) (switchable bank 1-7 in CGB Mode)
+NAME=WRAMBANK1
+TYPE=RAM
+MAX=0x1FFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xD000
+MAPPING_DST_MAX=0xDFFF
+
+
+# E000-FDFF Same as C000-DDFF (ECHO)    (typically not used)
+NAME=ECHO
+TYPE=RAM
+MAX=0x1DFF
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xC000
+MAPPING_DST_MAX=0xDDFF
+
+
+# FE00-FE9F Sprite Attribute Table (OAM)
+NAME=OAM
+DESC=Object Attribute Memory
+TYPE=RAM
+MAX=0x009F
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xFE00
+MAPPING_DST_MAX=0xFE9F
+
+
+# FEA0-FEFF Not Usable
+NAME=UHOH
+DESC=Reserved
+TYPE=RAM
+MAX=0x006F
+ASM_PREFIX=?
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xFEA0
+MAPPING_DST_MAX=0xFEFF
+
+
+# FF00-FF7F I/O Ports
+NAME=VRAM
+TYPE=RAM
+MAX=0x007F
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xFF00
+MAPPING_DST_MAX=0xFF7F
+
+
+# FF80-FFFE High RAM (HRAM)
+NAME=HRAM
+TYPE=RAM
+MAX=0x7E
+ASM_PREFIX=
+
+MAPPING_DST=IRAM
+MAPPING_DST_MIN=0xFF80
+MAPPING_DST_MAX=0xFFFE
+
+
+.REG
+
+# FF00 - P1/JOYP - Joypad (R/W)
+NAME=P1
+DESC=Joypad (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF01 - SB - Serial transfer data (R/W)
+NAME=SB
+DESC=Serial transfer data (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF02 - SC - Serial Transfer Control (R/W)
+NAME=SC
+DESC=Serial Transfer Control (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF04 - DIV - Divider Register (R/W)
+NAME=DIV
+DESC=Divider Register (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF05 - TIMA - Timer counter (R/W)
+NAME=TIMA
+DESC=TIMA - Timer counter (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF06 - TMA - Timer Modulo (R/W)
+NAME=TMA
+DESC=Timer Modulo (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF07 - TAC - Timer Control (R/W)
+NAME=TAC
+DESC=Timer Control (R/W)
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF0F - IF - Interrupt Flag (R/W)
+NAME=IF
+DESC=Interrupt Flag (R/W)
+ADDR=IRAM(0xFF0F)
+SIZE=0x08
+
+# FF10 - NR10 - Channel 1 Sweep register (R/W)
+NAME=NR10
+DESC=Channel 1 Sweep register (R/W)
+ADDR=IRAM(0xFF10)
+SIZE=0x08
+
+# FF11 - NR11 - Channel 1 Sound length/Wave pattern duty (R/W)
+NAME=NR11
+DESC=Channel 1 Sound length/Wave pattern duty (R/W)
+ADDR=IRAM(0xFF11)
+SIZE=0x08
+
+# FF12 - NR12 - Channel 1 Volume Envelope (R/W)
+NAME=NR12
+DESC=Channel 1 Volume Envelope (R/W)
+ADDR=IRAM(0xFF12)
+SIZE=0x08
+
+# FF13 - NR13 - Channel 1 Frequency lo (Write Only)
+NAME=NR13
+DESC=Channel 1 Frequency lo (Write Only)
+ADDR=IRAM(0xFF13)
+SIZE=0x08
+
+# FF14 - NR14 - Channel 1 Frequency hi (R/W)
+NAME=NR14
+DESC=Channel 1 Frequency hi (R/W)
+ADDR=IRAM(0xFF14)
+SIZE=0x08
+
+# FF16 - NR21 - Channel 2 Sound Length/Wave Pattern Duty (R/W)
+NAME=NR21
+DESC=Channel 2 Sound Length/Wave Pattern Duty (R/W)
+ADDR=IRAM(0xFF16)
+SIZE=0x08
+
+# FF17 - NR22 - Channel 2 Volume Envelope (R/W)
+NAME=NR22
+DESC=Channel 2 Volume Envelope (R/W)
+ADDR=IRAM(0xFF17)
+SIZE=0x08
+
+# FF18 - NR23 - Channel 2 Frequency lo data (W)
+NAME=NR23
+DESC=Channel 2 Frequency lo data (W)
+ADDR=IRAM(0xFF18)
+SIZE=0x08
+
+# FF19 - NR24 - Channel 2 Frequency hi data (R/W)
+NAME=NR24
+DESC=Channel 2 Frequency hi data (R/W)
+ADDR=IRAM(0xFF19)
+SIZE=0x08
+
+# FF1A - NR30 - Channel 3 Sound on/off (R/W)
+NAME=NR30
+DESC=Channel 3 Sound on/off (R/W)
+ADDR=IRAM(0xFF1A)
+SIZE=0x08
+
+# FF1B - NR31 - Channel 3 Sound Length
+NAME=NR31
+DESC=Channel 3 Sound Length
+ADDR=IRAM(0xFF1B)
+SIZE=0x08
+
+# FF1C - NR32 - Channel 3 Select output level (R/W)
+NAME=NR32
+DESC=Channel 3 Select output level (R/W)
+ADDR=IRAM(0xFF1C)
+SIZE=0x08
+
+# FF1D - NR33 - Channel 3 Frequency's lower data (W)
+NAME=NR33
+DESC=Channel 3 Frequency's lower data (W)
+ADDR=IRAM(0xFF1D)
+SIZE=0x08
+
+# FF1E - NR34 - Channel 3 Frequency's higher data (R/W)
+NAME=NR34
+DESC=Channel 3 Frequency's higher data (R/W)
+ADDR=IRAM(0xFF1E)
+SIZE=0x08
+
+# FF20 - NR41 - Channel 4 Sound Length (R/W)
+NAME=NR41
+DESC=Channel 4 Sound Length (R/W)
+ADDR=IRAM(0xFF20)
+SIZE=0x08
+
+# FF21 - NR42 - Channel 4 Volume Envelope (R/W)
+NAME=NR42
+DESC=Channel 4 Volume Envelope (R/W)
+ADDR=IRAM(0xFF21)
+SIZE=0x08
+
+# FF22 - NR43 - Channel 4 Polynomial Counter (R/W)
+NAME=NR43
+DESC=Channel 4 Polynomial Counter (R/W)
+ADDR=IRAM(0xFF22)
+SIZE=0x08
+
+# FF23 - NR44 - Channel 4 Counter/consecutive; Inital (R/W)
+NAME=NR44
+DESC=Channel 4 Counter/consecutive; Inital (R/W)
+ADDR=IRAM(0xFF23)
+SIZE=0x08
+
+# FF24 - NR50 - Channel control / ON-OFF / Volume (R/W)
+NAME=NR50
+DESC=Channel control / ON-OFF / Volume (R/W)
+ADDR=IRAM(0xFF24)
+SIZE=0x08
+
+# FF25 - NR51 - Selection of Sound output terminal (R/W)
+NAME=NR51
+DESC=Selection of Sound output terminal (R/W)
+ADDR=IRAM(0xFF25)
+SIZE=0x08
+
+# FF26 - NR52 - Sound on/off
+NAME=NR52
+DESC=Sound on/off
+ADDR=IRAM(0xFF26)
+SIZE=0x08
+
+# FF30-FF3F - Wave Pattern RAM
+# XXX Maybe instead we should map this to an address space
+NAME=WAV0
+DESC=Wave Pattern RAM
+ADDR=IRAM(0xFF30)
+SIZE=0x08
+
+# FF40 - LCDC - LCD Control (R/W)
+NAME=LCDC
+DESC=LCD Control
+ADDR=IRAM(0xFF40)
+SIZE=0x08
+
+# FF41 - STAT - LCDC Status (R/W)
+NAME=STAT
+DESC=LCDC Status
+ADDR=IRAM(0xFF41)
+SIZE=0x08
+
+# FF42 - SCY - Scroll Y (R/W)
+NAME=SCY
+DESC=Scrolll Y
+ADDR=IRAM(0xFF42)
+SIZE=0x08
+
+# FF43 - SCX - Scroll X (R/W)
+NAME=SCX
+DESC=Scroll X
+ADDR=IRAM(0xFF43)
+SIZE=0x08
+
+# FF44 - LY - LCDC Y-Coordinate (R)
+NAME=LY
+DESC=LCDC Y-Coordinate
+ADDR=IRAM(0xFF44)
+SIZE=0x08
+
+# FF45 - LYC - LY Compare (R/W)
+NAME=LYC
+DESC=LY Compare
+ADDR=IRAM(0xFF45)
+SIZE=0x08
+
+# FF46 - DMA - DMA Transfer and Start Address (W)
+NAME=DMA
+DESC=DMA Transfer and Start Address
+ADDR=IRAM(0xFF46)
+SIZE=0x08
+
+# FF47 - BGP - BG Palette Data (R/W) - Non CGB Mode Only
+NAME=BGP
+DESC=BG Palette Data
+ADDR=IRAM(0xFF47)
+SIZE=0x08
+
+# FF48 - OBP0 - Object Palette 0 Data (R/W) - Non CGB Mode Only
+NAME=OBP0
+DESC=Object Palette 0 Data
+ADDR=IRAM(0xFF48)
+SIZE=0x08
+
+# FF49 - OBP1 - Object Palette 1 Data (R/W) - Non CGB Mode Only
+NAME=OBP1
+DESC=Object Palette 1 Data
+ADDR=IRAM(0xFF49)
+SIZE=0x08
+
+# FF4A - WY - Window Y Position (R/W)
+NAME=WY
+DESC=Window Y Position
+ADDR=IRAM(0xFF4A)
+SIZE=0x08
+
+# FF4B - WX - Window X Position minus 7 (R/W)
+NAME=WX
+DESC=Window X Position minus 7
+ADDR=IRAM(0xFF4B)
+SIZE=0x08
+
+# FF4D - KEY1 - CGB Mode Only - Prepare Speed Switch
+
+# FF4F - VBK - CGB Mode Only - VRAM Bank
+NAME=VBK
+DESC=CGB Mode Only - VRAM Bank
+ADDR=IRAM(0xFF4F)
+SIZE=0x08
+
+# LCD VRAM DMA Transfers (CGB only)
+
+# FF51 - HDMA1 - CGB Mode Only - New DMA Source, High
+NAME=HDMA1
+DESC=CGB Mode Only - New DMA Source, High
+ADDR=IRAM(0xFF51)
+SIZE=0x08
+
+# FF52 - HDMA2 - CGB Mode Only - New DMA Source, Low
+NAME=HDMA2
+DESC=CGB Mode Only - New DMA Source, Low
+ADDR=IRAM(0xFF52)
+SIZE=0x08
+
+# FF53 - HDMA3 - CGB Mode Only - New DMA Destination, High
+NAME=HDMA3
+DESC=CGB Mode Only - New DMA Destination, High
+ADDR=IRAM(0xFF53)
+SIZE=0x08
+
+# FF54 - HDMA4 - CGB Mode Only - New DMA Destination, Low
+NAME=HDMA4
+DESC=CGB Mode Only - New DMA Destination, Low
+ADDR=IRAM(0xFF54)
+SIZE=0x08
+
+# FF55 - HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
+NAME=HDMA5
+DESC=CGB Mode Only - New DMA Length/Mode/Start
+ADDR=IRAM(0xFF55)
+SIZE=0x08
+
+# FF56 - RP - CGB Mode Only - Infrared Communications Port
+
+# FF68 - BCPS/BGPI - CGB Mode Only - Background Palette Index
+# XXX: why are two names given above?
+NAME=BCPS
+DESC=CGB Mode Only - Background Palette Index
+ADDR=IRAM(0xFF68)
+SIZE=0x08
+
+# FF69 - BCPD/BGPD - CGB Mode Only - Background Palette Data
+NAME=BCPD
+DESC=Window X Position minus 7
+ADDR=IRAM(0xFF69)
+SIZE=0x08
+
+# FF6A - OCPS/OBPI - CGB Mode Only - Sprite Palette Index
+NAME=OCPS
+DESC=Window X Position minus 7
+ADDR=IRAM(0xFF6A)
+SIZE=0x08
+
+# FF6B - OCPD/OBPD - CGB Mode Only - Sprite Palette Data
+NAME=OCPD
+DESC=Window X Position minus 7
+ADDR=IRAM(0xFF6B)
+SIZE=0x08
+
+# FF70 - SVBK - CGB Mode Only - WRAM Bank
+NAME=CGB Mode Only - WRAM Bank
+DESC=Interrupt Enable
+ADDR=IRAM(0xFF70)
+SIZE=0x08
+
+# FF6C - Undocumented (FEh) - Bit 0 (Read/Write) - CGB Mode Only
+# FF72 - Undocumented (00h) - Bit 0-7 (Read/Write)
+# FF73 - Undocumented (00h) - Bit 0-7 (Read/Write)
+# FF74 - Undocumented (00h) - Bit 0-7 (Read/Write) - CGB Mode Only
+# FF75 - Undocumented (8Fh) - Bit 4-6 (Read/Write)
+# FF76 - Undocumented (00h) - Always 00h (Read Only)
+# FF77 - Undocumented (00h) - Always 00h (Read Only)
+
+# FFFF      Interrupt Enable Register"
+NAME=IE
+DESC=Interrupt Enable
+ADDR=IRAM(0xFFFF)
+SIZE=0x08
+
+
+
+
+# Instruction prefixes
+# Should get moved into opcodes
+.PRE
+# Z80 does not support this
+
+
+
+# Opcodes
+# The syntax for these will need to be extended as x86 support is added
+.OP
+
+# Moved, Removed, and Added Opcodes
+# Opcode Z80              GMB
+# ---------------------------------------
+# 08      EX   AF,AF      LD   (nn),SP
+# 10      DJNZ PC+dd      STOP
+# 22      LD   (nn),HL    LDI (HL),A
+# 2A      LD   HL,(nn)    LDI A,(HL)
+# 32      LD   (nn),A     LDD (HL),A
+# 3A      LD   A,(nn)     LDD A,(HL)
+# D3      OUT (n),A       -
+# D9      EXX             RETI
+# DB      IN   A,(n)      -
+# DD      <IX>            -
+# E0      RET PO          LD   (FF00+n),A
+
+
+# GMB 8bit-Loadcommands
+# ld r,r      xx     4 ---- r=r
+# ld r,n      xx nn  8 ---- r=n
+# ld r,(HL)   xx     8 ---- r=(HL)
+# ld (HL),r   7x     8 ---- (HL)=r
+# ld (HL),n   36 nn 12 ----
+# ld A,(BC)   0A     8 ----
+# ld A,(DE)   1A     8 ----
+# ld A,(nn)   FA    16 ----
+# ld (BC),A   02     8 ----
+# ld (DE),A   12     8 ----
+# ld   (nn),A     EA       16 ----
+# ld   A,(FF00+n) F0 nn    12 ---- read from io-port n (memory FF00+n)
+# ld   (FF00+n),A E0 nn    12 ---- write to io-port n (memory FF00+n)
+# ld   A,(FF00+C) F2        8 ---- read from io-port C (memory FF00+C)
+# ld   (FF00+C),A E2        8 ---- write to io-port C (memory FF00+C)
+# ldi  (HL),A     22        8 ---- (HL)=A, HL=HL+1
+# ldi  A,(HL)     2A        8 ---- A=(HL), HL=HL+1
+# ldd  (HL),A     32        8 ---- (HL)=A, HL=HL-1
+# ldd  A,(HL)     3A        8 ---- A=(HL), HL=HL-1
+
+# GMB 16bit-Loadcommands
+# ld   rr,nn      x1 nn nn 12 ---- rr=nn (rr may be BC,DE,HL or SP)
+# ld   SP,HL      F9        8 ---- SP=HL
+# push rr         x5       16 ---- SP=SP-2 (SP)=rr    (rr may be BC,DE,HL,AF)
+# pop  rr         x1       12 (AF) rr=(SP) SP=SP+2    (rr may be BC,DE,HL,AF)
+
+# GMB 8bit-Arithmetic/logical Commands
+# add  A,r        8x        4 z0hc A=A+r
+# add  A,n        C6 nn     8 z0hc A=A+n
+# add  A,(HL)     86        8 z0hc A=A+(HL)
+# adc  A,r        8x        4 z0hc A=A+r+cy
+# adc  A,n        CE nn     8 z0hc A=A+n+cy
+# adc  A,(HL)     8E        8 z0hc A=A+(HL)+cy
+# sub  r          9x        4 z1hc A=A-r
+# sub  n          D6 nn     8 z1hc A=A-n
+# sub  (HL)       96        8 z1hc A=A-(HL)
+# sbc  A,r        9x        4 z1hc A=A-r-cy
+# sbc  A,n        DE nn     8 z1hc A=A-n-cy
+# sbc  A,(HL)     9E        8 z1hc A=A-(HL)-cy
+# and  r          Ax        4 z010 A=A & r
+# and  n          E6 nn     8 z010 A=A & n
+# and  (HL)       A6        8 z010 A=A & (HL)
+# xor  r          Ax        4 z000
+# xor  n          EE nn     8 z000
+# xor  (HL)       AE        8 z000
+# or   r          Bx        4 z000 A=A | r
+# or   n          F6 nn     8 z000 A=A | n
+# or   (HL)       B6        8 z000 A=A | (HL)
+# cp   r          Bx        4 z1hc compare A-r
+# cp   n          FE nn     8 z1hc compare A-n
+# cp   (HL)       BE        8 z1hc compare A-(HL)
+# inc  r          xx        4 z0h- r=r+1
+# inc  (HL)       34       12 z0h- (HL)=(HL)+1
+# dec  r          xx        4 z1h- r=r-1
+# dec  (HL)       35       12 z1h- (HL)=(HL)-1
+# daa             27        4 z-0x decimal adjust akku
+# cpl             2F        4 -11- A = A xor FF
+
+# GMB 16bit-Arithmetic/logical Commands
+# add  HL,rr    x9         8 -0hc HL = HL+rr     ;rr may be BC,DE,HL,SP
+# inc  rr       x3         8 ---- rr = rr+1      ;rr may be BC,DE,HL,SP
+# dec  rr       xB         8 ---- rr = rr-1      ;rr may be BC,DE,HL,SP
+# add  SP,dd    E8        16 00hc SP = SP +/- dd ;dd is 8bit signed number
+# ld   HL,SP+dd F8        12 00hc HL = SP +/- dd ;dd is 8bit signed number
+
+# GMB Rotate- und Shift-Commands
+# rlca          07         4 000c rotate akku left
+NAME=RLCA
+DESC=rotate akku left
+USAGE=0x07
+SYNTAX=
+ACTION=nop
+
+# rla           17         4 000c rotate akku left through carry
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x17
+SYNTAX=
+ACTION=nop
+
+# rrca          0F         4 000c rotate akku right
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x0F
+SYNTAX=
+ACTION=nop
+
+# rra           1F         4 000c rotate akku right through carry
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x1F
+SYNTAX=
+ACTION=nop
+
+# rlc  r        CB 0x      8 z00c rotate left
+# FIXME: this isn't qwuite accurate, it shadows all the ROT stuff
+NAME=FIXME_ROTL
+DESC=cy=cy xor 1
+USAGE=0xCB,u8_0
+SYNTAX=
+ACTION=nop
+
+# rlc  (HL)     CB 06     16 z00c rotate left
+NAME=RLC
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# rl   r        CB 1x      8 z00c rotate left through carry
+NAME=RL
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# rl   (HL)     CB 16     16 z00c rotate left through carry
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# rrc  r        CB 0x      8 z00c rotate right
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# rrc  (HL)     CB 0E     16 z00c rotate right
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# rr   r        CB 1x      8 z00c rotate right through carry
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# rr   (HL)     CB 1E     16 z00c rotate right through carry
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# sla  r        CB 2x      8 z00c shift left arithmetic (b0=0)
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# sla  (HL)     CB 26     16 z00c shift left arithmetic (b0=0)
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# swap r        CB 3x      8 z000 exchange low/hi-nibble
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# swap (HL)     CB 36     16 z000 exchange low/hi-nibble
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# sra  r        CB 2x      8 z00c shift right arithmetic (b7=b7)
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# sra  (HL)     CB 2E     16 z00c shift right arithmetic (b7=b7)
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# srl  r        CB 3x      8 z00c shift right logical (b7=0)
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# srl  (HL)     CB 3E     16 z00c shift right logical (b7=0)
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+
+# GMB Singlebit Operation Commands
+# bit  n,r      CB xx      8 z01- test bit n
+# bit  n,(HL)   CB xx     12 z01- test bit n
+# set  n,r      CB xx      8 ---- set bit n
+# set  n,(HL)   CB xx     16 ---- set bit n
+# res  n,r      CB xx      8 ---- reset bit n
+# res  n,(HL)   CB xx     16 ---- reset bit n
+
+# GMB CPU-Controlcommands
+
+# ccf           3F         4 -00c cy=cy xor 1
+NAME=CCF
+DESC=cy=cy xor 1
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+# scf           37         4 -001 cy=1
+NAME=SCF
+DESC=cy=1
+USAGE=0x37
+SYNTAX=
+ACTION=nop
+
+# nop           00         4 ---- no operation
+NAME=NOP
+DESC=n operation
+USAGE=0x00
+SYNTAX=
+ACTION=nop
+
+# halt          76       N*4 ---- halt until interrupt occurs (low power)
+NAME=HALT
+DESC=halt until interrupt occurs (low power)
+USAGE=0x76
+SYNTAX=
+ACTION=nop
+
+# stop          10 00      ? ---- low power standby mode (VERY low power)
+NAME=STOP
+DESC=low power standby mode (VERY low power)
+USAGE=0x10,0x00
+SYNTAX=
+ACTION=nop
+
+# di            F3         4 ---- disable interrupts, IME=0
+# ei            FB         4 ---- enable interrupts, IME=1
+
+# GMB Jumpcommands
+# jp   nn       C3 nn nn  16 ---- jump to nn, PC=nn
+# jp   HL       E9         4 ---- jump to HL, PC=HL
+# jp   f,nn    xx nn nn 16;12 ---- conditional jump if nz,z,nc,c
+# jr   PC+dd   18 dd       12 ---- relative jump to nn (PC=PC+/-7bit)
+# jr   f,PC+dd xx dd     12;8 ---- conditional relative jump if nz,z,nc,c
+# call nn      CD nn nn    24 ---- call to nn, SP=SP-2, (SP)=PC, PC=nn
+# call f,nn    xx nn nn 24;12 ---- conditional call if nz,z,nc,c
+
+# ret          C9          16 ---- return, PC=(SP), SP=SP+2
+NAME=RET
+DESC=return, PC=(SP), SP=SP+2
+USAGE=0xC9
+SYNTAX=
+ACTION=RETURN()
+
+# ret  f       xx        20;8 ---- conditional return if nz,z,nc,c
+
+# reti         D9          16 ---- return and enable interrupts (IME=1)
+NAME=RETI
+DESC=return and enable interrupts (IME=1)
+USAGE=0xD9
+SYNTAX=
+ACTION=RETURN()
+
+# rst  n       xx          16 ---- call to 00,08,10,18,20,28,30,38
+
