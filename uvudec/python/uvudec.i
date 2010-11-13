@@ -120,14 +120,6 @@ typedef uint32_t uv_addr_t;
     */
 }
 
-%typemap(out) UVD ** {
-    if( UV_FAILED($1) )
-    {
-	 	SWIG_exception(SWIG_RuntimeError, uv_err_str($1));	
-    }
-    $result = PyInt_FromLong($1);
-}
-
 /*
 FIXME: figure out how to do UVD** in to UVD * ret style translations
 Currently fails due to some typemap issue
@@ -138,7 +130,14 @@ Unique UVD only types
 find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/[)].*$//g' |awk -F ',' '{ for(i=1;i<=NF;++i) print $i  }' |fgrep '**' |fgrep -v '***' |tr -d '[:blank:]' |grep -v '^$' |fgrep UVD |awk -F '**' '{ print $1 }' |sort -u |wc -l
 43
 */
-//%apply UVD **OUTPUT { UVD **out };
+%typemap(in, numinputs=0) UVD **out (UVD *temp) {
+   $1 = &temp;
+}
+
+%typemap(argout) (UVD **) {
+	PyObject *to_add = SWIG_NewPointerObj($1, $descriptor(UVD *), SWIG_POINTER_OWN);
+	$result = SWIG_AppendOutput($result, to_add);
+}
 
 %include "uvd/all.h"
 %include "uvd/config/config.h"
