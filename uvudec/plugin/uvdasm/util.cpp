@@ -124,6 +124,7 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 			byteString = parts[0];
 			out->m_bitmask = strtol(parts[1].c_str(), NULL, 0);
 		}
+		//XXX: also support 0x10:0x1F notation
 		else if( in.find('+') != std::string::npos )
 		{
 			std::vector<std::string> parts = UVDSplit(in, '+');

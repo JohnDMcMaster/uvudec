@@ -81,6 +81,64 @@ std::string UVDDisasmInstructionShared::getHumanReadableUsage()
 	return sRet;
 }
 
+uv_err_t UVDDisasmInstructionShared::getOpcodes(std::set<uint8_t> &ret) const
+{
+	/*
+	0x12 => 0x12
+	0x10/0x02 => 0x10, 0x11
+	0x10:0x12 => 0x10, 0x11, 0x12
+	*/
+	
+	//FIXME: multiple opcodes, the return type will also need to be changed
+	uv_assert_ret(m_opcode_length == 1);
+	for( unsigned int i = 0; i < m_opcode_length; ++i )
+	{
+		uint8_t opcode = m_opcode[i];
+		uint8_t rangeOffset = m_opcodeRangeOffset[i];
+		uint8_t bitmask = m_bitmask[i];
+		
+		if( rangeOffset == 0 && bitmask == 0 )
+		{
+			ret.insert(opcode);
+		}
+		else if( rangeOffset )
+		{
+			//Logically equivilent to above...
+			for( uint32_t i = 0; i <= rangeOffset; ++i )
+			{
+				ret.insert(opcode + i);
+			}
+		}
+		else if( bitmask )
+		{
+			/*
+			0xF0/0xF0: 0xF0:0xFF
+			0x03/0x0F: 0x03, 0x13, 0x23, ...
+			Anded means keep, 0'd means wild
+			FIXME: get a better algorithm for this..but only computed once, so w/e
+			*/
+			uint8_t currentOpcode = 0;
+			uint8_t workingOpcode = opcode & bitmask;
+			
+			do
+			{
+				if( (currentOpcode & bitmask) == workingOpcode )
+				{
+					ret.insert(currentOpcode);
+				}
+				++currentOpcode;
+			//Looped around?
+			} while( currentOpcode != 0x00 );
+		}
+		else
+		{
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+	}
+	
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDDisasmInstructionShared::analyzeAction()
 {
 	if( m_action.find("CALL") != std::string::npos )

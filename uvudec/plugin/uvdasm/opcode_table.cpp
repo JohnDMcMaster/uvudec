@@ -393,7 +393,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 
 uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	unsigned int cur_line = 0;
 	unsigned int line_syntax = 0;
 	unsigned int line_usage = 0;
@@ -402,18 +401,14 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 	if( op_section == NULL )
 	{
 		printf_debug(".OP section required\n");
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 		
 	printf_debug("Processing opcode lines...\n");
 	cur_line = 0;
 	for( ;;  )
 	{
-		//int line_pos = 0;
-		//const std::string search = "\nNAME=";
-
-		/* Its easier to parse some things before others */
+		//Its easier to parse some things before others
 		std::string value_desc;
 		std::string value_usage;
 		std::string value_syntax;
@@ -423,9 +418,8 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		UVDDisasmInstructionShared *inst_shared = NULL;
 		int primary_opcode = 0;
 
-		
 		printf_debug("\nLooking for next instruction block at index %d / %d\n", cur_line, op_section->m_lines.size());
-		/* Start by extracting key/value pairs */
+		//Start by extracting key/value pairs
 		for( ; cur_line < op_section->m_lines.size(); ++cur_line )
 		{
 			std::string::size_type equalsPos = 0;
@@ -435,25 +429,23 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 
 			printf_debug("Line: <%s>\n", line.c_str());
 			
-			/* Skip comments, empty */
-			if( line.empty() || strstr(line.c_str(), "#") != NULL )
+			//Skip comments, empty
+			if( line.empty() || line[0] == '#' )
 			{
 				continue;
 			}
 			else if( line[0] == '.' )
 			{
 				printf_debug("Section parsing too crude to handle specified section ordering\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			
-			/* Setup key/value pairing */
+			//Setup key/value pairing
 			equalsPos = line.find("=");
 			if( equalsPos == std::string::npos )
 			{
 				printf_debug("no key/value pair detected\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			//Skip equals
 			value = line.substr(equalsPos + 1);
@@ -465,8 +457,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			if( value_name.empty() && key != "NAME" )
 			{
 				printf_debug("NAME must go first\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			
 			if( !strcmp(key.c_str(), "NAME") )
@@ -504,8 +495,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			else
 			{
 				printf_debug("Invalid key\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 		}
 
@@ -525,11 +515,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		}		
 
 		inst_shared = new UVDDisasmInstructionShared();
-		if( !inst_shared )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert_ret(inst_shared);
 		printf_debug("Allocated new instruction, new: 0x%X\n", (unsigned int)inst_shared);	
 		
 		printf_debug("std::string value_name = %s\n", value_name.c_str());
@@ -542,31 +528,25 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		if( value_desc.empty() )
 		{
 			printf_debug("Description field missing\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
 		if( value_usage.empty() )
 		{
 			printf_debug("Usage field missing\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
 		if( value_action.empty() )
 		{
 			printf_debug("Action field missing\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
 		inst_shared->m_config_line_syntax = op_section->m_line;
-		//inst_shared->m_config_line_syntax = line_syntax;
 		inst_shared->m_config_line_usage = op_section->m_line;
-		//inst_shared->m_config_line_usage = line_usage;
-
 		
-		/* Trivial parsing */
+		//Trivial parsing
 		inst_shared->m_memoric = value_name;
 		inst_shared->m_desc = value_desc;
 		if( !value_cycles.empty() )
@@ -582,16 +562,14 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		if( UV_FAILED(uvd_parse_syntax(inst_shared, value_syntax)) )
 		{
 			printf_debug("Error parsing syntax line %d\n", inst_shared->m_config_line_syntax);
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 				
 		printf_debug("*Parsing usage\n");		
 		if( UV_FAILED(uvd_parse_usage(inst_shared, value_usage)) )
 		{
 			printf_debug("Error parsing usage line %d\n", inst_shared->m_config_line_usage);
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		
 		inst_shared->m_action = value_action;
@@ -601,40 +579,36 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		Make sure its valid 
 		At a minimum need a name and a usage
 		*/
-		if( inst_shared->m_memoric.empty() || inst_shared->m_opcode_length == 0 )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert_ret(!inst_shared->m_memoric.empty() && inst_shared->m_opcode_length != 0 )
 		
 		primary_opcode = inst_shared->m_opcode[0];
 		printf_debug("Primary opcode: 0x%.2X\n", primary_opcode);
-		/* Check for a repeated/conflicting opcode */
-		printf_debug("table size: 0x%.8X\n", sizeof(m_lookupTable));
-		if( m_lookupTable[primary_opcode] )
-		{
-			if( g_error_opcode_repeat )
-			{
-				printf_debug("Duplicate opcode: 0x%.2X, old: %s\n", primary_opcode, m_lookupTable[primary_opcode]->m_desc.c_str());
-				UV_ERR(rc);
-				goto error;
-			}
-		}
-
 		
 		//Compute some things to help speed up analysis and know the nature of this instruction
-		uv_assert_err(inst_shared->analyzeAction());
+		uv_assert_err_ret(inst_shared->analyzeAction());
+		
+		//Check for a repeated/conflicting opcode
+		printf_debug("table size: 0x%.8X\n", sizeof(m_lookupTable));
+		std::set<uint8_t> opcodes;
+		uv_assert_err_ret(inst_shared->getOpcodes(opcodes));
+		for( std::set<uint8_t>::iterator iter = opcodes.begin(); iter != opcodes.end(); ++iter )
+		{
+			if( m_lookupTable[primary_opcode] )
+			{
+				if( g_error_opcode_repeat )
+				{
+					printf_debug("Duplicate opcode: 0x%.2X, old: %s\n", primary_opcode, m_lookupTable[primary_opcode]->m_desc.c_str());
+					return UV_DEBUG(UV_ERR_GENERAL);
+				}
+			}
 
-		printf_debug("Doing actual store\n");
-		m_lookupTable[primary_opcode] = inst_shared;
-		printf_debug("Stored processed\n");
+			printf_debug("Doing actual store\n");
+			m_lookupTable[primary_opcode] = inst_shared;
+			printf_debug("Stored processed\n");
+		}
 	}
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
-} 
-
+	return UV_ERR_OK;
+}
 
 uv_err_t UVDDisasmOpcodeLookupTable::init(UVDConfigSection *op_section)
 {

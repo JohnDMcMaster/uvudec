@@ -29,6 +29,10 @@ public:
 
 	virtual std::string getHumanReadableUsage();
 
+	//Partially to rapidly support FLIRT signature creation,
+	//opcodes were masked and others to allow rapid decoding of register ranges
+	uv_err_t getOpcodes(std::set<uint8_t> &out) const;
+
 	//Make ready instruction class
 	uv_err_t analyzeAction();
 

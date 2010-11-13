@@ -141,7 +141,6 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	The misc section is non-grouped directives.  
 	As such, parsing it is much easier than most sections 
 	*/
-	uv_err_t rc = UV_ERR_GENERAL;
 	unsigned int cur_line = 0;
 	//char **lines = NULL;
 
@@ -157,8 +156,7 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	if( misc_section == NULL )
 	{
 		printf_debug(".MISC section required\n");
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
 	uv_assert_ret(g_config);
@@ -177,12 +175,8 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 
 		printf_debug("Line: <%s>\n", line.c_str());
 		rc_temp = uvdParseLine(line, key, value);
-		if( UV_FAILED(rc_temp) )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
-		else if( rc_temp == UV_ERR_BLANK )
+		uv_assert_err_ret(rc_temp);
+		if( rc_temp == UV_ERR_BLANK )
 		{
 			continue;
 		}
@@ -218,16 +212,14 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 		else
 		{
 			printf_debug("Invalid key\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
 	
 	if( value_name.empty() )
 	{
 		printf_error("MCU name not present\n");
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	g_asmConfig->m_mcu_name = value_name;
 	
@@ -240,22 +232,18 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 
 	printf_debug("Misc init OK\n");
 
-	rc = UV_ERR_OK;
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	std::vector< std::vector<std::string> > memSectionParts;
 	
 	printf_debug("Initializing memory data\n");
 	if( mem_section == NULL )
 	{
 		printf_debug(".MEM section required\n");
-		UV_ERR(rc);
-		goto error;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
 	printf_debug("Processing mem lines...\n");
@@ -293,12 +281,8 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 
 			printf_debug("Line: <%s>\n", line.c_str());
 			rc_temp = uvdParseLine(line, key, value);
-			if( UV_FAILED(rc_temp) )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
-			else if( rc_temp == UV_ERR_BLANK )
+			uv_assert_err_ret(rc_temp);
+			if( rc_temp == UV_ERR_BLANK )
 			{
 				continue;
 			}
@@ -306,8 +290,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			if( value_name.empty() && key != "NAME" )
 			{
 				printf_debug("NAME must go first\n");
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			
 			if( key == "NAME" )
@@ -353,9 +336,8 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			}
 			else
 			{
-				printf_error("Invalid key: %s\n", key.c_str());
-				UV_ERR(rc);
-				goto error;
+				printf_error("Invalid memory section key: %s\n", key.c_str());
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 		}
 
@@ -370,12 +352,11 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		if( value_name.empty() )
 		{
 			printf_debug("Name missing\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
 		memoryShared = new UVDAddressSpace();
-		uv_assert_all(memoryShared);
+		uv_assert_ret(memoryShared);
 
 		printf_debug("Allocated new memory, new: 0x%.8X\n", (unsigned int)memoryShared);	
 
@@ -392,8 +373,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		if( value_type.empty() )
 		{
 			printf_debug("Type missing\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
 		printf_debug("Parsing memory\n");		
@@ -406,15 +386,13 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		*/
 		if( !value_cap.empty() )
 		{
-			char **parts = NULL;
-			unsigned int n_parts = 0;
-			unsigned int i = 0;
+			std::vector<std::string> parts;
 			
 			//memoryShared->m_cap = 0;
-			parts = uv_split_core(value_cap.c_str(), ',', &n_parts, 1);
-			for( i = 0; i < n_parts; ++i )
+			parts = UVDSplit(value_cap, ',', 1);
+			for( std::vector<std::string>::size_type i = 0; i < parts.size(); ++i )
 			{
-				std::string part = parts[i];
+				const std::string &part = parts[i];
 				
 				if( part == "R" )
 				{
@@ -438,8 +416,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 				else
 				{
 					printf_debug("Unrecognized memory capability: %s\n", part.c_str());
-					UV_ERR(rc);
-					goto error;
+					return UV_DEBUG(UV_ERR_GENERAL);
 				}
 			}
 		}
@@ -501,8 +478,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			else
 			{
 				printf_debug("Unknown memory type: %s, cap flags must be specified manually\n", value_type.c_str());
-				UV_ERR(rc);
-				goto error;
+				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 		}
 
@@ -528,8 +504,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		if( memoryShared->m_min_addr > memoryShared->m_max_addr )
 		{
 			printf_debug("Minimum is greater than maximum address\n");
-			UV_ERR(rc);
-			goto error;
+			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		
 		if( !value_word_size.empty() )
@@ -669,13 +644,13 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 
 			printf_debug("Adding sym\n");
 			sym_temp = new UVDSymbol();
-			uv_assert_all(sym_temp);
+			uv_assert_ret(sym_temp);
 			sym_temp->m_type = UVD_SYMBOL_MEM;
 			sym_temp->m_key = memoryShared->m_name;
 			sym_temp->m_mem = memoryShared;
 			
 			printf_debug("Adding sym call\n");
-			uv_assert_err(m_symMap->setSym(memoryShared->m_name, sym_temp, NULL));		
+			uv_assert_err_ret(m_symMap->setSym(memoryShared->m_name, sym_temp, NULL));		
 		}
 	}
 	
@@ -683,10 +658,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 
 	printf_debug("Memory init OK\n");
 
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
