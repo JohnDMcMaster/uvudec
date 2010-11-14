@@ -173,6 +173,7 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 %include "uvd/config/config.h"
 %include "uvd/core/init.h"
 %include "uvd/core/uvd.h"
+%include "uvd/core/iterator.h"
 %include "uvd/util/types.h"
 %include "uvd/util/error.h"
 %include "wrappers.h"
