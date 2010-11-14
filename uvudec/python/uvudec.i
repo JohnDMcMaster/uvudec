@@ -141,24 +141,6 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 43
 */
 
-/*
-%typemap(in, numinputs=0) UVD **out (UVD *temp)
-{
-   $1 = &temp;
-}
-
-%typemap(argout) (UVD **)
-{
-	PyObject *to_add = SWIG_NewPointerObj(*$1, $descriptor(UVD *), SWIG_POINTER_OWN);
-	//It seems if we don't do this, it returns a list instead, even for single values
-	if( $result == Py_None )
-	{
-		Py_DecRef(Py_None);
-		$result = NULL;
-	}
-	$result = SWIG_AppendOutput($result, to_add);
-}
-*/
 %include "gen_typemaps.i"
 
 //Anytime we have non-const std::string &, its a return type
