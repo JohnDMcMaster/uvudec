@@ -9,8 +9,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <string>
 #include <vector>
+#include "uvd/util/types.h"
 
-std::vector<std::string> getUVNetASCIIArt();
-std::string getRandomUVNetASCIIArt();
+uv_err_t getUVNetASCIIArt(std::vector<std::string> &out);
+uv_err_t getRandomUVNetASCIIArt(std::string &out);
 
 #endif

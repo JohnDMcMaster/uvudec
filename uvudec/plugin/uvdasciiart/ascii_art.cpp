@@ -6,6 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdasciiart/ascii_art.h"
+#include "uvdasciiart/plugin.h"
+#include <boost/filesystem.hpp>
 #include <stdlib.h>
 
 #define UVNET_LOGO_0 \
@@ -79,29 +81,49 @@ RCOS_LOGO_0,
 NULL
 };
 
-std::vector<std::string> getUVNetASCIIArt()
+uv_err_t getUVNetASCIIArt(std::vector<std::string> &out)
 {
-	std::vector<std::string> ret;
+	std::string dataDir;
 	
+	out.clear();
+
 	for( const char **cur = &g_uvnet_ascii_art[0]; *cur != NULL; ++cur )
 	{
-		ret.push_back(*cur);
+		out.push_back(*cur);
 	}
 	
-	return ret;
+	uv_assert_err_ret(g_asciiArtPlugin->getDataDir(dataDir));
+	//Load from files
+	for( boost::filesystem::directory_iterator iter(dataDir);
+			iter != boost::filesystem::directory_iterator(); ++iter )
+	{
+		std::string file;
+		std::string fileContents;
+		
+		file = dataDir + "/" + iter->path().filename();
+		uv_assert_err_ret(UVDReadFileByString(file, fileContents));
+		
+		out.push_back(fileContents);
+	}
+		
+	return UV_ERR_OK;
 }
 
-std::string getRandomUVNetASCIIArt()
+uv_err_t getRandomUVNetASCIIArt(std::string &out)
 {
 	std::vector<std::string> artGallery;
-	std::string sRet;
 	
-	artGallery = getUVNetASCIIArt();
+	uv_assert_err_ret(getUVNetASCIIArt(artGallery));
 	if( !artGallery.empty() )
 	{
 		srand(time(NULL));
-		sRet = artGallery[rand() % artGallery.size()];
+		out = artGallery[rand() % artGallery.size()];
+	}
+	else
+	{
+		out = "";
 	}
 	
-	return sRet;
+	return UV_ERR_OK;
 }
+

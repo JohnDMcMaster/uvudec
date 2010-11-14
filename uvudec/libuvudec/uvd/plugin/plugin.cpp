@@ -49,14 +49,15 @@ uv_err_t UVDPlugin::deinit(UVDConfig *config)
 
 uv_err_t UVDPlugin::getDataDir(std::string &out)
 {
-	uv_assert_ret(m_uvd);
-	uv_assert_ret(m_uvd->m_config);
+	UVDConfig *config = NULL;
+	
+	config = g_config;
 #ifdef UVD_ENABLE_DEVELOPMENT
 	//Data is grouped into plugin dirs for development
-	out = UVDSprintf("%s/plugin/%s/data", m_uvd->m_config->m_installDir.c_str(), getName().c_str());
+	out = UVDSprintf("%s/plugin/%s/data", config->m_installDir.c_str(), getName().c_str());
 #else
 	//...but should be moved into data dir for installation
-	out = UVDSprintf("%s/data/plugin/%s", m_uvd->m_config->m_installDir.c_str(), getName().c_str());
+	out = UVDSprintf("%s/data/plugin/%s", config->m_installDir.c_str(), getName().c_str());
 #endif
 	return UV_ERR_OK;
 }

@@ -52,12 +52,15 @@ uv_err_t UVDAsciiartPlugin::getAuthor(std::string &out)
 
 uv_err_t UVDAsciiartPlugin::outputHeader(std::vector<std::string> &lines)
 {
+	std::string art;
+	
 	if( !m_config.m_outputASCIIArt )
 	{
 		return UV_ERR_OK;
 	}
 
-	std::string art = getRandomUVNetASCIIArt() + "\n";
+	uv_assert_err_ret(getRandomUVNetASCIIArt(art));
+	art += "\n";
 	lines.push_back(art);
 	lines.push_back("");
 	lines.push_back("");		

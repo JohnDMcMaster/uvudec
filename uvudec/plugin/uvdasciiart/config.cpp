@@ -28,7 +28,10 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 	if( argConfig->m_propertyForm == UVD_PROP_ACTION_USELESS_ASCII_ART )
 	{
-		printf("Have too much time on our hands do we?\n%s\n\n", getRandomUVNetASCIIArt().c_str());
+		std::string art;
+		uv_assert_err_ret(getRandomUVNetASCIIArt(art));
+		printf("Have too much time on our hands do we?\n%s\n\n", art.c_str());
+		return UV_ERR_DONE;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_USELESS_ASCII_ART )
 	{
