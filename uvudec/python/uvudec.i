@@ -65,12 +65,12 @@ Success codes
 	catch(UVDException e)
 	{
 	 	SWIG_exception(SWIG_RuntimeError, uv_err_str(e.m_rc));
-		return NULL;
+		Py_RETURN_NONE;
 	}
 	catch(...)
 	{
 	 	SWIG_exception(SWIG_UnknownError, "Unknown exception");
-		return NULL;
+		Py_RETURN_NONE;
 	}
 }
 
@@ -144,21 +144,24 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 %include "uvd/core/init.h"
 %include "uvd/core/uvd.h"
 %include "uvd/util/types.h"
+%include "uvd/util/error.h"
 %include "wrappers.h"
 
 %pythoncode %{
 # Seems to work
 class InitDeinit:
     def __init__(self):
-        # print 'Calling UVDInit()'
-        init()
+        print 'Calling UVDInit()'
+        UVDInit()
         get_config().parseArgs()
 
     def __del__(self):
-        # print 'Calling UVDDeinit()'
-        deinit()
+        print 'Calling UVDDeinit()'
+        UVDDeinit()
+        
 # Dummy instance to get created and destroyed
 # We could get init to be executed globally...but I don't know about deinit
+print 'Constructing InitDeinit'
 obj = InitDeinit()
 
 %}
