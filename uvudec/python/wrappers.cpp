@@ -39,3 +39,9 @@ uv_err_t always_return_rc(int rc)
 	return UV_DEBUG(rc);
 }
 
+uv_err_t returns_string(std::string &out)
+{
+	out = "pizza";
+	return UV_ERR_OK;
+}
+

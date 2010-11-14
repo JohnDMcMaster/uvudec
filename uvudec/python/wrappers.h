@@ -45,5 +45,7 @@ public:
 //Test function that always fails
 uv_err_t always_return_rc(int rc);
 
+uv_err_t returns_string(std::string &out);
+
 #endif
 
