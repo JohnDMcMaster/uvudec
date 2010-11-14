@@ -173,7 +173,7 @@ OBJS = $(CC_SRCS:.c=$(OBJECT_LINKAGE_SUFFIX).o) $(CXX_SRCS:.cpp=$(OBJECT_LINKAGE
 
 UVUDEC_EXE = $(BIN_DIR)/uvudec
 COFF2PAT_EXE = $(BIN_DIR)/uvcoff2pat
-GUI_EXE = $(BIN_DIR)/uvudecgui
+GUI_EXE = $(BIN_DIR)/uvdgui
 BIN2OBJ_EXE = $(BIN_DIR)/uvbin2obj
 OBJ2PAT_EXE = $(BIN_DIR)/uvobj2pat
 OMF2PAT_EXE = $(BIN_DIR)/uvomf2pat
