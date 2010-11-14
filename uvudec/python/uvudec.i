@@ -157,7 +157,14 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 
 %typemap(argout) (std::string &out), (std::string &output)
 {
-	resultobj = Py_None;
+	/*
+	//Guess append takes care of this automatically?
+	if( $result == Py_None )
+	{
+		Py_DECREF(Py_None);
+		$result = NULL;
+	}
+	*/
 	PyObject *to_add = PyString_FromString((*$1).c_str());
 	$result = SWIG_AppendOutput($result, to_add);
 }
