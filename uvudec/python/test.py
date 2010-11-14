@@ -25,16 +25,22 @@ except:
 
 print
 try:
-	print 'string return test: %s' % uvudec.returns_string()
+	print 'out return test: %s' % uvudec.returns_string()
 except:
-	print 'ERROR: failed common string test'
+	print 'ERROR: failed out string test'
+	traceback.print_exc(file=sys.stdout)
+
+try:
+	print 'output return test: %s' % uvudec.returns_string_output()
+except:
+	print 'ERROR: failed output string test'
 	traceback.print_exc(file=sys.stdout)
 
 try:
 	print 'string return test: %s' % uvudec.returns_string_other()
+	print 'should not be here'
 except:
-	print 'ERROR: failed named string test'
-	traceback.print_exc(file=sys.stdout)
+	print 'failed other named string test as expected'
 
 try:
 	uvudec.takes_string('down the hatch')
@@ -42,9 +48,6 @@ try:
 except:
 	print 'ERROR: failed input string test'
 	traceback.print_exc(file=sys.stdout)
-
-print
-sys.exit(0)
 
 print
 if False:
@@ -62,6 +65,10 @@ else:
 
 try:
 	disassembly = uvd.disassemble()
+	print 'Total length: %d' % len(disassembly)
+	print 'Sample:'
+	print disassembly[0:min(200, len(disassembly))]
+
 except:
 	print 'failed to disassemble'
 	traceback.print_exc(file=sys.stdout)

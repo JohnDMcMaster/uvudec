@@ -143,14 +143,19 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 
 %include "gen_typemaps.i"
 
-//Anytime we have non-const std::string &, its a return type
-//Thought swig would translate this, but it doesn't...guess not common enough?
+//Anytime we have non-const std::string &out, its a return type
+//For some rare instances we take string in and out, guess its best to enforce out naming convention
 %typemap(in, numinputs=0) std::string &out (std::string temp)
 {
 	$1 = &temp;
 }
 
-%typemap(argout) (std::string &out)
+%typemap(in, numinputs=0) std::string &output (std::string temp)
+{
+	$1 = &temp;
+}
+
+%typemap(argout) (std::string &out), (std::string &output)
 {
 	resultobj = Py_None;
 	PyObject *to_add = PyString_FromString((*$1).c_str());

@@ -22,13 +22,19 @@ uv_err_t always_return_rc(int rc)
 
 uv_err_t returns_string(std::string &out)
 {
-	out = "pizza returned";
+	out = "pizza returned via out";
+	return UV_ERR_OK;
+}
+
+uv_err_t returns_string_output(std::string &output)
+{
+	output = "pizza returned via output";
 	return UV_ERR_OK;
 }
 
 uv_err_t returns_string_other(std::string &my_ret_value)
 {
-	my_ret_value = "pizza returned in special name";
+	my_ret_value = "pizza returned via special name";
 	return UV_ERR_OK;
 }
 
