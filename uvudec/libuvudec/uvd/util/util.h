@@ -58,18 +58,18 @@ std::string uv_basename(const std::string &file);
 std::string uv_dirname(const std::string &file);
 //Return the directory we were installed to
 //Valid before UVDInit()
-uv_err_t UVDGetInstallDir(std::string &installDir);
+uv_err_t UVDGetInstallDir(std::string &out);
 //Return the canonical path to the currently executing program name
-uv_err_t getProgramName(std::string &programName);
+uv_err_t getProgramName(std::string &out);
 //Given symbolic link file, give canonical path
-uv_err_t resolveSymbolicLink(const std::string &linkFile, std::string &sRet);
+uv_err_t resolveSymbolicLink(const std::string &linkFile, std::string &out);
 //Resolve relative to current directory
-uv_err_t getCannonicalFileName(const std::string &filename, std::string &cannonicalFileName);
+uv_err_t getCannonicalFileName(const std::string &filename, std::string &out);
 //Resolve relative to specified dir
-uv_err_t getCannonicalFileNameCore(const std::string &filename, const std::string &relativeDir, std::string &cannonicalFileName);
+uv_err_t getCannonicalFileNameCore(const std::string &filename, const std::string &relativeDir, std::string &out);
 uv_err_t getWorkingDir(std::string &out);
 uv_err_t UVDGetHomeDir(std::string &out);
-uv_err_t collapsePath(const std::string &relativePath, std::string &pathRet);
+uv_err_t collapsePath(const std::string &relativePath, std::string &out);
 //Only add if something else isn't already present
 uv_err_t weaklyEnsurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out);
 uv_err_t ensurePathEndsWithExtension(const std::string &in, const std::string &extension, std::string &out);
@@ -101,9 +101,9 @@ uv_err_t splitConfigLinesVector(const std::vector<std::string> &in, const std::s
 //Will error if not of either of these forms
 uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t *second);
 
-uv_err_t getTempFile(std::string &sFile);
+uv_err_t getTempFile(std::string &out);
 std::string escapeArg(const std::string &sIn);
-uv_err_t deleteFile(std::string &sFile);
+uv_err_t deleteFile(std::string &out);
 uv_err_t executeToFile(const std::string &sCommand,
 		const std::vector<std::string> &args,
 		int &rcProcess,

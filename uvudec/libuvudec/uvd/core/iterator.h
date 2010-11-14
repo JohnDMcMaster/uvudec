@@ -139,7 +139,7 @@ public:
 	virtual bool operator==(const UVDIterator &other) const;
 	bool operator!=(const UVDIterator &other) const;
 	//Error checked version of operator *
-	uv_err_t getCurrent(std::string &s);
+	uv_err_t getCurrent(std::string &out);
 	std::string operator*();
 
 	virtual uv_err_t next();
@@ -147,7 +147,6 @@ public:
 	virtual uv_err_t initialProcess();
 	//Subparts to organize better
 	uv_err_t initialProcessHeader();
-	uv_err_t initialProcessUselessASCIIArt();
 	uv_err_t initialProcessStringTable();
 
 	virtual uv_err_t makeEnd();

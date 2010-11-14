@@ -49,7 +49,7 @@ public:
 	void setSymbolName(const std::string &name);
 	//If does not exist, add as a new symbol name
 	void addSymbolName(const std::string &name);
-	uv_err_t getSymbolName(std::string &name);
+	uv_err_t getSymbolName(std::string &out);
 	uv_err_t getSymbolNames(std::set<std::string> &names);	
 	
 	//FIXME: this is analysis specific...should it be here?
@@ -229,7 +229,7 @@ public:
 	uv_err_t findSymbol(const std::string &name, UVDBinarySymbol **symbol);
 	//If this one is used for analysis, make sure its an analyzed version
 	//Should be deprecated.  All analyzed symbols can easily be keyed to an address of some sort
-	uv_err_t findAnalyzedSymbol(std::string &name, UVDAnalyzedBinarySymbol **symbol);
+	uv_err_t findAnalyzedSymbol(const std::string &name, UVDAnalyzedBinarySymbol **symbol);
 	uv_err_t findAnalyzedSymbolByAddress(uv_addr_t address, UVDAnalyzedBinarySymbol **symbol);
 	uv_err_t addSymbol(UVDBinarySymbol *symbol);
 	//Shortcuts for now
@@ -265,9 +265,9 @@ public:
 	//Find the function symbol passed in and add all relocations, if any
 	uv_err_t collectRelocations(UVDBinaryFunction *function);
 
-	uv_err_t analyzedSymbolName(uv_addr_t functionAddress, int symbolType, std::string &symbolName);
+	uv_err_t analyzedSymbolName(uv_addr_t functionAddress, int symbolType, std::string &out);
 	//This should get moved to util
-	uv_err_t analyzedSymbolName(std::string dataSource, uv_addr_t functionAddress, int type, std::string &symbolName);
+	uv_err_t analyzedSymbolName(std::string dataSource, uv_addr_t functionAddress, int type, std::string &out);
 
 private:
 	uv_err_t doCollectRelocations(UVDBinaryFunction *function, UVDBinarySymbol *analysisSymbol);
@@ -298,7 +298,7 @@ public:
 
 	virtual uv_err_t updateDynamicValue();
 
-	virtual uv_err_t getName(std::string &s);
+	virtual uv_err_t getName(std::string &out);
 	virtual uv_err_t setName(const std::string &s);
 	
 public:

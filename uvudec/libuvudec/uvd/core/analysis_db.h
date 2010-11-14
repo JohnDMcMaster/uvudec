@@ -26,7 +26,7 @@ public:
 	-Archive (tar, zip, tar/gzip, etc)
 	-Directory
 	*/
-	virtual uv_err_t loadData(std::string &file) = 0;
+	virtual uv_err_t loadData(std::string &out) = 0;
 	
 	/*
 	Dump entire database to given location
@@ -69,7 +69,7 @@ public:
 	-Archive (tar, zip, tar/gzip, etc)
 	-Directory
 	*/
-	uv_err_t loadData(std::string &file);
+	uv_err_t loadData(std::string &out);
 	//Add a single function to the DB
 	//This registers functions found during analysis
 	uv_err_t loadFunction(UVDBinaryFunctionShared *function);
@@ -111,9 +111,9 @@ public:
 	uv_err_t init();
 
 	//Do a recursive load on given data
-	uv_err_t loadData(std::string &file);
+	uv_err_t loadData(std::string &out);
 	//Creates a directory with sub dirs/archives
-	uv_err_t saveData(std::string &file);
+	uv_err_t saveData(std::string &out);
 	//All
 	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false);
 	

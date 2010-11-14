@@ -143,7 +143,7 @@ public:
 	//Raw
 	uv_err_t getName(int *name);
 	//Easy
-	uv_err_t getName(std::string &sName);
+	uv_err_t getName(std::string &out);
 	//Raw
 	void setName(int name);
 	//Easy
@@ -193,7 +193,7 @@ public:
  	//Specialized data structures are used for different sections
 	static uv_err_t getUVDElfSectionHeaderEntryCore(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
 
-	uv_err_t getName(std::string &sName);
+	uv_err_t getName(std::string &out);
 	void setName(const std::string &sname);
 	uv_err_t getName(int *nameIndex);
 	void setName(int nameIndex);

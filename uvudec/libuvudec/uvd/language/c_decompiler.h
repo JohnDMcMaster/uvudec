@@ -17,7 +17,7 @@ public:
 	//Class specific init function
 	uv_err_t init();
 
-	virtual uv_err_t decompile(std::vector<UVDInstruction *> disassembledCode, std::string &highLevelCode, UVDDecompileNotes *notes);
+	virtual uv_err_t decompile(std::vector<UVDInstruction *> disassembledCode, std::string &out, UVDDecompileNotes *notes);
 
 public:
 };

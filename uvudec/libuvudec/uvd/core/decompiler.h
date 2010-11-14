@@ -37,7 +37,7 @@ public:
 	//Class specific deinit function
 	virtual uv_err_t deinit();
 
-	virtual uv_err_t decompile(std::vector<UVDInstruction *> disassembledCode, std::string &highLevelCode, UVDDecompileNotes *notes) = 0;
+	virtual uv_err_t decompile(std::vector<UVDInstruction *> disassembledCode, std::string &out, UVDDecompileNotes *notes) = 0;
 
 	//Get the best matching decompiler for given compiler
 	static uv_err_t getDecompiler(UVDCompiler *compiler, UVDDecompiler **decompiler);

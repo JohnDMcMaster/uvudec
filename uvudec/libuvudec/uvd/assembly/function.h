@@ -98,9 +98,9 @@ public:
 	
 	//Gets default hash
 	//Will compute it if needed
-	uv_err_t getHash(std::string &hash);
+	uv_err_t getHash(std::string &out);
 	//On the relocatable version
-	uv_err_t getRelocatableHash(std::string &hash);
+	uv_err_t getRelocatableHash(std::string &out);
 
 	//Get binary representations of relocatable and raw forms
 	uv_err_t getRawDataBinary(UVDData **data);

@@ -287,7 +287,7 @@ public:
 	
 	//If this symbol has a name, get it
 	//virtual std::string getName();
-	virtual uv_err_t getName(std::string &s);
+	virtual uv_err_t getName(std::string &out);
 	uv_err_t setName(const std::string &sName);
 	
 protected:

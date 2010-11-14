@@ -74,7 +74,7 @@ public:
 	uv_err_t deinit();
 	
 	uv_err_t setEquivMemName(uv_addr_t addr, const std::string &name);
-	uv_err_t getEquivMemName(uv_addr_t addr, std::string &name);
+	uv_err_t getEquivMemName(uv_addr_t addr, std::string &out);
 	
 	//Next valid address capable of having any sort of analysis on it
 	uv_err_t nextValidAddress(uv_addr_t start, uv_addr_t *ret);

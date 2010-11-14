@@ -42,7 +42,7 @@ public:
 	uv_err_t init();
 	uv_err_t deinit();
 	
-	uv_err_t getSymbolTypeNamePrefix(int symbolType, std::string &ret);
+	uv_err_t getSymbolTypeNamePrefix(int symbolType, std::string &out);
 
 public:
 	//A prefix to put before every symbol generated

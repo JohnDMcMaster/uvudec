@@ -457,7 +457,7 @@ uv_err_t UVDBinarySymbolManager::findAnalyzedSymbolByAddress(uv_addr_t address, 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(std::string &name, UVDAnalyzedBinarySymbol **symbolOut)
+uv_err_t UVDBinarySymbolManager::findAnalyzedSymbol(const std::string &name, UVDAnalyzedBinarySymbol **symbolOut)
 {
 	UVDBinarySymbol *symbolRaw = NULL;
 	UVDAnalyzedBinarySymbol *symbol = NULL;

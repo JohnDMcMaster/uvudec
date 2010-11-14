@@ -159,7 +159,7 @@ class UVDStringTableRelocatableElement : public UVDRelocatableElement
 public:
 	UVDStringTableRelocatableElement();
 	//Find the index of s in the given string table as the value
-	UVDStringTableRelocatableElement(UVDElfStringTableSectionHeaderEntry *stringTable, std::string &sTarget);
+	UVDStringTableRelocatableElement(UVDElfStringTableSectionHeaderEntry *stringTable, std::string &out);
 	virtual ~UVDStringTableRelocatableElement();
 	
 	virtual uv_err_t updateDynamicValue();

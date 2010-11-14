@@ -167,7 +167,7 @@ public:
 
 	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon) = 0;
 
-	virtual uv_err_t print_disasm(std::string &s) = 0;
+	virtual uv_err_t print_disasm(std::string &out) = 0;
 	//Give as many hints to our analyzer as possible based on what this instruction does
 	virtual uv_err_t analyzeControlFlow() = 0;
 
