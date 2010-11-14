@@ -329,9 +329,6 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	uv_assert(m_analyzer);
 	m_analyzer->m_uvd = this;
 	uv_assert_err(m_analyzer->init());
-	//Default to our global config, which should have already been initialized since its program dependent
-	m_config = g_config;
-	uv_assert(m_config);
 	m_format = new UVDFormat();
 	uv_assert(m_format);
 	m_eventEngine = new UVDEventEngine();
