@@ -16,13 +16,6 @@ indicated.
 
 Dependencies
 
-GNU MD5 implementation
-Declaration of functions and data types used for MD5 sum computing
-library functions.
-Copyright (C) 1995-1997,1999,2000,2001,2004,2005
-    Free Software Foundation, Inc.
-This file is part of the GNU C Library.
-
 Spidermonkey (probably will be phased out)
 Mozilla Public License
 
