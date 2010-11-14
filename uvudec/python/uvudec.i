@@ -109,8 +109,16 @@ typedef uint32_t uv_addr_t;
     //else if( $1 == UV_ERR_DONE || $1 == UV_ERR_BLANK )
     else
     {
+    	//FIXME: this is causing return type conversions in some areas
+    	//Honestly, I'm not sure why it WORKS sometimes
     	//returns Py_None with proper reference counting math
+    	//#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
+    	//printf("pre return none\n"); fflush(stdout);
     	Py_RETURN_NONE;
+    	//Eh this isn't proper, but this is statically allocated and probably won't lose ref count anyway
+    	//$result = Py_None;
+    	//printf("post return none\n"); fflush(stdout);
+		//$result = $result;
     }
     /*
     else
@@ -139,6 +147,20 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 	$result = SWIG_AppendOutput($result, to_add);
 }
 
+//Anytime we have non-const std::string &, its a return type
+//Thought swig would translate this, but it doesn't...guess not common enough?
+%typemap(in, numinputs=0) std::string &out (std::string temp)
+{
+	$1 = &temp;
+}
+ 
+%typemap(argout) (std::string &out)
+{
+	resultobj = Py_None;
+	PyObject *to_add = PyString_FromString((*$1).c_str());
+	$result = SWIG_AppendOutput($result, to_add);
+}
+ 
 %include "uvd/all.h"
 %include "uvd/config/config.h"
 %include "uvd/core/init.h"
