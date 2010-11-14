@@ -16,7 +16,7 @@ for line in open('temp_types.txt').readlines():
 
 %%typemap(argout) (%s **)
 {
-	PyObject *to_add = SWIG_NewPointerObj($1, $descriptor(%s *), SWIG_POINTER_OWN);
+	PyObject *to_add = SWIG_NewPointerObj(*$1, $descriptor(%s *), SWIG_POINTER_OWN);
 	$result = SWIG_AppendOutput($result, to_add);
 }
 

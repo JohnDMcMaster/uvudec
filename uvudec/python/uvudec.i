@@ -114,9 +114,11 @@ typedef uint32_t uv_addr_t;
     	//returns Py_None with proper reference counting math
     	//#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
     	//printf("pre return none\n"); fflush(stdout);
-    	Py_RETURN_NONE;
+    	//Py_RETURN_NONE;
     	//Eh this isn't proper, but this is statically allocated and probably won't lose ref count anyway
-    	//$result = Py_None;
+    	//welll...actually it results in crashes
+    	Py_INCREF(Py_None);
+    	$result = Py_None;
     	//printf("post return none\n"); fflush(stdout);
 		//$result = $result;
     }
@@ -138,14 +140,26 @@ Unique UVD only types
 find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/[)].*$//g' |awk -F ',' '{ for(i=1;i<=NF;++i) print $i  }' |fgrep '**' |fgrep -v '***' |tr -d '[:blank:]' |grep -v '^$' |fgrep UVD |awk -F '**' '{ print $1 }' |sort -u |wc -l
 43
 */
-%typemap(in, numinputs=0) UVD **out (UVD *temp) {
+
+/*
+%typemap(in, numinputs=0) UVD **out (UVD *temp)
+{
    $1 = &temp;
 }
 
-%typemap(argout) (UVD **) {
-	PyObject *to_add = SWIG_NewPointerObj($1, $descriptor(UVD *), SWIG_POINTER_OWN);
+%typemap(argout) (UVD **)
+{
+	PyObject *to_add = SWIG_NewPointerObj(*$1, $descriptor(UVD *), SWIG_POINTER_OWN);
+	//It seems if we don't do this, it returns a list instead, even for single values
+	if( $result == Py_None )
+	{
+		Py_DecRef(Py_None);
+		$result = NULL;
+	}
 	$result = SWIG_AppendOutput($result, to_add);
 }
+*/
+%include "gen_typemaps.i"
 
 //Anytime we have non-const std::string &, its a return type
 //Thought swig would translate this, but it doesn't...guess not common enough?
@@ -153,7 +167,7 @@ find -mindepth 3 -name '*.h' -exec fgrep '**' {} ';' |sed 's/^.*[(]//g' |sed 's/
 {
 	$1 = &temp;
 }
- 
+
 %typemap(argout) (std::string &out)
 {
 	resultobj = Py_None;
