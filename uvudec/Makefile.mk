@@ -211,7 +211,7 @@ $(BIN_DIR):
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 cleanLocal:
-	$(RM) *.o *~ $(UVUDEC_EXE) $(OBJS) uv_log.txt Makefile.bak core.* Makefile.depend*
+	$(RM) *.o *~ $(OBJS) Makefile.bak core.* Makefile.depend*
 
 CLEAN_DEPS+=cleanLocal
 cleanTarget: $(CLEAN_DEPS)
