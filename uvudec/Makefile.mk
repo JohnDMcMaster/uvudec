@@ -230,7 +230,7 @@ include $(MAKEFILE_DEPEND)
 ifdef MAKEDEPEND
 # Silicenced because they started to take up a lot of screen during each build
 # Ignore cannot find stdio.h stuff
-depend:
+depend: $(DEPEND_DEP)
 #$(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS)
 	@($(MAKEDEPEND) -f$(MAKEFILE_DEPEND) -Y $(CCFLAGS) $(CC_SRCS) $(CXX_SRCS) 2>/dev/null >/dev/null)
 	perl -pi -e 's/[.]o/$(OBJECT_LINKAGE_SUFFIX).o/g' $(MAKEFILE_DEPEND)

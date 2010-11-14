@@ -12,6 +12,8 @@ CREATE_LIB_LINKS=N
 # Important...
 USING_LIB_UVUDEC=Y
 
+DEPEND_DEP += dependSWIG
+
 CC_SRCS =   \
 
 CXX_SRCS = 	\
@@ -23,19 +25,24 @@ include $(ROOT_DIR)/Makefile.mk
 # Python seems to require the _
 #LIB_PREFIX=_
 
+
+MAKEFILE_DEPEND_SWIG=Makefile.depend.swig$(OBJECT_LINKAGE_SUFFIX)
+$(shell touch $(MAKEFILE_DEPEND_SWIG))
+include $(MAKEFILE_DEPEND_SWIG)
+
 # FIXME: generate dependencies using -MM
 # swig -c++ -python -I../libuvudec -MM uvudec.i
+dependSWIG:
+	$(SWIG) -MM $(SWIG_FLAGS) uvudec.i >$(MAKEFILE_DEPEND_SWIG)
+	perl -pi -e 's/cxx/cpp/g' $(MAKEFILE_DEPEND_SWIG)
 
-gen_typemaps.i: ALWAYS
+SWIG=swig
+SWIG_FLAGS=-c++ -python -I../libuvudec
+
+gen_typemaps.i: ../libuvudec/uvd/all.h
 	./gen_typemaps.py
-uvudec.i: gen_typemaps.i
 uvudec_wrap.cpp: uvudec.i
-	swig -c++ -python -I../libuvudec -o uvudec_wrap.cpp -outdir $(LIB_DIR) uvudec.i
-
-ALWAYS:
-	@(true)
-
-.PHONY: ALWAYS
+	$(SWIG) $(SWIG_FLAGS) -o uvudec_wrap.cpp -outdir $(LIB_DIR) uvudec.i
 
 cleanPython:
 	rm -f uvudec_wrap.cpp gen_typemaps.i
