@@ -27,7 +27,7 @@ uv_err_t UVDBinaryObject::init(UVDData *data)
 	uv_assert_err(UVDObject::init(data));
 
 	section = new UVDSection();
-	uv_assert_ret(section);
+	uv_assert(section);
 	section->m_data = data;
 	
 	//Basic assumptions for a ROM image.  W is probably most debatable as we could be in flash or ROM

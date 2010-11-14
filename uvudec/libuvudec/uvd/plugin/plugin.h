@@ -64,12 +64,17 @@ public:
 	//Deactivate w/e the plugin does
 	virtual uv_err_t deinit(UVDConfig *config);
 
+	//Directory where plugin data support files reside
+	virtual uv_err_t getDataDir(std::string &out);
+
 	/*
 	Called upon UVD::init(), not UVDInit()
 	was init(UVD *uvd)
+	FIXME: remove the uvd arg and garauntee m_uvd is set
+	We should have one plugin instance per engine and they can coordinate with each other if necessary
 	*/
-	virtual uv_err_t onUVDInit(UVD *uvd);
-	virtual uv_err_t onUVDDeinit(UVD *uvd);
+	virtual uv_err_t onUVDInit();
+	virtual uv_err_t onUVDDeinit();
 
 	/*
 	Note the following may be called before init()

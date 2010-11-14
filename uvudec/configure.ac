@@ -54,6 +54,17 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([floor gettimeofday memset mkdir strdup strerror strstr strtol])
 
 # USING_UVUDEC=@enable_uvudec@
+AC_ARG_ENABLE([development],
+    AS_HELP_STRING([--enable-development], [Enable set of options useful for development]))
+AS_IF([test "x$enable_development" != "xyes"], [
+	enable_development=N
+], [
+	enable_development=Y
+	AC_DEFINE([UVD_ENABLE_DEVELOPMENT], [], [enable developer friendly options])
+])
+AC_SUBST(enable_development)
+
+# USING_UVUDEC=@enable_uvudec@
 AC_ARG_ENABLE([uvudec],
     AS_HELP_STRING([--disable-uvudec], [Disable building uvudec]))
 AS_IF([test "x$enable_uvudec" != "xno"], [

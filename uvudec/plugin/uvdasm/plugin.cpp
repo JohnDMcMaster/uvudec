@@ -26,11 +26,12 @@ uv_err_t UVDAsmPlugin::init(UVDConfig *config)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAsmPlugin::onUVDInit(UVD *uvd)
+uv_err_t UVDAsmPlugin::onUVDInit()
 {
 #ifdef UVD_FLIRT_PATTERN_UVD
 	UVDFLIRTPatternGeneratorUVD *generatorUVD = NULL;
 	
+	uv_assert_err_ret(UVDPlugin::onUVDInit());
 	uv_assert_err_ret(UVDFLIRTPatternGeneratorUVD::getPatternGenerator(&generatorUVD));
 	m_patternGenerators.push_back(generatorUVD);
 #endif

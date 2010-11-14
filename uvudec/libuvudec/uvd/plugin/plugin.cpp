@@ -14,8 +14,10 @@ Since the same init routines are used for both, it doesn't quite work out nicely
 In any case, its highly reccomend you implement one if you implement the other
 */
 
+#include "uvd/config.h"
 #include "uvd/architecture/architecture.h"
 #include "uvd/config/config.h"
+#include "uvd/core/uvd.h"
 #include "uvd/object/object.h"
 #include "uvd/plugin/plugin.h"
 #include <dlfcn.h>
@@ -45,13 +47,26 @@ uv_err_t UVDPlugin::deinit(UVDConfig *config)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPlugin::onUVDInit(UVD *uvd)
+uv_err_t UVDPlugin::getDataDir(std::string &out)
 {
-	m_uvd = uvd;
+	uv_assert_ret(m_uvd);
+	uv_assert_ret(m_uvd->m_config);
+#ifdef UVD_ENABLE_DEVELOPMENT
+	//Data is grouped into plugin dirs for development
+	out = UVDSprintf("%s/plugin/%s/data", m_uvd->m_config->m_installDir.c_str(), getName().c_str());
+#else
+	//...but should be moved into data dir for installation
+	out = UVDSprintf("%s/data/plugin/%s", m_uvd->m_config->m_installDir.c_str(), getName().c_str());
+#endif
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPlugin::onUVDDeinit(UVD *uvd)
+uv_err_t UVDPlugin::onUVDInit()
+{
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPlugin::onUVDDeinit()
 {
 	return UV_ERR_OK;
 }

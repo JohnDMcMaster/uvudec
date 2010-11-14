@@ -292,6 +292,17 @@ uv_err_t UVD::initEarly()
 	uv_assert_ret(m_config);
 	m_pluginEngine = &m_config->m_plugin.m_pluginEngine;
 	m_pluginEngine->m_uvd = this;
+
+	//Since plugin initialization may depend on our configuration, this needs to be established even before onUVDInit() is called
+	//Tried to pass in UVDConfig, but it gets too messy
+	for( std::map<std::string, UVDPlugin *>::iterator iter = m_pluginEngine->m_loadedPlugins.begin();
+		iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
+	{
+		UVDPlugin *plugin = (*iter).second;
+		
+		uv_assert_ret(plugin);
+		plugin->m_uvd = this;
+	}
 	
 	return UV_ERR_OK;
 }

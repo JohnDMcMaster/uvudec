@@ -17,7 +17,7 @@ public:
 	UVDAsmPlugin();
 	~UVDAsmPlugin();
 	virtual uv_err_t init(UVDConfig *config);
-	virtual uv_err_t onUVDInit(UVD *uvd);
+	virtual uv_err_t onUVDInit();
 
 	virtual uv_err_t getName(std::string &out);
 	virtual uv_err_t getDescription(std::string &out);	

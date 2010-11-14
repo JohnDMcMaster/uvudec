@@ -15,6 +15,8 @@ INSTALL_DIR=@install_dir@
 # Doesn't seem to help
 USING_ROPE=N
 
+ENABLE_DEVELOPMENT=@enable_development@
+
 USING_QT=Y
 USING_PYTHON=Y
 USING_PYTHON_API=Y
@@ -29,7 +31,7 @@ USING_LIB_JANSSON=Y
 DEFAULT_DECOMPILE_FILE='"@default_decompile_file@"'
 # For playing around, use the build dir config, not the installed
 DEFAULT_CPU_DIR='"arch"'
-DEFAULT_CPU_FILE=$(DEFAULT_CPU_DIR)'"/@uvdasm_default_cpu_file@"'
+DEFAULT_CPU_FILE='"@uvdasm_default_cpu_file@"'
 
 # LUA_DIR=/home/mcmaster/document/software/lua/lua-5.1.4
 # SPIDERAPE_DIR=/home/mcmaster/document/build/spider_ape/SpiderApe-2007.09.26

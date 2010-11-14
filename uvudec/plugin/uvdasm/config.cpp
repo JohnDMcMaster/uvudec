@@ -191,12 +191,15 @@ uv_err_t UVDAsmConfig::setConfigInterpreterLanguageInterface(const std::string &
 
 uv_err_t UVDAsmConfig::getDefaultArchitectureFile(std::string &ret)
 {
-	ret = DEFAULT_CPU_FILE;
 	//FIXME: instead we should search dirs during actual load
 	//This should be relative to installed directory if not absolute
 	if( ret[0] != '/' )
 	{
-		ret = g_config->m_installDir + "/" + ret;
+		std::string dataDir;
+		
+		uv_assert_ret(g_asmPlugin);
+		uv_assert_err_ret(g_asmPlugin->getDataDir(dataDir));
+		ret = dataDir + "/arch/" + DEFAULT_CPU_FILE;
 	}
 	return UV_ERR_OK;
 }
