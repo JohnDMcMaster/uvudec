@@ -47,6 +47,8 @@ public:
 uv_err_t always_return_rc(int rc);
 
 uv_err_t returns_string(std::string &out);
+uv_err_t returns_string_other(std::string &my_ret_value);
+uv_err_t takes_string(const std::string &in);
 
 #endif
 

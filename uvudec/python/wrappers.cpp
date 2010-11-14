@@ -22,7 +22,19 @@ uv_err_t always_return_rc(int rc)
 
 uv_err_t returns_string(std::string &out)
 {
-	out = "pizza";
+	out = "pizza returned";
+	return UV_ERR_OK;
+}
+
+uv_err_t returns_string_other(std::string &my_ret_value)
+{
+	my_ret_value = "pizza returned in special name";
+	return UV_ERR_OK;
+}
+
+uv_err_t takes_string(const std::string &in)
+{
+	printf("got %s\n", in.c_str());
 	return UV_ERR_OK;
 }
 
