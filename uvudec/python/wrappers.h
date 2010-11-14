@@ -31,9 +31,10 @@ public:
 	int m_rc;
 };
 
-void init();
-void deinit();
-UVDConfig *get_config();
+
+/*
+XXX: The following is all test code, don't rely on it
+*/
 
 class uvd : public UVD
 {

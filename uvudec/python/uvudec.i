@@ -189,7 +189,7 @@ class InitDeinit:
     def __init__(self):
         print 'Calling UVDInit()'
         UVDInit()
-        get_config().parseArgs()
+        UVDGetConfig().parseArgs()
 
     def __del__(self):
         print 'Calling UVDDeinit()'

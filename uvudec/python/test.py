@@ -36,3 +36,8 @@ else:
 	print 'got UVD'
 	print type(uvd)
 
+try:
+	disassembly = uvd.disassemble()
+except:
+	print 'failed to disassemble'
+
