@@ -17,6 +17,7 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 			uvudec_wrap.cpp \
 
+CLEAN_DEPS+=cleanPython
 include $(ROOT_DIR)/Makefile.mk
 
 # Python seems to require the _
@@ -25,6 +26,17 @@ include $(ROOT_DIR)/Makefile.mk
 # FIXME: generate dependencies using -MM
 # swig -c++ -python -I../libuvudec -MM uvudec.i
 
+gen_typemaps.i: ALWAYS
+	./gen_typemaps.py
+uvudec.i: gen_typemaps.i
 uvudec_wrap.cpp: uvudec.i
 	swig -c++ -python -I../libuvudec -o uvudec_wrap.cpp -outdir $(LIB_DIR) uvudec.i
+
+ALWAYS:
+	@(true)
+
+.PHONY: ALWAYS
+
+cleanPython:
+	rm -f uvudec_wrap.cpp gen_typemaps.i
 
