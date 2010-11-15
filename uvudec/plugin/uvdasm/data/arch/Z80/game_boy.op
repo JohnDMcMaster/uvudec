@@ -595,7 +595,12 @@ SIZE=0x08
 
 
 # Opcodes
-# The syntax for these will need to be extended as x86 support is added
+# http://nocash.emubase.de/pandocs.htm# some from 
+# http://anthony.bentley.name/rgbds/manual/gbz80/
+# http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
+# "The Game Boy CPU, commonly called the “gbz80,” is a derivative of the 8080 processor.
+# Sharp manufactures it as the LR35902. Assemblers tend to use Z80 syntax, but it is not identical to the z80
+# for instance, it lacks IX and IY registers. This manual describes the opcodes of this processor."
 .OP
 
 # Moved, Removed, and Added Opcodes
@@ -611,8 +616,8 @@ SIZE=0x08
 # D9      EXX             RETI
 # DB      IN   A,(n)      -
 # DD      <IX>            -
-# E0      RET PO          LD   (FF00+n),A
 
+# E0      RET PO          LD   (FF00+n),A
 
 # GMB 8bit-Loadcommands
 # ld r,r      xx     4 ---- r=r
@@ -667,7 +672,14 @@ SIZE=0x08
 # cp   n          FE nn     8 z1hc compare A-n
 # cp   (HL)       BE        8 z1hc compare A-(HL)
 # inc  r          xx        4 z0h- r=r+1
+
 # inc  (HL)       34       12 z0h- (HL)=(HL)+1
+NAME=INC
+DESC=inc r
+USAGE=0x34
+SYNTAX=HL
+ACTION=nop
+
 # dec  r          xx        4 z1h- r=r-1
 # dec  (HL)       35       12 z1h- (HL)=(HL)-1
 # daa             27        4 z-0x decimal adjust akku
