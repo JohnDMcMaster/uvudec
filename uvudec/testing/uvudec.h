@@ -18,6 +18,7 @@ class UVDUvudecUnitTest : public UVDTestingCommonFixture
 	CPPUNIT_TEST(versionArgTest);
 	CPPUNIT_TEST(helpArgTest);
 	CPPUNIT_TEST(engineInitTest);
+	CPPUNIT_TEST(engineInitStressTest);
 	CPPUNIT_TEST(disassembleTest);
 	CPPUNIT_TEST(disassembleRangeTestDeliminatorsTest);
 	CPPUNIT_TEST(disassembleRangeTestDefaultEquivilenceTest);
@@ -43,6 +44,10 @@ protected:
 	Perform a full engine init, but don't do any analysis
 	*/
 	void engineInitTest(void);
+	/*
+	To make sure we are cleaning up the engine correctly
+	*/
+	void engineInitStressTest(void);
 	/*
 	Disassemble the default binary
 	*/

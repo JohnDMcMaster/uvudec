@@ -61,6 +61,15 @@ void UVDUvudecUnitTest::engineInitTest(void)
 	deinit();
 }
 
+void UVDUvudecUnitTest::engineInitStressTest(void)
+{
+	for( int i = 0; i < 5; ++i )
+	{
+		generalInit();
+		deinit();
+	}
+}
+
 void UVDUvudecUnitTest::disassembleTest(void)
 {
 	std::string output;
