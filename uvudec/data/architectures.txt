@@ -40,6 +40,8 @@ arm.v4t
 arm.v5
 arm.v5t
 arm.v5te
+# Game Boy Advance
+arm.7.armv7tdmi
 # Intel XScale
 # "The XScale, a microprocessor core, is Intel's and Marvell's implementation of the ARMv5 architecture,
 # and consists of several distinct families: IXP, IXC, IOP, PXA and CE"
@@ -426,7 +428,11 @@ xstormy16
 # Zilog Z80
 z80
 # z80.full
-z# 80.strict
+# z80.strict
+# This has a modified ISA, but its GameBoy derrivative
+# Both GB and GBC ISA's are identical or at least nearly so
+# Note Advance is ARM
+z80.game_boy
 
 # r800
 
