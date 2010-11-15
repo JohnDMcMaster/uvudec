@@ -4,6 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvd/architecture/registry.h"
 #include "uvd/config/arg_util.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/config.h"
@@ -88,6 +89,8 @@ UVDConfig::UVDConfig()
 	m_functionIndexFilename = "index.func";
 	
 	m_configFileLoader = NULL;
+	
+	m_architectureRegistry = NULL;
 }
 
 UVDConfig::~UVDConfig()
@@ -211,6 +214,8 @@ uv_err_t UVDConfig::processParseMain()
 	printf_debug("m_verbose_args: %d, m_verbose_init: %d, m_verbose_processing: %d, m_verbose_analysis: %d, m_verbose_printing: %d\n",
 			m_verbose_args, m_verbose_init, m_verbose_processing, m_verbose_analysis, m_verbose_printing);
 
+	uv_assert_err_ret(m_architectureRegistry->init());
+
 	return UV_ERR_OK;
 }
 
@@ -229,6 +234,10 @@ uv_err_t UVDConfig::init()
 
 	m_configFileLoader = new UVDConfigFileLoader();
 	uv_assert_ret(m_configFileLoader);
+	
+	m_architectureRegistry = new UVDArchitectureRegistry();
+	uv_assert_ret(m_architectureRegistry);
+	m_architectureRegistry->m_config = this;
 	
 	uv_assert_err_ret(initializeTypePrefixes());
 
@@ -723,6 +732,12 @@ uv_err_t UVDConfig::initializeTypePrefixes()
 	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_INIT, "init", "INIT"));
 	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_ANALYSIS, "analysis", "ANALYSIS"));
 	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDConfig::getDataDir(std::string &out)
+{
+	out = m_installDir + "/data";
 	return UV_ERR_OK;
 }
 

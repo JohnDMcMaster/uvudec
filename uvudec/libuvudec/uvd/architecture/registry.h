@@ -31,15 +31,20 @@ public:
 	UVDRegisteredArchitecture();
 	~UVDRegisteredArchitecture();
 		
+	uv_err_t getArchitectures(const std::string &prefix, std::set<std::string> &out);
+
 public:
-	std::map<std::string, UVDRegisteredArchitecture> m_architectures;
+	std::map<std::string, UVDRegisteredArchitecture *> m_architectures;
 };
 
+class UVDConfig;
 class UVDArchitectureRegistry
 {	
 public:
 	UVDArchitectureRegistry();
 	~UVDArchitectureRegistry();
+	
+	uv_err_t init();
 	
 	//If nothing even at the base level matches, return UV_ERR_NOTFOUND
 	uv_err_t bestMatch(const std::string &in, std::string &out);
@@ -47,9 +52,12 @@ public:
 	uv_err_t registerArchitecture(const std::string &architecture);
 	//Don't return error if already present
 	uv_err_t ensureArchitectureRegistered(const std::string &architecture);
+	uv_err_t getArchitectures(std::set<std::string> &out);
+	uv_err_t debugPrintArchitectures();
 
 public:
 	UVDRegisteredArchitecture m_architectures;
+	UVDConfig *m_config;
 };
 
 #endif

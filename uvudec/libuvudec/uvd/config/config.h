@@ -65,6 +65,7 @@ public:
 General configuration options
 Not related to formatting of a specific compiler (language)
 */
+class UVDArchitectureRegistry;
 class UVDConfig
 {
 public:
@@ -165,6 +166,9 @@ public:
 	void printHelp();
 	void printVersion();
 
+	//The common data dir
+	uv_err_t getDataDir(std::string &out);
+
 protected:
 	// ~/.uvudec file
 	//Should be called before parseMain()...move this into init()
@@ -177,7 +181,7 @@ protected:
 
 	uv_err_t nextAddressState(uint32_t start, uint32_t *ret, uint32_t targetState);
 	uv_err_t lastAddressState(uint32_t start, uint32_t *ret, uint32_t targetState);
-
+	
 public:
 	//TODO: move these into a general config structure?
 
@@ -324,6 +328,9 @@ public:
 
 	//<propertyForm, numeric flag>
 	std::map<std::string, uint32_t> m_propertyFlagMap;
+	
+	//Used for selecting UVD to initialize
+	UVDArchitectureRegistry *m_architectureRegistry;
 };
 
 #ifndef SWIG
