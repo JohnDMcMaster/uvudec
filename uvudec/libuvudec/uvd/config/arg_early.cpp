@@ -9,9 +9,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/config/arg_property.h"
 #include "uvd/config/config.h"
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	//If present
@@ -19,7 +19,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uint32_t firstArgNum = 0;
 	bool firstArgBool = true;
 
-	config = g_config;
+	printf_debug("argParser, arg: %s, user: 0x%08X\n", argConfig->m_propertyForm.c_str(), (int)user);
+	config = (UVDConfig *)user;
 	uv_assert_ret(config);
 	uv_assert_ret(config->m_argv);
 
@@ -113,20 +114,20 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	std::string mainPluginDir;
 	
 	//Plugin
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_NAME, 0, "plugin", "activate given plugin name", 1, argParser, false, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin load search path", 1, argParser, false, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin load search path", 1, argParser, false, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_PLUGIN_ACTIVATE_ALL, 0, "all-plugins", "load/activate all plugins found (use with caution)", 1, argParser, true, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_PLUGIN_NAME, 0, "plugin", "activate given plugin name", 1, argParser, false, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_PLUGIN_APPEND_PATH, 0, "plugin-path", "append dir to plugin load search path", 1, argParser, false, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_PLUGIN_PREPEND_PATH, 0, "plugin-path-prepend", "prepend dir to plugin load search path", 1, argParser, false, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_PLUGIN_ACTIVATE_ALL, 0, "all-plugins", "load/activate all plugins found (use with caution)", 1, argParser, true, "", true));
 	
 	//Debug
 	//NOTE: type debug flags are automaticlly registered along with the type
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_IGNORE_ERRORS, 0, "ignore-errors", "ignore nonfatal errors", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_SUPPRESS_ERRORS, 0, "suppress-errors", "suprress printing of warnings and nonfatal errors", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true, "", true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_IGNORE_ERRORS, 0, "ignore-errors", "ignore nonfatal errors", 1, argParser, true, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_SUPPRESS_ERRORS, 0, "suppress-errors", "suprress printing of warnings and nonfatal errors", 1, argParser, true, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true, "", true));
 
 	//So we can ignore arg meant for later
-	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, "", 0, true, true, true));
+	uv_assert_err_ret(config->registerDefaultArgument(argParser, "", 0, true, true, true));
 
 	//FIXME XXX TODO: hack until I can have startup config file variables
 	mainPluginDir = config->m_installDir + "/lib/plugin";

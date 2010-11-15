@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/types.h"
 
-uv_err_t initFLIRTSharedConfig();
+class UVDConfig;
+uv_err_t UVDInitFLIRTSharedConfig(UVDConfig *config);
 
 #endif

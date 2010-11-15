@@ -10,26 +10,24 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
-uv_err_t initFLIRTSharedConfig()
+uv_err_t UVDInitFLIRTSharedConfig(UVDConfig *config)
 {
-	uv_assert_ret(g_config);
-
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_FLAIR_COMPATIBILITY, 'f', "flair", "try to be FLAIR like", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH, 0, "sig-min-length", "minimum (unrelocatable) signature length, default 4 bytes", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE, 0, "pat-trailing-space", "always put a space after references (even if at line end)", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES, 0, "pat-prefix-underscores", "prefix underscores to symbols in certain object formats", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "pat-functions-as-modules", "don't group functions into modules", 1, argParser, true));	
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN, 0, "pat-public-name-length-min", "minium length for a public name not to be considered unknown", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_NEWLINE, 0, "pat-newline", "line termination, lf or crlf", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "Object library (ELF, OMF, etc)", 1, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "pat file (default: stdout)", 1, argParser, false));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_FLAIR_COMPATIBILITY, 'f', "flair", "try to be FLAIR like", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH, 0, "sig-min-length", "minimum (unrelocatable) signature length, default 4 bytes", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_PAT_REFERENCE_TRAILING_SPACE, 0, "pat-trailing-space", "always put a space after references (even if at line end)", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES, 0, "pat-prefix-underscores", "prefix underscores to symbols in certain object formats", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "pat-functions-as-modules", "don't group functions into modules", 1, argParser, true));	
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_PAT_PUBLIC_NAME_LENGTH_MIN, 0, "pat-public-name-length-min", "minium length for a public name not to be considered unknown", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_PAT_NEWLINE, 0, "pat-newline", "line termination, lf or crlf", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "Object library (ELF, OMF, etc)", 1, argParser, false));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "pat file (default: stdout)", 1, argParser, false));
 
 	return UV_ERR_OK;	
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	UVDConfigFLIRT *flirtConfig = NULL;
@@ -38,7 +36,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uint32_t firstArgNum = 0;
 	bool firstArgBool = true;
 	
-	config = g_config;
+	config = (UVDConfig *)config;
 	uv_assert_ret(config);
 	flirtConfig = &config->m_flirt;
 	uv_assert_ret(flirtConfig);

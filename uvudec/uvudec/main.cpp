@@ -53,7 +53,7 @@ static uv_err_t runTasks()
 	if( g_config->m_targetFileName.empty() )
 	{
 		printf_error("Target file not specified\n");
-		UVDPrintHelp();
+		g_config->printHelp();
 		uv_assert(UV_ERR_GENERAL);
 	}
 
@@ -109,7 +109,7 @@ error:
 	return rc;
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	//If present

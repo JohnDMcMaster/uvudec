@@ -279,7 +279,7 @@ uv_err_t UVDAnalyzer::init()
 #endif
 
 	//Create a blank archive to fill from current program
-	m_curDb = new UVDAnalysisDBArchive();
+	m_curDb = new UVDAnalysisDBArchive(this);
 	uv_assert_ret(m_curDb);
 	//uv_assert_err_ret(m_curDb->init());
 	

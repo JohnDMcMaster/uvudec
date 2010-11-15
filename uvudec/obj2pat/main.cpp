@@ -28,7 +28,7 @@ static const char *GetVersion()
 	return UVUDEC_VER_STRING;
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	UVDConfigFLIRT *flirtConfig = NULL;
@@ -98,7 +98,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 uv_err_t initProgConfig()
 {
-	uv_assert_err_ret(initFLIRTSharedConfig());
+	uv_assert_err_ret(UVDInitFLIRTSharedConfig(g_config));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
@@ -160,13 +160,13 @@ uv_err_t uvmain(int argc, char **argv)
 	if( flirtConfig->m_targetFiles.empty() )
 	{
 		printf_error("Target file(s) not specified\n");
-		UVDPrintHelp();
+		g_config->printHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	if( flirtConfig->m_targetFiles.size() != 1 )
 	{
 		printf_error("requires exactly 1 target file, got %d\n", flirtConfig->m_targetFiles.size());
-		UVDPrintHelp();
+		g_config->printHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	inputFile = flirtConfig->m_targetFiles[0];

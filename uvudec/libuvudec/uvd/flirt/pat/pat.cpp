@@ -119,7 +119,9 @@ uv_err_t UVDFLIRTPatternGenerator::patLineToFunction(const std::string &in, UVDF
 	function->m_totalLength = strtol(sTotalLen.c_str(), NULL, 16);
 
 	printf_flirt_debug("going to load seq\n");
-	leadingSignatureLength = uvd_min(function->m_totalLength, g_config->m_flirt.m_patLeadingLength);
+	uint32_t leadingLengthConfig = 0x20;
+	//leadingLengthConfig = m_flirt->m_uvd->m_config->m_flirt.m_patLeadingLength;
+	leadingSignatureLength = uvd_min(function->m_totalLength, leadingLengthConfig);
 	uv_assert_err_ret(function->m_sequence.fromStringCore(sLeadingSignature, leadingSignatureLength));
 	printf_flirt_debug("loaded seq from string: %s\n", function->m_sequence.toString().c_str());
 

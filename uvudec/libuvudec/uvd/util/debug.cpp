@@ -21,8 +21,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 static const char *g_last_func = NULL;
 uint32_t g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
-//<propertyForm, numeric flag>
-static std::map<std::string, uint32_t> g_propertyFlagMap;
 
 static void uvd_signal_handler(int sig)
 {
@@ -153,81 +151,6 @@ const char *get_last_func()
 	return g_last_func;
 }
 
-static std::string argStringToDebugFlagProperty(const std::string &printPrefix)
-{
-	return std::string("debug.flag.") + printPrefix;
-}
-
-static std::string argStringToDebugFlagLongForm(const std::string &printPrefix)
-{
-	return std::string("debug-") + printPrefix;
-}
-
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
-{
-	UVDConfig *config = NULL;
-	uint32_t typeFlag = 0;
-	
-	config = g_config;
-	uv_assert_ret(config);
-	uv_assert_ret(argConfig);
-
-	//Map our property to a flag
-	uv_assert_ret(g_propertyFlagMap.find(argConfig->m_propertyForm) != g_propertyFlagMap.end());
-	typeFlag = g_propertyFlagMap[argConfig->m_propertyForm];
-		
-	if( argumentArguments.empty() )
-	{
-		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, true));
-	}
-	else
-	{
-		std::string firstArg;
-
-		firstArg = argumentArguments[0];
-		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, UVDArgToBool(firstArg)));
-	}
-	uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &printPrefix)
-{
-	std::string propertyForm = argStringToDebugFlagProperty(argName);
-	
-	uv_assert_ret(g_config);
-	uv_assert_ret(g_config->m_modulePrefixes.find(typeFlag) == g_config->m_modulePrefixes.end());
-	g_config->m_modulePrefixes[typeFlag] = printPrefix;
-	g_propertyFlagMap[propertyForm] = typeFlag;
-	//static std::map<std::string, uint32_t> g_propertyFlagMap;
-	
-	
-	uv_assert_err_ret(g_config->registerArgument(propertyForm,
-			0, argStringToDebugFlagLongForm(argName),
-			"set given debug flag",
-			1,
-			argParser,
-			true,
-			"",
-			true));
-	
-	return UV_ERR_OK;
-}
-
-static uv_err_t initializeTypePrefixes()
-{
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_GENERAL, "general", ""));
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_FLIRT, "flirt", "FLIRT"));
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_PLUGIN, "plugin", "PLUGIN"));
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_PROCESSING, "processing", "PROCESSING"));
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_ARGS, "args", "ARGS"));
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_INIT, "init", "INIT"));
-	uv_assert_err_ret(UVDRegisterTypePrefix(UVD_DEBUG_TYPE_ANALYSIS, "analysis", "ANALYSIS"));
-	
-	return UV_ERR_OK;
-}
-
 uv_err_t UVDDebugInit()
 {
 	//Initially we log to console until a "real" log is setup which may be an actual file
@@ -237,7 +160,6 @@ uv_err_t UVDDebugInit()
 	g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
 	signal(SIGSEGV, uvd_signal_handler);
 	signal(SIGFPE, uvd_signal_handler);
-	uv_assert_err_ret(initializeTypePrefixes());
 	return UV_ERR_OK;
 }
 

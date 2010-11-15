@@ -21,7 +21,7 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 #include "uvd/plugin/engine.h"
 #include <vector>
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
 /*
 UVDArgConfigs
@@ -44,11 +44,12 @@ uv_err_t UVDArgConfigs::registerDefaultArgument(UVDArgConfigHandler handler,
 		const std::string &helpMessage,
 		uint32_t minRequired,
 		bool combine,
-		bool alwaysCall)
+		bool alwaysCall,
+		void *user)
 {
 	UVDArgConfig *argConfig = NULL;
 
-	argConfig = new UVDArgConfig(handler, helpMessage, minRequired, combine, alwaysCall);
+	argConfig = new UVDArgConfig(handler, helpMessage, minRequired, combine, alwaysCall, user);
 	uv_assert_ret(argConfig);
 	m_argConfigs[""] = argConfig;
 
@@ -61,11 +62,13 @@ uv_err_t UVDArgConfigs::registerArgument(const std::string &propertyForm,
 		std::string helpMessageExtra,
 		uint32_t numberExpectedValues,
 		UVDArgConfigHandler handler,
-		bool hasDefault)
+		bool hasDefault,
+		void *user)
 {
 	UVDArgConfig *argConfig = NULL;
 		
-	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault);
+	uv_assert_ret(user);
+	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault, user);
 	uv_assert_ret(argConfig);
 	m_argConfigs[propertyForm] = argConfig;
 
@@ -189,7 +192,8 @@ UVDArgConfig::UVDArgConfig(UVDArgConfigHandler handler,
 		const std::string &helpMessage,
 		uint32_t minRequired,
 		bool combine,
-		bool alwaysCall)
+		bool alwaysCall,
+		void *user)
 {
 	//Union full zero
 	m_shortForm = 0;
@@ -199,6 +203,7 @@ UVDArgConfig::UVDArgConfig(UVDArgConfigHandler handler,
 	m_alwaysCall = alwaysCall;
 	m_numberExpectedValues = minRequired;
 	m_helpMessage = helpMessage;
+	m_user = user;
 }
 		
 UVDArgConfig::UVDArgConfig(const std::string &propertyForm,
@@ -207,7 +212,8 @@ UVDArgConfig::UVDArgConfig(const std::string &propertyForm,
 		std::string helpMessageExtra,
 		uint32_t numberExpectedValues,
 		UVDArgConfigHandler handler,
-		bool hasDefault)
+		bool hasDefault,
+		void *user)
 {
 	m_propertyForm = propertyForm;
 	m_shortForm = shortForm;
@@ -217,6 +223,7 @@ UVDArgConfig::UVDArgConfig(const std::string &propertyForm,
 	m_numberExpectedValues = numberExpectedValues;
 	m_handler = handler;
 	m_hasDefault = hasDefault;
+	m_user = user;
 }
 
 UVDArgConfig::~UVDArgConfig()
@@ -347,7 +354,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 			//And call their handler
 			if( !ignoreEarlyArg )
 			{
-				uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments);
+				uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments, matchedConfig->m_user);
 				if( UV_FAILED(handlerRc) )
 				{
 					printf_args_debug("handler returned error processing argument: %s\n", parsedArg.m_raw.c_str());
@@ -375,7 +382,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 		if( nakedConfig->m_combine || (nakedConfig->m_alwaysCall && nakedArgs.empty()) )
 		{
 			//And call their handler
-			uv_err_t handlerRc = nakedConfig->m_handler(nakedConfig, nakedArgs);
+			uv_err_t handlerRc = nakedConfig->m_handler(nakedConfig, nakedArgs, nakedConfig->m_user);
 			uv_assert_err_ret(handlerRc);
 			//Some option like help() has been called that means we should abort program
 			if( handlerRc == UV_ERR_DONE )
@@ -388,22 +395,22 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDInitArgConfig()
+uv_err_t UVDConfig::initArgConfig()
 {
 	//Now add our arguments
 	
 	//Actions
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", 0, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", 0, argParser, false));
+	uv_assert_err_ret(registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", 0, argParser, false));
+	uv_assert_err_ret(registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", 0, argParser, false));
 	
 	//Analysis target related
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS_EXCLUDE, 0, "addr-exclude", "exclusion address range (, or - separated)", 1, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_ADDRESS, 0, "analysis-address", "only output analysis data for specified address", 1, argParser, false));
+	uv_assert_err_ret(registerArgument(UVD_PROP_TARGET_ADDRESS_INCLUDE, 0, "addr-include", "inclusion address range (, or - separated)", 1, argParser, false));
+	uv_assert_err_ret(registerArgument(UVD_PROP_TARGET_ADDRESS_EXCLUDE, 0, "addr-exclude", "exclusion address range (, or - separated)", 1, argParser, false));
+	uv_assert_err_ret(registerArgument(UVD_PROP_TARGET_ADDRESS, 0, "analysis-address", "only output analysis data for specified address", 1, argParser, false));
 
 	//Analysis
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ANALYSIS_ONLY, 0, "analysis-only", "only do analysis, don't print data", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ANALYSIS_FLOW_TECHNIQUE, 0, "flow-analysis",
+	uv_assert_err_ret(registerArgument(UVD_PROP_ANALYSIS_ONLY, 0, "analysis-only", "only do analysis, don't print data", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_ANALYSIS_FLOW_TECHNIQUE, 0, "flow-analysis",
 			"how to determine next instruction to analyze",
 				"\tlinear (linear sweep): start at beginning, read all instructions linearly, then find jump/calls (default)\n"
 				"\ttrace (recursive descent): start at all vectors, analyze all segments called/branched recursivly\n"
@@ -411,16 +418,16 @@ uv_err_t UVDInitArgConfig()
 			1, argParser, false));
 
 	//Output
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_OPCODE_USAGE, 0, "opcode-usage", "opcode usage count table", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_JUMPED_ADDRESSES, 0, "print-jumped-addresses", "whether to print information about jumped to addresses (*1)", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_CALLED_ADDRESSES, 0, "print-called-addresses", "whether to print information about called to addresses (*1)", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_OPCODE_USAGE, 0, "opcode-usage", "opcode usage count table", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_JUMPED_ADDRESSES, 0, "print-jumped-addresses", "whether to print information about jumped to addresses (*1)", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_CALLED_ADDRESSES, 0, "print-called-addresses", "whether to print information about called to addresses (*1)", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
 
 	return UV_ERR_OK;	
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	//If present
@@ -428,7 +435,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uint32_t firstArgNum = 0;
 	bool firstArgBool = true;
 	
-	config = g_config;
+	config = (UVDConfig *)user;
 	uv_assert_ret(config);
 	uv_assert_ret(config->m_argv);
 
@@ -446,12 +453,12 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	*/
 	if( argConfig->m_propertyForm == UVD_PROP_ACTION_HELP )
 	{
-		UVDPrintHelp();
+		config->printHelp();
 		return UV_ERR_DONE;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_VERSION )
 	{
-		UVDPrintVersion();
+		config->printVersion();
 		return UV_ERR_DONE;
 	}
 	/*
@@ -515,7 +522,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		else
 		{
 			printf_error("unknown flow analysis type: %s\n", arg.c_str());
-			UVDPrintHelp();
+			config->printHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
@@ -552,19 +559,24 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	return UV_ERR_OK;
 }
 
+void UVDConfig::printVersion()
+{
+	if( versionPrintPrefixThunk )
+	{
+		versionPrintPrefixThunk();
+	}
+	UVDPrintVersion();
+}
+
 void UVDPrintVersion()
 {
-	if( g_config && g_config->versionPrintPrefixThunk )
-	{
-		g_config->versionPrintPrefixThunk();
-	}
 	printf_help("libuvudec version %s\n", UVDGetVersion());
 	printf_help("Copyright 2009-2010 John McMaster <JohnDMcMaster@gmail.com>\n");
 }
 
-static uv_err_t UVDPrintLoadedPlugins()
+uv_err_t UVDConfig::printLoadedPlugins()
 {
-	UVDPluginEngine *pluginEngine = &g_config->m_plugin.m_pluginEngine;
+	UVDPluginEngine *pluginEngine = &m_plugin.m_pluginEngine;
 
 	printf_help("Loaded plugins (%d / %d):\n", pluginEngine->m_loadedPlugins.size(), pluginEngine->m_plugins.size());
 
@@ -600,17 +612,16 @@ uv_err_t UVDArgConfig::print(const std::string &indent) const
 	return UV_ERR_OK;
 }
 
-static uv_err_t UVDPrintUsage()
+uv_err_t UVDConfig::printUsage()
 {
 	const char *program_name = "";
 	UVDPluginEngine *pluginEngine = NULL;
 	std::string argsExtra;
 	
-	uv_assert_ret(g_config);
-	pluginEngine = &g_config->m_plugin.m_pluginEngine;
+	pluginEngine = &m_plugin.m_pluginEngine;
 	
-	for( UVDArgConfigs::ArgConfigs::iterator iter = g_config->m_configArgs.m_argConfigs.begin();
-			iter != g_config->m_configArgs.m_argConfigs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::iterator iter = m_configArgs.m_argConfigs.begin();
+			iter != m_configArgs.m_argConfigs.end(); ++iter )
 	{
 		UVDArgConfig *argConfig = (*iter).second;
 		
@@ -621,9 +632,9 @@ static uv_err_t UVDPrintUsage()
 		}
 	}
 
-	if( g_config->m_argv )
+	if( m_argv )
 	{
-		program_name = g_config->m_argv[0];
+		program_name = m_argv[0];
 	}
 
 	printf_help("\n");
@@ -631,8 +642,8 @@ static uv_err_t UVDPrintUsage()
 	printf_help("Args:\n");
 	//Maybe standard help should alphabatize these by -- form?
 	//Detailed print should do by property since not all might have --
-	for( UVDArgConfigs::ArgConfigs::iterator iter = g_config->m_configArgs.m_argConfigs.begin();
-			iter != g_config->m_configArgs.m_argConfigs.end(); ++iter )
+	for( UVDArgConfigs::ArgConfigs::iterator iter = m_configArgs.m_argConfigs.begin();
+			iter != m_configArgs.m_argConfigs.end(); ++iter )
 	{
 		UVDArgConfig *argConfig = (*iter).second;
 		
@@ -647,10 +658,10 @@ static uv_err_t UVDPrintUsage()
 	
 	//Print special argument handling last
 	printf_help("Pre plugin load args:\n");
-	uv_assert_err_ret(g_config->m_plugin.m_earlyConfigArgs.printUsage());
+	uv_assert_err_ret(m_plugin.m_earlyConfigArgs.printUsage());
 	
 	printf_help("\n");
-	UVDPrintLoadedPlugins();
+	printLoadedPlugins();
 
 	//Now do it by plugin type
 	//this isn't terribly efficient, but who cares we should only have a handful of plugins
@@ -684,9 +695,9 @@ static uv_err_t UVDPrintUsage()
 	return UV_ERR_OK;
 }
 
-void UVDPrintHelp()
+void UVDConfig::printHelp()
 {
-	UVDPrintVersion();
-	UVDPrintUsage();
+	printVersion();
+	printUsage();
 }
 

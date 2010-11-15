@@ -17,8 +17,19 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDConfig *g_config = NULL;
 
+static std::string argStringToDebugFlagProperty(const std::string &printPrefix)
+{
+	return std::string("debug.flag.") + printPrefix;
+}
+
+static std::string argStringToDebugFlagLongForm(const std::string &printPrefix)
+{
+	return std::string("debug-") + printPrefix;
+}
+
 UVDConfig::UVDConfig()
 {
+	//printf("UVDConfig::UVDConfig(this=0x%08X)\n", (int)this);
 	if( g_config )
 	{
 		printf_error("config alread initialized!\n");
@@ -163,7 +174,7 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 		//From a bad input argument?
 		if( processRc == UV_ERR_NOTFOUND )
 		{
-			UVDPrintHelp();
+			printHelp();
 			return UV_ERR_NOTFOUND;
 		}
 		else
@@ -218,12 +229,15 @@ uv_err_t UVDConfig::init()
 
 	m_configFileLoader = new UVDConfigFileLoader();
 	uv_assert_ret(m_configFileLoader);
+	
+	uv_assert_err_ret(initializeTypePrefixes());
 
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDConfig::deinit()
-{	
+{
+	//printf("UVDConfig::deinit()\n");
 	return UV_ERR_OK;
 }
 
@@ -557,15 +571,20 @@ uv_err_t UVDConfig::registerDefaultArgument(UVDArgConfigHandler handler,
 		uint32_t minRequired,
 		bool combine,
 		bool alwaysCall,
-		bool early)
+		bool early,
+		void *user)
 {
+	if( user == NULL )
+	{
+		user = this;
+	}
 	if( early )
 	{
-		uv_assert_err_ret(m_plugin.m_earlyConfigArgs.registerDefaultArgument(handler, helpMessage, minRequired, combine, alwaysCall));
+		uv_assert_err_ret(m_plugin.m_earlyConfigArgs.registerDefaultArgument(handler, helpMessage, minRequired, combine, alwaysCall, user));
 	}
 	else
 	{
-		uv_assert_err_ret(m_configArgs.registerDefaultArgument(handler, helpMessage, minRequired, combine, alwaysCall));
+		uv_assert_err_ret(m_configArgs.registerDefaultArgument(handler, helpMessage, minRequired, combine, alwaysCall, user));
 	}
 
 	return UV_ERR_OK;
@@ -578,7 +597,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		UVDArgConfigHandler handler,
 		bool hasDefault,
 		const std::string &plugin,
-		bool early)
+		bool early,
+		void *user)
 {
 	return UV_DEBUG(registerArgument(propertyForm,
 			shortForm, longForm, 
@@ -588,7 +608,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 			handler,
 			hasDefault,
 			plugin,
-			early));
+			early,
+			user));
 }
 		
 uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
@@ -599,8 +620,13 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 		UVDArgConfigHandler handler,
 		bool hasDefault,
 		const std::string &plugin,
-		bool early)
+		bool early,
+		void *user)
 {
+	if( user == NULL )
+	{
+		user = this;
+	}
 	//Should this be parsed before plugins are loaded?
 	if( early )
 	{
@@ -610,7 +636,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 				helpMessageExtra,
 				numberExpectedValues,
 				handler,
-				hasDefault));
+				hasDefault,
+				user));
 	}
 	else
 	{
@@ -620,7 +647,8 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 				helpMessageExtra,
 				numberExpectedValues,
 				handler,
-				hasDefault));
+				hasDefault,
+				user));
 		
 		if( !plugin.empty() )
 		{
@@ -634,24 +662,67 @@ uv_err_t UVDConfig::registerArgument(const std::string &propertyForm,
 	return UV_ERR_OK;
 }
 
-//Called before debugging initialized
-uv_err_t UVDInitConfigEarly()
+static uv_err_t prefixArgParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
-	g_config = new UVDConfig();
-	uv_assert_ret(g_config);
-	uv_assert_err_ret(g_config->init());
+	UVDConfig *config = NULL;
+	uint32_t typeFlag = 0;
+	
+	config = (UVDConfig *)user;
+	uv_assert_ret(config);
+	uv_assert_ret(argConfig);
+
+	//Map our property to a flag
+	uv_assert_ret(config->m_propertyFlagMap.find(argConfig->m_propertyForm) != config->m_propertyFlagMap.end());
+	typeFlag = config->m_propertyFlagMap[argConfig->m_propertyForm];
+		
+	if( argumentArguments.empty() )
+	{
+		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, true));
+	}
+	else
+	{
+		std::string firstArg;
+
+		firstArg = argumentArguments[0];
+		uv_assert_err_ret(UVDSetDebugFlag(typeFlag, UVDArgToBool(firstArg)));
+	}
+	uv_assert_err_ret(config->ensureDebugLevel(UVD_DEBUG_TEMP));
 
 	return UV_ERR_OK;
 }
 
-//Called after debugging initialized
-uv_err_t UVDInitConfig()
+uv_err_t UVDConfig::registerTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &printPrefix)
 {
-	//libuvudec shared config
-	uv_assert_err_ret(UVDInitArgConfig());
-	//Program specific config
-	//uv_assert_err_ret(initProgConfig());
+	std::string propertyForm = argStringToDebugFlagProperty(argName);
+	
+	uv_assert_ret(m_modulePrefixes.find(typeFlag) == m_modulePrefixes.end());
+	m_modulePrefixes[typeFlag] = printPrefix;
+	m_propertyFlagMap[propertyForm] = typeFlag;
+	//static std::map<std::string, uint32_t> g_propertyFlagMap;
+	
+	uv_assert_err_ret(registerArgument(propertyForm,
+			0, argStringToDebugFlagLongForm(argName),
+			"set given debug flag",
+			1,
+			prefixArgParser,
+			true,
+			"",
+			true,
+			this));
+	
+	return UV_ERR_OK;
+}
 
+uv_err_t UVDConfig::initializeTypePrefixes()
+{
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_GENERAL, "general", ""));
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_FLIRT, "flirt", "FLIRT"));
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_PLUGIN, "plugin", "PLUGIN"));
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_PROCESSING, "processing", "PROCESSING"));
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_ARGS, "args", "ARGS"));
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_INIT, "init", "INIT"));
+	uv_assert_err_ret(registerTypePrefix(UVD_DEBUG_TYPE_ANALYSIS, "analysis", "ANALYSIS"));
+	
 	return UV_ERR_OK;
 }
 

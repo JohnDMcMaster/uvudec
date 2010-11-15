@@ -38,7 +38,7 @@ uvd_bool_t g_propagateArgs = false;
 #define UVD_PROP_TESTING_FIXTURE			"testing.fixture"
 #define UVD_PROP_TESTING_ARGS				"testing.args"
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments);
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
 static uv_err_t initArgs()
 {
@@ -50,10 +50,10 @@ static uv_err_t initArgs()
 	g_fixtureNameMap["uvudec"] = UVDUvudecUnitTest::suite();
 	
 	uv_assert_err_ret(g_argRegistry.newArgConfgs(&g_configArgs));
-	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", "", 0, argParser, false));
-	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", "", 0, argParser, false));
-	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_TESTING_FIXTURE, 0, "fixture", "add a fixture to be tested", "", 1, argParser, false));
-	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_TESTING_ARGS, 0, "args", "all future arguments passed to library initialization", "", 0, argParser, false));
+	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", "", 0, argParser, false, NULL));
+	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", "", 0, argParser, false, NULL));
+	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_TESTING_FIXTURE, 0, "fixture", "add a fixture to be tested", "", 1, argParser, false, NULL));
+	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_TESTING_ARGS, 0, "args", "all future arguments passed to library initialization", "", 0, argParser, false, NULL));
 
 	return UV_ERR_OK;
 }
@@ -75,7 +75,7 @@ static uv_err_t printfHelp()
 	return UV_ERR_OK;
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	//If present
 	std::string firstArg;

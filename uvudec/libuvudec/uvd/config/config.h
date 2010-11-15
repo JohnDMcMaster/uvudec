@@ -124,13 +124,15 @@ public:
 		This is important as these may be required and we want to do error handling
 	Only one default handler can be registered, behavior is undefined if this is called twice
 	FIXME: we should have a user data item (void *)
+	If user is unset, it defaults to this
 	*/
 	uv_err_t registerDefaultArgument(UVDArgConfigHandler handler,
 			const std::string &helpMessage = "",
 			uint32_t minRequired = 0,
 			bool combine = true,
 			bool alwaysCall = true,
-			bool early = false);
+			bool early = false,
+			void *user = NULL);
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
@@ -138,7 +140,8 @@ public:
 			UVDArgConfigHandler handler,
 			bool hasDefault,
 			const std::string &plugin = "",
-			bool early = false);
+			bool early = false,
+			void *user = NULL);
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
@@ -147,10 +150,20 @@ public:
 			UVDArgConfigHandler handler,
 			bool hasDefault,
 			const std::string &plugin = "",
-			bool early = false);
+			bool early = false,
+			void *user = NULL);
 
 	//If level is not at least as verbose as level, make it
 	uv_err_t ensureDebugLevel(uint32_t level);
+
+	uv_err_t registerTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &printPrefix);
+	uv_err_t initializeTypePrefixes();
+
+	uv_err_t initArgConfig();
+	uv_err_t printLoadedPlugins();
+	uv_err_t printUsage();
+	void printHelp();
+	void printVersion();
 
 protected:
 	// ~/.uvudec file
@@ -308,11 +321,10 @@ public:
 
 	UVDPluginConfig m_plugin;
 	UVDConfigFileLoader *m_configFileLoader;
-};
 
-//The following are internal use only
-uv_err_t UVDInitConfig();
-uv_err_t UVDInitConfigEarly();
+	//<propertyForm, numeric flag>
+	std::map<std::string, uint32_t> m_propertyFlagMap;
+};
 
 #ifndef SWIG
 //Default configuration options

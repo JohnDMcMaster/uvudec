@@ -19,6 +19,7 @@ Architecture and source data file dependent
 */
 class UVDFLIRTModule;
 class UVDRuntime;
+class UVDFLIRT;
 class UVDFLIRTPatternGenerator
 {
 public:

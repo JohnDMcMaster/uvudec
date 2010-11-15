@@ -10,8 +10,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <vector>
 #include <stdio.h>
 
-UVDAnalysisDB::UVDAnalysisDB()
+UVDAnalysisDB::UVDAnalysisDB(UVDAnalyzer *analyzer)
 {
+	m_analyzer = analyzer;
 }
 
 UVDAnalysisDB::~UVDAnalysisDB()
@@ -24,7 +25,7 @@ uv_err_t UVDAnalysisDB::clear()
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-UVDAnalysisDBArchive::UVDAnalysisDBArchive()
+UVDAnalysisDBArchive::UVDAnalysisDBArchive(UVDAnalyzer *analyzer) : UVDAnalysisDB(analyzer)
 {
 }
 
@@ -214,7 +215,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 //printf("output dir: %s\n", outputDir.c_str());
 	char buff[256];
 	UVDData *data = NULL;
-	UVDConfig *config = g_config;
+	UVDConfig *config = m_analyzer->m_uvd->m_config;
 	
 	uv_assert_ret(functionInstance);
 	data = functionInstance->getData();
@@ -285,7 +286,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		out += "MD5=" + md5 + "\n";
 	}
 
-	if( g_config->m_computeFunctionRelocatableMD5 )
+	if( m_analyzer->m_uvd->m_config->m_computeFunctionRelocatableMD5 )
 	{
 		std::string md5;
 		uv_assert_err_ret(functionInstance->getRelocatableHash(md5));
@@ -342,8 +343,10 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *functio
 
 uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *functionShared)
 {
-	uv_assert_ret(g_config);	
-	if( g_config->m_analysisOutputAddresses.empty() )
+	UVDConfig *config = m_analyzer->m_uvd->m_config;
+	
+	uv_assert_ret(config);	
+	if( config->m_analysisOutputAddresses.empty() )
 	{
 		return UV_ERR_OK;
 	}
@@ -362,7 +365,7 @@ uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *funct
 	uv_assert_ret(function);
 	iFunctionAddress = function->m_offset;
 
-	if( g_config->m_analysisOutputAddresses.find(iFunctionAddress) != g_config->m_analysisOutputAddresses.end() )
+	if( config->m_analysisOutputAddresses.find(iFunctionAddress) != config->m_analysisOutputAddresses.end() )
 	{
 		return UV_ERR_OK;
 	}
@@ -375,6 +378,7 @@ uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *funct
 uv_err_t UVDAnalysisDBArchive::saveData(const std::string &outputDbFile)
 {
 	std::string outputDir;
+	UVDConfig *uvdConfig = m_analyzer->m_uvd->m_config;
 	
 	printf_analysis_debug("saving data\n");
 	
@@ -387,7 +391,7 @@ uv_err_t UVDAnalysisDBArchive::saveData(const std::string &outputDbFile)
 	outputDir = outputDbFile;
 	
 	//Do one conglamerate file for now, but allow breaking up if required
-	std::string configFile = outputDbFile + "/" + g_config->m_functionIndexFilename;
+	std::string configFile = outputDbFile + "/" + uvdConfig->m_functionIndexFilename;
 	std::string config;
 	
 	printf_debug_level(UVD_DEBUG_SUMMARY, "Iterating over functions: %d\n", m_functions.size());
@@ -453,7 +457,7 @@ uv_err_t UVDAnalysisDBArchive::queryFunctionByBinary(UVDDataChunk *dataChunk, st
 	return UV_ERR_OK;
 }
 
-UVDAnalysisDBConcentrator::UVDAnalysisDBConcentrator()
+UVDAnalysisDBConcentrator::UVDAnalysisDBConcentrator(UVDAnalyzer *analyzer) : UVDAnalysisDB(analyzer)
 {
 }
 

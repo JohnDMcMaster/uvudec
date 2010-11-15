@@ -20,6 +20,7 @@ For example, error messages will be very non-intuitive
 
 UVDConfigFileLoader::UVDConfigFileLoader()
 {
+	m_config = NULL;
 }
 
 UVDConfigFileLoader::~UVDConfigFileLoader()
@@ -29,6 +30,7 @@ UVDConfigFileLoader::~UVDConfigFileLoader()
 uv_err_t UVDConfigFileLoader::init(UVDConfig *config)
 {
 	uv_assert_ret(config);
+	m_config = config;
 	uv_assert_err_ret(earlyArgParse(config));
 	printf_args_debug("init done\n");
 	return UV_ERR_OK;
@@ -45,7 +47,7 @@ uv_err_t UVDConfigFileLoader::earlyArgParse(UVDConfig *config)
 	/*
 	Load default configuration shipped with program
 	*/
-	programRcFile = g_config->m_installDir + "/config";
+	programRcFile = m_config->m_installDir + "/config";
 	rc = loadFile(programRcFile);
 	printf_args_debug("finished first\n");
 	if( UV_FAILED(rc) && rc != UV_ERR_NOTSUPPORTED )
@@ -77,7 +79,7 @@ uv_err_t UVDConfigFileLoader::loadFile(const std::string &file)
 	
 	configFile = new UVDConfigFile();
 	uv_assert_ret(configFile);
-	rc = configFile->init(file);
+	rc = configFile->init(this, file);
 	if( UV_FAILED(rc) )
 	{
 		printf_args_debug("config file failed init\n");
@@ -101,15 +103,17 @@ UVDConfigFile
 
 UVDConfigFile::UVDConfigFile()
 {
+	m_loader = NULL;
 }
 
 UVDConfigFile::~UVDConfigFile()
 {
 }
 
-uv_err_t UVDConfigFile::init(const std::string &filename)
+uv_err_t UVDConfigFile::init(UVDConfigFileLoader *loader, const std::string &filename)
 {
-
+	uv_assert_ret(loader);
+	m_loader = loader;
 #if 0
 //#ifdef USING_JANSSON
 #if 0
@@ -247,13 +251,13 @@ printf_args_debug("root type: %d\n", json_typeof(root));
 	}
 
 	//Combine, skipping over program name
-	g_config->m_argsEffective.insert(g_config->m_argsEffective.begin() + 1, configArgs.begin(), configArgs.end());
+	m_loader->m_config->m_argsEffective.insert(m_loader->m_config->m_argsEffective.begin() + 1, configArgs.begin(), configArgs.end());
 
 	return UV_ERR_OK;
 #endif
 }
 
-uv_err_t preprocess(const std::string in, std::string out)
+uv_err_t UVDConfigFile::preprocess(const std::string in, std::string out)
 {
 	/*
 	TODO: I'd really like comment support

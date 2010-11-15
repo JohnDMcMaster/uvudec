@@ -19,20 +19,37 @@ Do something instead like create a list of optional and required members, with p
 
 uv_err_t UVDInit()
 {
+	UVDConfig *config = NULL;
+	//printf("UVDInit()\n");
+	if( config == NULL )
+	{
+		config = new UVDConfig();
+	//printf("created config: 0x%08X\n", (int)config);
+		uv_assert_ret(config);
+		if( g_config == NULL )
+		{
+			g_config = config;
+		}
+	}
+	//Called before debugging initialized
 	//Create the g_config object so we can start to take values from it
-	uv_assert_err_ret(UVDInitConfigEarly());
+	uv_assert_err_ret(config->init());
+	
 	//Setup signal handling and basic logging
 	//Also registers type prefixes and the associated debug args
 	uv_assert_err_ret(UVDDebugInit());
+
 	//Registers libuvudec args
 	//Seems we should move this to arg parsing
-	uv_assert_err_ret(UVDInitConfig());
+	uv_assert_err_ret(config->initArgConfig());
+
 	printf_debug_level(UVD_DEBUG_PASSES, "UVDInit(): done\n");
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDDeinit()
 {
+	//printf("UVDDeinit()\n"); fflush(stdout);
 	/*
 	Removed this to move away from the g_uvd instance
 	We should work towards having multiple uvd objects

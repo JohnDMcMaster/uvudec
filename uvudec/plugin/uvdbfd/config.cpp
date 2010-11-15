@@ -10,7 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDBFDConfig *g_bfdConfig = NULL;
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	//If present

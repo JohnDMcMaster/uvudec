@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/types.h"
 
 class UVDConfig;
+class UVDConfigFileLoader;
 class UVDConfigFile
 {
 public:
@@ -17,10 +18,11 @@ public:
 	~UVDConfigFile();
 
 	static uv_err_t preprocess(const std::string in, std::string out);
-	uv_err_t init(const std::string &filename);
+	uv_err_t init(UVDConfigFileLoader *loader, const std::string &filename);
 
 public:
 	std::string m_content;
+	UVDConfigFileLoader *m_loader;
 };
 
 class UVDConfigFileLoader
@@ -35,6 +37,7 @@ public:
 
 public:
 	std::set<UVDConfigFile *> m_configFiles;
+	UVDConfig *m_config;
 };
 
 #endif

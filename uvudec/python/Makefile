@@ -32,7 +32,7 @@ include $(MAKEFILE_DEPEND_SWIG)
 
 # FIXME: generate dependencies using -MM
 # swig -c++ -python -I../libuvudec -MM uvudec.i
-dependSWIG:
+dependSWIG: gen_typemaps.i
 	$(SWIG) -MM $(SWIG_FLAGS) uvudec.i >$(MAKEFILE_DEPEND_SWIG)
 	perl -pi -e 's/cxx/cpp/g' $(MAKEFILE_DEPEND_SWIG)
 

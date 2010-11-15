@@ -51,7 +51,7 @@ static uv_err_t doConvert()
 	return rc;
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	UVDConfigFLIRT *flirtConfig = NULL;
@@ -150,21 +150,23 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 uv_err_t initProgConfig()
 {
-	uv_assert_err_ret(initFLIRTSharedConfig());
+	UVDConfig *config = g_config;
+	
+	uv_assert_err_ret(UVDInitFLIRTSharedConfig(config));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
 
-	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [.pat files, .sig file]"));	
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "functions-as-modules", "functions will not be grouped into object modules", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_VERSION, 0, "sig-version", "signature format version", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_LIB_NAME, 0, "lib-name", "library name string", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_FEATURES, 0, "features", "feature flags", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_PAD, 0, "unknown-pad", "set at your own risk/intuition/boredom", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_PROCESSOR_ID, 0, "processor-ID", "processor-ID", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_OS_TYPES, 0, "OS-types", "OS-types", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_APP_TYPES, 0, "app-types", "app-types", 1, argParser, true));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FLIRT_SIG_FILE_TYPES, 0, "file-types", "file-types", 1, argParser, true));
+	uv_assert_err_ret(config->registerDefaultArgument(argParser, " [.pat files, .sig file]"));	
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_PAT_FUNCTIONS_AS_MODULES, 0, "functions-as-modules", "functions will not be grouped into object modules", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_VERSION, 0, "sig-version", "signature format version", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_LIB_NAME, 0, "lib-name", "library name string", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_FEATURES, 0, "features", "feature flags", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_PAD, 0, "unknown-pad", "set at your own risk/intuition/boredom", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_PROCESSOR_ID, 0, "processor-ID", "processor-ID", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_OS_TYPES, 0, "OS-types", "OS-types", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_APP_TYPES, 0, "app-types", "app-types", 1, argParser, true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_FLIRT_SIG_FILE_TYPES, 0, "file-types", "file-types", 1, argParser, true));
 
 	return UV_ERR_OK;	
 }
@@ -231,7 +233,7 @@ uv_err_t uvmain(int argc, char **argv)
 	if( flirtConfig->m_targetFiles.empty() )
 	{
 		printf_error("Target file(s) not specified\n");
-		UVDPrintHelp();
+		config->printHelp();
 		uv_assert_err(UV_ERR_GENERAL);
 	}
 	

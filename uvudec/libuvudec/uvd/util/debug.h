@@ -127,7 +127,7 @@ there just aren't enough flags for things to be done very smoothly at a large sc
 typedef uint32_t uvd_debug_flag_t;
 //Return error if type already registered
 //argName ex: if "FLIRT" given, --debug-FLIRT will activate this debug flag
-uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &prefix);
+//uv_err_t UVDRegisterTypePrefix(uvd_debug_flag_t typeFlag, const std::string &argName, const std::string &prefix);
 //Get a free flag to register for debugging (and other operations?)
 uv_err_t UVDGetTypeFlag(uvd_debug_flag_t *typeFlag);
 /*

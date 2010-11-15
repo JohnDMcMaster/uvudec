@@ -11,7 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDAsmConfig *g_asmConfig = NULL;
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
 	//If present
@@ -40,7 +40,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		
 		if( UV_FAILED(g_asmConfig->setConfigInterpreterLanguage(firstArg)) )
 		{
-			UVDPrintHelp();
+			config->printHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}
@@ -50,7 +50,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		
 		if( UV_FAILED(g_asmConfig->setConfigInterpreterLanguageInterface(firstArg)) )
 		{
-			UVDPrintHelp();
+			config->printHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 	}

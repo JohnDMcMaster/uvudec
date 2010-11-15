@@ -51,7 +51,7 @@ static uv_err_t dumpFile(const std::string &fileName)
 
 static std::vector<std::string> g_inputFiles;
 static std::vector<std::string> g_argumentArguments;
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	//If present
 	std::string firstArg;
@@ -185,7 +185,7 @@ uv_err_t uvmain(int argc, char **argv)
 	else if( g_action == ACTION_NONE )
 	{
 		printf_error("target action not specified\n");
-		UVDPrintHelp();
+		config->printHelp();
 	}
 	else
 	{

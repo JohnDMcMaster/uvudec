@@ -414,6 +414,10 @@ UVD::~UVD()
 
 uv_err_t UVD::deinit()
 {
+	UVD_POKE(this);
+	UVD_POKE(this);
+	printf_debug_level(UVD_DEBUG_PASSES, "UVD::deinit, this=0x%08X, g_uvd=0x%08X, m_config=0x%08X, g_config=0x%08X\n",
+			(int)this, (int)g_uvd, (int)m_config, (int)g_config);
 	if( m_config )
 	{
 		uv_assert_err_ret(m_config->m_plugin.m_pluginEngine.onUVDDeinit());
@@ -435,6 +439,11 @@ uv_err_t UVD::deinit()
 		m_config = NULL;
 	}
 	
+	if( g_uvd == this )
+	{
+		g_uvd = NULL;
+	}
+	
 	return UV_ERR_OK;
 }
 
@@ -442,29 +451,28 @@ uv_err_t UVD::getUVDFromFileName(UVD **uvdOut, const std::string &file)
 {
 	UVD *uvd = NULL;
 	
+	//Because code needs lots of fixing before this will work
 	if( g_uvd )
 	{
-		uvd = g_uvd;	
+		printf_error("sorry, only one UVD instance supported at a time (active = 0x%08X)\n", (int)g_uvd);
+		return UV_DEBUG(UV_ERR_NOTIMPLEMENTED);
 	}
-	else
+
+	uvd = new UVD();
+	if( !uvd )
 	{
-		uvd = new UVD();
-		if( !uvd )
-		{
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		
-		uv_assert_ret(g_config);
-		uvd->m_config = g_config;
-		
-		if( UV_FAILED(uvd->initFromFileName(file)) )
-		{
-			delete uvd;
-			return UV_DEBUG(UV_ERR_GENERAL);
-		}
-		
-		g_uvd = uvd;
+		return UV_DEBUG(UV_ERR_GENERAL);
 	}
+	
+	uv_assert_ret(g_config);
+	uvd->m_config = g_config;
+	
+	if( UV_FAILED(uvd->initFromFileName(file)) )
+	{
+		delete uvd;
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}	
+	g_uvd = uvd;
 
 	uv_assert_ret(uvdOut);
 	*uvdOut = uvd;

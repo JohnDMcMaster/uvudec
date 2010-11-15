@@ -151,7 +151,6 @@ uv_err_t UVDIteratorCommon::next()
 	//UVDBenchmark nextInstructionBenchmark;
 	//uv_addr_t absoluteMaxAddress = 0;
 	
-	uv_assert_err_ret(g_config);
 	//uv_assert_err_ret(m_uvd->m_analyzer->getAddressMax(&absoluteMaxAddress));	
 	//uv_assert_ret(*this != m_uvd->end());
 
@@ -250,8 +249,6 @@ uv_err_t UVDIteratorCommon::nextCore()
 	uv_assert_ret(analyzer);
 	format = uvd->m_format;
 	uv_assert_ret(format);
-
-	uv_assert_ret(g_config);
 	
 	uv_assert_err_ret(clearBuffers());
 
@@ -635,6 +632,7 @@ uv_err_t UVDIterator::nextCore()
 	UVDBenchmark benchmark;
 	uv_addr_t startPosition = m_nextPosition;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
+	UVDConfig *config = m_uvd->m_config;
 	
 	benchmark.start();
 	
@@ -647,22 +645,22 @@ uv_err_t UVDIterator::nextCore()
 	}
 	uv_assert_ret(m_instruction->m_inst_size);
 
-	if( g_config->m_addressLabel )
+	if( config->m_addressLabel )
 	{
 		uv_assert_err_ret(nextAddressLabel(startPosition));
 	}
 
-	if( g_config->m_addressComment )
+	if( config->m_addressComment )
 	{
 		uv_assert_err_ret(nextAddressComment(startPosition));
 	}
 	
-	if( g_config->m_calledSources )
+	if( config->m_calledSources )
 	{
 		uv_assert_err_ret(nextCalledSources(startPosition));
 	}
 	
-	if( g_config->m_jumpedSources )
+	if( config->m_jumpedSources )
 	{
 		uv_assert_err_ret(nextJumpedSources(startPosition));
 	}
@@ -760,6 +758,7 @@ uv_err_t UVDIterator::nextCalledSources(uint32_t startPosition)
 	UVDAnalyzedFunction analyzedFunction;
 	UVDAnalyzedMemoryRange *memLoc = NULL;
 	UVDAnalyzedMemorySpace calledAddresses;
+	UVDConfig *config = m_uvd->m_config;
 
 	uv_assert_err_ret(m_uvd->m_analyzer->getCalledAddresses(calledAddresses));
 	if( calledAddresses.find(startPosition) == calledAddresses.end() )
@@ -785,14 +784,14 @@ uv_err_t UVDIterator::nextCalledSources(uint32_t startPosition)
 	m_indexBuffer.insert(m_indexBuffer.end(), buff);
 
 	//Print number of callees?
-	if( g_config->m_calledCount )
+	if( config->m_calledCount )
 	{
 		snprintf(buff, 256, "# References: %d", memLoc->getReferenceCount());
 		m_indexBuffer.push_back(buff);
 	}
 
 	//Print callees?
-	if( g_config->m_calledSources )
+	if( config->m_calledSources )
 	{
 		uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_CALL_DEST));
 	}
@@ -806,6 +805,7 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 	std::string sNameBlock;
 	UVDAnalyzedMemoryRange *memLoc = NULL;
 	UVDAnalyzedMemorySpace jumpedAddresses;
+	UVDConfig *config = m_uvd->m_config;
 
 	uv_assert_err_ret(m_uvd->m_analyzer->getJumpedAddresses(jumpedAddresses));
 	//Can be an entry and continue point
@@ -822,14 +822,14 @@ uv_err_t UVDIterator::nextJumpedSources(uint32_t startPosition)
 	m_indexBuffer.push_back(buff);
 
 	//Print number of references?
-	if( g_config->m_jumpedCount )
+	if( config->m_jumpedCount )
 	{
 		snprintf(buff, 256, "# References: %d", memLoc->getReferenceCount());
 		m_indexBuffer.push_back(buff);
 	}
 
 	//Print sources?
-	if( g_config->m_jumpedSources )
+	if( config->m_jumpedSources )
 	{
 		uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_JUMP_DEST));
 	}

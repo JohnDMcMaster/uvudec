@@ -27,7 +27,6 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 	uint32_t superblockMaxAddress = 0;
 	uv_addr_t absoluteMaxAddress = 0;
 	
-	uv_assert_ret(g_config);
 	uv_assert_err_ret(superblock->m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
 
 	uv_assert_ret(superblock);

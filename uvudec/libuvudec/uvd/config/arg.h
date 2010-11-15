@@ -23,7 +23,7 @@ val: trailing argument value, if arg->m_expectedValues == 1
 	would yield the string "0"
 */
 class UVDArgConfig;
-typedef uv_err_t (*UVDArgConfigHandler)(const UVDArgConfig *UVDArgConfig, std::vector<std::string> argumentArgument);
+typedef uv_err_t (*UVDArgConfigHandler)(const UVDArgConfig *UVDArgConfig, std::vector<std::string> argumentArgument, void *user);
 
 //Map of property to arg config
 //Naked handler has empty property
@@ -44,10 +44,11 @@ public:
 	~UVDArgConfigs();
 	
 	uv_err_t registerDefaultArgument(UVDArgConfigHandler handler,
-			const std::string &helpMessage = "",
-			uint32_t minRequired = 0,
-			bool combine = true,
-			bool alwaysCall = true);
+			const std::string &helpMessage,
+			uint32_t minRequired,
+			bool combine,
+			bool alwaysCall,
+			void *user);
 
 	uv_err_t registerArgument(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
@@ -55,7 +56,8 @@ public:
 			std::string helpMessageExtra,
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
-			bool hasDefault);
+			bool hasDefault,
+			void *user);
 
 	uv_err_t printUsage(const std::string &indent = "");
 
@@ -109,14 +111,16 @@ public:
 			const std::string &helpMessage,
 			uint32_t minRequired, 
 			bool combine, 
-			bool alwaysCall);
+			bool alwaysCall,
+			void *user);
 	UVDArgConfig(const std::string &propertyForm,
 			char shortForm, std::string longForm, 
 			std::string helpMessage,
 			std::string helpMessageExtra,
 			uint32_t numberExpectedValues,
 			UVDArgConfigHandler handler,
-			bool hasDefault);
+			bool hasDefault,
+			void *user);
 	~UVDArgConfig();
 
 	bool isNakedHandler() const;
@@ -169,6 +173,7 @@ public:
 		//Former is more control, but latter is what is usually needed and more convenient
 		bool m_combine;
 	};
+	void *m_user;
 };
 
 /*
@@ -222,8 +227,7 @@ public:
 	std::string m_embeddedVal;
 };
 
-uv_err_t UVDInitArgConfig();
-void UVDPrintHelp();
+//uv_err_t UVDInitArgConfig();
 void UVDPrintVersion();
 
 #endif

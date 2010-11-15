@@ -15,10 +15,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 Manages data to aid in analysis of binaries
 Original purpose was to include pre-decompiled functions for CRT and related analysis
 */
+class UVDAnalyzer;
 class UVDAnalysisDB
 {
 public:
-	UVDAnalysisDB();
+	UVDAnalysisDB(UVDAnalyzer *analyzer);
 	virtual ~UVDAnalysisDB();
 	
 	/*
@@ -52,6 +53,8 @@ public:
 	virtual uv_err_t clear();
 
 public:
+	//We don't own this
+	UVDAnalyzer *m_analyzer;
 };
 
 /*
@@ -61,7 +64,7 @@ class UVDBinaryFunctionInstance;
 class UVDAnalysisDBArchive : public UVDAnalysisDB
 {
 public:
-	UVDAnalysisDBArchive();
+	UVDAnalysisDBArchive(UVDAnalyzer *analyzer);
 	~UVDAnalysisDBArchive();
 	
 	/*
@@ -105,7 +108,7 @@ Collection of UVDAnalysisDB
 class UVDAnalysisDBConcentrator : public UVDAnalysisDB
 {
 public:
-	UVDAnalysisDBConcentrator();
+	UVDAnalysisDBConcentrator(UVDAnalyzer *analyzer);
 	~UVDAnalysisDBConcentrator();
 	
 	uv_err_t init();
