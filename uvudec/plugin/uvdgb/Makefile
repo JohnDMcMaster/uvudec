@@ -5,7 +5,7 @@
 
 LIBS += -luvdobjbin
 ROOT_DIR=../..
-PLUGIN_NAME=uvdobjgb
+PLUGIN_NAME=uvdgb
 
 CC_SRCS =   \
 
