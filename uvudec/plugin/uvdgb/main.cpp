@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/io.h"
 #include "uvd/core/uvd.h"
 #include "uvd/util/version.h"
-#include "uvdobjgb/plugin.h"
+#include "uvdgb/plugin.h"
 
 uv_err_t UVD_PLUGIN_MAIN_SYMBOL(UVDConfig *config, UVDPlugin **out)
 {

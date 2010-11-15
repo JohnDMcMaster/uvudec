@@ -4,8 +4,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvdobjgb/object.h"
-#include "uvdobjgb/plugin.h"
+#include "uvdgb/object.h"
+#include "uvdgb/plugin.h"
 #include "uvd/core/uvd.h"
 
 UVDObjgbPlugin *g_objbinPlugin = NULL;

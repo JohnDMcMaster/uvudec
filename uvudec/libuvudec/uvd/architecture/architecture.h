@@ -35,7 +35,7 @@ public:
 	//...and added below, so we should make this instead (at least by default) simply dump the below
 	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names) = 0;
 
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon) = 0;
+	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
 
 	/*
 	In the future this might even return something if we are debugging

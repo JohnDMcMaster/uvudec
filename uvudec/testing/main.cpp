@@ -46,7 +46,7 @@ static uv_err_t initArgs()
 	g_fixtureNameMap["flirtutil"] = UVDFlirtutilFixture::suite();
 	g_fixtureNameMap["libuvudec"] = UVDLibuvudecUnitTest::suite();
 	g_fixtureNameMap["obj2pat"] = UVDObj2patUnitTest::suite();
-	g_fixtureNameMap["uvdobjgb"] = UVDObjgbUnitTest::suite();
+	g_fixtureNameMap["uvdobjgb"] = UVDGBUnitTest::suite();
 	g_fixtureNameMap["uvudec"] = UVDUvudecUnitTest::suite();
 	
 	uv_assert_err_ret(g_argRegistry.newArgConfgs(&g_configArgs));

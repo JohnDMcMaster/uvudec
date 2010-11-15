@@ -10,10 +10,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include "testing/object.h"
-#include "plugin/uvdobjgb/object.h"
-#include "plugin/uvdobjgb/plugin.h"
+#include "plugin/uvdgb/object.h"
+#include "plugin/uvdgb/plugin.h"
 
-class UVDObjgbUnitTest : public UVDTestingObjectFixture
+class UVDGBUnitTest : public UVDTestingObjectFixture
 {
 public:
 	void setUp();
@@ -24,7 +24,7 @@ public:
 	UVDGBObject *getObject();
 	
 public:
-	CPPUNIT_TEST_SUITE(UVDObjgbUnitTest);
+	CPPUNIT_TEST_SUITE(UVDGBUnitTest);
 	CPPUNIT_TEST(loadsCorrectObjectTest);
 	CPPUNIT_TEST(isNintendoLogoTest);
 	CPPUNIT_TEST(getTitleTest);

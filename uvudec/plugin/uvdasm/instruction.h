@@ -121,7 +121,7 @@ public:
 
 	/* Prints a text description of the given instruction to the buffer */
 	//uv_err_t print_disasm(char *buff, uint32_t buffsz);
-	uv_err_t print_disasm(std::string &out);
+	virtual uv_err_t print_disasm(std::string &out);
 	
 	virtual uv_err_t analyzeControlFlow();
 

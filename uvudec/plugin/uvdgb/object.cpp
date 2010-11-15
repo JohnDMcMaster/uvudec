@@ -10,7 +10,7 @@ http://nocash.emubase.de/pandocs.htm#thecartridgeheader
 http://www.zophar.net/fileuploads/2/10597teazh/gbrom.txt
 */
 
-#include "uvdobjgb/object.h"
+#include "uvdgb/object.h"
 
 #define UVDOBJGB_LOGO_ADDR_MIN					0x0104
 #define UVDOBJGB_LOGO_ADDR_MAX					0x0133

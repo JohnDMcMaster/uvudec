@@ -17,7 +17,7 @@ Consider templating some of this
 #include "uvd/core/uvd.h"
 #include <string.h>
 
-CPPUNIT_TEST_SUITE_REGISTRATION(UVDObjgbUnitTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(UVDGBUnitTest);
 
 //FIXME: we should be able to do something better with templating
 #define UVCPPUNIT_ASSERT_EQUAL_INT(_targetIn, _valueIn) \
@@ -36,21 +36,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UVDObjgbUnitTest);
 		} \
 	} while( 0 ) \
 
-void UVDObjgbUnitTest::setUp(void)
+void UVDGBUnitTest::setUp(void)
 {
 	UVDTestingObjectFixture::setUp();
-	m_pluginName = "uvdobjgb";
+	m_pluginName = "uvdgb";
 	//All tests on this for now
 	m_uvdInpuFileName = getUnitTestDir() + "/image/game_boy/Arkaid_Release_02/arkaid.gb";
 }
 
-UVDObjgbPlugin *UVDObjgbUnitTest::getPlugin()
+UVDObjgbPlugin *UVDGBUnitTest::getPlugin()
 {
 	CPPUNIT_ASSERT(m_plugin);
 	return (UVDObjgbPlugin *)m_plugin;
 }
 
-UVDGBObject *UVDObjgbUnitTest::getObject()
+UVDGBObject *UVDGBUnitTest::getObject()
 {
 	CPPUNIT_ASSERT(m_uvd);
 	CPPUNIT_ASSERT(m_uvd->m_runtime);
@@ -58,7 +58,7 @@ UVDGBObject *UVDObjgbUnitTest::getObject()
 	return (UVDGBObject *)m_uvd->m_runtime->m_object;
 }
 
-void UVDObjgbUnitTest::loadsCorrectObjectTest(void)
+void UVDGBUnitTest::loadsCorrectObjectTest(void)
 {
 	//m_objectTypeID = typeid(UVDGBObject *);
 	//CPPUNIT_ASSERT(typeid())
@@ -68,11 +68,11 @@ void UVDObjgbUnitTest::loadsCorrectObjectTest(void)
 	deinit();
 }
 
-void UVDObjgbUnitTest::isNintendoLogoTest(void)
+void UVDGBUnitTest::isNintendoLogoTest(void)
 {
 }
 
-void UVDObjgbUnitTest::getTitleTest(void)
+void UVDGBUnitTest::getTitleTest(void)
 {
 	std::string title;
 	std::string target = "ARKAID";
@@ -93,7 +93,7 @@ void UVDObjgbUnitTest::getTitleTest(void)
 	deinit();
 }
 
-void UVDObjgbUnitTest::getManufacturerCodeTest(void)
+void UVDGBUnitTest::getManufacturerCodeTest(void)
 {
 	uint32_t code = 0;
 
@@ -103,7 +103,7 @@ void UVDObjgbUnitTest::getManufacturerCodeTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0, code);
 }
 
-void UVDObjgbUnitTest::getCGBFlagsTest(void)
+void UVDGBUnitTest::getCGBFlagsTest(void)
 {
 	uint8_t flags = 0;
 
@@ -113,7 +113,7 @@ void UVDObjgbUnitTest::getCGBFlagsTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0xC0, flags);
 }
 
-void UVDObjgbUnitTest::getNewLicenseeCodeTest(void)
+void UVDGBUnitTest::getNewLicenseeCodeTest(void)
 {
 	uint16_t code = 0;
 
@@ -123,7 +123,7 @@ void UVDObjgbUnitTest::getNewLicenseeCodeTest(void)
 	CPPUNIT_ASSERT(0 == code);
 }
 
-void UVDObjgbUnitTest::getSGBFlagsTest(void)
+void UVDGBUnitTest::getSGBFlagsTest(void)
 {
 	uint8_t flags = 0;
 
@@ -133,7 +133,7 @@ void UVDObjgbUnitTest::getSGBFlagsTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0, flags);
 }
 
-void UVDObjgbUnitTest::isSGBEnabledTest(void)
+void UVDGBUnitTest::isSGBEnabledTest(void)
 {
 	uvd_bool_t data = 0;
 
@@ -143,7 +143,7 @@ void UVDObjgbUnitTest::isSGBEnabledTest(void)
 	CPPUNIT_ASSERT(!data);
 }
 
-void UVDObjgbUnitTest::getCartridgeTypeTest(void)
+void UVDGBUnitTest::getCartridgeTypeTest(void)
 {
 	uint8_t result = 0;
 
@@ -153,7 +153,7 @@ void UVDObjgbUnitTest::getCartridgeTypeTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x01, result);
 }
 
-void UVDObjgbUnitTest::getROMSizeTest(void)
+void UVDGBUnitTest::getROMSizeTest(void)
 {
 	uint32_t result = 0;
 
@@ -163,7 +163,7 @@ void UVDObjgbUnitTest::getROMSizeTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x00020000, result);
 }
 
-void UVDObjgbUnitTest::getROMSizeRawTest(void)
+void UVDGBUnitTest::getROMSizeRawTest(void)
 {
 	uint8_t result = 0;
 
@@ -173,7 +173,7 @@ void UVDObjgbUnitTest::getROMSizeRawTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x02, result);
 }
 
-void UVDObjgbUnitTest::getSaveRAMSizeTest(void)
+void UVDGBUnitTest::getSaveRAMSizeTest(void)
 {
 	uint32_t result = 0;
 
@@ -183,7 +183,7 @@ void UVDObjgbUnitTest::getSaveRAMSizeTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x00, result);
 }
 
-void UVDObjgbUnitTest::getSaveRAMSizeRawTest(void)
+void UVDGBUnitTest::getSaveRAMSizeRawTest(void)
 {
 	uint8_t result = 0;
 
@@ -193,7 +193,7 @@ void UVDObjgbUnitTest::getSaveRAMSizeRawTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x00, result);
 }
 
-void UVDObjgbUnitTest::getDestinationCodeTest(void)
+void UVDGBUnitTest::getDestinationCodeTest(void)
 {
 	uint8_t result = 0;
 
@@ -203,7 +203,7 @@ void UVDObjgbUnitTest::getDestinationCodeTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x01, result);
 }
 
-void UVDObjgbUnitTest::getOldLicenseeCodeTest(void)
+void UVDGBUnitTest::getOldLicenseeCodeTest(void)
 {
 	uint8_t result = 0;
 
@@ -213,7 +213,7 @@ void UVDObjgbUnitTest::getOldLicenseeCodeTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x00, result);
 }
 
-void UVDObjgbUnitTest::getMaskROMVersioNumberTest(void)
+void UVDGBUnitTest::getMaskROMVersioNumberTest(void)
 {
 	uint8_t result = 0;
 
@@ -223,7 +223,7 @@ void UVDObjgbUnitTest::getMaskROMVersioNumberTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x01, result);
 }
 
-void UVDObjgbUnitTest::getHeaderChecksumTest(void)
+void UVDGBUnitTest::getHeaderChecksumTest(void)
 {
 	uint8_t result = 0;
 
@@ -233,7 +233,7 @@ void UVDObjgbUnitTest::getHeaderChecksumTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
 }
 
-void UVDObjgbUnitTest::computeHeaderChecksumTest(void)
+void UVDGBUnitTest::computeHeaderChecksumTest(void)
 {
 	uint8_t result = 0;
 
@@ -243,7 +243,7 @@ void UVDObjgbUnitTest::computeHeaderChecksumTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0x76, result);
 }
 
-void UVDObjgbUnitTest::isHeaderChecksumValidTest(void)
+void UVDGBUnitTest::isHeaderChecksumValidTest(void)
 {
 	uvd_bool_t data = 0;
 
@@ -253,7 +253,7 @@ void UVDObjgbUnitTest::isHeaderChecksumValidTest(void)
 	CPPUNIT_ASSERT(data);
 }
 
-void UVDObjgbUnitTest::getGlobalChecksumTest(void)
+void UVDGBUnitTest::getGlobalChecksumTest(void)
 {
 	uint16_t result = 0;
 
@@ -263,7 +263,7 @@ void UVDObjgbUnitTest::getGlobalChecksumTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0xCEF2, result);
 }
 
-void UVDObjgbUnitTest::computeGlobalChecksumTest(void)
+void UVDGBUnitTest::computeGlobalChecksumTest(void)
 {
 	uint16_t result = 0;
 
@@ -273,7 +273,7 @@ void UVDObjgbUnitTest::computeGlobalChecksumTest(void)
 	UVCPPUNIT_ASSERT_EQUAL_INT(0xCEF2, result);
 }
 
-void UVDObjgbUnitTest::isGlobalChecksumValidTest(void)
+void UVDGBUnitTest::isGlobalChecksumValidTest(void)
 {
 	uvd_bool_t data = 0;
 

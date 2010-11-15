@@ -35,3 +35,16 @@ uv_err_t UVDArchitecture::readByte(UVDAddress address, uint8_t *out)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDArchitecture::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
+{
+	//Reduce errors from stale data
+	if( !iterCommon.m_instruction )
+	{
+		uv_assert_err_ret(getInstruction(&iterCommon.m_instruction));
+		uv_assert_ret(iterCommon.m_instruction);
+	}
+	uv_assert_err_ret(iterCommon.m_instruction->parseCurrentInstruction(iterCommon));
+
+	return UV_ERR_OK;
+}
+

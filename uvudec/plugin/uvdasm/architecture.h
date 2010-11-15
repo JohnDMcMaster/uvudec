@@ -38,8 +38,6 @@ public:
 	void updateCache(uint32_t address, const UVDVariableMap &analysisResult);
 	uv_err_t readCache(uint32_t address, UVDVariableMap &analysisResult);
 
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
-
 public:	
 	std::map<uint32_t, UVDVariableMap> m_analysisCache;
 

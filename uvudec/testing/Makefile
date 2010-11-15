@@ -27,7 +27,7 @@ CXX_SRCS = 	\
 
 USING_LIB_UVUDEC=Y
 
-LIBS += -luvdobjgb
+LIBS += -luvdgb
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk
 
