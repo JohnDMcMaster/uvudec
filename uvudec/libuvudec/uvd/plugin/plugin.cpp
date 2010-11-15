@@ -187,6 +187,11 @@ uv_err_t UVDPlugin::getArchitecture(UVDObject *object, const UVDRuntimeHints &hi
 	return UV_ERR_NOTSUPPORTED;
 }
 
+uv_err_t UVDPlugin::getSupportedArchitectures(std::set<std::string> &architectures)
+{
+	return UV_ERR_NOTSUPPORTED;
+}
+
 uv_err_t UVDPlugin::registerArgument(const std::string &propertyForm,
 		char shortForm, std::string longForm, 
 		std::string helpMessage,
