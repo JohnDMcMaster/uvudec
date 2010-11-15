@@ -5,6 +5,7 @@ JohnDMcMaster@gmail.com
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include <algorithm>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -513,6 +514,22 @@ std::string UVDSafeStringFromBuffer(const char *buff, size_t size)
 			break;
 		}
 	}
+	return ret;
+}
+
+std::string UVDToUpper(const std::string &in)
+{
+	std::string ret = in;
+
+	std::transform(ret.begin(), ret.end(), ret.begin(), (int(*)(int))std::toupper);
+	return ret;
+}
+
+std::string UVDToLower(const std::string &in)
+{
+	std::string ret = in;
+
+	std::transform(ret.begin(), ret.end(), ret.begin(), (int(*)(int))std::tolower);
 	return ret;
 }
 

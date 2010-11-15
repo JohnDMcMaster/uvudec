@@ -1,3 +1,436 @@
+# UVNet Universal Decompiler (uvudec)
+# Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
+# Licensed under the terms of the LGPL V3 or later, see COPYING for details
+#
+# This has been seeded with a crude cut from binutils --help output
+# It will likely undergo heavy revisions
+# Note that specifying a sub-architecture implies the super architecture,
+# but sometimes its nice to include both anyway
+#
+# This list is meant to be exaustive
+# However, the rules for what makes something a distinct architecture will have to be refined
+# This file is meant to be case insensitive
+
+# Intel mcs-51
+8051.8051
 8051.8052
-x86.80386
-ARM
+
+# DEC Alpha
+alpha
+alpha.ev4
+alpha.ev5
+alpha.ev6
+
+# Eh?
+# http://www.newtonlabs.com/arc/manual/arc_1.html
+arc
+arc.5
+arc.6
+arc.7
+arc.8
+
+# Advanced RISC Machine (ARM)
+arm
+arm.v2
+arm.v2a
+arm.v3
+arm.v3m
+arm.v4
+arm.v4t
+arm.v5
+arm.v5t
+arm.v5te
+# Intel XScale
+# "The XScale, a microprocessor core, is Intel's and Marvell's implementation of the ARMv5 architecture,
+# and consists of several distinct families: IXP, IXC, IOP, PXA and CE"
+# http://en.wikipedia.org/wiki/XScale
+arm.xscale
+arm.xscale.ixp
+arm.xscale.ixc
+arm.xscale.iop
+arm.xscale.pxa
+arm.xscale.ce
+
+#ep9312
+#iwmmxt
+#iwmmxt2
+
+# Atmel AVR
+avr
+# What are these?
+# avr.1
+# avr.2
+# avr.25
+# avr.3
+# avr.31
+# avr.35
+# avr.4
+# avr.5
+# avr.51
+# avr.6
+
+# Blackfin
+bfin
+
+# Microsoft Common Intermediate Language (CIL)
+# .NET and such
+cil
+
+# cr16
+# cr16c
+# cris
+# crisv32
+# cris.common_v10_v32
+# crx
+
+# d10v
+# d10v.ts2
+# d10v.ts3
+# d30v
+# dlx
+# fr30
+# frv
+# tomcat
+# simple
+# fr550
+# fr500
+# fr450
+# fr400
+# fr300
+
+# Renesas H8/300
+h8300.h8300
+h8300.h8300h
+h8300.h8300s
+h8300.h8300hn
+h8300.h8300sn
+h8300.h8300sx
+h8300.h8300sxn
+
+# Renesas H8/500
+h8500
+
+# Freescale/Motorola HC08
+hc08
+
+hppa1.1
+hppa2.0w
+hppa2.0
+hppa1.0
+
+#i370.common
+#i370.360
+#i370.370
+
+# Intel i960
+i960.core
+i960.ka_sa
+i960.kb_sb
+i960.mc
+i960.xa
+i960.ca
+i960.jx
+i960.hx
+
+# Intel Itanium
+ia64-elf64
+ia64-elf32
+
+# ip2022ext
+# ip2022
+# iq2000
+# iq10
+
+# Java Virtual Machine (JVM)
+java
+
+# l1om
+# l1om.intel
+# lm32
+
+# Mitsubishi
+# TODO: organize these
+m16c
+m32c
+m32r
+# www.hotchips.org/archives/hc10/2_Mon/HC10.S2/HC10.2.1.pdf
+m32rx
+m32r2
+
+# Motorola 68k
+m68k
+m68k.m68hc11
+m68k.m68hc12
+m68k.68000
+m68k.68008
+m68k.68010
+m68k.68020
+m68k.68030
+m68k.68040
+m68k.68060
+m68k.cpu32
+m68k.fido
+m68k.isa-a.nodiv
+m68k.isa-a
+m68k.isa-a.mac
+m68k.isa-a.emac
+m68k.isa-aplus
+m68k.isa-aplus.mac
+m68k.isa-aplus.emac
+m68k.isa-b.nousp
+m68k.isa-b.nousp.mac
+m68k.isa-b.nousp.emac
+m68k.isa-b
+m68k.isa-b.mac
+m68k.isa-b.emac
+m68k.isa-b.float
+m68k.isa-b.float.mac
+m68k.isa-b.float.emac
+m68k.isa-c
+m68k.isa-c.mac
+m68k.isa-c.emac
+m68k.isa-c.nodiv
+m68k.isa-c.nodiv.mac
+m68k.isa-c.nodiv.emac
+m68k.5200
+m68k.5206e
+m68k.5307
+m68k.5407
+m68k.528x
+m68k.521x
+m68k.5249
+m68k.547x
+m68k.548x
+m68k.cfv4e
+m88k.88100
+
+# Maxim 
+maxq10
+# http://www.maxim-ic.com/datasheet/index.mvp/id/5729
+maxq20
+
+# MCore
+# mep
+# h1
+# c5
+
+# Xilinx MicroBlaze
+MicroBlaze
+
+# MIPS Technologies
+mips
+mips.3000
+mips.3900
+mips.4000
+mips.4010
+mips.4100
+mips.4111
+mips.4120
+mips.4300
+mips.4400
+mips.4600
+mips.4650
+mips.5000
+mips.5400
+mips.5500
+mips.6000
+mips.7000
+mips.8000
+mips.9000
+mips.10000
+mips.12000
+mips.14000
+mips.16000
+mips.16
+mips.mips5
+mips.isa32
+mips.isa32r2
+mips.isa64
+mips.isa64r2
+mips.sb1
+mips.loongson_2e
+mips.loongson_2f
+mips.octeon
+mips.xlr
+
+# RISC computer
+mmix
+
+# Matushita?
+mn10200
+mn10300
+
+# am33
+# am33-2
+
+# moxie
+
+# TI MSP line like MSP430?
+# msp.14
+# msp.11
+# msp.110
+# msp.12
+# msp.13
+# msp.14
+# msp.15
+# msp.16
+# msp.21
+# msp.31
+# msp.32
+# msp.33
+# msp.41
+# msp.42
+# msp.43
+# msp.44
+
+# ms1
+# ms1-003
+# ms2
+
+# "The 320xx or NS32000 was a series of microprocessors from National Semiconductor ("NS", "Natsemi")"
+# http://en.wikipedia.org/wiki/NS320xx
+ns32k.32032
+ns32k.32532
+
+# openrisc
+
+# or32
+
+# Microchip PIC
+# Since say 16F and 16C are more or less equivilent, don't distinguish them
+pic10
+pic12
+pic16
+pic17
+pic18
+# Whats the difference between these two?
+pic24f
+pic24h
+# Isn't this actually MIPS or something
+pic32
+dspic30
+dspic33f
+
+# From DEC
+pdp11
+
+# IBM PowerPC
+powerpc.common
+powerpc.common64
+powerpc.603
+powerpc.EC603e
+powerpc.604
+powerpc.403
+powerpc.601
+powerpc.620
+powerpc.630
+powerpc.a35
+powerpc.rs64ii
+powerpc.rs64iii
+powerpc.7400
+powerpc.e500
+powerpc.e500mc
+powerpc.MPC8XX
+powerpc.750
+
+# compiled Python
+python
+
+# IBM RS/6000
+# ...that thing that had "16-6, Go Horns!" in the BIOS
+rs6000.6000
+rs6000.rs1
+rs6000.rsc
+rs6000.rs2
+
+# IBM ESA/390
+s390.31-bit
+s390.64-bit
+
+# score7
+# score3
+
+# Super-H
+# "SuperH (or SH) is a 32-bit reduced instruction set computer (RISC) instruction set architecture (ISA) developed by Hitachi."
+# http://en.wikipedia.org/wiki/SuperH
+sh.sh
+sh.sh2
+sh.sh2e
+sh.sh-dsp
+sh.sh3
+sh.sh3-nommu
+sh.sh3-dsp
+sh.sh3e
+sh.sh4
+sh.sh4a
+sh.sh4al-dsp
+sh.sh4-nofpu
+sh.sh4-nommu-nofpu
+sh.sh4a-nofpu
+sh.sh2a
+sh.sh2a-nofpu
+sh.sh2a-nofpu-or-sh4-nommu-nofpu
+sh.sh2a-nofpu-or-sh3-nommu
+sh.sh2a-or-sh4
+sh.sh2a-or-sh3e
+sh.sh5
+
+# Scalable Processor Architecture (SPARC)
+sparc
+sparc.sparclet
+sparc.sparclite
+sparc.v8plus
+sparc.v8plusa
+sparc.sparclite_le
+sparc.v9
+sparc.v9a
+sparc.v8plusb
+sparc.v9b
+spu.256K
+
+# TI TMS320
+tms320.tms320c30
+tms320.tms320c4x
+tms320.tms320c3x
+tms320.tms320c54x
+
+tic80
+
+# "Renesas Electronics V850 is a 32-bit RISC CPU core architecture for embedded microcontrollers"
+# http://en.wikipedia.org/wiki/V850
+v850.v850
+v850.v850e1
+v850.v850e
+
+# DEC VAX
+# "Nothing sucks like a VAX!"
+vax
+
+# w65
+
+# we32k.32000
+
+# Intel x86
+# I'm sure this could be expanded considerably
+x86.i386
+x86.x86-64
+
+# http://sourceware.org/cgen/gen-doc/xstormy16.html
+xstormy16
+
+# xtensa
+# xc16x
+# xc16xl
+# xc16xs
+
+# Zilog Z80
+z80
+# z80.full
+z# 80.strict
+
+# r800
+
+# Zilog Z8000
+z8000.z8001
+z8000.z8002
+

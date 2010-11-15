@@ -159,6 +159,8 @@ otherwise: upper case
 //Change string in place to above policy
 //Returns str
 char *cap_fixup(char *str);
+std::string UVDToUpper(const std::string &in);
+std::string UVDToLower(const std::string &in);
 
 /* Separate key/value pairs */
 uv_err_t uvd_parse_line(const char *line_in, char **key_in, char **value_in);

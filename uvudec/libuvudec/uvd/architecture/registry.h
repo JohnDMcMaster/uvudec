@@ -54,6 +54,8 @@ public:
 	uv_err_t ensureArchitectureRegistered(const std::string &architecture);
 	uv_err_t getArchitectures(std::set<std::string> &out);
 	uv_err_t debugPrintArchitectures();
+	
+	std::string normalizeArchitecture(const std::string &in);
 
 public:
 	UVDRegisteredArchitecture m_architectures;

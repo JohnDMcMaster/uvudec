@@ -70,10 +70,17 @@ uv_err_t UVDArchitectureRegistry::init()
 		{
 			continue;
 		}
-		uv_assert_err_ret(registerArchitecture(line));
+		uv_assert_err_ret(ensureArchitectureRegistered(line));
 	}
 
-	//uv_assert_err_ret(debugPrintArchitectures());
+	/*
+	//XXX: make this into some unit tests
+	std::string temp;
+	std::string bestIn = "m68k.isa-b.asfadsf";
+	uv_assert_err_ret(bestMatch(bestIn, temp));
+	printf("best for %s: %s\n", bestIn.c_str(), temp.c_str());
+	uv_assert_err_ret(debugPrintArchitectures());
+	*/
 
 	return UV_ERR_OK;
 }
@@ -98,11 +105,14 @@ uv_err_t UVDArchitectureRegistry::getArchitectures(std::set<std::string> &out)
 	return UV_DEBUG(m_architectures.getArchitectures("", out));
 }
 
-uv_err_t UVDArchitectureRegistry::bestMatch(const std::string &in, std::string &out)
+uv_err_t UVDArchitectureRegistry::bestMatch(const std::string &inRaw, std::string &out)
 {
-	std::vector<std::string> parts = UVDSplit(in, '.', TRUE);
+	std::string in;
+	std::vector<std::string> parts;
 	UVDRegisteredArchitecture *curArchitectureRegistry = &m_architectures;
 	
+	in = normalizeArchitecture(inRaw);
+	parts = UVDSplit(in, '.', TRUE);
 	out = "";
 	//Nothing left? Matches this as a terminal node
 	if( parts.empty() )
@@ -119,7 +129,11 @@ uv_err_t UVDArchitectureRegistry::bestMatch(const std::string &in, std::string &
 			//Best match
 			return UV_ERR_OK;
 		}
-	
+		if( !out.empty() )
+		{
+			out += '.';
+		}
+		out += curPart;
 		//Need to recurse tree then
 		curArchitectureRegistry = (*curArchitectureRegistry->m_architectures.find(curPart)).second;
 	}
@@ -128,11 +142,18 @@ uv_err_t UVDArchitectureRegistry::bestMatch(const std::string &in, std::string &
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDArchitectureRegistry::registerArchitecture(const std::string &architecture)
+std::string UVDArchitectureRegistry::normalizeArchitecture(const std::string &in)
 {
-	std::vector<std::string> parts = UVDSplit(architecture, '.', TRUE);
+	return UVDToLower(in);
+}
+
+uv_err_t UVDArchitectureRegistry::registerArchitecture(const std::string &architectureIn)
+{
+	std::vector<std::string> parts;
 	UVDRegisteredArchitecture *curArchitectureRegistry = &m_architectures;
+	std::string architecture = normalizeArchitecture(architectureIn);
 	
+	parts = UVDSplit(architecture, '.', TRUE);
 	//Can't register nothing
 	uv_assert_ret(!parts.empty());
 	
