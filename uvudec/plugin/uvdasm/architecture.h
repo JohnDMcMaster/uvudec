@@ -65,7 +65,7 @@ public:
 	it may be possible to determine this information dynamically
 	FIXME: don't know what this really is for, it should probably be removed
 	*/
-	int m_architecture;
+	std::string m_architecture;
 	
 	std::string m_architectureFileName;
 

@@ -17,7 +17,6 @@ UVDDisasmArchitecture::UVDDisasmArchitecture()
 	m_opcodeTable = NULL;
 	m_symMap = NULL;
 	m_interpreter = NULL;
-	m_architecture = 0;
 }
 
 UVDDisasmArchitecture::~UVDDisasmArchitecture()

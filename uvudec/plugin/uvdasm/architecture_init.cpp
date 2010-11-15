@@ -151,6 +151,7 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	std::string value_prefix_hex;
 	std::string value_postfix_hex;
 	std::string value_suffix;
+	std::string value_architecture;
 
 	printf_debug("Initializing misc data\n");
 	if( misc_section == NULL )
@@ -208,6 +209,10 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 		else if( key == "ASM_IMM_SUFFIX" )
 		{
 			value_suffix = value;
+		}
+		else if( key == "ARCHITECTURE" )
+		{
+			value_architecture = value;
 		}
 		else
 		{

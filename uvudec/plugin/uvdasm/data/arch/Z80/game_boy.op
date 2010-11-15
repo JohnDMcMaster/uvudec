@@ -8,7 +8,7 @@ MCU_ENDIAN=BIG
 ASM_IMM_PREFIX=#
 ASM_IMM_PREFIX_HEX=0x
 ASM_IMM_POSTFIX_HEX=
-
+ARCHITECTURE=z80.game_boy
 
 # Code vectoring (interrupt jump locations)
 # Start, reset, I/O, etc
