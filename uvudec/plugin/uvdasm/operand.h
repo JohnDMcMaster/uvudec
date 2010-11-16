@@ -49,6 +49,30 @@ public:
 	//UVDOperandShared *m_next;
 };
 
+/*
+Involves a numeric value of some kind
+May be absolutly fixed as per the instruction, or a generic signed or unsigned constant of a specific size
+*/
+class UVDDisasmNumericOperandShared : public UVDDisasmOperandShared
+{
+public:
+	UVDDisasmNumericOperandShared();
+	~UVDDisasmNumericOperandShared();
+};
+
+/*
+Only a specific value (or maybe range of values?) are possible
+Ex: JMP 0x20 on Z80, INT3 on x86
+These have the operand hard coded as part of the opcode meaning
+and is different than say INT/s8 where there is an operand that encodes the number
+*/
+class UVDDisasmConstantOperandShared : public UVDDisasmNumericOperandShared
+{
+public:
+	UVDDisasmConstantOperandShared();
+	~UVDDisasmConstantOperandShared();
+};
+
 class UVDDisasmOperand : public UVDOperand
 {
 public:

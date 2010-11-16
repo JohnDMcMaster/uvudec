@@ -325,7 +325,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 		uv_assert_err_ret(UVDConfigValue::parseType(cur, &parsed_type));		
 		printf_debug("Type: %d\n", parsed_type.m_operand_type);
 		
-		if( parsed_type.m_operand_type == UV_DISASM_DATA_OPCODE )
+		if( parsed_type.m_operand_type == UV_DISASM_DATA_CONSTANT )
 		{
 			if( inst_shared->m_opcode_length >= MAX_OPCODE_SIZE )
 			{
@@ -344,7 +344,12 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 		Find the syntax field that matches parsed_type from the list of
 		syntax fields in inst_shared and place it in op_shared
 		*/
-		uv_assert_err_ret(uvd_match_syntax_usage(inst_shared, &parsed_type, &op_shared));
+		if( UV_FAILED(uvd_match_syntax_usage(inst_shared, &parsed_type, &op_shared)) )
+		{
+			printf_error("can't match syntax and usage for syntax line %d, usage line %d\n",
+					inst_shared->m_config_line_syntax, inst_shared->m_config_line_usage);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
 		
 		if( !op_shared )
 		{
@@ -395,7 +400,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 {
 	unsigned int cur_line = 0;
-	unsigned int line_usage = 0;
 
 	printf_debug("Initializing opcodes\n");
 	if( op_section == NULL )
@@ -412,11 +416,11 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		std::string value_desc;
 		std::string value_usage;
 		UVDConfigLine value_syntax;
+		UVDConfigLine conditionLine;
 		std::string value_action;
 		std::string value_cycles;
 		std::string value_name;
 		UVDDisasmInstructionShared *inst_shared = NULL;
-		int primary_opcode = 0;
 
 		printf_debug("\nLooking for next instruction block at index %d / %d\n", cur_line, op_section->m_lines.size());
 		//Start by extracting key/value pairs
@@ -463,7 +467,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 				return UV_DEBUG(UV_ERR_GENERAL);
 			}
 			
-			if( !strcmp(key.c_str(), "NAME") )
+			if( key == "NAME" )
 			{
 				printf_debug("Name found, value_name: %s\n", value_name.c_str());
 				//If we alreayd have a name value, we are at the next entry
@@ -473,26 +477,29 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 				}
 				value_name = value;
 			}
-			else if( !strcmp(key.c_str(), "DESC") )
+			else if( key == "DESC" )
 			{
 				value_desc = value;
 			}
-			else if( !strcmp(key.c_str(), "USAGE") )
+			else if( key == "USAGE" )
 			{
 				value_usage = value;
-				line_usage = cur_line;
 			}
-			else if( !strcmp(key.c_str(), "SYNTAX") )
+			else if( key == "SYNTAX" )
 			{
 				value_syntax = configLine;
 			}
-			else if( !strcmp(key.c_str(), "ACTION") )
+			else if( key == "ACTION" )
 			{
 				value_action = value;
 			}
-			else if( !strcmp(key.c_str(), "CYCLES") )
+			else if( key == "CYCLES" )
 			{
 				value_cycles = value;
+			}
+			else if( key == "CONDITION" )
+			{
+				conditionLine = configLine;
 			}
 			else
 			{
@@ -545,7 +552,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
-		inst_shared->m_config_line_syntax = op_section->m_lineNumber;
+		inst_shared->m_config_line_syntax = value_syntax.m_lineNumber;
 		inst_shared->m_config_line_usage = op_section->m_lineNumber;
 		
 		//Trivial parsing
@@ -583,9 +590,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		*/
 		uv_assert_ret(!inst_shared->m_memoric.empty() && inst_shared->m_opcode_length != 0 )
 		
-		primary_opcode = inst_shared->m_opcode[0];
-		printf_debug("Primary opcode: 0x%.2X\n", primary_opcode);
-		
 		//Compute some things to help speed up analysis and know the nature of this instruction
 		uv_assert_err_ret(inst_shared->analyzeAction());
 		
@@ -595,16 +599,25 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		uv_assert_err_ret(inst_shared->getOpcodes(opcodes));
 		for( std::set<uint8_t>::iterator iter = opcodes.begin(); iter != opcodes.end(); ++iter )
 		{
+			uint8_t primary_opcode = 0;
+			
+			primary_opcode = *iter;
+			printf_debug("Primary opcode: 0x%.2X\n", primary_opcode);
+		
 			if( m_lookupTable[primary_opcode] )
 			{
 				if( g_error_opcode_repeat )
 				{
-					printf_debug("Duplicate opcode: 0x%.2X, old: %s\n", primary_opcode, m_lookupTable[primary_opcode]->m_desc.c_str());
+					UVDDisasmInstructionShared *old = m_lookupTable[primary_opcode];
+					
+					printf_error("Duplicate opcode: 0x%.2X\n", primary_opcode);
+					printf_error("old: %s/%s\n", old->m_memoric.c_str(), old->m_desc.c_str());
+					printf_error("new: %s\n", inst_shared->m_memoric.c_str(), inst_shared->m_desc.c_str());
 					return UV_DEBUG(UV_ERR_GENERAL);
 				}
 			}
 
-			printf_debug("Doing actual store\n");
+			printf_debug("Doing actual store of opcode 0x%02X\n", primary_opcode);
 			m_lookupTable[primary_opcode] = inst_shared;
 			printf_debug("Stored processed\n");
 		}

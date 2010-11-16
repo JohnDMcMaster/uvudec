@@ -24,8 +24,8 @@ const char *uvd_data_str(int uvd_data)
 		return "UV_DISASM_DATA_NONE";
 	case UV_DISASM_DATA_REG:
 		return "UV_DISASM_DATA_REG";
-	case UV_DISASM_DATA_OPCODE:
-		return "UV_DISASM_DATA_OPCODE";
+	case UV_DISASM_DATA_CONSTANT:
+		return "UV_DISASM_DATA_CONSTANT";
 	case UV_DISASM_DATA_IMMS:
 		return "UV_DISASM_DATA_IMMS";
 	case UV_DISASM_DATA_IMMU:
@@ -75,20 +75,12 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 	
 	uv_assert(parsed_type);
 
-	if( !op_shared_in )
-	{
-		UV_ERR(rc);
-		goto error;
-	}
+	uv_assert(op_shared_in);
 	if( parsed_type->m_operand_type == UV_DISASM_DATA_IMMS
 		|| parsed_type->m_operand_type == UV_DISASM_DATA_IMMU )
 	{
 		op_shared = new UVDDisasmOperandShared();
-		if( op_shared == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert(op_shared);
 		/* Cur will be free'd soon and has other issues, so duplicate */
 		op_shared->m_name = parsed_type->m_name;
 		
@@ -102,11 +94,7 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 		printf_debug("Register: %s\n", parsed_type->m_name.c_str());
 				
 		op_shared = new UVDDisasmOperandShared();
-		if( op_shared == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert(op_shared);
 		/* Cur will be free'd soon and has other issues, so duplicate */
 		op_shared->m_name = parsed_type->m_name;
 		op_shared->m_type = parsed_type->m_operand_type;
@@ -116,22 +104,14 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 		unsigned int i = 0;
 
 		op_shared = new UVDDisasmOperandShared();
-		if( op_shared == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert(op_shared);
 		/* Cur will be free'd soon and has other issues, so duplicate */
 		op_shared->m_name = parsed_type->m_name;
 
 		op_shared->m_type = parsed_type->m_operand_type;
 		op_shared->m_immediate_size = parsed_type->m_num_bits;
 		op_shared->m_func = new UVDDisasmFunctionShared();
-		if( op_shared->m_func == NULL )
-		{
-			UV_ERR(rc);
-			goto error;
-		}
+		uv_assert(op_shared->m_func);
 
 		for( i = 0; i < parsed_type->m_func->m_args.size(); ++i )
 		{
@@ -145,17 +125,14 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 				goto error;
 			}
 			*/
-			if( UV_FAILED(UVDDisasmOperandShared::uvd_parsed2opshared(parsed_type->m_func->m_args[i], &op_shared_local)) )
-			{
-				UV_ERR(rc);
-				goto error;
-			}
+			uv_assert_err(UVDDisasmOperandShared::uvd_parsed2opshared(parsed_type->m_func->m_args[i], &op_shared_local));
 			uv_assert(op_shared_local);
 			op_shared->m_func->m_args.push_back(op_shared_local);
 		}
 	}
 	else
 	{
+		printf_error("unknown operand type: %d\n", parsed_type->m_operand_type);
 		UV_ERR(rc);
 		goto error;
 	}
@@ -318,7 +295,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 		break;
 	}
 	//I don't tihnk this one makes sense for this, they are in another place
-	//UV_DISASM_DATA_OPCODE
+	//UV_DISASM_DATA_CONSTANT
 	default:
 		printf_debug("Bad operand type: %s(%d)\n", uvd_data_str(operandShared->m_type), operandShared->m_type);
 		UV_ERR(rc);

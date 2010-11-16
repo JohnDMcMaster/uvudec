@@ -4,6 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvdasm/instruction.h"
 #include "uvdasm/util.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/util/util.h"
@@ -102,7 +103,7 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 		*/
 		std::string byteString;
 		
-		out->m_operand_type = UV_DISASM_DATA_OPCODE; 
+		out->m_operand_type = UV_DISASM_DATA_CONSTANT; 
 
 		if( in.find('/') != std::string::npos )
 		{

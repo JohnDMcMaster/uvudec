@@ -29,6 +29,8 @@ UVDDisasmInstructionShared::UVDDisasmInstructionShared()
 	m_cpi_hi = 0;
 	m_isJump = false;
 	m_isCall = false;
+	m_isConditional = false;
+	m_conditionalExtraInstructions = 0;
 	m_config_line_syntax = 0;
 	m_config_line_usage = 0;
 	m_isImmediateOnlyFunction = UV_ERR_GENERAL;

@@ -11,6 +11,25 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"
 
+/*
+Formats according to option specifications
+Prints to global disassembly string return buffer (g_uv_disasm_ret_buff)
+FIXME: consider polymorphism instead
+*/
+#define UV_DISASM_DATA_NONE					0
+#define UV_DISASM_DATA_REG					1
+//#define UV_DISASM_DATA_MEM				2
+/*
+Most important example of this is an opcode
+However, this also applies to constant syntax parts, such as x86's INT3
+*/
+#define UV_DISASM_DATA_CONSTANT				3
+/* Immediate, signed */
+#define UV_DISASM_DATA_IMMS					32
+#define UV_DISASM_DATA_IMMU					33
+/* func like syntax used to express things like the memory type */
+#define UV_DISASM_DATA_FUNC					64
+
 class UVDDisasmInstructionShared : public UVDInstructionShared
 {
 public:
@@ -95,6 +114,16 @@ public:
 	//Make additional flags as needed, maybe we should just do char 
 	uvd_bool_t m_isJump;
 	uvd_bool_t m_isCall;
+	//Instruction only executes under some given condition
+	//FIXME: replace with a pointer to a conditional
+	uvd_bool_t m_isConditional;
+	/*
+	XXX: placeholder
+	Regardless of conditional result, continue to execute so many instructions after
+	Intended for MIPS like where they decided its better to not flush the pipeline for a jump/call
+	in exchange for more creative instruction ordering
+	*/
+	uint32_t m_conditionalExtraInstructions;
 
 	/*
 	head of operand linked list 

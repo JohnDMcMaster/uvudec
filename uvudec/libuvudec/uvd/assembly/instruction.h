@@ -20,36 +20,6 @@ The code may be a bit archaic and needs some cleanup
 #include "uvd/util/types.h"
 
 /*
-Formats according to option specifications
-Prints to global disassembly string return buffer (g_uv_disasm_ret_buff)
-*/
-#define UV_DISASM_DATA_NONE					0
-#define UV_DISASM_DATA_REG					1
-//#define UV_DISASM_DATA_MEM					2
-#define UV_DISASM_DATA_OPCODE				3
-/* Immediate, signed */
-#define UV_DISASM_DATA_IMMS					32
-#define UV_DISASM_DATA_IMMU					33
-/* func like syntax used to express things like the memory type */
-#define UV_DISASM_DATA_FUNC					64
-/*
-#define UV_DISASM_DATA_IMM_BASE				32
-/ * What would be better is to do bitwise shifts * /
-#define UV_DISASM_DATA_IMM8					(UV_DISASM_DATA_IMM_BASE + 8)
-#define UV_DISASM_DATA_IMM16				(UV_DISASM_DATA_IMM_BASE + 16)
-#define UV_DISASM_DATA_IMM32				(UV_DISASM_DATA_IMM_BASE + 32)
-#define UV_DISASM_DATA_IMM64				(UV_DISASM_DATA_IMM_BASE + 64)
-#define UV_DISASM_DATA_IMM128				(UV_DISASM_DATA_IMM_BASE + 128)
-#define UV_DISASM_DATA_IMM_BITS(x)			(x - UV_DISASM_DATA_IMM_BASE)
-*/
-//There are some other weird index + offset types, need to do those
-
-
-/*
-An instruction with inherent data to that architecture
-Replacement for uv_inst_shared_t
-*/
-/*
 Operand to an instruction 
 Linked list node
 I've never observed additional operands after an immediate, so don't support them
