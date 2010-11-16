@@ -242,7 +242,71 @@ MAPPING_DST_MIN=0xFF80
 MAPPING_DST_MAX=0xFFFE
 
 
+# Code ROM
+NAME=ROM
+TYPE=ROM
+MIN=0x0000
+# 16 bit addressing, but some cartridges are much bigger
+# Uses banking to get around this?
+MAX=0xFFFF
+
 .REG
+
+NAME=A
+DESC=
+SIZE=0x08
+
+NAME=C
+DESC=
+SIZE=0x08
+
+NAME=AC
+DESC=
+SIZE=0x10
+
+NAME=B
+DESC=
+SIZE=0x08
+
+NAME=C
+DESC=
+SIZE=0x08
+
+NAME=BC
+DESC=
+SIZE=0x10
+
+NAME=D
+DESC=
+SIZE=0x08
+
+NAME=E
+DESC=
+SIZE=0x08
+
+NAME=DE
+DESC=
+SIZE=0x10
+
+NAME=H
+DESC=
+SIZE=0x08
+
+NAME=L
+DESC=
+SIZE=0x08
+
+NAME=HL
+DESC=
+SIZE=0x10
+
+NAME=PC
+DESC=Program Counter
+SIZE=0x10
+
+NAME=SP
+DESC=Stack Pointer
+SIZE=0x10
 
 # FF00 - P1/JOYP - Joypad (R/W)
 NAME=P1
@@ -616,297 +680,797 @@ SIZE=0x08
 # D9      EXX             RETI
 # DB      IN   A,(n)      -
 # DD      <IX>            -
-
 # E0      RET PO          LD   (FF00+n),A
 
-# GMB 8bit-Loadcommands
-# ld r,r      xx     4 ---- r=r
-# ld r,n      xx nn  8 ---- r=n
-# ld r,(HL)   xx     8 ---- r=(HL)
-# ld (HL),r   7x     8 ---- (HL)=r
-# ld (HL),n   36 nn 12 ----
-# ld A,(BC)   0A     8 ----
-# ld A,(DE)   1A     8 ----
-# ld A,(nn)   FA    16 ----
-# ld (BC),A   02     8 ----
-# ld (DE),A   12     8 ----
-# ld   (nn),A     EA       16 ----
-# ld   A,(FF00+n) F0 nn    12 ---- read from io-port n (memory FF00+n)
-# ld   (FF00+n),A E0 nn    12 ---- write to io-port n (memory FF00+n)
-# ld   A,(FF00+C) F2        8 ---- read from io-port C (memory FF00+C)
-# ld   (FF00+C),A E2        8 ---- write to io-port C (memory FF00+C)
-# ldi  (HL),A     22        8 ---- (HL)=A, HL=HL+1
-# ldi  A,(HL)     2A        8 ---- A=(HL), HL=HL+1
-# ldd  (HL),A     32        8 ---- (HL)=A, HL=HL-1
-# ldd  A,(HL)     3A        8 ---- A=(HL), HL=HL-1
-
-# GMB 16bit-Loadcommands
-# ld   rr,nn      x1 nn nn 12 ---- rr=nn (rr may be BC,DE,HL or SP)
-# ld   SP,HL      F9        8 ---- SP=HL
-# push rr         x5       16 ---- SP=SP-2 (SP)=rr    (rr may be BC,DE,HL,AF)
-# pop  rr         x1       12 (AF) rr=(SP) SP=SP+2    (rr may be BC,DE,HL,AF)
-
-# GMB 8bit-Arithmetic/logical Commands
-# add  A,r        8x        4 z0hc A=A+r
-# add  A,n        C6 nn     8 z0hc A=A+n
-# add  A,(HL)     86        8 z0hc A=A+(HL)
-# adc  A,r        8x        4 z0hc A=A+r+cy
-# adc  A,n        CE nn     8 z0hc A=A+n+cy
-# adc  A,(HL)     8E        8 z0hc A=A+(HL)+cy
-# sub  r          9x        4 z1hc A=A-r
-# sub  n          D6 nn     8 z1hc A=A-n
-# sub  (HL)       96        8 z1hc A=A-(HL)
-# sbc  A,r        9x        4 z1hc A=A-r-cy
-# sbc  A,n        DE nn     8 z1hc A=A-n-cy
-# sbc  A,(HL)     9E        8 z1hc A=A-(HL)-cy
-# and  r          Ax        4 z010 A=A & r
-# and  n          E6 nn     8 z010 A=A & n
-# and  (HL)       A6        8 z010 A=A & (HL)
-# xor  r          Ax        4 z000
-# xor  n          EE nn     8 z000
-# xor  (HL)       AE        8 z000
-# or   r          Bx        4 z000 A=A | r
-# or   n          F6 nn     8 z000 A=A | n
-# or   (HL)       B6        8 z000 A=A | (HL)
-# cp   r          Bx        4 z1hc compare A-r
-# cp   n          FE nn     8 z1hc compare A-n
-# cp   (HL)       BE        8 z1hc compare A-(HL)
-# inc  r          xx        4 z0h- r=r+1
-
-# inc  (HL)       34       12 z0h- (HL)=(HL)+1
-NAME=INC
-DESC=inc r
-USAGE=0x34
-SYNTAX=HL
-ACTION=nop
-
-# dec  r          xx        4 z1h- r=r-1
-# dec  (HL)       35       12 z1h- (HL)=(HL)-1
-# daa             27        4 z-0x decimal adjust akku
-# cpl             2F        4 -11- A = A xor FF
-
-# GMB 16bit-Arithmetic/logical Commands
-# add  HL,rr    x9         8 -0hc HL = HL+rr     ;rr may be BC,DE,HL,SP
-# inc  rr       x3         8 ---- rr = rr+1      ;rr may be BC,DE,HL,SP
-# dec  rr       xB         8 ---- rr = rr-1      ;rr may be BC,DE,HL,SP
-# add  SP,dd    E8        16 00hc SP = SP +/- dd ;dd is 8bit signed number
-# ld   HL,SP+dd F8        12 00hc HL = SP +/- dd ;dd is 8bit signed number
-
-# GMB Rotate- und Shift-Commands
-# rlca          07         4 000c rotate akku left
-NAME=RLCA
-DESC=rotate akku left
-USAGE=0x07
-SYNTAX=
-ACTION=nop
-
-# rla           17         4 000c rotate akku left through carry
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x17
-SYNTAX=
-ACTION=nop
-
-# rrca          0F         4 000c rotate akku right
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x0F
-SYNTAX=
-ACTION=nop
-
-# rra           1F         4 000c rotate akku right through carry
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x1F
-SYNTAX=
-ACTION=nop
-
-# rlc  r        CB 0x      8 z00c rotate left
-# FIXME: this isn't qwuite accurate, it shadows all the ROT stuff
-NAME=FIXME_ROTL
-DESC=cy=cy xor 1
-USAGE=0xCB,u8_0
-SYNTAX=
-ACTION=nop
-
-# rlc  (HL)     CB 06     16 z00c rotate left
-NAME=RLC
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# rl   r        CB 1x      8 z00c rotate left through carry
-NAME=RL
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# rl   (HL)     CB 16     16 z00c rotate left through carry
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# rrc  r        CB 0x      8 z00c rotate right
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# rrc  (HL)     CB 0E     16 z00c rotate right
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# rr   r        CB 1x      8 z00c rotate right through carry
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# rr   (HL)     CB 1E     16 z00c rotate right through carry
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# sla  r        CB 2x      8 z00c shift left arithmetic (b0=0)
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# sla  (HL)     CB 26     16 z00c shift left arithmetic (b0=0)
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# swap r        CB 3x      8 z000 exchange low/hi-nibble
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# swap (HL)     CB 36     16 z000 exchange low/hi-nibble
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# sra  r        CB 2x      8 z00c shift right arithmetic (b7=b7)
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# sra  (HL)     CB 2E     16 z00c shift right arithmetic (b7=b7)
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# srl  r        CB 3x      8 z00c shift right logical (b7=0)
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# srl  (HL)     CB 3E     16 z00c shift right logical (b7=0)
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-
-# GMB Singlebit Operation Commands
-# bit  n,r      CB xx      8 z01- test bit n
-# bit  n,(HL)   CB xx     12 z01- test bit n
-# set  n,r      CB xx      8 ---- set bit n
-# set  n,(HL)   CB xx     16 ---- set bit n
-# res  n,r      CB xx      8 ---- reset bit n
-# res  n,(HL)   CB xx     16 ---- reset bit n
-
-# GMB CPU-Controlcommands
-
-# ccf           3F         4 -00c cy=cy xor 1
-NAME=CCF
-DESC=cy=cy xor 1
-USAGE=0x3F
-SYNTAX=
-ACTION=nop
-
-# scf           37         4 -001 cy=1
-NAME=SCF
-DESC=cy=1
-USAGE=0x37
-SYNTAX=
-ACTION=nop
-
-# nop           00         4 ---- no operation
 NAME=NOP
-DESC=n operation
+DESC=nop
 USAGE=0x00
 SYNTAX=
 ACTION=nop
 
-# halt          76       N*4 ---- halt until interrupt occurs (low power)
-NAME=HALT
-DESC=halt until interrupt occurs (low power)
-USAGE=0x76
+NAME=LD
+DESC=nop
+USAGE=0x01,u16_0
+SYNTAX=BC,u16_0
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x02
+SYNTAX=BC,A
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x03
+SYNTAX=BC
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x04
+SYNTAX=B
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x05
+SYNTAX=B
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x06,u8_0
+SYNTAX=B,u8_0
+ACTION=nop
+
+NAME=RLCA
+DESC=nop
+USAGE=0x07
 SYNTAX=
 ACTION=nop
 
-# stop          10 00      ? ---- low power standby mode (VERY low power)
+NAME=LD
+DESC=nop
+USAGE=0x08,u16_0
+SYNTAX=u16_0,SP
+ACTION=GOTO(IRAM(u16_0))
+
+NAME=ADD
+DESC=nop
+USAGE=0x09
+SYNTAX=HL,BC
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x0A
+SYNTAX=A,BC
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x0B
+SYNTAX=BC
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x0C
+SYNTAX=C
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x0D
+SYNTAX=C
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x0E,u8_0
+SYNTAX=C,u8_0
+ACTION=nop
+
+NAME=RRCA
+DESC=nop
+USAGE=0x0F
+SYNTAX=
+ACTION=nop
+
+# NOTE: apparantly some assemblers don't include the 0x00
+# Since 0x00 is NOP, going to leave it out
 NAME=STOP
-DESC=low power standby mode (VERY low power)
-USAGE=0x10,0x00
+DESC=nop
+USAGE=0x10
 SYNTAX=
 ACTION=nop
 
-# di            F3         4 ---- disable interrupts, IME=0
-# ei            FB         4 ---- enable interrupts, IME=1
+NAME=LD
+DESC=nop
+USAGE=0x11,u16_0
+SYNTAX=DE,u16_0
+ACTION=nop
 
-# GMB Jumpcommands
-# jp   nn       C3 nn nn  16 ---- jump to nn, PC=nn
-# jp   HL       E9         4 ---- jump to HL, PC=HL
-# jp   f,nn    xx nn nn 16;12 ---- conditional jump if nz,z,nc,c
-# jr   PC+dd   18 dd       12 ---- relative jump to nn (PC=PC+/-7bit)
-# jr   f,PC+dd xx dd     12;8 ---- conditional relative jump if nz,z,nc,c
-# call nn      CD nn nn    24 ---- call to nn, SP=SP-2, (SP)=PC, PC=nn
-# call f,nn    xx nn nn 24;12 ---- conditional call if nz,z,nc,c
+NAME=LD
+DESC=nop
+USAGE=0x12
+SYNTAX=DE,A
+ACTION=nop
 
-# ret          C9          16 ---- return, PC=(SP), SP=SP+2
+NAME=INC
+DESC=nop
+USAGE=0x13
+SYNTAX=DE
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x14
+SYNTAX=D
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x15
+SYNTAX=D
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x16,u8_0
+SYNTAX=D,u8_0
+ACTION=nop
+
+NAME=RLA
+DESC=nop
+USAGE=0x17
+SYNTAX=
+ACTION=nop
+
+NAME=JR
+DESC=nop
+USAGE=0x18,s8_0
+SYNTAX=
+ACTION=GOTO(%PC+s8_0)
+
+NAME=ADD
+DESC=nop
+USAGE=0x19
+SYNTAX=HL,DE
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x1A
+SYNTAX=A,DE
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x1B
+SYNTAX=DE
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x1C
+SYNTAX=E
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x1D
+SYNTAX=E
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x1E,u8_0
+SYNTAX=E,u8_0
+ACTION=nop
+
+NAME=RRA
+DESC=nop
+USAGE=0x1F
+SYNTAX=
+ACTION=nop
+
+NAME=JR
+DESC=nop
+USAGE=0x20,s8_0
+SYNTAX=NZ,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=LD
+DESC=nop
+USAGE=0x21,u16_0
+SYNTAX=HL,u16_0
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x22
+SYNTAX=HL,A
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x23
+SYNTAX=HL
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x24
+SYNTAX=H
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x25
+SYNTAX=H
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x26,u8_0
+SYNTAX=H,u8_0
+ACTION=nop
+
+NAME=DAA
+DESC=nop
+USAGE=0x27
+SYNTAX=
+ACTION=nop
+
+NAME=JR
+DESC=nop
+USAGE=0x28,s8_0
+SYNTAX=Z,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=ADD
+DESC=nop
+USAGE=0x29
+SYNTAX=HL,HL
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x2A
+SYNTAX=A,HL
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x2B
+SYNTAX=HL
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x2C
+SYNTAX=L
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x2D
+SYNTAX=L
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x2E,u8_0
+SYNTAX=L,u8_0
+ACTION=nop
+
+NAME=CPL
+DESC=nop
+USAGE=0x2F
+SYNTAX=
+ACTION=nop
+
+NAME=JR
+DESC=nop
+USAGE=0x30,s8_0
+SYNTAX=NC,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=LD
+DESC=nop
+USAGE=0x31,u16_0
+SYNTAX=SP,u16_0
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x32
+SYNTAX=HL,A
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x33
+SYNTAX=SP
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x34
+SYNTAX=HL
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x35
+SYNTAX=HL
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x36,u8_0
+SYNTAX=HL,u8_0
+ACTION=nop
+
+NAME=SCF
+DESC=nop
+USAGE=0x37
+SYNTAX=
+ACTION=nop
+
+NAME=JR
+DESC=nop
+USAGE=0x38,s8_0
+SYNTAX=C,s8_0
+ACTION=GOTO(%PC+s8_0)
+
+NAME=ADD
+DESC=nop
+USAGE=0x39
+SYNTAX=HL,SP
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x3A
+SYNTAX=A,HL
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x3B
+SYNTAX=SP
+ACTION=nop
+
+NAME=INC
+DESC=nop
+USAGE=0x3C
+SYNTAX=A
+ACTION=nop
+
+NAME=DEC
+DESC=nop
+USAGE=0x3D
+SYNTAX=A
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0x3E,u8_0
+SYNTAX=A,u8_0
+ACTION=nop
+
+NAME=CCF
+DESC=nop
+USAGE=0x3F
+SYNTAX=
+ACTION=nop
+
+NAME=LD
+DESC=load something
+USAGE=0x40+0x3F
+SYNTAX=
+ACTION=nop
+
+# NAME=HALT
+# DESC=halt the processor until interrupt
+# USAGE=0x76
+# SYNTAX=
+# ACTION=nop
+
+NAME=MATH
+DESC=techincal stuff
+USAGE=0xA0+0x3F
+SYNTAX=
+ACTION=nop
+
 NAME=RET
-DESC=return, PC=(SP), SP=SP+2
+DESC=nop
+USAGE=0xC0
+SYNTAX=NZ
+ACTION=RETURN()
+
+NAME=POP
+DESC=nop
+USAGE=0xC1
+SYNTAX=BC
+ACTION=nop
+
+NAME=JP
+DESC=nop
+USAGE=0xC2,u16_0
+SYNTAX=NZ,u16_0
+ACTION=GOTO(u16_0)
+
+NAME=JP
+DESC=nop
+USAGE=0xC3,u16_0
+SYNTAX=u16_0
+ACTION=GOTO(u16_0)
+
+NAME=CALL
+DESC=nop
+USAGE=0xC4,u16_0
+SYNTAX=NZ,u16_0
+ACTION=CALL(u16_0)
+
+NAME=PUSH
+DESC=nop
+USAGE=0xC5
+SYNTAX=BC
+ACTION=nop
+
+NAME=ADD
+DESC=nop
+USAGE=0xC6,u8_0
+SYNTAX=A,u8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xC7
+SYNTAX=
+ACTION=GOTO(0x0000)
+
+NAME=RET
+DESC=nop
+USAGE=0xC8
+SYNTAX=Z
+ACTION=CRETURN()
+
+NAME=RET
+DESC=nop
 USAGE=0xC9
 SYNTAX=
 ACTION=RETURN()
 
-# ret  f       xx        20;8 ---- conditional return if nz,z,nc,c
+NAME=JP
+DESC=nop
+USAGE=0xCA,u16_0
+SYNTAX=Z,u16_0
+ACTION=GOTO(u16_0)
 
-# reti         D9          16 ---- return and enable interrupts (IME=1)
+NAME=PREFIX
+DESC=Escape sequence
+USAGE=0xCB,u8_0
+SYNTAX=u8_0
+ACTION=nop
+
+NAME=CALL
+DESC=nop
+USAGE=0xCC,u16_0
+SYNTAX=Z,u16_0
+ACTION=CCALL(u16_0)
+
+NAME=CALL
+DESC=nop
+USAGE=0xCD,u16_0
+SYNTAX=u16_0
+ACTION=CALL(u16_0)
+
+NAME=ADC
+DESC=nop
+USAGE=0xCE,u8_0
+SYNTAX=A,u8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xCF
+SYNTAX=0x0008
+ACTION=GOTO(0x0008)
+
+NAME=RET
+DESC=nop
+USAGE=0xD0
+SYNTAX=NC
+ACTION=CRETURN()
+
+NAME=POP
+DESC=nop
+USAGE=0xD1
+SYNTAX=DE
+ACTION=nop
+
+NAME=JP
+DESC=nop
+USAGE=0xD2,u16_0
+SYNTAX=NC,u16_0
+ACTION=GOTO(u16_0)
+
+NAME=OHNOES
+DESC=undefined
+USAGE=0xD3
+SYNTAX=
+ACTION=nop
+
+NAME=CALL
+DESC=nop
+USAGE=0xD4,u16_0
+SYNTAX=NC,u16_0
+ACTION=CCALL(u16_0)
+
+NAME=PUSH
+DESC=nop
+USAGE=0xD5
+SYNTAX=DE
+ACTION=nop
+
+NAME=SUB
+DESC=nop
+USAGE=0xD6,s8_0
+SYNTAX=s8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xD7
+SYNTAX=0x10
+ACTION=GOTO(0x10)
+
+NAME=RET
+DESC=nop
+USAGE=0xD8
+SYNTAX=C
+ACTION=CRETURN()
+
 NAME=RETI
-DESC=return and enable interrupts (IME=1)
+DESC=nop
 USAGE=0xD9
 SYNTAX=
 ACTION=RETURN()
 
-# rst  n       xx          16 ---- call to 00,08,10,18,20,28,30,38
+NAME=JP
+DESC=nop
+USAGE=0xDA,u16_0
+SYNTAX=u16_0
+ACTION=GOTO(u16_0)
+
+NAME=OHNOES
+DESC=undefined
+USAGE=0xDB
+SYNTAX=
+ACTION=nop
+
+NAME=CALL
+DESC=nop
+USAGE=0xDC,u16_0
+SYNTAX=C,u16_0
+ACTION=CCALL(u16_0)
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xDD
+SYNTAX=
+ACTION=nop
+
+NAME=SBC
+DESC=nop
+USAGE=0xDE,s8_0
+SYNTAX=A,s8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xDF
+SYNTAX=0x18
+ACTION=GOTO(0x18)
+
+NAME=LDH
+DESC=nop
+USAGE=0xE0,s8_0
+SYNTAX=s8_0,A
+ACTION=nop
+
+NAME=POP
+DESC=nop
+USAGE=0xE1
+SYNTAX=HL
+ACTION=nop
+
+# XXX: why is this two bytes?
+# assume was mistake until I find out otherwise
+NAME=LD
+DESC=nop
+USAGE=0xE2
+SYNTAX=C,A
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xE3
+SYNTAX=
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xE4
+SYNTAX=
+ACTION=nop
+
+NAME=PUSH
+DESC=nop
+USAGE=0xE5
+SYNTAX=HL
+ACTION=nop
+
+NAME=AND
+DESC=nop
+USAGE=0xE6,u8_0
+SYNTAX=u8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xE7
+SYNTAX=0x20
+ACTION=GOTO(0x20)
+
+NAME=ADD
+DESC=nop
+USAGE=0xE8,s8_0
+SYNTAX=SP,s8_0
+ACTION=nop
+
+# FIXME: unsupported jump type
+NAME=JP
+DESC=nop
+USAGE=0xE9
+SYNTAX=HL
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0xEA,u16_0
+SYNTAX=u16_0,A
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xEB
+SYNTAX=
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xEC
+SYNTAX=
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xED
+SYNTAX=
+ACTION=nop
+
+NAME=XOR
+DESC=nop
+USAGE=0xEE,s8_0
+SYNTAX=s8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xEF
+SYNTAX=0x28
+ACTION=GOTO(0x28)
+
+NAME=LDH
+DESC=nop
+USAGE=0xF0,s8_0
+SYNTAX=A,s8_0
+ACTION=nop
+
+NAME=POP
+DESC=nop
+USAGE=0xF1
+SYNTAX=AF
+ACTION=nop
+
+# XXX: see 0xE2
+NAME=LD
+DESC=nop
+USAGE=0xF2
+SYNTAX=C,A
+ACTION=nop
+
+NAME=DI
+DESC=nop
+USAGE=0xF3
+SYNTAX=
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xF4
+SYNTAX=
+ACTION=nop
+
+NAME=PUSH
+DESC=nop
+USAGE=0xF5
+SYNTAX=AF
+ACTION=nop
+
+NAME=OR
+DESC=nop
+USAGE=0xF6,u8_0
+SYNTAX=u8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xF7
+SYNTAX=0x30
+ACTION=GOTO(0x30)
+
+NAME=LD
+DESC=nop
+USAGE=0xF8,s8_0
+SYNTAX=HL,SP,s8_0
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0xF9
+SYNTAX=SP,HL
+ACTION=nop
+
+NAME=LD
+DESC=nop
+USAGE=0xFA,u16_0
+SYNTAX=A,u16_0
+ACTION=nop
+
+NAME=EI
+DESC=nop
+USAGE=0xFB
+SYNTAX=
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xFC
+SYNTAX=
+ACTION=nop
+
+NAME=OHNOES
+DESC=nop
+USAGE=0xFD
+SYNTAX=
+ACTION=nop
+
+NAME=CP
+DESC=nop
+USAGE=0xFE,s8_0
+SYNTAX=s8_0
+ACTION=nop
+
+NAME=RST
+DESC=nop
+USAGE=0xFF
+SYNTAX=0x38
+ACTION=GOTO(0x38)
 
