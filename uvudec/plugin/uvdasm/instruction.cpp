@@ -27,7 +27,8 @@ UVDDisasmInstructionShared::UVDDisasmInstructionShared()
 	m_cpi = 0;
 	m_cpi_low = 0;
 	m_cpi_hi = 0;
-	m_inst_class = UVD_INSTRUCTION_CLASS_UNKNOWN;
+	m_isJump = false;
+	m_isCall = false;
 	m_config_line_syntax = 0;
 	m_config_line_usage = 0;
 	m_isImmediateOnlyFunction = UV_ERR_GENERAL;
@@ -143,15 +144,11 @@ uv_err_t UVDDisasmInstructionShared::analyzeAction()
 {
 	if( m_action.find("CALL") != std::string::npos )
 	{
-		m_inst_class = UVD_INSTRUCTION_CLASS_CALL;
+		m_isCall = true;
 	}
-	else if( m_action.find("GOTO") != std::string::npos )
+	if( m_action.find("GOTO") != std::string::npos )
 	{
-		m_inst_class = UVD_INSTRUCTION_CLASS_JUMP;
-	}
-	else
-	{
-		m_inst_class = UVD_INSTRUCTION_CLASS_UNKNOWN;
+		m_isJump = true;
 	}
 	
 	m_isImmediateOnlyFunction = isImmediateOnlyFunctionCore();
@@ -428,6 +425,12 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 	uint32_t followingPos = 0;
 	UVDDisasmArchitecture *architecture = NULL;
 
+	//Only can analyze calls and jumps currently
+	if( !getShared()->m_isCall && !getShared()->m_isJump )
+	{
+		return UV_ERR_OK;
+	}
+
 	followingPos = m_offset + m_inst_size;
 	architecture = (UVDDisasmArchitecture *)m_uvd->m_runtime->m_architecture;
 
@@ -495,7 +498,24 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 
 	//printf("Action: %s, type: %d\n", action.c_str(), getShared()->m_inst_class);
 	//See if its a call instruction
-	if( getShared()->m_inst_class == UVD_INSTRUCTION_CLASS_CALL )
+	UVDVariableMap environment;
+	UVDVariableMap mapOut;
+
+	uv_assert_err_ret(collectVariables(environment));
+				
+	/*
+	Add iterator specific environment
+	*/
+
+	//Register environment
+	//PC/IP is current instruction location
+	environment["PC"] = UVDVarient(followingPos);
+
+	//About 0.03 sec per exec...need to speed it up
+	//Weird...cast didn't work to solve pointer incompatibility
+	uv_assert_ret(architecture->m_interpreter);
+	uv_assert_err_ret(architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
+	if( getShared()->m_isCall )
 	{
 		/*
 		NAME=ACALL
@@ -504,29 +524,10 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 		SYNTAX=u8_0
 		ACTION=CALL(%PC&0x1F00+u8_0+0x6000)
 		*/
-
-		UVDVariableMap environment;
-		UVDVariableMap mapOut;
-
-		uv_assert_err_ret(collectVariables(environment));
-					
-		/*
-		Add iterator specific environment
-		*/
-
-		//Register environment
-		//PC/IP is current instruction location
-		environment["PC"] = UVDVarient(followingPos);
-
-		//About 0.03 sec per exec...need to speed it up
-		//Weird...cast didn't work to solve pointer incompatibility
-		uv_assert_ret(architecture->m_interpreter);
-		uv_assert_err_ret(architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
-		
+	
 		uv_assert_err_ret(analyzeCall(followingPos, mapOut));
-		
 	}
-	else if( getShared()->m_inst_class == UVD_INSTRUCTION_CLASS_JUMP )
+	if( getShared()->m_isJump )
 	{
 		/*
 		NAME=JNB
@@ -536,26 +537,9 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 		ACTION=GOTO(%PC+u8_1)
 		*/
 
-		UVDVariableMap environment;
-		UVDVariableMap mapOut;
-
-		uv_assert_err_ret(collectVariables(environment));
-					
-		/*
-		Add iterator specific environment
-		*/
-
-		//Register environment
-		//PC/IP is current instruction location
-		environment["PC"] = UVDVarient(followingPos);
-
-		//About 0.03 sec per exec...need to speed it up
-		//Weird...cast didn't work to solve pointer incompatibility
-		uv_assert_ret(architecture->m_interpreter);
-		uv_assert_err_ret(architecture->m_interpreter->interpretKeyed(action, environment, mapOut));
-
 		uv_assert_err_ret(analyzeJump(followingPos, mapOut));
 	}
+
 	return UV_ERR_OK;
 }
 

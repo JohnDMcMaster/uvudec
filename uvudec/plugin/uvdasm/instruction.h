@@ -90,7 +90,11 @@ public:
 	Instruction class 
 	If class is "prefix" or "extension", many of these fields do not hold meaningful values
 	*/
-	uint32_t m_inst_class;
+	//uint32_t m_inst_class;
+	//Z80 for example has conditional jumps...so don't make bad assumptions
+	//Make additional flags as needed, maybe we should just do char 
+	uvd_bool_t m_isJump;
+	uvd_bool_t m_isCall;
 
 	/*
 	head of operand linked list 

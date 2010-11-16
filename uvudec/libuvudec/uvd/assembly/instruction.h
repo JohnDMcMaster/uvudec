@@ -117,21 +117,6 @@ class UVDPrefix
 {
 };
 
-#define UVD_INSTRUCTION_CLASS_UNKNOWN					0
-//Assembly instruction hints
-//Code that, possibly on a condition, goes to another address
-#define UVD_INSTRUCTION_CLASS_JUMP						1
-//Calls a subroutine
-#define UVD_INSTRUCTION_CLASS_CALL						2
-//Returns from a subroutine
-#define UVD_INSTRUCTION_CLASS_RETURN					3
-//No operation
-#define UVD_INSTRUCTION_CLASS_NOP						4
-//Arithmetic: add, subtract, multiply, bitwise shift, etc
-#define UVD_INSTRUCTION_CLASS_ARITHMETIC				5
-//Move data.  Includes between registers and memory
-#define UVD_INSTRUCTION_CLASS_MOV						6
-
 /*
 Shared data among all instances of some given instruction
 Information that would be contained in datasheet
