@@ -563,7 +563,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		printf_debug("*Parsing syntax\n");		
 		if( UV_FAILED(uvd_parse_syntax(inst_shared, value_syntax.m_value)) )
 		{
-			printf_error("Error parsing syntax line %d, %s\n", value_syntax.m_line.c_str(), value_syntax.m_line.c_str());
+			printf_error("Error parsing syntax line %d, %s\n", value_syntax.m_lineNumber, value_syntax.m_line.c_str());
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 				

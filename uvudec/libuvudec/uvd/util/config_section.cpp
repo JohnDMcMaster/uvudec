@@ -140,7 +140,8 @@ uv_err_t UVDSectionConfigFile::fromFileNameByDot(const std::string &configFileNa
 			}
 
 			cur_section.m_file = &sectionsOut;
-			cur_section.m_lineNumber = start_index;
+			//Indexing starts at 0, but typically lines are numbered start at 1
+			cur_section.m_lineNumber = start_index + 1;
 			
 			//Skip the .
 			cur_section.m_name = lines[start_index].c_str() + 1;
@@ -154,7 +155,7 @@ uv_err_t UVDSectionConfigFile::fromFileNameByDot(const std::string &configFileNa
 			for( unsigned int j = 0; j < nLines; ++j )
 			//while( start_index < i )
 			{
-				cur_section.m_lines.push_back(UVDConfigLine(lines[start_index], &cur_section, start_index));
+				cur_section.m_lines.push_back(UVDConfigLine(lines[start_index], &cur_section, start_index + 1));
 				++start_index;
 			}
 			start_index = i;
@@ -193,7 +194,7 @@ uv_err_t UVDSectionConfigFile::fromFileNameSingleSection(const std::string &file
 	lines = split(fileData, '\n', false);
 
 	section.m_file = &out;
-	section.m_lineNumber = 0;
+	section.m_lineNumber = 1;
 	
 	out.m_sections.clear();
 	for( unsigned int j = 0; j < lines.size(); ++j )
