@@ -395,7 +395,6 @@ uv_err_t UVDDisasmOpcodeLookupTable::uvd_parse_usage(UVDDisasmInstructionShared 
 uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 {
 	unsigned int cur_line = 0;
-	unsigned int line_syntax = 0;
 	unsigned int line_usage = 0;
 
 	printf_debug("Initializing opcodes\n");
@@ -412,7 +411,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		//Its easier to parse some things before others
 		std::string value_desc;
 		std::string value_usage;
-		std::string value_syntax;
+		UVDConfigLine value_syntax;
 		std::string value_action;
 		std::string value_cycles;
 		std::string value_name;
@@ -426,7 +425,8 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			std::string::size_type equalsPos = 0;
 			std::string key;
 			std::string value;
-			std::string line = op_section->m_lines[cur_line].m_line;
+			UVDConfigLine configLine = op_section->m_lines[cur_line];
+			std::string line = configLine.m_line;
 
 			printf_debug("Line: <%s>\n", line.c_str());
 			
@@ -452,6 +452,8 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			value = line.substr(equalsPos + 1);
 			/* Skip the equals sign, make key comparisons easier */
 			key = line.substr(0, equalsPos);
+			configLine.m_key = key;
+			configLine.m_value = value;
 			
 			printf_debug("key: <%s>, value: <%s>\n", key.c_str(), value.c_str());
 	
@@ -482,8 +484,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			}
 			else if( !strcmp(key.c_str(), "SYNTAX") )
 			{
-				value_syntax = value;
-				line_syntax = cur_line;
+				value_syntax = configLine;
 			}
 			else if( !strcmp(key.c_str(), "ACTION") )
 			{
@@ -522,7 +523,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		printf_debug("std::string value_name = %s\n", value_name.c_str());
 		printf_debug("std::string value_desc = %s\n", value_desc.c_str());
 		printf_debug("std::string value_usage = %s\n", value_usage.c_str());
-		printf_debug("std::string value_syntax = %s\n", value_syntax.c_str());
+		printf_debug("std::string value_syntax = %s\n", value_syntax.m_line.c_str());
 		printf_debug("std::string value_action = %s\n", value_action.c_str());
 		printf_debug("std::string value_cycles = %s\n", value_cycles.c_str());
 
@@ -544,8 +545,8 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 
-		inst_shared->m_config_line_syntax = op_section->m_line;
-		inst_shared->m_config_line_usage = op_section->m_line;
+		inst_shared->m_config_line_syntax = op_section->m_lineNumber;
+		inst_shared->m_config_line_usage = op_section->m_lineNumber;
 		
 		//Trivial parsing
 		inst_shared->m_memoric = value_name;
@@ -560,9 +561,9 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		}
 
 		printf_debug("*Parsing syntax\n");		
-		if( UV_FAILED(uvd_parse_syntax(inst_shared, value_syntax)) )
+		if( UV_FAILED(uvd_parse_syntax(inst_shared, value_syntax.m_value)) )
 		{
-			printf_error("Error parsing syntax line %d, %s\n", inst_shared->m_config_line_syntax, value_syntax.c_str());
+			printf_error("Error parsing syntax line %d, %s\n", value_syntax.m_line.c_str(), value_syntax.m_line.c_str());
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 				

@@ -10,6 +10,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDConfigLine
 */
 
+UVDConfigLine::UVDConfigLine()
+{
+	m_lineNumber = 0;
+}
+
 UVDConfigLine::UVDConfigLine(const std::string &line, UVDConfigSection *section, unsigned int lineNumber)
 {
 	m_line = line;
@@ -27,7 +32,7 @@ UVDConfigSection
 
 UVDConfigSection::UVDConfigSection()
 {
-	m_line = 0;
+	m_lineNumber = 0;
 	m_file = NULL;
 }
 
@@ -46,7 +51,7 @@ uv_err_t UVDConfigSection::subdivide(const std::string &delim, std::vector<UVDCo
 
 	out.clear();
 	next.m_file = m_file;
-	next.m_line = m_line;
+	next.m_lineNumber = m_lineNumber;
 	
 	for( std::vector<UVDConfigLine>::size_type i = 0; i < m_lines.size(); ++i )
 	{
@@ -135,7 +140,7 @@ uv_err_t UVDSectionConfigFile::fromFileNameByDot(const std::string &configFileNa
 			}
 
 			cur_section.m_file = &sectionsOut;
-			cur_section.m_line = start_index;
+			cur_section.m_lineNumber = start_index;
 			
 			//Skip the .
 			cur_section.m_name = lines[start_index].c_str() + 1;
@@ -188,7 +193,7 @@ uv_err_t UVDSectionConfigFile::fromFileNameSingleSection(const std::string &file
 	lines = split(fileData, '\n', false);
 
 	section.m_file = &out;
-	section.m_line = 0;
+	section.m_lineNumber = 0;
 	
 	out.m_sections.clear();
 	for( unsigned int j = 0; j < lines.size(); ++j )

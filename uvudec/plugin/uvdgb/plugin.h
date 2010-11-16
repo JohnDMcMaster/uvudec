@@ -21,8 +21,8 @@ public:
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
 	virtual uv_err_t getAuthor(std::string &out);
-	virtual uv_err_t canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
-	virtual uv_err_t getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+	virtual uv_err_t canLoadObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
+	virtual uv_err_t loadObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
 
 public:
 };

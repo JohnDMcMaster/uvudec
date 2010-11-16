@@ -133,8 +133,10 @@ public:
 	/*
 	Binary format wrapper
 	*/
-	virtual uv_err_t canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
-	virtual uv_err_t getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+	//virtual uv_err_t canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
+	virtual uv_err_t canLoadObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
+	//virtual uv_err_t getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+	virtual uv_err_t loadObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
 	/*
 	If we deem appropriete, load architecture
 	Returns UV_ERR_NOTSUPPORTED if we can't support the data format

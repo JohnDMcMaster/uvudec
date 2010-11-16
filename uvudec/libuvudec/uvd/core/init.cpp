@@ -142,7 +142,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		
 		uv_assert_ret(plugin);
 		printf_plugin_debug("plugin %s trying canLoad object\n", (*iter).first.c_str());
-		rcTemp = plugin->canGetObject(data, hints,  &loadPriority);
+		rcTemp = plugin->canLoadObject(data, hints,  &loadPriority);
 		if( UV_FAILED(rcTemp) )
 		{
 			printf_plugin_debug("plugin %s failed to canLoad object\n", (*iter).first.c_str());
@@ -188,7 +188,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		uv_err_t rcTemp = UV_ERR_GENERAL;
 		
 		uv_assert_ret(plugin);
-		rcTemp = plugin->getObject(data, hints, &object);
+		rcTemp = plugin->loadObject(data, hints, &object);
 		if( UV_FAILED(rcTemp) )
 		{
 			printf_error("plugin %s failed to load object\n", plugin->getName().c_str());
@@ -212,7 +212,9 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		return UV_ERR_GENERAL;
 	}
 	
-	uv_assert_err_ret(object->init(data));
+	//Its probably better to let the object take care of this
+	//For example, if init fails, we can try another candidate
+	//uv_assert_err_ret(object->init(data));
 	
 	uv_assert_ret(out);
 	*out = object;

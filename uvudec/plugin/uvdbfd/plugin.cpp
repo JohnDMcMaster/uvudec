@@ -70,12 +70,12 @@ uv_err_t UVDBFDPlugin::getAuthor(std::string &out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+uv_err_t UVDBFDPlugin::canLoadObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
 {
 	return UV_DEBUG(UVDBFDObject::canLoad(data, hints, confidence, this));
 }
 
-uv_err_t UVDBFDPlugin::getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
+uv_err_t UVDBFDPlugin::loadObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
 {
 	return UV_DEBUG(UVDBFDObject::tryLoad(data, hints, out, this));
 }

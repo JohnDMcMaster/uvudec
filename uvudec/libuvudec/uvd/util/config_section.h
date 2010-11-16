@@ -13,6 +13,7 @@ class UVDConfigSection;
 class UVDConfigLine
 {
 public:
+	UVDConfigLine();
 	UVDConfigLine(const std::string &line, UVDConfigSection *section, unsigned int lineNumber);
 	~UVDConfigLine();
 	
@@ -22,6 +23,8 @@ public:
 	UVDConfigSection *m_section;
 	//Actual file line number
 	unsigned int m_lineNumber;
+	std::string m_key;
+	std::string m_value;
 };
 
 class UVDSectionConfigFile;
@@ -38,7 +41,7 @@ public:
 	//Name of the section
 	std::string m_name;
 	//Where the section starts
-	unsigned int m_line;
+	unsigned int m_lineNumber;
 	
 	//std::vector<std::string> m_lines;
 	//TODO: these are here more of as a placeholder
@@ -50,6 +53,9 @@ public:
 	UVDSectionConfigFile *m_file;
 };
 
+/*
+WARNING: do not do a shallow copy of this
+*/
 class UVDSectionConfigFile
 {
 public:

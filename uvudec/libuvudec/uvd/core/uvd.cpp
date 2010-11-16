@@ -405,6 +405,7 @@ UVD::UVD()
 	m_pluginEngine = NULL;
 	m_runtime = NULL;
 	m_flirt = NULL;
+	m_eventEngine = NULL;
 }
 
 UVD::~UVD()
@@ -415,7 +416,14 @@ UVD::~UVD()
 uv_err_t UVD::deinit()
 {
 	UVD_POKE(this);
-	UVD_POKE(this);
+	UVD_POKE(&m_runtime);
+	UVD_POKE(&m_analyzer);
+	UVD_POKE(&m_config);
+	UVD_POKE(&m_format);
+	UVD_POKE(&m_flirt);
+	UVD_POKE(&m_eventEngine);
+	UVD_POKE(&m_pluginEngine);
+
 	printf_debug_level(UVD_DEBUG_PASSES, "UVD::deinit, this=0x%08X, g_uvd=0x%08X, m_config=0x%08X, g_config=0x%08X\n",
 			(int)this, (int)g_uvd, (int)m_config, (int)g_config);
 	if( m_config )

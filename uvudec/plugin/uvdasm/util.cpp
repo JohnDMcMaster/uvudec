@@ -183,7 +183,7 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 	}
 	else
 	{
-		printf_error("Unrecognized operand: %s\n", in.c_str());
+		printf_error("Unrecognized operand: <%s>\n", in.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 

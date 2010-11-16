@@ -127,7 +127,7 @@ uv_err_t UVDPlugin::outputHeader(std::vector<std::string> &lines)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+uv_err_t UVDPlugin::canLoadObject(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
 {
 	/*
 	Crude default handler that literally tries a full load and then aborts it
@@ -137,7 +137,7 @@ uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hin
 	uv_assert_ret(confidence);
 	
 	UVD_POKE(data);
-	if( UV_SUCCEEDED(getObject((UVDData *)data, hints, &object)) )
+	if( UV_SUCCEEDED(loadObject((UVDData *)data, hints, &object)) )
 	{
 		printf_plugin_debug("%s: canGetObject acceptable match by getObject\n", getName().c_str());
 		UVD_POKE(data);
@@ -155,7 +155,7 @@ uv_err_t UVDPlugin::canGetObject(const UVDData *data, const UVDRuntimeHints &hin
 	}
 }
 
-uv_err_t UVDPlugin::getObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
+uv_err_t UVDPlugin::loadObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
 {
 	return UV_ERR_NOTSUPPORTED;
 }
