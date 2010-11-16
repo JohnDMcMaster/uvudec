@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/util/util.h"
+#include "uvd/util/config_section.h"
 #include "uvd/assembly/address.h"
 #include "uvd/config/config.h"
 #include "uvdasm/config_symbol.h"
@@ -425,7 +426,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 			std::string::size_type equalsPos = 0;
 			std::string key;
 			std::string value;
-			std::string line = op_section->m_lines[cur_line];
+			std::string line = op_section->m_lines[cur_line].m_line;
 
 			printf_debug("Line: <%s>\n", line.c_str());
 			
@@ -561,7 +562,7 @@ uv_err_t UVDDisasmOpcodeLookupTable::init_opcode(UVDConfigSection *op_section)
 		printf_debug("*Parsing syntax\n");		
 		if( UV_FAILED(uvd_parse_syntax(inst_shared, value_syntax)) )
 		{
-			printf_debug("Error parsing syntax line %d\n", inst_shared->m_config_line_syntax);
+			printf_error("Error parsing syntax line %d, %s\n", inst_shared->m_config_line_syntax, value_syntax.c_str());
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 				

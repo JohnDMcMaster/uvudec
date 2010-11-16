@@ -8,15 +8,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/instruction.h"
 #include "uvd/util/util.h"
 
-UVDConfigSection::UVDConfigSection()
-{
-	m_line = 0;
-}
-
-UVDConfigSection::~UVDConfigSection()
-{
-}
-
 UVDConfigValue::UVDConfigValue()
 {
 	m_operand_type = 0;
@@ -192,65 +183,11 @@ uv_err_t UVDConfigValue::parseType(const std::string &in_real, UVDConfigValue *o
 	}
 	else
 	{
-		printf_debug("Unrecognized operand: %s\n", in.c_str());
+		printf_error("Unrecognized operand: %s\n", in.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
 	out->m_name = temp_name;
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDAsmUtil::readSections(const std::string configFileName, std::vector<UVDConfigSection> &sectionsOut)
-{
-	std::string configFileData;
-	std::vector<std::string> lines;
-	unsigned int start_index = 0;
-	
-	printf_debug("Reading file...\n");
-	uv_assert_err_ret(UVDReadFileByString(configFileName, configFileData));
-	
-	//Find out how many sections we got
-	lines = UVDSplitLines(configFileData);
-		
-	for( std::vector<std::string>::size_type i = 0; i < lines.size(); ++i )
-	{
-		//Trigger on falling edges of sections
-		if( lines[i][0] == '.' || i == lines.size() - 1 )
-		{
-			UVDConfigSection cur_section;
-			unsigned int nLines = 0;
-
-			//Initialize where the section starts
-			if( start_index == 0 )
-			{
-				start_index = i;
-				continue;
-			}
-
-			cur_section.m_line = start_index;
-			
-			//Skip the .
-			cur_section.m_name = lines[start_index].c_str() + 1;
-			printf_debug("Reading section: %s\n", cur_section.m_name.c_str());
-			printf_debug("Start: %d, end: %d\n", start_index, i);
-			++start_index;
-			
-			//Copy lines
-			nLines = (unsigned int)(i - start_index);
-			printf_debug("Copying lines: %d\n", nLines);
-			for( unsigned int j = 0; j < nLines; ++j )
-			//while( start_index < i )
-			{
-				std::string s = lines[start_index];
-				cur_section.m_lines.push_back(s);
-				++start_index;
-			}
-			start_index = i;
-			sectionsOut.push_back(cur_section);
-			printf_debug("Section read\n");
-		}
-	}
 	
 	return UV_ERR_OK;
 }

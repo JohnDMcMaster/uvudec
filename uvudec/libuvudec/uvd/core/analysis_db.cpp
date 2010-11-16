@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/core/analysis_db.h"
+#include "uvd/util/config_section.h"
 #include "uvd/util/util.h"
 #include "uvd/elf/elf.h"
 #include <vector>
@@ -57,19 +58,18 @@ uv_err_t UVDAnalysisDB::queryFunctionByBinary(UVDDataChunk *dataChunk, UVDBinary
 
 uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 {
+	//This code isn't being used, its likely to get replaced by JSON config
+	return UV_DEBUG(UV_ERR_GENERAL);
+#if 0	
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::vector<std::string> lines;
-	std::vector< std::vector<std::string> > dbParts;
+	UVDSectionConfigFile dbParts;
 	std::string fileData;
 	
 	UV_ENTER();
 
 	printf_debug("Reading DB file...\n");
-	uv_assert_err_ret(readFile(file, fileData));	
-	
-	lines = split(fileData, '\n', false);
-
-	uv_assert_err_ret(splitConfigLinesVector(lines, "NAME=", dbParts));
+	uv_assert_err_ret(UVDSectionConfigFile::fromFileNameByDelim(file, "NAME=", dbParts));
 	printf_debug("DB parts: %d\n", dbParts.size());
 	//Loop for each function
 	for( std::vector< std::vector<std::string> >::size_type dbPartsIndex = 0; dbPartsIndex < dbParts.size(); ++dbPartsIndex )
@@ -133,7 +133,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 		
 	
 		std::vector< std::vector<std::string> > implParts;
-		uv_assert_err_ret(splitConfigLinesVector(implLines, "BINARY_RAW=", implParts));
+		uv_assert_err_ret(UVDSplitConfigLinesVector(implLines, "BINARY_RAW=", implParts));
 		//Loop for each function impl
 		for( std::vector< std::vector<std::string> >::size_type implPartsIndex = 0; implPartsIndex < implParts.size(); ++implPartsIndex )
 		{
@@ -198,6 +198,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 	}
 
 	return UV_ERR_OK;
+#endif
 }
 
 uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunctionShared *function)

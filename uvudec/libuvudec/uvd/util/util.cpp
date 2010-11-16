@@ -360,59 +360,6 @@ std::vector<std::string> charPtrArrayToVector(char *const *argv, int argc)
 	return ret;
 }
 
-/*
-For splitting up config sections
-Sections must start with delim and output will include it
-*/
-uv_err_t splitConfigLinesVector(const std::vector<std::string> &in, const std::string &delim, std::vector< std::vector<std::string> > &out)
-{
-	std::vector<std::string> next;
-	for( std::vector<std::string>::size_type i = 0; i < in.size(); ++i )
-	{
-		std::string partRaw = in[i];
-		std::string part;
-		
-		// FIXME: this should be preprocessed out before this
-		uv_assert_err_ret(uvdPreprocessLine(partRaw, part));
-		if( part.empty() )
-		{
-			continue;
-		}
-
-		//Did we find delim?
-		if( part.find(delim) == 0 )
-		{
-			//Add last entry, if present
-			if( !next.empty() )
-			{
-				out.push_back(next);
-				next.clear();
-			}
-		}
-		else
-		{
-			//We should have an entry on first usable line, early error indicator
-			if( next.empty() )
-			{
-				printf_debug("Got: %s, expected: %s\n", part.c_str(), delim.c_str());
-				return UV_DEBUG(UV_ERR_GENERAL);
-			}
-		}
-		
-		//Build current item
-		next.push_back(part);
-	}
-	
-	//Add final entry, if present (none if blank input)
-	if( !next.empty() )
-	{
-		out.push_back(next);
-		next.clear();
-	}
-	
-	return UV_ERR_OK;
-}
-
 uv_err_t getArguments(const std::string &in, std::vector<std::string> &out)
 {
 	std::string cur;

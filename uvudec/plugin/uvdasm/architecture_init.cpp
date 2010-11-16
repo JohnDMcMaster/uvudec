@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/architecture/architecture.h"
+#include "uvd/util/config_section.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvdasm/architecture.h"
@@ -72,7 +73,7 @@ Ex:
 //Initialize the opcode tables
 uv_err_t UVDDisasmArchitecture::init_config()
 {
-	std::vector<UVDConfigSection> sections;
+	UVDSectionConfigFile sections;
 		
 	UVDConfigSection *op_section = NULL;
 	UVDConfigSection *mem_section = NULL;
@@ -82,38 +83,39 @@ uv_err_t UVDDisasmArchitecture::init_config()
 	UVDConfigSection *vec_section = NULL;
 
 	printf_debug("Reading file...\n");
-	if( UV_FAILED(UVDAsmUtil::readSections(m_architectureFileName, sections)) )
+	if( UV_FAILED(UVDSectionConfigFile::fromFileNameByDot(m_architectureFileName, sections)) )
 	{
 		printf_error("Could not read config file: %s\n", g_asmConfig->m_architectureFileName.c_str());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
-	for( std::vector<UVDConfigSection>::size_type curSectionIndex = 0; curSectionIndex < sections.size(); ++curSectionIndex )
+	for( std::vector<UVDConfigSection>::size_type curSectionIndex = 0; curSectionIndex < sections.m_sections.size(); ++curSectionIndex )
 	{
-		UVDConfigSection &section = sections[curSectionIndex];
+		UVDConfigSection &section = sections.m_sections[curSectionIndex];
+		
 		if( section.m_name == "OP" )
 		{
-			op_section = &sections[curSectionIndex];
+			op_section = &section;
 		}
 		else if( section.m_name == "MEM" )
 		{
-			mem_section = &sections[curSectionIndex];
+			mem_section = &section;
 		}
 		else if( section.m_name == "MISC" )
 		{
-			misc_section = &sections[curSectionIndex];
+			misc_section = &section;
 		}
 		else if( section.m_name == "REG" )
 		{
-			reg_section = &sections[curSectionIndex];
+			reg_section = &section;
 		}
 		else if( section.m_name == "PRE" )
 		{
-			pre_section = &sections[curSectionIndex];
+			pre_section = &section;
 		}
 		else if( section.m_name == "VEC" )
 		{
-			vec_section = &sections[curSectionIndex];
+			vec_section = &section;
 		}
 		else
 		{
@@ -171,7 +173,7 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	{
 		std::string key;
 		std::string value;
-		std::string line = misc_section->m_lines[cur_line];
+		std::string line = misc_section->m_lines[cur_line].m_line;
 		uv_err_t rc_temp = UV_ERR_GENERAL;
 
 		printf_debug("Line: <%s>\n", line.c_str());
@@ -240,26 +242,28 @@ uv_err_t UVDDisasmArchitecture::init_misc(UVDConfigSection *misc_section)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
+uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *memSection)
 {
-	std::vector< std::vector<std::string> > memSectionParts;
+	std::vector<UVDConfigSection> memSectionParts;
 	
 	printf_debug("Initializing memory data\n");
-	if( mem_section == NULL )
+	if( memSection == NULL )
 	{
 		printf_debug(".MEM section required\n");
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	
 	printf_debug("Processing mem lines...\n");
-	uv_assert_err_ret(splitConfigLinesVector(mem_section->m_lines, "NAME=", memSectionParts));
+	uv_assert_err_ret(memSection->subdivide("NAME=", memSectionParts));
 	printf_debug("Memory sections: %d\n", memSectionParts.size());
-	for( std::vector< std::vector<std::string> >::size_type memSectionPartsIndex = 0; memSectionPartsIndex < memSectionParts.size(); ++memSectionPartsIndex )
+	for( std::vector<UVDConfigSection>::size_type memSectionPartsIndex = 0;
+			memSectionPartsIndex < memSectionParts.size(); ++memSectionPartsIndex )
 	{
-		std::vector<std::string> cur_section = memSectionParts[memSectionPartsIndex];
+		UVDConfigSection cur_section = memSectionParts[memSectionPartsIndex];
 
 		/* Its easier to parse some things before others */
 		std::string value_name;
+		std::string value_desc;
 		std::string value_type;
 		std::string value_min;
 		std::string value_max;
@@ -273,16 +277,17 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		
 		UVDAddressSpace *memoryShared = NULL;
 		//Mapping addresses
-		std::vector< std::vector<std::string> > memoryMappingEntriesParts;
+		std::vector<UVDConfigSection> memoryMappingEntriesParts;
 
 		//printf_debug("\nLooking for next memory block at index %d\n", cur_line);
 		/* Start by extracting key/value pairs */
-		for( unsigned int cur_line = 0; cur_line < cur_section.size(); ++cur_line )
+		for( unsigned int cur_line = 0; cur_line < cur_section.m_lines.size(); ++cur_line )
 		{
 			uv_err_t rc_temp = UV_ERR_GENERAL;
 			std::string key;
 			std::string value;
-			std::string line = cur_section[cur_line];
+			UVDConfigLine configLine = cur_section.m_lines[cur_line];
+			std::string line = configLine.m_line;
 
 			printf_debug("Line: <%s>\n", line.c_str());
 			rc_temp = uvdParseLine(line, key, value);
@@ -301,6 +306,10 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 			if( key == "NAME" )
 			{
 				value_name = value;
+			}
+			else if( key == "DESC" )
+			{
+				value_desc = value;
 			}
 			else if( key == "TYPE" )
 			{
@@ -533,9 +542,9 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 		
 #if 0
 		//FIXME: this code has been deactivated since it wasn't being used and memory architecture rewritten
-		uv_assert_err_ret(splitConfigLinesVector(memoryMappingEntries, "MAPPING_DST=", memoryMappingEntriesParts));
+		uv_assert_err_ret(memoryMappingEntries->subdivide("MAPPING_DST=", memoryMappingEntriesParts));
 		//Loop for each mapping
-		for( std::vector< std::vector<std::string> >::size_type i = 0; i < memoryMappingEntriesParts.size(); ++i )
+		for( std::vector<UVDConfigSection>::size_type i = 0; i < memoryMappingEntriesParts.size(); ++i )
 		{
 			UVDAddressSpaceMapper *memoryMapper = NULL;
 			std::vector<std::string> lastMappingEntry = memoryMappingEntriesParts[i];
@@ -669,7 +678,7 @@ uv_err_t UVDDisasmArchitecture::init_memory(UVDConfigSection *mem_section)
 uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
-	std::vector< std::vector<std::string> > regSectionParts;
+	std::vector<UVDConfigSection> regSectionParts;
 	
 	printf_debug("Initializing register data\n");
 	if( reg_section == NULL )
@@ -682,11 +691,11 @@ uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
 	//uv_assert_err(uvd_init_equiv_mem());
 
 	printf_debug("Processing reg lines...\n");
-	uv_assert_err_ret(splitConfigLinesVector(reg_section->m_lines, "NAME=", regSectionParts));
+	uv_assert_err_ret(reg_section->subdivide("NAME=", regSectionParts));
 	printf_debug("Reg sections: %d\n", regSectionParts.size());
-	for( std::vector< std::vector<std::string> >::size_type regSectionPartsIndex = 0; regSectionPartsIndex < regSectionParts.size(); ++regSectionPartsIndex )
+	for( std::vector<UVDConfigSection>::size_type regSectionPartsIndex = 0; regSectionPartsIndex < regSectionParts.size(); ++regSectionPartsIndex )
 	{
-		std::vector<std::string> cur_section = regSectionParts[regSectionPartsIndex];	
+		UVDConfigSection cur_section = regSectionParts[regSectionPartsIndex];	
 	
 		/* Its easier to parse some things before others */
 		std::string value_name;
@@ -698,12 +707,12 @@ uv_err_t UVDDisasmArchitecture::init_reg(UVDConfigSection *reg_section)
 		
 		//printf_debug("\nLooking for next reg block at index %d\n", cur_line);
 		/* Start by extracting key/value pairs */
-		for( std::vector<std::string>::size_type cur_line = 0; cur_line < cur_section.size(); ++cur_line )
+		for( std::vector<UVDConfigLine>::size_type cur_line = 0; cur_line < cur_section.m_lines.size(); ++cur_line )
 		{
 			uv_err_t rc_temp = UV_ERR_GENERAL;
 			std::string key;
 			std::string value;
-			std::string line = cur_section[cur_line];
+			std::string line = cur_section.m_lines[cur_line].m_line;
 
 			printf_debug("Line: <%s>\n", line.c_str());
 			rc_temp = uvdParseLine(line, key, value);
@@ -839,7 +848,7 @@ uv_err_t UVDDisasmArchitecture::init_vectors(UVDConfigSection *section)
 	uv_err_t rc = UV_ERR_GENERAL;
 
 #if USING_VECTORS
-	std::vector< std::vector<std::string> > sectionParts;
+	std::vector<UVDConfigSection> sectionParts;
 	
 	printf_debug("Initializing vectors data\n");
 	if( section == NULL )
@@ -850,12 +859,12 @@ uv_err_t UVDDisasmArchitecture::init_vectors(UVDConfigSection *section)
 	}
 
 	printf_debug("Processing lines...\n");
-	uv_assert_err_ret(splitConfigLinesVector(section->m_lines, "NAME=", sectionParts));
+	uv_assert_err_ret(section->subdivide("NAME=", sectionParts));
 	printf_debug("Sections: %d\n", sectionParts.size());
-	for( std::vector< std::vector<std::string> >::size_type sectionPartsIndex = 0; sectionPartsIndex < sectionParts.size(); ++sectionPartsIndex )
+	for( std::vector<UVDConfigSection>::size_type sectionPartsIndex = 0; sectionPartsIndex < sectionParts.size(); ++sectionPartsIndex )
 	{
 		UVDCPUVector *vector = NULL;
-		std::vector<std::string> cur_section = sectionParts[sectionPartsIndex];	
+		UVDConfigSection cur_section = sectionParts[sectionPartsIndex];	
 	
 		/* Its easier to parse some things before others */
 		std::string value_name;

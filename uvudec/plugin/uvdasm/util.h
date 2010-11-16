@@ -23,22 +23,6 @@ public:
 	std::vector<UVDConfigValue *> m_args;
 };
 
-class UVDConfigSection
-{
-public:
-	UVDConfigSection();
-	~UVDConfigSection();
-
-public:
-	std::string m_name;
-	std::vector<std::string> m_lines;
-	//TODO: these are here more of as a placeholder
-	//Should replace these vectors with an entry ConfigEntry to track this properly
-	//This would allow automatic removal of duplicate entries and maybe even hash map lookups
-	std::vector<uint32_t> m_lineNumbers;
-	int m_line;
-};
-
 /*
 An actual value parsed from a configuration file
 
@@ -98,8 +82,6 @@ public:
 class UVDAsmUtil
 {
 public:
-	static uv_err_t readSections(const std::string config_file, std::vector<UVDConfigSection> &sectionsIn);
-
 	/*
 	a UVDConfigValue is a raw structural form of the text
 	It does bulk parsing work shared by both usage and syntax

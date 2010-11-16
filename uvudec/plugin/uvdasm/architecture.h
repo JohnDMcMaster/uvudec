@@ -15,6 +15,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 /*
 Configuration file based architecture
 */
+class UVDConfigSection;
 class UVDDisasmArchitecture : public UVDArchitecture
 {
 public:

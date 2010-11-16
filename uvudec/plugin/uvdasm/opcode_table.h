@@ -18,6 +18,7 @@ Byte based lookup table
 Should be ultimatly loaded from an opcode file
 */
 
+class UVDConfigSection;
 class UVDDisasmOpcodeLookupTable
 {
 public:

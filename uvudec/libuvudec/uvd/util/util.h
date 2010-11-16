@@ -95,7 +95,6 @@ uv_err_t parseFunc(const std::string &text, std::string &name, std::string &cont
 //I could swear std::string stopped at nulls on CentOS 5, but Fedora 13 seems to include them...so guess we need this
 std::string UVDSafeStringFromBuffer(const char *buff, size_t size);
 
-uv_err_t splitConfigLinesVector(const std::vector<std::string> &in, const std::string &delim, std::vector< std::vector<std::string> > &out);
 //"0x100-0x1FF" or "0x100,0x1FF" form
 //If a single number is given, assume from that number to itself
 //Will error if not of either of these forms
