@@ -698,72 +698,84 @@ NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xB4,u8_0,u8_1
 SYNTAX=%A,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xB5,u8_0,u8_1
 SYNTAX=%A,RAM_DIR(u8_0),u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xB6,u8_0,u8_1
 SYNTAX=RAM_INDIR(%R0),u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xB7,u8_0,u8_1
 SYNTAX=RAM_INDIR(%R1),u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xB8,u8_0,u8_1
 SYNTAX=%R0,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xB9,u8_0,u8_1
 SYNTAX=%R1,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xBA,u8_0,u8_1
 SYNTAX=%R2,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xBB,u8_0,u8_1
 SYNTAX=%R3,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xBC,u8_0,u8_1
 SYNTAX=%R4,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xBD,u8_0,u8_1
 SYNTAX=%R5,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xBE,u8_0,u8_1
 SYNTAX=%R6,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 NAME=CJNE
 DESC=Compare and Jump if Not Equal
 USAGE=0xBF,u8_0,u8_1
 SYNTAX=%R7,u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 
@@ -904,54 +916,63 @@ NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xD5,u8_0,s8_1
 SYNTAX=RAM_DIR(u8_0),s8_1
+CONDITION=Y
 ACTION=GOTO(%PC+s8_1)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xD8,s8_0
 SYNTAX=%R0,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xD9,s8_0
 SYNTAX=%R1,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xDA,s8_0
 SYNTAX=%R2,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xDB,s8_0
 SYNTAX=%R3,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xDC,s8_0
 SYNTAX=%R4,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xDD,s8_0
 SYNTAX=%R5,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xDE,s8_0
 SYNTAX=%R6,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 NAME=DJNZ
 DESC=Decrement Register and Jump if Not Zero
 USAGE=0xDF,s8_0
 SYNTAX=%R7,s8_0
+CONDITION=Y
 ACTION=GOTO(%PC+s8_0)
 
 
@@ -1040,6 +1061,7 @@ NAME=JB
 DESC=Jump if Bit Set
 USAGE=0x20,u8_0,u8_1
 SYNTAX=u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 
@@ -1047,6 +1069,7 @@ NAME=JBC
 DESC=Jump if Bit Set and Clear Bit
 USAGE=0x10,u8_0,u8_1
 SYNTAX=u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 
@@ -1054,6 +1077,7 @@ NAME=JC
 DESC=Jump if Carry Set
 USAGE=0x40,u8_0
 SYNTAX=u8_0
+CONDITION=Y
 ACTION=GOTO(%PC+u8_0)
 
 # Function pointer support
@@ -1072,6 +1096,7 @@ NAME=JNB
 DESC=Jump if Bit Not Set
 USAGE=0x30,u8_0,u8_1
 SYNTAX=u8_0,u8_1
+CONDITION=Y
 ACTION=GOTO(%PC+u8_1)
 
 
@@ -1079,6 +1104,7 @@ NAME=JNC
 DESC=Jump if Carry Not Set
 USAGE=0x50,u8_0
 SYNTAX=u8_0
+CONDITION=Y
 ACTION=GOTO(%PC+u8_0)
 
 
@@ -1086,6 +1112,8 @@ NAME=JNZ
 DESC=Jump if Accumulator Not Zero
 USAGE=0x70,u8_0
 SYNTAX=u8_0
+CONDITION=Y
+CONDITION=Y
 ACTION=GOTO(%PC+u8_0)
 
 
@@ -1094,6 +1122,7 @@ DESC=Jump if Accumulator Zero
 USAGE=0x60,u8_0
 SYNTAX=u8_0
 #ACTION=if(%A==0){CALL(%PC+u8_0)}
+CONDITION=Y
 ACTION=GOTO(%PC+u8_0)
 
 
