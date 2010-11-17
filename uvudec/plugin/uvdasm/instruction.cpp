@@ -353,7 +353,6 @@ uv_err_t UVDDisasmInstruction::parseOperands(UVDIteratorCommon *uvdIter,
 		std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands)
 {
 	UVDData *data = NULL;;
-	uv_assert_ret(m_uvd);
 	data = uvdIter->m_addressSpace->m_data;
 	uv_assert_ret(data);
 	
@@ -372,13 +371,9 @@ uv_err_t UVDDisasmInstruction::parseOperands(UVDIteratorCommon *uvdIter,
 		
 		uv_assert_ret(op_shared);
 		
-		op = new UVDDisasmOperand();
+		rcParse = op_shared->parseOperand(uvdIter, &op);
 		uv_assert_ret(op);
-		op->m_instruction = this;
 		
-		op->m_shared = op_shared;
-		
-		rcParse = op->parseOperand(uvdIter);
 		uv_assert_err_ret(rcParse);
 		//Truncated analysis?
 		if( rcParse == UV_ERR_DONE )
@@ -721,6 +716,13 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	*/
 	/* Since operand and shared operand structs are linked list, we can setup the entire structure by passing in the first elements */
 	rcTemp = parseOperands(&iterCommon, getShared()->m_operands, m_operands);
+	/*
+	for( std::vector<UVDOperand *>::size_type i = 0; i < m_operands.size(); ++iter )
+	{
+		uv_assert_err_ret((*iter)->setFunction(this));
+	}
+	*/
+
 	uv_assert_err_ret(rcTemp);
 	//Truncated analysis?
 	if( rcTemp == UV_ERR_DONE )
@@ -734,7 +736,7 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 		//uv_assert_err_ret(addWarning("Insufficient data to process instruction"));
 		return UV_ERR_OK;
 	}
-
+	
 	printf_debug("nextPosition, initial: %d, final: %d\n", startPosition, iterCommon.m_nextPosition);
 
 	uv_assert_ret(iterCommon.m_currentSize);

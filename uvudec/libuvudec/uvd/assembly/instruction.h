@@ -77,7 +77,7 @@ public:
 	//We do not own this
 	UVDOperandShared *m_shared;
 	//The instruction this operand belongs to, we do not own it, it owns us
-	UVDInstruction *m_instruction;
+	//UVDInstruction *m_instruction;
 };
 
 

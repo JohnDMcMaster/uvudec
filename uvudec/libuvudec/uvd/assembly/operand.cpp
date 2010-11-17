@@ -35,7 +35,7 @@ UVDOperand
 UVDOperand::UVDOperand()
 {
 	m_shared = NULL;
-	m_instruction = NULL;
+	//m_instruction = NULL;
 }
 
 UVDOperand::~UVDOperand()

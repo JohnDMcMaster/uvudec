@@ -38,6 +38,18 @@ const char *uvd_data_str(int uvd_data)
 }
 
 /*
+UVDDisasmNumericOperandShared
+*/
+
+UVDDisasmNumericOperandShared::UVDDisasmNumericOperandShared()
+{
+}
+
+UVDDisasmNumericOperandShared::~UVDDisasmNumericOperandShared()
+{
+}
+
+/*
 UVDDisasmOperandShared
 */
 
@@ -66,6 +78,22 @@ uv_err_t UVDDisasmOperandShared::deinit()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDDisasmOperandShared::parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out)
+{
+	//TOOD: migrate code and replace with below
+	//Assume someone forgot to implement it
+	//return UV_DEBUG(UV_ERR_GENERAL);
+	//In the meantime, use the old in place handler
+	UVDDisasmOperand *op = NULL;
+	
+	op = new UVDDisasmOperand();
+	uv_assert_ret(op);
+	*out = op;
+	op->m_shared = this;
+	//Direct pass, be mindful of UV_ERR_DONE and such
+	return UV_DEBUG(op->parseOperand(uvdIter));
+}
+
 uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parsed_type, UVDDisasmOperandShared **op_shared_in)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -88,6 +116,7 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 							
 		op_shared->m_immediate_size = parsed_type->m_num_bits;
 		//inst_shared->m_total_length += op_shared->m_immediate_size / 8;			
+		*op_shared_in = op_shared;
 	}
 	else if( parsed_type->m_operand_type == UV_DISASM_DATA_REG )
 	{
@@ -98,6 +127,7 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 		/* Cur will be free'd soon and has other issues, so duplicate */
 		op_shared->m_name = parsed_type->m_name;
 		op_shared->m_type = parsed_type->m_operand_type;
+		*op_shared_in = op_shared;
 	}
 	else if( parsed_type->m_operand_type == UV_DISASM_DATA_FUNC )
 	{
@@ -129,6 +159,18 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 			uv_assert(op_shared_local);
 			op_shared->m_func->m_args.push_back(op_shared_local);
 		}
+		*op_shared_in = op_shared;
+	}
+	else if( parsed_type->m_operand_type == UV_DISASM_DATA_CONSTANT )
+	{
+		UVDDisasmConstantOperandShared *opShared = NULL;
+		
+		opShared = new UVDDisasmConstantOperandShared();
+		uv_assert(opShared);
+		opShared->m_name = parsed_type->m_name;
+		opShared->m_type = parsed_type->m_operand_type;
+		opShared->m_value = parsed_type->m_value;
+		*op_shared_in = opShared;
 	}
 	else
 	{
@@ -136,7 +178,6 @@ uv_err_t UVDDisasmOperandShared::uvd_parsed2opshared(const UVDConfigValue *parse
 		UV_ERR(rc);
 		goto error;
 	}
-	*op_shared_in = op_shared;
 	rc = UV_ERR_OK;
 
 error:
@@ -149,6 +190,32 @@ uv_err_t UVDDisasmOperandShared::getImmediateSize(uint32_t *immediateSizeOut)
 	return UV_ERR_OK;
 }
 */
+
+/*
+UVDDisasmConstantOperandShared
+*/
+
+UVDDisasmConstantOperandShared::UVDDisasmConstantOperandShared()
+{
+	m_value = 0;
+}
+
+UVDDisasmConstantOperandShared::~UVDDisasmConstantOperandShared()
+{
+}
+
+uv_err_t UVDDisasmConstantOperandShared::parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out)
+{
+	//Like register, nothing to parse: this operand is implied
+	UVDDisasmConstantOperand *op = NULL;
+	
+	op = new UVDDisasmConstantOperand();
+	uv_assert_ret(op);
+	op->m_shared = this;
+	*out = op;
+
+	return UV_ERR_OK;
+}
 
 /*
 UVDDisasmOperand
@@ -195,18 +262,21 @@ UVDDisasmOperandShared *UVDDisasmOperand::getShared()
 
 uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 {
-	UVDDisasmInstruction *inst = NULL;
+	//UVDDisasmInstruction *inst = NULL;
 	UVDDisasmOperandShared *operandShared = (UVDDisasmOperandShared *)m_shared;
 	UVDData *data = NULL;
-	UVD *uvd = NULL;
+	//UVD *uvd = NULL;
 	uv_err_t rcNextAddress = UV_ERR_GENERAL;
 	uint8_t read = 0;
 
+	/*
 	uv_assert_ret(m_instruction);
 	inst = (UVDDisasmInstruction *)m_instruction;
 	uv_assert_ret(inst);
 	uvd = inst->m_uvd;
 	uv_assert_ret(uvd);
+	*/
+	
 	data = uvdIter->m_addressSpace->m_data;
 	uv_assert_ret(data);
 
@@ -284,8 +354,8 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 			goto error;
 		}
 		printf_debug("Function/modifier: %s\n", operandShared->m_name.c_str());
-		uv_assert_err_ret(inst);
-		if( UV_FAILED(inst->parseOperands(uvdIter, operandShared->m_func->m_args, m_func->m_args)) )
+		//uv_assert_err_ret(inst);
+		if( UV_FAILED(UVDDisasmInstruction::parseOperands(uvdIter, operandShared->m_func->m_args, m_func->m_args)) )
 		{
 			UV_ERR(rc);
 			goto error;
@@ -294,10 +364,8 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 		
 		break;
 	}
-	//I don't tihnk this one makes sense for this, they are in another place
-	//UV_DISASM_DATA_CONSTANT
 	default:
-		printf_debug("Bad operand type: %s(%d)\n", uvd_data_str(operandShared->m_type), operandShared->m_type);
+		printf_error("Bad operand type: %s(%d)\n", uvd_data_str(operandShared->m_type), operandShared->m_type);
 		UV_ERR(rc);
 		goto error;
 	}
@@ -427,6 +495,7 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 		
 		std::string immediatePrint;
 		uint32_t print_int = 0;
+		/*
 		UVD *uvd = NULL;
 		UVDAnalyzer *analyzer = NULL;
 		
@@ -435,12 +504,14 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 		uv_assert_ret(uvd);
 		analyzer = uvd->m_analyzer;
 		uv_assert_ret(analyzer);
+		*/
 		
 		//FIXME: rework this ugly formatting code
 		//You'd never guess, but doing this sort of formatting has led to some seg faults
 		//Maybe should rework
 		
 		//Do we have an analyzed sustitute?
+		/*
 		UVDVariableMap analysisResult;
 		if( UV_SUCCEEDED(architecture->readCache(m_instruction->m_offset, analysisResult)) )
 		{
@@ -486,6 +557,7 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 //printf("int formatter: %s\n", int_formatter);
 		}
 		else
+		*/
 		{
 			//For signed values, print as decimal
 			if( getShared()->m_type == UV_DISASM_DATA_IMMS )
@@ -707,7 +779,7 @@ uv_err_t UVDDisasmOperand::printDisassemblyOperand(std::string &out)
 		break;		
 	}
 	default:
-		printf_debug("Unknown operand type: %d\n", getShared()->m_type);
+		printf_error("Unknown operand type: %d\n", getShared()->m_type);
 		UV_ERR(rc);
 		goto error;
 	}
@@ -808,3 +880,40 @@ uv_err_t UVDDisasmOperand::getI32Representation(int32_t &i)
 	return UV_ERR_OK;
 }
 
+/*
+UVDDisasmConstantOperand
+*/
+
+UVDDisasmConstantOperand::UVDDisasmConstantOperand()
+{
+}
+
+UVDDisasmConstantOperand::~UVDDisasmConstantOperand()
+{
+}
+
+UVDDisasmConstantOperandShared *UVDDisasmConstantOperand::getShared()
+{
+	return (UVDDisasmConstantOperandShared *)m_shared;
+}
+
+uv_err_t UVDDisasmConstantOperand::printDisassemblyOperand(std::string &out)
+{
+	//Eh we should figure out a way to make this cleaner
+	//Maybe give a size or base hint?
+	out += UVDSprintf("0x%X", getShared()->m_value);
+
+	return UV_ERR_OK;
+}
+
+/*
+uv_err_t UVDDisasmOperand::setInstruction(UVDInstruction *instruction)
+{
+	m_instruction = instruction;
+	if( getShared()->m_type == UV_DISASM_DATA_FUNC )
+	{
+		
+	}
+	return UV_ERR_OK;
+}
+*/

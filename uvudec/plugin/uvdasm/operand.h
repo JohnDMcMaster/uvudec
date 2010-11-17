@@ -17,6 +17,8 @@ public:
 	~UVDDisasmOperandShared();
 	uv_err_t deinit();
 
+	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out);
+
 	//Returns error if it isn't an immediate
 	//uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
 
@@ -65,12 +67,19 @@ Only a specific value (or maybe range of values?) are possible
 Ex: JMP 0x20 on Z80, INT3 on x86
 These have the operand hard coded as part of the opcode meaning
 and is different than say INT/s8 where there is an operand that encodes the number
+This has similarities to an opcode, but one is is syntax, the other is in usage
 */
 class UVDDisasmConstantOperandShared : public UVDDisasmNumericOperandShared
 {
 public:
 	UVDDisasmConstantOperandShared();
 	~UVDDisasmConstantOperandShared();
+		
+	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out);
+
+public:
+	//A constant value associated with a mmemoric
+	uint32_t m_value;
 };
 
 class UVDDisasmOperand : public UVDOperand
@@ -85,6 +94,7 @@ public:
 	UVDDisasmOperandShared *getShared();
 
 	//uv_err_t uvd_parsed2opshared(const struct uvd_parsed_t *parsed_type, UVDOperandShared **op_shared_in);
+	//DEPRECATED: move things to shared parsing so we can alloc instead of using union stuff
 	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter);
 
 	virtual uv_err_t printDisassemblyOperand(std::string &out);
@@ -104,6 +114,8 @@ public:
 	uv_err_t getUI32RepresentationAdjusted(uint32_t &i);
 	uv_err_t getI32RepresentationAdjusted(int32_t &i);
 
+	//uv_err_t setInstruction(UVDInstruction *instruction);
+	
 private:
 	/* 
 	Additional information for this operand, such as a value larger than simple field supports 
@@ -129,6 +141,17 @@ private:
 		uint32_t m_ui32;
 		int32_t m_i32;
 	};
+};
+
+class UVDDisasmConstantOperand : public UVDDisasmOperand
+{
+public:
+	UVDDisasmConstantOperand();
+	~UVDDisasmConstantOperand();
+
+	UVDDisasmConstantOperandShared *getShared();
+
+	virtual uv_err_t printDisassemblyOperand(std::string &out);
 };
 
 #endif

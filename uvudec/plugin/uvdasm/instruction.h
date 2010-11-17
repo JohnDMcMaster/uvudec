@@ -160,7 +160,7 @@ public:
 
 	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
 
-	virtual uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
+	static uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
 			std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
 
 	//Hmm is this UVDDisasm specifc?
