@@ -23,7 +23,8 @@ public:
 	
 public:
 	//For opcodes
-	UVDOpcodeLookupTable *m_opcodeTable;
+	//If unused, set to NULL
+	//UVDOpcodeLookupTable *m_opcodeTable;
 	//Where code may jump due to interrupts
 	std::vector<UVDCPUVector *> m_vectors;
 };

@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/architecture/architecture.h"
+#include "uvd/assembly/cpu_vector.h"
 #include "uvd/core/uvd.h"
 
 UVDArchitecture::UVDArchitecture()
@@ -14,6 +15,7 @@ UVDArchitecture::UVDArchitecture()
 
 UVDArchitecture::~UVDArchitecture()
 {
+	UV_DEBUG(deinit());
 }
 
 uv_err_t UVDArchitecture::init()
@@ -23,6 +25,12 @@ uv_err_t UVDArchitecture::init()
 
 uv_err_t UVDArchitecture::deinit()
 {
+	for( std::vector<UVDCPUVector *>::iterator iter = m_vectors.begin();
+			iter != m_vectors.end(); ++iter )
+	{
+		delete *iter;
+	}
+
 	return UV_ERR_OK;
 }
 
@@ -45,6 +53,24 @@ uv_err_t UVDArchitecture::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
 	}
 	uv_assert_err_ret(iterCommon.m_instruction->parseCurrentInstruction(iterCommon));
 
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArchitecture::fixupDefaults()
+{
+	if( m_vectors.empty() )
+	{
+		UVDCPUVector *vector = NULL;
+	
+		vector = new UVDCPUVector();
+		uv_assert_ret(vector);
+		vector->m_name = "start";
+		vector->m_description = "auto added";
+		vector->m_offset = 0;
+
+		m_vectors.push_back(vector);
+	}
+	
 	return UV_ERR_OK;
 }
 

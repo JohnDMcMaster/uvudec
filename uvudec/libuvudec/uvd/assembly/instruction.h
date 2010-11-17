@@ -108,6 +108,32 @@ public:
 };
 
 /*
+For querying specifics of what the instruction does
+Returned as an object since this is computed, not intrinsic
+Add functions to the instruction if this turns out to not be a good idea
+*/
+class UVDInstructionAnalysis
+{
+public:
+	UVDInstructionAnalysis();
+	~UVDInstructionAnalysis();
+	
+public:
+	//if tristate is unknown, means we do not know the target
+
+	uvd_tri_t m_isJump;
+	uv_addr_t m_jumpTarget;
+	
+	uvd_tri_t m_isCall;
+	uv_addr_t m_callTarget;
+	
+	uvd_bool_t m_isConditional;
+	
+	//Should put this as a fallback case?
+	//std::map<std::string, std::string> m_misc;
+};
+
+/*
 An instruction as parsed from a data source
 */
 class UVDInstruction
@@ -124,7 +150,8 @@ public:
 
 	virtual uv_err_t print_disasm(std::string &out) = 0;
 	//Give as many hints to our analyzer as possible based on what this instruction does
-	virtual uv_err_t analyzeControlFlow() = 0;
+	//If out is given, also fill in details to returned structure
+	virtual uv_err_t analyzeControlFlow(UVDInstructionAnalysis *out = NULL) = 0;
 
 public:
 	/* Shared information for the primary instruction part such as a general description */

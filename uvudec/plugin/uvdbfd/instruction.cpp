@@ -40,7 +40,7 @@ uv_err_t UVDBFDInstruction::print_disasm(std::string &out)
 	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 }
 
-uv_err_t UVDBFDInstruction::analyzeControlFlow()
+uv_err_t UVDBFDInstruction::analyzeControlFlow(UVDInstructionAnalysis *out)
 {
 	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 }

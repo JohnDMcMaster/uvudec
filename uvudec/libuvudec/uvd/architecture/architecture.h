@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/types.h"
 #include "uvd/assembly/register.h"
 #include "uvd/assembly/instruction.h"
+//#include "uvd/assembly/cpu.h"
 
 /*
 A complete description of a system under analysis
@@ -19,6 +20,7 @@ This is the base for plugins that define new CPU's and such
 TODO: break this into a base class with only virtual functions and one with data members
 */
 class UVD;
+class UVDCPUVector;
 class UVDArchitecture
 {
 public:
@@ -43,11 +45,21 @@ public:
 	*/
 	virtual uv_err_t readByte(UVDAddress address, uint8_t *out);
 
+	/*
+	Check things that look like they weren't specified and fill in a reasonable default
+	Issue was CPU vectors should only be logically added to and super init code should execute after us
+	*/
+	virtual uv_err_t fixupDefaults();
+
 public:
 	UVD *m_uvd;
 	//Address spaces inherently defined by this architecture
 	//Actual code may or may not be able to access them based on MMU/OS configuration
 	UVDAddressSpaces m_addressSpaces;
+
+	//Start addresses
+	//We might try to force 0 if you don't specify something
+	std::vector<UVDCPUVector *> m_vectors;
 };
 
 #endif

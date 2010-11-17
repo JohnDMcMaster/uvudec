@@ -42,9 +42,6 @@ public:
 public:	
 	std::map<uint32_t, UVDVariableMap> m_analysisCache;
 
-#ifdef USING_VECTORS
-	UVDCPU *m_CPU;
-#endif
 	//TODO: move to UVDCPU
 	//Lookup table for opcodes
 	//This in theory could be shared between multiple engines for the same arch

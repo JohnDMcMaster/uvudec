@@ -156,7 +156,7 @@ public:
 	//uv_err_t print_disasm(char *buff, uint32_t buffsz);
 	virtual uv_err_t print_disasm(std::string &out);
 	
-	virtual uv_err_t analyzeControlFlow();
+	virtual uv_err_t analyzeControlFlow(UVDInstructionAnalysis *out);
 
 	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
 
@@ -166,8 +166,8 @@ public:
 	//Hmm is this UVDDisasm specifc?
 	virtual uv_err_t collectVariables(UVDVariableMap &environment);
 
-	uv_err_t analyzeCall(uint32_t startPos, const UVDVariableMap &attributes);
-	uv_err_t analyzeJump(uint32_t startPos, const UVDVariableMap &attributes);
+	uv_err_t analyzeCall(uint32_t startPos, const UVDVariableMap &attributes, UVDInstructionAnalysis *out);
+	uv_err_t analyzeJump(uint32_t startPos, const UVDVariableMap &attributes, UVDInstructionAnalysis *out);
 
 public:	
 	//FIXME: this should be arch pointer, not uvd

@@ -7,6 +7,25 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/instruction.h"
 
 /*
+UVDInstructionAnalysis
+*/
+
+UVDInstructionAnalysis::UVDInstructionAnalysis()
+{
+	m_isJump = 0;
+	m_jumpTarget = 0;
+	
+	m_isCall = 0;
+	m_callTarget = 0;
+	
+	m_isConditional = 0;
+}
+
+UVDInstructionAnalysis::~UVDInstructionAnalysis()
+{
+}
+
+/*
 UVDInstructionShared
 */
 

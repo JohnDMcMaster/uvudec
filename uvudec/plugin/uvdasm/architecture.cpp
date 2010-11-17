@@ -11,9 +11,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDDisasmArchitecture::UVDDisasmArchitecture()
 {
-#ifdef USING_VECTORS
-	m_CPU = NULL;
-#endif
 	m_opcodeTable = NULL;
 	m_symMap = NULL;
 	m_interpreter = NULL;

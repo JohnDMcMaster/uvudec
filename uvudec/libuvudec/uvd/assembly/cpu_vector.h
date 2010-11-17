@@ -4,7 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#if USING_VECTORS
+//#if USING_VECTORS
 
 #ifndef UVD_CPU_VECTOR_H
 #define UVD_CPU_VECTOR_H
@@ -26,10 +26,10 @@ public:
 	//Human readable description
 	std::string m_description;
 	//Address to vector to
-	uint32_t m_offset;
+	uv_addr_t m_offset;
 	//TODO: add something about conditions for vectoring?
 };
 
 #endif
 
-#endif
+//#endif

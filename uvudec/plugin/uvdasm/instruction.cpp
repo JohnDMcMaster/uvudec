@@ -416,7 +416,7 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVDDisasmInstruction::analyzeControlFlow()
+uv_err_t UVDDisasmInstruction::analyzeControlFlow(UVDInstructionAnalysis *out)
 {
 	std::string action;
 	uint32_t followingPos = 0;
@@ -522,7 +522,7 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 		ACTION=CALL(%PC&0x1F00+u8_0+0x6000)
 		*/
 	
-		uv_assert_err_ret(analyzeCall(followingPos, mapOut));
+		uv_assert_err_ret(analyzeCall(followingPos, mapOut, out));
 	}
 	if( getShared()->m_isJump )
 	{
@@ -534,15 +534,82 @@ uv_err_t UVDDisasmInstruction::analyzeControlFlow()
 		ACTION=GOTO(%PC+u8_1)
 		*/
 
-		uv_assert_err_ret(analyzeJump(followingPos, mapOut));
+		uv_assert_err_ret(analyzeJump(followingPos, mapOut, out));
 	}
 
 	return UV_ERR_OK;
 }
 
+
+#if 0
+	//See if its a call instruction
+	if( instruction.m_shared->canCall() )
+	{
+		UVDVariableMap environment;
+		UVDVariableMap mapOut;
+
+		uv_assert_err_ret(instruction.collectVariables(environment));
+					
+		/*
+		Add iterator specific environment
+		*/
+
+		//Register environment
+		//PC/IP is current instruction location
+		environment["PC"] = UVDVarient(endPos);
+
+		//About 0.03 sec per exec...need to speed it up
+		//Weird...cast didn't work to solve pointer incompatibility
+		uv_assert_ret(m_interpreter);
+		uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+		
+		uv_assert_err_ret(m_analyzer->analyzeCall(&instruction, startPos, mapOut));
+		
+		//Only analyze if not in closed set
+		if( closedSet.find(callTarget) == closedSet.end() )
+		{
+			openSet.insert(callTarget);
+		}
+	}
+	//Probably should have been "branch" class, but oh well
+	if( instruction.m_shared->canJump() == UVD_INSTRUCTION_CLASS_JUMP )
+	{
+		UVDVariableMap environment;
+		UVDVariableMap mapOut;
+
+		uv_assert_err_ret(instruction.collectVariables(environment));
+					
+		/*
+		Add iterator specific environment
+		*/
+
+		//Register environment
+		//PC/IP is current instruction location
+		environment["PC"] = UVDVarient(endPos);
+
+		//About 0.03 sec per exec...need to speed it up
+		//Weird...cast didn't work to solve pointer incompatibility
+		uv_assert_ret(m_interpreter);
+		uv_assert_err_ret(m_interpreter->interpretKeyed(action, environment, mapOut));
+
+		uv_assert_err_ret(m_analyzer->analyzeJump(&instruction, startPos, mapOut));
+	
+		//any architectures that have multiple branch targets?
+		if( closedSet.find(branchTarget) == closedSet.end() )
+		{
+			openSet.insert(branchTarget);
+		}
+
+		if( unconditionalBranch )
+		{
+			break;
+		}
+	}
+#endif
+
 #define BASIC_SYMBOL_ANALYSIS			
 
-uv_err_t UVDDisasmInstruction::analyzeCall(uint32_t startPos, const UVDVariableMap &attributes)
+uv_err_t UVDDisasmInstruction::analyzeCall(uint32_t startPos, const UVDVariableMap &attributes, UVDInstructionAnalysis *out)
 {
 	std::string sAddr;
 	uint32_t targetAddress = 0;
@@ -552,6 +619,12 @@ uv_err_t UVDDisasmInstruction::analyzeCall(uint32_t startPos, const UVDVariableM
 	uv_assert_ret(attributes.find(SCRIPT_KEY_CALL) != attributes.end());
 	(*attributes.find(SCRIPT_KEY_CALL)).second.getString(sAddr);
 	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
+	//FIXME: we currently are leaving out unknown call/jump targets
+	if( out )
+	{
+		out->m_isCall = true;
+		out->m_callTarget = targetAddress;
+	}
 	
 	uv_assert_err_ret(g_uvd->m_analyzer->insertCallReference(targetAddress, startPos));
 	//uv_assert_err(insertReference(targetAddress, startPos, ));
@@ -583,9 +656,10 @@ uv_err_t UVDDisasmInstruction::analyzeCall(uint32_t startPos, const UVDVariableM
 	return UV_ERR_OK;
 }
 
+//FIXME: is this because we aren't effectivly dealing with anonymous symbol names?
 #undef BASIC_SYMBOL_ANALYSIS
 
-uv_err_t UVDDisasmInstruction::analyzeJump(uint32_t startPos, const UVDVariableMap &attributes)
+uv_err_t UVDDisasmInstruction::analyzeJump(uint32_t startPos, const UVDVariableMap &attributes, UVDInstructionAnalysis *out)
 {
 	std::string sAddr;
 	uint32_t targetAddress = 0;
@@ -593,6 +667,11 @@ uv_err_t UVDDisasmInstruction::analyzeJump(uint32_t startPos, const UVDVariableM
 	uv_assert_ret(attributes.find(SCRIPT_KEY_JUMP) != attributes.end());
 	(*attributes.find(SCRIPT_KEY_JUMP)).second.getString(sAddr);
 	targetAddress = (uint32_t)strtol(sAddr.c_str(), NULL, 0);
+	if( out )
+	{
+		out->m_isJump = true;
+		out->m_jumpTarget = targetAddress;
+	}
 	
 	uv_assert_err_ret(g_uvd->m_analyzer->insertJumpReference(targetAddress, startPos));
 	((UVDDisasmArchitecture *)(g_uvd->m_runtime->m_architecture))->updateCache(startPos, attributes);
