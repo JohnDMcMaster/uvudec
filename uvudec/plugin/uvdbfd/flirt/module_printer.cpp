@@ -416,39 +416,43 @@ uv_err_t UVDBFDPatModulePrinter::shouldPrint()
 
 		bfdAsymbol = function->m_bfdAsymbol;
 
-		//we must filter here - to don`t lose sizes ! 
-		if( std::string(bfdAsymbol->name).empty() )
+		//Force adding it?
+		if( g_config->m_flirt.m_forcePatternSymbols.find(bfdAsymbol->name) == g_config->m_flirt.m_forcePatternSymbols.end() )
 		{
-			printf_flirt_debug("Skipping printing empty symbol\n");
-			continue;
-		}
-		flags = bfdAsymbol->flags;
-		/*
-		if( (flags & BSF_EXPORT) != BSF_EXPORT )
-		{
-			printf_flirt_debug("Skipping private (non-exported) symbol %s\n", bfdAsymbol->name);
-			return UV_ERR_DONE;
-		}
-		*/
-		if( (flags & BSF_SECTION_SYM) || (flags & BSF_FILE) )
-		{
-			printf_flirt_debug("Skipping section/file symbol %s\n", bfdAsymbol->name);
-			continue;
-		}
-		//Why is BSF_OBJECT important?
-		if( !((flags & BSF_FUNCTION) /*|| (flags & BSF_OBJECT)*/) )
-		{
-			printf_flirt_debug("Skipping non-funcion symbol %s\n", bfdAsymbol->name);
-			continue;
-		}
+			//we must filter here - to don`t lose sizes ! 
+			if( std::string(bfdAsymbol->name).empty() )
+			{
+				printf_flirt_debug("Skipping printing empty symbol\n");
+				continue;
+			}
+			flags = bfdAsymbol->flags;
+			/*
+			if( (flags & BSF_EXPORT) != BSF_EXPORT )
+			{
+				printf_flirt_debug("Skipping private (non-exported) symbol %s\n", bfdAsymbol->name);
+				return UV_ERR_DONE;
+			}
+			*/
+			if( (flags & BSF_SECTION_SYM) || (flags & BSF_FILE) )
+			{
+				printf_flirt_debug("Skipping section/file symbol %s\n", bfdAsymbol->name);
+				continue;
+			}
+			//Why is BSF_OBJECT important?
+			if( !((flags & BSF_FUNCTION) /*|| (flags & BSF_OBJECT)*/) )
+			{
+				printf_flirt_debug("Skipping non-funcion symbol %s\n", bfdAsymbol->name);
+				continue;
+			}
 
-		//Make sure we have enough bytes as per our policy
-		if( function->m_size < g_config->m_flirt.m_patSignatureLengthMin )
-		{
-			printf_flirt_debug("Skipping short len symbol %s, length: 0x%.2X\n", bfdAsymbol->name, function->m_size);
-			continue;
+			//Make sure we have enough bytes as per our policy
+			if( function->m_size < g_config->m_flirt.m_patSignatureLengthMin )
+			{
+				printf_flirt_debug("Skipping short len symbol %s, length: 0x%.2X\n", bfdAsymbol->name, function->m_size);
+				continue;
+			}
 		}
-	
+		
 		//now we have exported function 
 		//FIXME: currentSymbol was from prev loop, looks wrong 
 		//printf_flirt_debug("Section name %s, size %d, vma = 0x%X\n",
