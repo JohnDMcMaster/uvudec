@@ -21,6 +21,8 @@ obj2pat entry point
 #include "uvd/flirt/args_property.h"
 #include "uvd/data/data.h"
 
+#define UVD_PROP_FORCE_SYMBOL "flirt.force_symbol"
+
 static uv_err_t versionPrintPrefixThunk();
 
 static const char *GetVersion()
@@ -87,6 +89,11 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 			flirtConfig->m_functionsAsModules = UVDArgToBool(firstArg);
 		}
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_FORCE_SYMBOL )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		flirtConfig->m_forcePatternSymbols.insert(firstArg);
+	}
 	else
 	{
 		//return UV_DEBUG(argParserDefault(argConfig, argumentArguments));
@@ -104,6 +111,7 @@ uv_err_t initProgConfig()
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
 
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input object file] [output .pat file]"));	
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_FORCE_SYMBOL, 0, "force-symbol", "force symbol to be included", 1, argParser, false));
 
 	return UV_ERR_OK;	
 }

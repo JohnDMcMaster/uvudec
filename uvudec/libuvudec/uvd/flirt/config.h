@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_CONFIG_FLIRT_H
 
 #include "uvd/util/types.h"
+#include <set>
 #include <string>
 
 /*
@@ -89,6 +90,11 @@ public:
 	//Listed as a general option since I might write files without them and need to parse them correctly
 	//UVD_PROP_FLIRT_PAT_PREFIX_UNDERSCORES
 	uint32_t m_prefixUnderscores;
+	
+	//For obj2pat, but needs visibility from core engine
+	//Would have to think about what to do about this
+	//Don't skip these, even if we think they should be skipped (ie not a function symbol)
+	std::set<std::string> m_forcePatternSymbols;
 };
 
 #endif
