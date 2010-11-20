@@ -132,3 +132,4 @@ public:
 };
 
 #endif //UVD_ANALYSIS_DB_H
+

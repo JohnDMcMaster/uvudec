@@ -295,13 +295,6 @@ public:
 	std::string m_reg_prefix;
 	
 
-	//uvd_analysis_db.cpp declared
-	//Raw function MD5
-	uint32_t m_computeFunctionMD5;
-	//Relocatable function version MD5
-	//Relocatable parts should be 0'd
-	uint32_t m_computeFunctionRelocatableMD5;
-
 	//Write a .bin file exactly as the function was found
 	uint32_t m_writeRawBinary;
 	//Write a .bin file with default relocatable values (MD5 should match config MD5)

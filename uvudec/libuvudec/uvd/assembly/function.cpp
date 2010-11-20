@@ -13,64 +13,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/util.h"
 #include "uvd/core/runtime.h"
 
-#if 0
-/*
-UVDBinaryFunctionInstance
-*/
-UVDBinaryFunctionInstance::UVDBinaryFunctionInstance()
-{
-	m_compiler = NULL;
-	m_compilerOptions = NULL;
-	m_relocatableData = NULL;
-
-	m_language = UVD_LANGUAGE_UNKNOWN;
-}
-
-UVDBinaryFunctionInstance::~UVDBinaryFunctionInstance()
-{
-	deinit();
-}
-
-uv_err_t UVDBinaryFunctionInstance::init()
-{
-	uv_assert_err_ret(UVDBinarySymbol::init());
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::deinit()
-{
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(UVDBinaryFunctionInstance **out)
-{
-	UVDBinaryFunctionInstance *instance = NULL;
-	
-	instance = new UVDBinaryFunctionInstance();
-	uv_assert_ret(instance);
-	
-	uv_assert_err_ret(instance->init());
-
-	uv_assert_ret(out);
-	*out = instance;
-	return UV_ERR_OK;
-}
-#endif
-
 uv_err_t UVDBinaryFunction::setData(UVDData *data)
 {
 	delete m_data;
 	uv_assert_ret(data);
 	uv_assert_err_ret(data->deepCopy(&m_data));
-
-	/*
-	if( m_relocatableData )
-	{
-		//Does deep copy
-		uv_assert_err_ret(m_relocatableData->setData(data));
-	}
-	*/
 
 	return UV_ERR_OK;
 }
@@ -80,14 +27,6 @@ uv_err_t UVDBinaryFunction::transferData(UVDData *data)
 	delete m_data;
 	m_data = data;
 
-	/*
-	if( m_relocatableData )
-	{
-		//Does deep copy
-		uv_assert_err_ret(m_relocatableData->setData(data));
-	}
-	*/
-	
 	return UV_ERR_OK;
 }
 
@@ -210,116 +149,6 @@ uv_err_t UVDBinaryFunction::getFromUVDElf(const UVDElf *in, UVDBinaryFunction **
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-#if 0
-uv_err_t UVDBinaryFunctionInstance::getHash(std::string &hash)
-{
-	if( m_MD5.empty() )
-	{
-		uv_assert_err_ret(computeHash());
-	}
-	hash = m_MD5;
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::getRelocatableHash(std::string &hash)
-{
-	if( m_relocatableMD5.empty() )
-	{
-		uv_assert_err_ret(computeRelocatableHash());
-	}
-	hash = m_relocatableMD5;
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::getRawDataBinary(UVDData **dataRet)
-{
-	//This data is suppose to be inherent
-	//Simply see if it looks halfway reasonable and return it
-	uv_assert_ret(m_data);
-	uv_assert_ret(dataRet);
-	*dataRet = m_data;
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::getRelocatableDataBinary(UVDData **dataRet)
-{
-	UVDData *data = NULL;
-
-	uv_assert_ret(m_relocatableData);
-	uv_assert_err_ret(m_relocatableData->getDefaultRelocatableData(&data));
-	uv_assert_ret(dataRet);
-	*dataRet = data;
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::computeHash()
-{
-	char *buff = NULL;
-	uint32_t buffSize = 0;
-
-	//Fetch our data
-	uv_assert_ret(m_data);
-	uv_assert_err_ret(m_data->readData(&buff));
-	buffSize = m_data->size();
-
-	//And compute an MD5
-	//uv_assert_err_ret(uv_md5(buff, buffSize, m_MD5));
-	//uv_assert_ret(!m_MD5.empty());
-	free(buff);
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunctionInstance::computeRelocatableHash()
-{
-	char *buff = NULL;
-	uint32_t buffSize = 0;
-	UVDData *data = NULL;
-
-	//Fetch our data
-	uv_assert_err_ret(getRelocatableDataBinary(&data));
-	uv_assert_ret(data);
-	uv_assert_err_ret(data->readData(&buff));
-	uv_assert_ret(buff);
-	buffSize = m_data->size();
-
-	//And compute an MD5
-	//uv_assert_err_ret(uv_md5(buff, buffSize, m_relocatableMD5));
-	//uv_assert_ret(!m_relocatableMD5.empty());
-	//Finished, free buffer
-	free(buff);
-	
-	return UV_ERR_OK;
-}
-#endif
-
-#if 0
-/*
-UVDBinaryFunctionShared
-*/
-
-UVDBinaryFunctionShared::UVDBinaryFunctionShared()
-{
-}
-
-UVDBinaryFunctionShared::~UVDBinaryFunctionShared()
-{
-	deinit();
-}
-
-uv_err_t UVDBinaryFunctionShared::deinit()
-{
-	for( std::vector<UVDBinaryFunctionInstance *>::iterator iter = m_representations.begin(); iter != m_representations.end(); ++iter )
-	{
-		delete *iter;
-	}
-	m_representations.clear();
-	
-	return UV_ERR_OK;
-}
-#endif
-
 /*
 UVDBinaryFunction
 */
@@ -328,8 +157,6 @@ UVDBinaryFunction::UVDBinaryFunction()
 {
 	m_data = NULL;
 	m_uvd = NULL;
-	//m_shared = NULL;
-	//m_instance = NULL;
 	m_offset = 0;
 }
 
@@ -360,31 +187,6 @@ uv_err_t UVDBinaryFunction::getMax(uint32_t *out)
 	*out += m_offset;
 	return UV_ERR_OK;
 }
-
-#if 0
-UVDBinaryFunctionInstance *UVDBinaryFunction::getFunctionInstance()
-{
-	//Try to find the instance if it wasn't already cached
-	if( !m_instance )
-	{
-		if( !m_shared )
-		{
-			return NULL;
-		}
-		if( m_shared->m_representations.size() != 1 )
-		{
-			return NULL;
-		}
-		m_instance = m_shared->m_representations[0];
-	}
-	return m_instance;
-}
-
-void UVDBinaryFunction::setFunctionInstance(UVDBinaryFunctionInstance *instance)
-{
-	m_instance = instance;
-}
-#endif
 
 uv_err_t UVDBinaryFunction::getUVDBinaryFunctionInstance(UVDBinaryFunction **out)
 {

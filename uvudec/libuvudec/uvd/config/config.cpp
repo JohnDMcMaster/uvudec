@@ -80,9 +80,6 @@ UVDConfig::UVDConfig()
 	m_print_block_id = false;
 	m_print_header = false;
 
-	m_computeFunctionMD5 = true;
-	m_computeFunctionRelocatableMD5 = true;
-
 	m_writeRawBinary = true;
 	m_writeRelocatableBinary = true;
 	m_writeElfFile = true;

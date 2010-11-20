@@ -279,23 +279,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		//And save it
 		uv_assert_err_ret(elf->saveToFile(elfFile));
 		delete elf;
-	}
-	
-	/*
-	if( config->m_computeFunctionMD5 )
-	{
-		std::string md5;
-		uv_assert_err_ret(functionInstance->getHash(md5));
-		out += "MD5=" + md5 + "\n";
-	}
-
-	if( m_analyzer->m_uvd->m_config->m_computeFunctionRelocatableMD5 )
-	{
-		std::string md5;
-		uv_assert_err_ret(functionInstance->getRelocatableHash(md5));
-		out += "MD5_RELOCATABLE=" + md5 + "\n";
-	}
-	*/
+	}	
 
 	//Code is optional, sometimes we just have binary and know its, say, printf
 #if 0
@@ -514,3 +498,4 @@ uv_err_t UVDAnalysisDBConcentrator::clear()
 	
 	return UV_ERR_OK;
 }
+
