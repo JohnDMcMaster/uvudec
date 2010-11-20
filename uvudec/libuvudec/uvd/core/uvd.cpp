@@ -89,18 +89,19 @@ error:
 
 //Second pass used to create for DB storage
 //Block contains analyzed code
-uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionIn)
+uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionOut)
 {
 	UVDBinaryFunction *function = NULL;
-	UVDBinaryFunctionShared *functionShared = NULL;
+	//UVDBinaryFunction *functionShared = NULL;
 	//Since ownership will be xferred to object, we need to map it twice
 	UVDDataChunk *functionBlockDataChunk = NULL;
 	//UVDDataChunk *functionDataChunk = NULL;
 	//UVDDataChunk *functionInstanceDataChunk = NULL;
-	UVDBinaryFunctionInstance *functionInstance = NULL;
+	UVDBinaryFunction *functionInstance = NULL;
 
 	uv_assert_ret(functionBlock);
-	uv_assert_ret(functionIn);
+	uv_assert_ret(functionOut);
+
 	
 	uv_assert_err_ret(functionBlock->getDataChunk(&functionBlockDataChunk));
 	uv_assert_ret(functionBlockDataChunk)
@@ -111,13 +112,17 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	//uv_assert_ret(functionDataChunk->m_data);
 	//uv_assert_ret(functionInstanceDataChunk->m_data);
 
-	function = new UVDBinaryFunction();
-	uv_assert_ret(function);
+	//Create the single known instance of this function
+	uv_assert_err_ret(UVDBinaryFunction::getUVDBinaryFunctionInstance(&functionInstance));
+	uv_assert_ret(functionInstance);
+	function = functionInstance;
+	//function = new UVDBinaryFunction();
+	//uv_assert_ret(function);
 	//uv_assert_err_ret(function->init());
 
-	functionShared = new UVDBinaryFunctionShared();
-	printf_debug("new UVDBinaryFunctionShared: 0x%.8X\n", (unsigned int)function);	
-	uv_assert_ret(functionShared);
+	//functionShared = new UVDBinaryFunction();
+	//printf_debug("new UVDBinaryFunctionShared: 0x%.8X\n", (unsigned int)function);	
+	//uv_assert_ret(functionShared);
 
 	uint32_t minAddress = 0;
 	uv_assert_err_ret(functionBlock->getMinAddress(minAddress));
@@ -125,12 +130,9 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	
 	//The true name of the function is unknown
 	//This name is stored as a way to figure out the real name vs the current symbol name 
-	functionShared->m_name = "";
-	functionShared->m_description = "Automatically generated";	
+	//functionShared->m_name = "";
+	//functionShared->m_description = "Automatically generated";	
 
-	//Create the single known instance of this function
-	uv_assert_err_ret(UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(&functionInstance));
-	uv_assert_ret(functionInstance);
 	functionInstance->m_symbolAddress = UVDRelocatableElement(minAddress);
 	//Only specific instances get symbol designations
 	std::string symbolName;
@@ -140,13 +142,13 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	//This will perform copy
 	uv_assert_err_ret(functionInstance->setData(functionBlockDataChunk));
 	//And register it to that particular function
-	functionShared->m_representations.push_back(functionInstance);
+	//functionShared->m_representations.push_back(functionInstance);
 	
-	function->m_shared = functionShared;
+	//function->m_shared = functionShared;
 	function->m_uvd = this;
 	uv_assert_err_ret(functionBlockDataChunk->deepCopy(&function->m_data));
 	
-	*functionIn = function;
+	*functionOut = function;
 
 	return UV_ERR_OK;
 }

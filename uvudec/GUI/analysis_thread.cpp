@@ -304,7 +304,7 @@ uv_err_t UVDGUIAnalysisThread::handleUVDEvent(const UVDEvent *event)
 		std::string functionName;
 	
 		uv_assert_ret(functionChanged);
-		uv_assert_err_ret(functionChanged->m_function->getFunctionInstance()->getSymbolName(functionName));	
+		uv_assert_err_ret(functionChanged->m_function->getSymbolName(functionName));	
 
 		uv_assert_ret(m_mainWindow);
 		if( functionChanged->m_isDefined )

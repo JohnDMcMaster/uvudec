@@ -79,6 +79,8 @@ public:
 	//We own the returned pointers, possibly in the sections
 	//virtual uv_err_t getSections(std::vector<UVDSection *> &out);
 
+	//virtual uv_err_t getFunctions(
+
 public:
 	UVDBinarySymbolManager m_symbols;
 	//Raw pointer to the data

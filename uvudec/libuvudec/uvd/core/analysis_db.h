@@ -45,9 +45,9 @@ public:
 	Given a binary, try to match possible representations
 	"Best" (highest level, most expected)
 	*/
-	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, UVDBinaryFunctionShared **func);
+	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, UVDBinaryFunction **func);
 	//All
-	virtual uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false) = 0;
+	virtual uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear = false) = 0;
 
 	//Erase the database
 	virtual uv_err_t clear();
@@ -60,7 +60,7 @@ public:
 /*
 A file format analysis DB
 */
-class UVDBinaryFunctionInstance;
+class UVDBinaryFunction;
 class UVDAnalysisDBArchive : public UVDAnalysisDB
 {
 public:
@@ -75,7 +75,7 @@ public:
 	uv_err_t loadData(std::string &out);
 	//Add a single function to the DB
 	//This registers functions found during analysis
-	uv_err_t loadFunction(UVDBinaryFunctionShared *function);
+	uv_err_t loadFunction(UVDBinaryFunction *function);
 	
 	/*
 	Dump entire database to given location
@@ -86,20 +86,20 @@ public:
 		-If it does exist, it will assume is destination dir and files should be ovverwritten (ie an update)
 	*/
 	uv_err_t saveData(const std::string &file);
-	uv_err_t saveFunctionInstanceSharedData(UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionCode, const std::string &outputDir, int functionIndex, std::string &config);
-	uv_err_t saveFunctionData(UVDBinaryFunctionShared *function, const std::string &outputDir, std::string &config);
+	uv_err_t saveFunctionInstanceSharedData(UVDBinaryFunction *function, const std::string &outputDir, int functionIndex, std::string &config);
+	uv_err_t saveFunctionData(UVDBinaryFunction *function, const std::string &outputDir, std::string &config);
 	
 	//All
-	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false);
+	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear = false);
 
 	virtual uv_err_t clear();
 
 private:
-	uv_err_t shouldSaveFunction(UVDBinaryFunctionShared *functionShared);
+	uv_err_t shouldSaveFunction(UVDBinaryFunction *functionShared);
 
 public:
 	//Function database
-	std::vector<UVDBinaryFunctionShared *> m_functions;
+	std::vector<UVDBinaryFunction *> m_functions;
 };
 
 /*
@@ -118,7 +118,7 @@ public:
 	//Creates a directory with sub dirs/archives
 	uv_err_t saveData(std::string &out);
 	//All
-	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear = false);
+	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear = false);
 	
 	//A DB used for the binary we are currently examining
 	//FIXME: what if we are examining a multi-part executable?

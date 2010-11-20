@@ -186,8 +186,8 @@ public:
 	uv_err_t loadFunction(UVDBinaryFunction *function);
 
 	//To fetch the original data
-	uv_err_t functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **function);
-	uv_err_t functionInstanceToFunction(UVDBinaryFunctionInstance *functionInstance, UVDBinaryFunction **function);
+	//uv_err_t functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **function);
+	//uv_err_t functionInstanceToFunction(UVDBinaryFunctionInstance *functionInstance, UVDBinaryFunction **function);
 
 	uv_err_t mapSymbols();
 

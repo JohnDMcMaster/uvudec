@@ -318,7 +318,7 @@ uv_err_t UVDAnalyzedBinarySymbol::getBestUVDBinarySymbol(UVDBinarySymbol **symbo
 			&& m_functionHits.size() >= m_labelHits.size()
 			&& m_functionHits.size() >= m_variableHits.size() )
 	{
-		symbol = new UVDBinaryFunctionInstance();
+		symbol = new UVDBinaryFunction();
 		uv_assert_ret(symbol);
 
 		*symbol = *(UVDBinarySymbol *)this;
@@ -503,14 +503,10 @@ uv_err_t UVDBinarySymbolManager::addSymbol(UVDBinarySymbol *symbol)
 uv_err_t UVDBinarySymbolManager::collectRelocations(UVDBinaryFunction *function)
 {
 	uint32_t functionAddress = 0;
-	UVDBinaryFunctionInstance *functionInstance = NULL;
 
 	uv_assert_ret(function);
 
-	functionInstance = function->getFunctionInstance();
-	uv_assert_ret(functionInstance);
-
-	uv_assert_err_ret(functionInstance->getSymbolAddress(&functionAddress));
+	uv_assert_err_ret(function->getSymbolAddress(&functionAddress));
 
 	/*
 	For each symbol, we must add all occurences contained in this symbol
@@ -541,12 +537,7 @@ uv_err_t UVDBinarySymbolManager::collectRelocations(UVDBinaryFunction *function)
 
 uv_err_t UVDBinarySymbolManager::doCollectRelocations(UVDBinaryFunction *function, UVDBinarySymbol *analysisSymbol)
 {
-	UVDBinaryFunctionInstance *functionInstance = NULL;
-
-	functionInstance = function->getFunctionInstance();
-	uv_assert_ret(functionInstance);
-
-	uv_assert_err_ret(functionInstance->addRelocations(analysisSymbol));
+	uv_assert_err_ret(function->addRelocations(analysisSymbol));
 
 	return UV_ERR_OK;
 }

@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/util.h"
 #include "uvd/core/runtime.h"
 
+#if 0
 /*
 UVDBinaryFunctionInstance
 */
@@ -55,37 +56,42 @@ uv_err_t UVDBinaryFunctionInstance::getUVDBinaryFunctionInstance(UVDBinaryFuncti
 	*out = instance;
 	return UV_ERR_OK;
 }
+#endif
 
-uv_err_t UVDBinaryFunctionInstance::setData(UVDData *data)
+uv_err_t UVDBinaryFunction::setData(UVDData *data)
 {
 	delete m_data;
 	uv_assert_ret(data);
 	uv_assert_err_ret(data->deepCopy(&m_data));
 
+	/*
 	if( m_relocatableData )
 	{
 		//Does deep copy
 		uv_assert_err_ret(m_relocatableData->setData(data));
 	}
+	*/
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinaryFunctionInstance::transferData(UVDData *data)
+uv_err_t UVDBinaryFunction::transferData(UVDData *data)
 {
 	delete m_data;
 	m_data = data;
 
+	/*
 	if( m_relocatableData )
 	{
 		//Does deep copy
 		uv_assert_err_ret(m_relocatableData->setData(data));
 	}
-
+	*/
+	
 	return UV_ERR_OK;
 }
 
-UVDData *UVDBinaryFunctionInstance::getData()
+UVDData *UVDBinaryFunction::getData()
 {
 	return m_data;
 }
@@ -144,7 +150,7 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinaryFunctionInstance::toUVDElf(UVDElf **out)
+uv_err_t UVDBinaryFunction::toUVDElf(UVDElf **out)
 {
 	UVDElf *elf = NULL;
 	std::string symbolName;
@@ -199,11 +205,12 @@ uv_err_t UVDBinaryFunctionInstance::toUVDElf(UVDElf **out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinaryFunctionInstance::getFromUVDElf(const UVDElf *in, UVDBinaryFunctionInstance **out)
+uv_err_t UVDBinaryFunction::getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out)
 {
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
+#if 0
 uv_err_t UVDBinaryFunctionInstance::getHash(std::string &hash)
 {
 	if( m_MD5.empty() )
@@ -285,7 +292,9 @@ uv_err_t UVDBinaryFunctionInstance::computeRelocatableHash()
 	
 	return UV_ERR_OK;
 }
+#endif
 
+#if 0
 /*
 UVDBinaryFunctionShared
 */
@@ -309,6 +318,7 @@ uv_err_t UVDBinaryFunctionShared::deinit()
 	
 	return UV_ERR_OK;
 }
+#endif
 
 /*
 UVDBinaryFunction
@@ -318,8 +328,8 @@ UVDBinaryFunction::UVDBinaryFunction()
 {
 	m_data = NULL;
 	m_uvd = NULL;
-	m_shared = NULL;
-	m_instance = NULL;
+	//m_shared = NULL;
+	//m_instance = NULL;
 	m_offset = 0;
 }
 
@@ -351,6 +361,7 @@ uv_err_t UVDBinaryFunction::getMax(uint32_t *out)
 	return UV_ERR_OK;
 }
 
+#if 0
 UVDBinaryFunctionInstance *UVDBinaryFunction::getFunctionInstance()
 {
 	//Try to find the instance if it wasn't already cached
@@ -373,5 +384,19 @@ void UVDBinaryFunction::setFunctionInstance(UVDBinaryFunctionInstance *instance)
 {
 	m_instance = instance;
 }
+#endif
 
+uv_err_t UVDBinaryFunction::getUVDBinaryFunctionInstance(UVDBinaryFunction **out)
+{
+	UVDBinaryFunction *instance = NULL;
+	
+	instance = new UVDBinaryFunction();
+	uv_assert_ret(instance);
+	
+	uv_assert_err_ret(instance->init());
+
+	uv_assert_ret(out);
+	*out = instance;
+	return UV_ERR_OK;
+}
 

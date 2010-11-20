@@ -307,8 +307,8 @@ uv_err_t UVDAnalyzer::deinit()
 		
 		uv_assert_ret(binaryFunction);
 		//This is only stored here since its from current analysis and not in a central DB
-		delete binaryFunction->m_shared;
-		binaryFunction->m_shared = NULL;
+		//delete binaryFunction->m_shared;
+		//binaryFunction->m_shared = NULL;
 		
 		delete binaryFunction;
 	}
@@ -490,7 +490,7 @@ uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
 
 uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 {
-	UVDBinaryFunctionShared *functionShared = NULL;
+	UVDBinaryFunction *functionShared = NULL;
 
 	uv_assert_ret(function);
 
@@ -498,7 +498,7 @@ uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 	m_functions.insert(function);
 	
 	//Register the instance to our function analysis database
-	functionShared = function->m_shared;
+	functionShared = function;
 	uv_assert_ret(m_curDb);
 	uv_assert_err_ret(m_curDb->loadFunction(functionShared));
 
@@ -511,6 +511,7 @@ uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDAnalyzer::functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **functionOut)
 {
 	UVDBinaryFunctionInstance *functionInstance = NULL;
@@ -557,6 +558,7 @@ uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targ
 	*functionOut = functionToOutput;
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVDAnalyzer::mapSymbols()
 {
@@ -600,10 +602,10 @@ uv_err_t UVDAnalyzer::assignDefaultSymbolNames()
 			iterFunctions != m_functions.end(); ++iterFunctions )
 	{
 		UVDBinaryFunction *function = *iterFunctions;
-		UVDBinaryFunctionInstance *functionInstance = NULL;
+		UVDBinaryFunction *functionInstance = NULL;
 		
 		uv_assert_ret(function);			
-		functionInstance = function->getFunctionInstance();
+		functionInstance = function;
 		uv_assert_ret(functionInstance);
 		/*
 		{

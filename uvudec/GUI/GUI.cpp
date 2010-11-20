@@ -231,7 +231,7 @@ uv_err_t UVDMainWindow::rebuildFunctionList()
 		std::string functionName;
 		
 		uv_assert_ret(binaryFunction);
-		uv_assert_err_ret(binaryFunction->getFunctionInstance()->getSymbolName(functionName));
+		uv_assert_err_ret(binaryFunction->getSymbolName(functionName));
 		uv_assert_err_ret(newFunction(QString::fromStdString(functionName)));
 	}
 	return UV_ERR_OK;

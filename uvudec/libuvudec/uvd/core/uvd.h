@@ -232,7 +232,7 @@ public:
 	uv_err_t analyze();
 	
 	//Convert a block (should be UVDDataChunk?) suspected to be a function to a skeleton analyzed function structure
-	uv_err_t blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionIn);
+	uv_err_t blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **out);
 	
 	//uv_err_t changeConfig(UVDConfig *config);
 	

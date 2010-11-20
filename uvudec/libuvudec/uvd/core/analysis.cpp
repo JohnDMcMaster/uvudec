@@ -206,9 +206,9 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 		uv_assert_err(analyzeBlock(functionBlock));
 	
 		UVDBinaryFunction *function = NULL;
-		UVDBinaryFunctionShared *functionShared = NULL;
+		//UVDBinaryFunctionShared *functionShared = NULL;
 		uv_assert_err_ret(blockToFunction(functionBlock, &function));
-		functionShared = function->m_shared;
+		//functionShared = function->m_shared;
 		//uv_assert_err_ret(analyzeFunction(functionShared));
 		//uv_assert_err_ret(curDb->loadFunction(functionShared));
 		uv_assert_err_ret(m_analyzer->loadFunction(function));

@@ -41,9 +41,9 @@ uv_err_t UVDAnalysisDBArchive::clear()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAnalysisDB::queryFunctionByBinary(UVDDataChunk *dataChunk, UVDBinaryFunctionShared **func)
+uv_err_t UVDAnalysisDB::queryFunctionByBinary(UVDDataChunk *dataChunk, UVDBinaryFunction **func)
 {
-	std::vector<UVDBinaryFunctionShared *> funcs;
+	std::vector<UVDBinaryFunction *> funcs;
 	
 	uv_assert_err_ret(queryFunctionByBinary(dataChunk, funcs));
 	uv_assert_ret(!funcs.empty());
@@ -80,7 +80,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 		std::string valueName;
 		std::string valueDesc;
 		
-		UVDBinaryFunctionShared *functionShared = NULL;
+		UVDBinaryFunction *functionShared = NULL;
 	
 		//Go until we hit function specific impl
 		for( std::vector<std::string>::size_type dbPartIndex = 0; dbPartIndex < dbPart.size(); ++dbPartIndex )
@@ -125,7 +125,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 			}
 		}
 
-		functionShared = new UVDBinaryFunctionShared();
+		functionShared = new UVDBinaryFunction();
 		uv_assert_ret(functionShared);
 		
 		functionShared->m_name = valueName;
@@ -201,7 +201,7 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 #endif
 }
 
-uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunctionShared *function)
+uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunction *function)
 {
 	uv_assert_ret(function);
 	printf_debug("loadFunction: 0x%.8X\n", (unsigned int)function);
@@ -210,15 +210,16 @@ uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunctionShared *function)
 }
 
 uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
-		UVDBinaryFunctionShared *function, UVDBinaryFunctionInstance *functionInstance,
+		UVDBinaryFunction *function,
 		const std::string &outputDir, int functionIndex, std::string &out)
 {
 //printf("output dir: %s\n", outputDir.c_str());
 	char buff[256];
 	UVDData *data = NULL;
 	UVDConfig *config = m_analyzer->m_uvd->m_config;
+	UVDBinaryFunction *functionInstance = function;
 	
-	uv_assert_ret(functionInstance);
+	//uv_assert_ret(functionInstance);
 	data = functionInstance->getData();
 	uv_assert_ret(data);
 		
@@ -280,6 +281,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		delete elf;
 	}
 	
+	/*
 	if( config->m_computeFunctionMD5 )
 	{
 		std::string md5;
@@ -293,8 +295,10 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		uv_assert_err_ret(functionInstance->getRelocatableHash(md5));
 		out += "MD5_RELOCATABLE=" + md5 + "\n";
 	}
+	*/
 
 	//Code is optional, sometimes we just have binary and know its, say, printf
+#if 0
 	if( !functionInstance->m_code.empty() )
 	{
 		std::string srcFile;
@@ -305,44 +309,34 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		out += "SRC=" + srcFile + "\n";
 		uv_assert_err_ret(writeFile(srcFile, functionInstance->m_code));
 	}
+#endif
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunctionShared *function, const std::string &outputDir, std::string &config)
+uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunction *function, const std::string &outputDir, std::string &config)
 {
+	std::string name;
+	std::string description;
+	
 	uv_assert_ret(function);
 		
+	uv_assert_err_ret(function->getSymbolName(name));
+	//Should have auto named even if real is unknown
+	uv_assert_ret(!name.empty());
 	//Reminder: this can be empty as it is defined as the real function name or empty if unknown
-	config += "NAME=" + function->m_name + "\n";
-	config += "DESC=" + function->m_description + "\n";
-	
-	for( std::vector<UVDBinaryFunctionInstance *>::size_type j = 0; j < function->m_representations.size(); ++j )
-	{	
-		UVDBinaryFunctionInstance *functionInstance = function->m_representations[j];
+	config += "NAME=" + name + "\n";
+	config += "DESC=" + description + "\n";
 		
-		uv_assert_ret(functionInstance);
-		//FIXME: this is a temp check
-		{
-			std::string name;
-			//Should have a symbol name by now
-			uv_assert_err_ret(functionInstance->getSymbolName(name));
-			uv_assert_ret(!name.empty());
-		}
-		
-		uv_assert_err_ret(saveFunctionInstanceSharedData(function, functionInstance, outputDir, j, config));
-		//config += "VER_MIN=" + 1 + "\n";
-		//config += "VER_MAX=" + 2 + "\n";
-		if( j + 1 < function->m_representations.size() )
-		{
-			config += "\n";
-		}	
-	}
+	uv_assert_err_ret(saveFunctionInstanceSharedData(function, outputDir, 0, config));
+	//config += "VER_MIN=" + 1 + "\n";
+	//config += "VER_MAX=" + 2 + "\n";
+	config += "\n";
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *functionShared)
+uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunction *functionShared)
 {
 	UVDConfig *config = m_analyzer->m_uvd->m_config;
 	
@@ -354,7 +348,7 @@ uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *funct
 	
 	UVD *uvd = NULL;
 	UVDAnalyzer *analyzer = NULL;
-	UVDBinaryFunction *function = NULL;
+	UVDBinaryFunction *function = functionShared;
 	uint32_t iFunctionAddress = 0;
 	
 	//FIXME: global reference
@@ -362,7 +356,7 @@ uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunctionShared *funct
 	uv_assert_ret(uvd);
 	analyzer = uvd->m_analyzer;
 	uv_assert_ret(analyzer);
-	uv_assert_err_ret(analyzer->functionSharedToFunction(functionShared, &function));
+	//uv_assert_err_ret(analyzer->functionSharedToFunction(functionShared, &function));
 	uv_assert_ret(function);
 	iFunctionAddress = function->m_offset;
 
@@ -399,9 +393,9 @@ uv_err_t UVDAnalysisDBArchive::saveData(const std::string &outputDbFile)
 	printf_analysis_debug("Iterating over functions: %d\n", m_functions.size());
 	
 	//Loop for each function
-	for( std::vector<UVDBinaryFunctionShared *>::size_type i = 0; i < m_functions.size(); ++i )
+	for( std::vector<UVDBinaryFunction *>::size_type i = 0; i < m_functions.size(); ++i )
 	{
-		UVDBinaryFunctionShared *function = m_functions[i];
+		UVDBinaryFunction *function = m_functions[i];
 		
 		uv_assert_ret(function);
 		
@@ -425,33 +419,28 @@ uv_err_t UVDAnalysisDBArchive::saveData(const std::string &outputDbFile)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDAnalysisDBArchive::queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear)
+uv_err_t UVDAnalysisDBArchive::queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear)
 {
 	if( bClear )
 	{
 		funcs.clear();
 	}
-	for( std::vector<UVDBinaryFunctionShared *>::size_type i = 0; i < m_functions.size(); ++i )
+	for( std::vector<UVDBinaryFunction *>::size_type i = 0; i < m_functions.size(); ++i )
 	{
-		UVDBinaryFunctionShared *function = m_functions[i];
+		UVDBinaryFunction *function = m_functions[i];
 		
 		uv_assert_ret(function);
 		
-		for( std::vector<UVDBinaryFunctionInstance *>::size_type j = 0; j < function->m_representations.size(); ++j )
+		UVDBinaryFunction *functionShared = function;
+		uv_assert_ret(functionShared);
+		
+		//Match?
+		if( dataChunk == functionShared->getData() )
 		{
-			UVDBinaryFunctionInstance *functionShared = NULL;
-			
-			functionShared = function->m_representations[j];
-			uv_assert_ret(functionShared);
-			
-			//Match?
-			if( dataChunk == functionShared->getData() )
-			{
-				//Yipee!
-				funcs.push_back(function);
-				//We already have a match for this function
-				break;
-			}
+			//Yipee!
+			funcs.push_back(function);
+			//We already have a match for this function
+			break;
 		}
 	}
 	
@@ -481,7 +470,7 @@ uv_err_t UVDAnalysisDBConcentrator::saveData(std::string &file)
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-uv_err_t UVDAnalysisDBConcentrator::queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunctionShared *> &funcs, bool bClear)
+uv_err_t UVDAnalysisDBConcentrator::queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear)
 {
 	if( bClear )
 	{
