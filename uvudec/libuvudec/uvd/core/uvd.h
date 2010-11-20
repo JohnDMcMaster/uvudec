@@ -131,7 +131,6 @@ individual instructions
 UV Decompiler engine
 Primary end user object
 */
-class UVDFLIRT;
 class UVDEventEngine;
 class UVDArchitecture;
 class UVDObject;
@@ -292,7 +291,7 @@ public:
 	UVDFormat *m_format;
 
 	//Library recognition engine
-	UVDFLIRT *m_flirt;
+	//UVDFLIRT *m_flirt;
 	
 	//For notifying plugins and such of analysis events
 	//We own this

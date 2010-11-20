@@ -4,9 +4,9 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/flirt.h"
-#include "uvd/flirt/pat/pat.h"
-#include "uvd/flirt/sig/sig.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/pat/pat.h"
+#include "uvdflirt/sig/sig.h"
 #include "uvd/util/util.h"
 #include "uvd/core/runtime.h"
 

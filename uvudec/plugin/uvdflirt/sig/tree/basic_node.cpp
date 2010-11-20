@@ -4,7 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/sig/tree/tree.h"
+#include "uvdflirt/sig/tree/tree.h"
 #include "uvd/util/util.h"
 
 bool UVDFLIRTSignatureTreeBasicNodeCompare::operator()(UVDFLIRTSignatureTreeBasicNode *first, UVDFLIRTSignatureTreeBasicNode *second) const

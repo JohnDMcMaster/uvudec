@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_OBJECT_FACTORY_H
 #define UVD_OBJECT_FACTORY_H
 
-#include "uvd/flirt/pat/pat.h"
+#include "uvdflirt/pat/pat.h"
 
 //typedef std::pair<UVDFLIRTPatternGenerator::CanLoad, UVDFLIRTPatternGenerator::TryLoad> UVDFLIRTPatFactoryLoader;
 class UVDFLIRTPatFactoryLoader

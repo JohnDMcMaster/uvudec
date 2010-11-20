@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_FLIRT_SIGNATURE_TREE_H
 
 #include "uvd/util/types.h"
-#include "uvd/flirt/function.h"
+#include "uvdflirt/function.h"
 #include <set>
 
 /*

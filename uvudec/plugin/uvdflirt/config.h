@@ -15,11 +15,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 Configuration entries related to FLIRT
 flirt.* entries
 */
-class UVDConfigFLIRT
+class UVDFLIRTConfig
 {
 public:
-	UVDConfigFLIRT();
-	~UVDConfigFLIRT();
+	UVDFLIRTConfig();
+	~UVDFLIRTConfig();
+	uv_err_t init();
 	uv_err_t deinit();
 	
 	//Set parameters that FLAIR cannot set to what FLAIR would use
@@ -96,6 +97,8 @@ public:
 	//Don't skip these, even if we think they should be skipped (ie not a function symbol)
 	std::set<std::string> m_forcePatternSymbols;
 };
+
+extern UVDFLIRTConfig *g_UVDFLIRTConfig;
 
 #endif
 

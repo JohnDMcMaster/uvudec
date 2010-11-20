@@ -59,10 +59,15 @@ public:
 	//This actually activates a plugin for use
 	//Error if the plugin was not previously loaded
 	uv_err_t activatePluginByName(const std::string &name);
+	uv_err_t ensurePluginActiveByName(const std::string &name);
 	uv_err_t deactivatePluginByName(const std::string &name);
 	
 	uv_err_t onUVDInit();
 	uv_err_t onUVDDeinit();
+
+	//In an acceptable dependency order	
+	uv_err_t getAllPluginDependencies(const std::string &name, std::vector<UVDPlugin *> &out);
+	uv_err_t getPluginDependencyOrder(std::vector<UVDPlugin *> &out);
 
 protected:
 	//Initialize statically linked plugins

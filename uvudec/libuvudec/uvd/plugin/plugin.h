@@ -39,8 +39,7 @@ class UVDPlugin
 {
 public:
 	//<name, version range>
-	typedef std::pair<std::string, UVDVersionRange> PluginDependency;
-	typedef std::set<PluginDependency> PluginDependencies;
+	typedef std::map<std::string, UVDVersionRange> PluginDependencies;
 	/*
 	Since we want plugins to be able to process args, they are loaded very early
 	They will have a uvd engine object set later as needed

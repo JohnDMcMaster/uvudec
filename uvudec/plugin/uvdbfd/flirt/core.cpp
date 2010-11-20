@@ -4,7 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
 #include "uvdbfd/flirt/core.h"
 #include <string.h>
 
@@ -157,7 +157,7 @@ Hmm does differential thing...shouldn't we do it by symbol size?
 */
 uv_err_t UVDBFDPatCore::setFunctionSizes()
 {
-	printf_flirt_debug("sig max length: 0x%.4X\n", g_config->m_flirt.m_patSignatureLengthMax);
+	//printf_flirt_debug("sig max length: 0x%.4X\n", g_config->m_flirt.m_patSignatureLengthMax);
 
 	//Iterate over all sections
 	for( std::vector<UVDBFDPatSection *>::iterator sectionIter = m_sections.m_sections.begin();

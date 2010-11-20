@@ -4,8 +4,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/pat/factory.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/pat/factory.h"
+#include "uvdflirt/flirt.h"
 
 UVDFLIRTPatFactoryLoader::UVDFLIRTPatFactoryLoader()
 {
@@ -42,6 +42,7 @@ UVDFLIRTPatFactory::~UVDFLIRTPatFactory()
 
 uv_err_t UVDFLIRTPatFactory::registerObject(const std::string &name, UVDFLIRTPatternGenerator::CanLoad canLoad, UVDFLIRTPatternGenerator::TryLoad tryLoad, void *data)
 {
+	uv_assert_ret(this);
 	uv_assert_ret(m_loaders.find(name) == m_loaders.end());
 	m_loaders[name] = UVDFLIRTPatFactoryLoader(name, canLoad, tryLoad, data);
 	return UV_ERR_OK;

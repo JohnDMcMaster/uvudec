@@ -4,9 +4,9 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/pat/reader.h"
-#include "uvd/flirt/sig/sig.h"
-#include "uvd/flirt/function.h"
+#include "uvdflirt/pat/reader.h"
+#include "uvdflirt/sig/sig.h"
+#include "uvdflirt/function.h"
 #include "uvd/util/util.h"
 
 UVDPatLoaderCore::UVDPatLoaderCore(UVDFLIRTSignatureDB *db, const std::string &file)

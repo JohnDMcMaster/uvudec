@@ -404,7 +404,7 @@ UVD::UVD()
 	m_config = NULL;
 	m_pluginEngine = NULL;
 	m_runtime = NULL;
-	m_flirt = NULL;
+	//m_flirt = NULL;
 	m_eventEngine = NULL;
 }
 
@@ -420,7 +420,7 @@ uv_err_t UVD::deinit()
 	UVD_POKE(&m_analyzer);
 	UVD_POKE(&m_config);
 	UVD_POKE(&m_format);
-	UVD_POKE(&m_flirt);
+	//UVD_POKE(&m_flirt);
 	UVD_POKE(&m_eventEngine);
 	UVD_POKE(&m_pluginEngine);
 

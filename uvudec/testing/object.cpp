@@ -6,6 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/object.h"
 #include "uvd/core/runtime.h"
+#include "uvd/core/uvd.h"
 
 void UVDTestingObjectFixture::setUp()
 {

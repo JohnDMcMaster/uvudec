@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_SIGNATURE_WRITER_H
 
 #include "uvd/relocation/writer.h"
-#include "uvd/flirt/sig/format.h"
+#include "uvdflirt/sig/format.h"
 
 class UVDFLIRTSignatureDB;
 class UVDFLIRTSignatureDBWriter : public UVDRelocationWriter

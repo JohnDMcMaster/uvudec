@@ -17,9 +17,10 @@ obj2pat entry point
 #include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/args.h"
-#include "uvd/flirt/args_property.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/args.h"
+#include "uvdflirt/args_property.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/config.h"
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
 #include "uvd/assembly/address.h"
@@ -36,9 +37,9 @@ static uv_err_t doConvert()
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string output;
-	UVDConfigFLIRT *flirtConfig = NULL;
+	UVDFLIRTConfig *flirtConfig = NULL;
 		
-	flirtConfig = &g_config->m_flirt;
+	flirtConfig = g_UVDFLIRTConfig;
 	uv_assert_ret(flirtConfig);
 
 	//Get string output
@@ -54,7 +55,7 @@ static uv_err_t doConvert()
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
-	UVDConfigFLIRT *flirtConfig = NULL;
+	UVDFLIRTConfig *flirtConfig = NULL;
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
@@ -63,7 +64,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uv_assert_ret(config);
 	uv_assert_ret(config->m_argv);
 	uv_assert_ret(argConfig);
-	flirtConfig = &g_config->m_flirt;
+	flirtConfig = g_UVDFLIRTConfig;
 	uv_assert_ret(flirtConfig);
 
 	if( !argumentArguments.empty() )
@@ -190,7 +191,7 @@ uv_err_t uvmain(int argc, char **argv)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfig *config = NULL;
-	UVDConfigFLIRT *flirtConfig = NULL;
+	UVDFLIRTConfig *flirtConfig = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
 	
 	if( strcmp(GetVersion(), UVDGetVersion()) )
@@ -226,7 +227,7 @@ uv_err_t uvmain(int argc, char **argv)
 	}
 	uv_assert_ret(g_flirt);
 
-	flirtConfig = &g_config->m_flirt;
+	flirtConfig = g_UVDFLIRTConfig;
 	uv_assert_ret(flirtConfig);
 
 	//Source .pat files

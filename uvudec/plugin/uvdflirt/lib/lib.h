@@ -11,7 +11,7 @@ For use with FLIRT
 #ifndef UVD_LIBRARY_H
 #define UVD_LIBRARY_H
 
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
 #include "uvd/data/data.h"
 
 class UVDFLIRTPatternAnalysis;

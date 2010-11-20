@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/types.h"
 #include "uvd/data/data.h"
-#include "uvd/flirt/sig/format.h"
+#include "uvdflirt/sig/format.h"
 #include <vector>
 
 #define UVD__FLIRT__CONFLICT__RESOLUTION__UNKNOWN		0

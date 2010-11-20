@@ -5,8 +5,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/config/config.h"
-#include "uvd/flirt/args.h"
-#include "uvd/flirt/args_property.h"
+#include "uvdflirt/args.h"
+#include "uvdflirt/args_property.h"
+#include "uvdflirt/config.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
 
@@ -30,7 +31,7 @@ uv_err_t UVDInitFLIRTSharedConfig(UVDConfig *config)
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
-	UVDConfigFLIRT *flirtConfig = NULL;
+	UVDFLIRTConfig *flirtConfig = NULL;
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
@@ -38,7 +39,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	
 	config = (UVDConfig *)config;
 	uv_assert_ret(config);
-	flirtConfig = &config->m_flirt;
+	flirtConfig = g_UVDFLIRTConfig;
 	uv_assert_ret(flirtConfig);
 	uv_assert_ret(config->m_argv);
 

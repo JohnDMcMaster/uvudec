@@ -6,7 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/hash/crc.h"
 #include "uvd/util/util.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/config.h"
 #include "uvdbfd/flirt/function.h"
 #include "uvdbfd/flirt/module_printer.h"
 #include "uvdbfd/flirt/relocation.h"
@@ -44,15 +45,15 @@ uv_err_t UVDBFDPatModulePrinter::printLeadingBytes()
 	uint32_t moduleSize = 0;
 	uint32_t moduleOffset = 0;
 	
-	expectedChars = g_config->m_flirt.m_patLeadingLength * 2;	
+	expectedChars = g_UVDFLIRTConfig->m_patLeadingLength * 2;	
 	
 	uv_assert_err_ret(m_module->offset(&moduleOffset));
 	uv_assert_err_ret(m_module->size(&moduleSize));
-	numberLeadingBytes = uvd_min(moduleSize, g_config->m_flirt.m_patLeadingLength);
+	numberLeadingBytes = uvd_min(moduleSize, g_UVDFLIRTConfig->m_patLeadingLength);
 	endPosRaw = moduleOffset + numberLeadingBytes;
 	printf_flirt_debug("print leading bytes, endPosRaw: 0x%04X\n", endPosRaw);
 	endPosIter = m_module->const_offset_begin(endPosRaw);
-	//printf_flirt_debug("Leading pattern bytes, m_size: 0x%.4X, config max length: 0x%.4X, selected end pos: 0x%.4X\n", m_size, g_config->m_flirt.m_patLeadingLength, endPos);
+	//printf_flirt_debug("Leading pattern bytes, m_size: 0x%.4X, config max length: 0x%.4X, selected end pos: 0x%.4X\n", m_size, g_UVDFLIRTConfig->m_patLeadingLength, endPos);
 
 	//And let it be born
 	//printf_flirt_debug("printing leading bytes, endPosIter.m_offset: 0x%.4X, func offset: 0x%.4X, func size: 0x%.4X\n", endPosIter.m_offset, m_func->m_offset, m_func->m_size);
@@ -205,7 +206,7 @@ uv_err_t UVDBFDPatModulePrinter::printCRC()
 static bool isValidPublicName(const std::string &symbolName)
 {
 	bool ret = false;
-	ret = symbolName.size() >= g_config->m_flirt.m_patternPublicNameLengthMin;
+	ret = symbolName.size() >= g_UVDFLIRTConfig->m_patternPublicNameLengthMin;
 	printf_flirt_debug("check public name validity: %s, %d\n", symbolName.c_str(), ret);
 	return ret;
 }
@@ -232,7 +233,7 @@ uv_err_t UVDBFDPatModulePrinter::printRelocations()
 	std::set<std::string> validPublicNames;
 	uint32_t invalidPublicNameCount = 0;
 
-	if( g_config->m_flirt.m_prefixUnderscores )
+	if( g_UVDFLIRTConfig->m_prefixUnderscores )
 	{
 		symbolPrefix = "_";
 	}
@@ -371,7 +372,7 @@ uv_err_t UVDBFDPatModulePrinter::printTailingBytes()
 		getStringWriter()->print(" ");
 		uv_assert_err_ret(printPatternBytes(m_iter, m_module->const_end()));
 	}
-	else if( g_config->m_flirt.m_patternReferenceTrailingSpace )
+	else if( g_UVDFLIRTConfig->m_patternReferenceTrailingSpace )
 	{
 		getStringWriter()->print(" ");
 	}
@@ -417,7 +418,7 @@ uv_err_t UVDBFDPatModulePrinter::shouldPrint()
 		bfdAsymbol = function->m_bfdAsymbol;
 
 		//Force adding it?
-		if( g_config->m_flirt.m_forcePatternSymbols.find(bfdAsymbol->name) == g_config->m_flirt.m_forcePatternSymbols.end() )
+		if( g_UVDFLIRTConfig->m_forcePatternSymbols.find(bfdAsymbol->name) == g_UVDFLIRTConfig->m_forcePatternSymbols.end() )
 		{
 			//we must filter here - to don`t lose sizes ! 
 			if( std::string(bfdAsymbol->name).empty() )
@@ -446,7 +447,7 @@ uv_err_t UVDBFDPatModulePrinter::shouldPrint()
 			}
 
 			//Make sure we have enough bytes as per our policy
-			if( function->m_size < g_config->m_flirt.m_patSignatureLengthMin )
+			if( function->m_size < g_UVDFLIRTConfig->m_patSignatureLengthMin )
 			{
 				printf_flirt_debug("Skipping short len symbol %s, length: 0x%.2X\n", bfdAsymbol->name, function->m_size);
 				continue;
@@ -524,7 +525,7 @@ uv_err_t UVDBFDPatModulePrinter::print()
 	printDebug();
 	uv_assert_err_ret(printTailingBytes());
 	
-	getStringWriter()->print(g_config->m_flirt.m_patternFileNewline.c_str());
+	getStringWriter()->print(g_UVDFLIRTConfig->m_patternFileNewline.c_str());
 
 	printf_flirt_debug("\n\n\n");	
 	printf_flirt_debug("buffer:\n%s\n", getStringWriter()->m_buffer.c_str());

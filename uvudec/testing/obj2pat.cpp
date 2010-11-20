@@ -6,7 +6,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/obj2pat.h"
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/plugin.h"
 #include <string.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UVDObj2patUnitTest);
@@ -100,7 +101,7 @@ void UVDObj2patUnitTest::verifyObj2Pat(const std::string &objectFileNameIn, cons
 	m_args.clear();
 	m_uvdInpuFileName = objectFileName;
 	generalInit();
-	UVCPPUNIT_ASSERT(m_uvd->m_flirt->toPat(outputPatFileContents));
+	UVCPPUNIT_ASSERT(g_uvdFLIRTPlugin->m_flirt->toPat(outputPatFileContents));
 	deinit();
 	
 	//UVCPPUNIT_ASSERT(readFile(outputPatFileName, outputPatFileContents));

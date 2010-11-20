@@ -11,7 +11,6 @@ Do something instead like create a list of optional and required members, with p
 */
 
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
 #include "uvd/core/runtime.h"
 #include "uvd/event/engine.h"
 #include "uvd/object/object.h"
@@ -365,10 +364,6 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	m_eventEngine = new UVDEventEngine();
 	uv_assert(m_eventEngine);
 	uv_assert_err(m_eventEngine->init());
-	m_flirt = new UVDFLIRT();
-	uv_assert(m_flirt);
-	m_flirt->m_uvd = this;
-	uv_assert_err(m_flirt->init());
 	/*
 	Read file
 	This is raw dat, NOT null terminated string

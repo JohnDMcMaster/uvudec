@@ -10,7 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifdef UVD_FLIRT_PATTERN_BFD
 
 #include "uvd/util/types.h"
-#include "uvd/flirt/pat/pat.h"
+#include "uvdflirt/pat/pat.h"
 #include <string>
 #include <bfd.h>
 

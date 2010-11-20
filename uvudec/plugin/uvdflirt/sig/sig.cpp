@@ -4,15 +4,16 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/args_property.h"
-#include "uvd/flirt/flirt.h"
-#include "uvd/flirt/pat/pat.h"
-#include "uvd/flirt/pat/reader.h"
-#include "uvd/flirt/sig/reader.h"
-#include "uvd/flirt/sig/sig.h"
-#include "uvd/flirt/sig/tree/tree.h"
-#include "uvd/flirt/sig/format.h"
-#include "uvd/flirt/sig/writer.h"
+#include "uvdflirt/config.h"
+#include "uvdflirt/args_property.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/pat/pat.h"
+#include "uvdflirt/pat/reader.h"
+#include "uvdflirt/sig/reader.h"
+#include "uvdflirt/sig/sig.h"
+#include "uvdflirt/sig/tree/tree.h"
+#include "uvdflirt/sig/format.h"
+#include "uvdflirt/sig/writer.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/util.h"
 #include <string>
@@ -107,15 +108,15 @@ UVDFLIRTSignatureDB::~UVDFLIRTSignatureDB()
 
 uv_err_t UVDFLIRTSignatureDB::init()
 {
-	m_libraryName = g_config->m_flirt.m_libName;
+	m_libraryName = g_UVDFLIRTConfig->m_libName;
 
-	m_header.version = g_config->m_flirt.m_sigVersion;
-	m_header.feature_flags = g_config->m_flirt.m_sigFeatures;
-	m_header.pad = g_config->m_flirt.m_sigPad;
-	m_header.processor = g_config->m_flirt.m_sigProcessorID;
-	m_header.OS_types = g_config->m_flirt.m_sigOSTypes;
-	m_header.app_types = g_config->m_flirt.m_sigAppTypes;
-	m_header.file_types = g_config->m_flirt.m_sigFileTypes;
+	m_header.version = g_UVDFLIRTConfig->m_sigVersion;
+	m_header.feature_flags = g_UVDFLIRTConfig->m_sigFeatures;
+	m_header.pad = g_UVDFLIRTConfig->m_sigPad;
+	m_header.processor = g_UVDFLIRTConfig->m_sigProcessorID;
+	m_header.OS_types = g_UVDFLIRTConfig->m_sigOSTypes;
+	m_header.app_types = g_UVDFLIRTConfig->m_sigAppTypes;
+	m_header.file_types = g_UVDFLIRTConfig->m_sigFileTypes;
 
 	return UV_ERR_OK;
 }
@@ -301,7 +302,7 @@ uv_err_t UVDFLIRTSignatureDB::debugDumpTree()
 	if( m_tree )
 	{
 		printf_flirt_debug("Signature DB tree (root = 0x%08X):\n", (int)m_tree);
-		uv_assert_err_ret(m_tree->dump(g_config->m_flirt.m_debugDumpTab, true));
+		uv_assert_err_ret(m_tree->dump(g_UVDFLIRTConfig->m_debugDumpTab, true));
 	}
 	else
 	{

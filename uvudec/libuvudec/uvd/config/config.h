@@ -13,7 +13,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <vector>
 #include "uvd/config/arg.h"
 #include "uvd/assembly/instruction.h"
-#include "uvd/flirt/config.h"
 #include "uvd/config/arg.h"
 #include "uvd/config/file.h"
 #include "uvd/config/plugin.h"
@@ -318,7 +317,7 @@ public:
 	//Automatic symbol naming
 	UVDConfigSymbols m_symbols;
 	//FLIRT related options (flirt.*)
-	UVDConfigFLIRT m_flirt;
+	//UVDConfigFLIRT m_flirt;
 	//The address ranges that should/shouldn't be analyzed
 	//Later might add in some other stuff like differentiating between addresses skipped for analysis and actually not present
 	UVDUint32RangePriorityList m_addressRangeValidity;

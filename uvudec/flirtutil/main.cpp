@@ -9,8 +9,8 @@ Some code taken from
 http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 */
 
-#include "uvd/flirt/flirt.h"
-#include "uvd/flirt/sig/format.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/sig/format.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/core/init.h"
 #include <ctype.h>

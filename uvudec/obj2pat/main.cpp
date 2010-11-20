@@ -16,10 +16,12 @@ obj2pat entry point
 #include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
-#include "uvd/flirt/args.h"
-#include "uvd/flirt/args_property.h"
+#include "uvdflirt/config.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/args.h"
+#include "uvdflirt/args_property.h"
 #include "uvd/data/data.h"
+#include "uvdflirt/plugin.h"
 
 #define UVD_PROP_FORCE_SYMBOL "flirt.force_symbol"
 
@@ -33,7 +35,7 @@ static const char *GetVersion()
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
-	UVDConfigFLIRT *flirtConfig = NULL;
+	UVDFLIRTConfig *flirtConfig = NULL;
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
@@ -43,7 +45,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uv_assert_ret(config->m_argv);
 	uv_assert_ret(argConfig);
 
-	flirtConfig = &g_config->m_flirt;
+	flirtConfig = g_UVDFLIRTConfig;
 
 	if( !argumentArguments.empty() )
 	{
@@ -103,7 +105,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	return UV_ERR_OK;
 }
 
-uv_err_t initProgConfig()
+static uv_err_t initProgConfig()
 {
 	uv_assert_err_ret(UVDInitFLIRTSharedConfig(g_config));
 
@@ -135,7 +137,7 @@ uv_err_t uvmain(int argc, char **argv)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfig *config = NULL;
-	UVDConfigFLIRT *flirtConfig = NULL;
+	UVDFLIRTConfig *flirtConfig = NULL;
 	UVD *uvd = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
 	std::string inputFile;
@@ -152,6 +154,8 @@ uv_err_t uvmain(int argc, char **argv)
 	uv_assert_ret(config);
 	//Early local initialization
 	uv_assert_err_ret(initProgConfig());
+	//uv_assert_err_ret(config->m_plugin.m_pluginEngine.ensurePluginActiveByName("uvdflirt"));
+	//uv_assert_err_ret(config->m_plugin.addToActivate("uvdflirt"));
 	
 	//Grab our command line options
 	parseMainRc = config->parseMain(argc, argv);
@@ -162,7 +166,7 @@ uv_err_t uvmain(int argc, char **argv)
 		goto error;
 	}
 
-	flirtConfig = &g_config->m_flirt;
+	flirtConfig = g_UVDFLIRTConfig;
 	uv_assert_ret(flirtConfig);
 
 	if( flirtConfig->m_targetFiles.empty() )
@@ -188,7 +192,8 @@ uv_err_t uvmain(int argc, char **argv)
 
 	//Get string output
 	printf_debug_level(UVD_DEBUG_SUMMARY, "main: creating pat file...\n");
-	uv_assert_err_ret(uvd->m_flirt->toPatFile(flirtConfig->m_outputFile));
+	uv_assert_ret(g_uvdFLIRTPlugin->m_flirt);
+	uv_assert_err_ret(g_uvdFLIRTPlugin->m_flirt->toPatFile(flirtConfig->m_outputFile));
 	printf_debug_level(UVD_DEBUG_PASSES, "main: pat done\n");
 
 

@@ -7,7 +7,7 @@ Some code originally from
 http://www.woodmann.com/forum/showthread.php?7517-IDA-signature-file-format
 */
 
-#include "uvd/flirt/sig/format.h"
+#include "uvdflirt/sig/format.h"
 
 #define FLAG_STRING(flag, str)			if (flags & flag) { if(!ret.empty()) ret += " "; ret += str; }
 #define FLAG_STRING_RAW(flag)			FLAG_STRING(flag, uvd_stringify(flag))

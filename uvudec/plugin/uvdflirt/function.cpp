@@ -5,9 +5,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/hash/crc.h"
-#include "uvd/flirt/function.h"
-#include "uvd/flirt/pat/pat.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/function.h"
+#include "uvdflirt/pat/pat.h"
+#include "uvdflirt/flirt.h"
 #include "uvd/util/util.h"
 #include <string.h>
 

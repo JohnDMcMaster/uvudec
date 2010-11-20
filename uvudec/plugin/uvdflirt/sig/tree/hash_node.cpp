@@ -4,7 +4,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/sig/tree/tree.h"
+#include "uvdflirt/config.h"
+#include "uvdflirt/sig/tree/tree.h"
 #include "uvd/config/config.h"
 #include "uvd/util/util.h"
 #include <limits.h>
@@ -36,7 +37,7 @@ UVDFLIRTSignatureTreeHashNode::UVDFLIRTSignatureTreeHashNode(const UVDFLIRTModul
 		UVD_PRINT_STACK();
 	}
 	m_crc16 = function->m_crc16;
-	m_leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);
+	m_leadingLength = uvd_min(function->m_sequence.size(), g_UVDFLIRTConfig->m_patLeadingLength);
 }
 
 UVDFLIRTSignatureTreeHashNode::~UVDFLIRTSignatureTreeHashNode()
@@ -113,7 +114,7 @@ uv_err_t UVDFLIRTSignatureTreeHashNode::debugDump(const std::string &prefix, uin
 		UVDFLIRTSignatureTreeBasicNode *basicNode = *iter;
 
 		uv_assert_ret(basicNode);
-		uv_assert_err_ret(basicNode->debugDump(prefix + g_config->m_flirt.m_debugDumpTab, basicNodeIndex));
+		uv_assert_err_ret(basicNode->debugDump(prefix + g_UVDFLIRTConfig->m_debugDumpTab, basicNodeIndex));
 		++basicNodeIndex;
 	}
 	return UV_ERR_OK;

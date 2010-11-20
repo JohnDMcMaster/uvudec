@@ -4,8 +4,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/sig/reader.h"
-#include "uvd/flirt/sig/sig.h"
+#include "uvdflirt/sig/reader.h"
+#include "uvdflirt/sig/sig.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

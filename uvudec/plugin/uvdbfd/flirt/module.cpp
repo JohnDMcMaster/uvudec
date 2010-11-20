@@ -9,7 +9,8 @@ UVDBFDPatModule
 */
 
 #include "uvd/config/config.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/config.h"
 #include "uvdbfd/flirt/function.h"
 #include "uvdbfd/flirt/module.h"
 #include "uvdbfd/flirt/module_printer.h"
@@ -393,11 +394,11 @@ uv_err_t UVDBFDPatModule::trimSignatures()
 	{
 		UVDBFDPatFunction *function = *iter;
 
-		if( function->m_size >= g_config->m_flirt.m_patSignatureLengthMax )
+		if( function->m_size >= g_UVDFLIRTConfig->m_patSignatureLengthMax )
 		{
 			printf_flirt_warning("truncating signature for function %s\n", bfd_asymbol_name(function->m_bfdAsymbol));
 			//Hmm why was this max - 1?
-			function->m_size = g_config->m_flirt.m_patSignatureLengthMax - 1;
+			function->m_size = g_UVDFLIRTConfig->m_patSignatureLengthMax - 1;
 		}
 	}
 	return UV_ERR_OK;

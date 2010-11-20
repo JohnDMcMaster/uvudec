@@ -6,7 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/flirtutil.h"
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
 #include <string.h>
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UVDFlirtutilFixture);

@@ -319,6 +319,97 @@ uv_err_t UVDPluginEngine::loadByPath(const std::string &path, bool reportErrors)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDPluginEngine::getAllPluginDependencies(const std::string &name, std::vector<UVDPlugin *> &out)
+{
+	std::set<UVDPlugin *> dependencies;	
+	UVDPlugin::PluginDependencies pluginDependencies;
+	UVDPlugin *plugin = NULL;
+	
+	if( m_plugins.find(name) == m_plugins.end() )
+	{
+		printf_error("no plugin named %s\n", name.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	
+	plugin = m_plugins[name];
+	uv_assert_err_ret(plugin->getDependencies(pluginDependencies));
+
+	//FIXME: single pass for now...
+	out.clear();
+	for( std::map<std::string, UVDVersionRange>::iterator iter = pluginDependencies.begin();
+			iter != pluginDependencies.end(); ++iter )
+	{
+		std::string dependentPluginName = (*iter).first;
+		UVDPlugin *dependentPlugin = m_plugins[dependentPluginName];
+
+		//No circular refs
+		if( dependencies.find(dependentPlugin) != dependencies.end() )
+		{
+			printf_error("circular plugin dependency on %s / %s\n", dependentPluginName.c_str(), name.c_str());
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		out.insert(out.begin(), dependentPlugin);
+		dependencies.insert(dependentPlugin);
+	}
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginEngine::getPluginDependencyOrder(std::vector<UVDPlugin *> &out)
+{
+	std::set<UVDPlugin *> added;
+	
+	//printf("get plugin dep order, plugins: %d\n", m_plugins.size());
+	for( std::map<std::string, UVDPlugin *>::iterator iter = m_plugins.begin();
+			iter != m_plugins.end(); ++iter )
+	{
+		std::string name = (*iter).first;
+		UVDPlugin *topLevelPlugin = (*iter).second;
+		std::vector<UVDPlugin *> dependencies;
+		std::vector<UVDPlugin *> newDependencies;
+		
+		//Already registered?
+		if( added.find(topLevelPlugin) != added.end() )
+		{
+			continue;
+		}
+		
+		uv_assert_err_ret(getAllPluginDependencies(name, dependencies));
+		//printf("%s, deps: %d\n", topLevelPlugin->getName().c_str(), dependencies.size());
+		//Load this after all real dependencies
+		dependencies.push_back(topLevelPlugin);
+		
+		//We could do this in one pass, but involves more complicated math to avoid reversing the load order
+		for( std::vector<UVDPlugin *>::iterator depIter = dependencies.begin();
+				depIter != dependencies.end(); ++depIter )
+		{
+			UVDPlugin *cur = *depIter;
+			
+			if( added.find(cur) == added.end() )
+			{
+				newDependencies.push_back(cur);
+				added.insert(cur);
+			}
+		}
+		//All is good, copy in
+		out.insert(out.begin(), newDependencies.begin(), newDependencies.end());			
+
+		/*
+		printf("dep order\n");
+		for( std::vector<UVDPlugin *>::iterator iter = out.begin();
+				iter != out.end(); ++iter )
+		{
+			printf("\t%s\n", (*iter)->getName().c_str());
+		}
+		*/
+	}
+	//Should all be in there
+	uv_assert_ret(out.size() == m_plugins.size());
+
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDPluginEngine::activatePluginByName(const std::string &name)
 {
 	std::map<std::string, UVDPlugin *>::iterator iter = m_plugins.find(name);
@@ -333,14 +424,49 @@ uv_err_t UVDPluginEngine::activatePluginByName(const std::string &name)
 	if( m_loadedPlugins.find(name) != m_loadedPlugins.end() )
 	{
 		printf_warn("skipping double load of plugin %s\n", name.c_str());
-		return UV_DEBUG(UV_ERR_GENERAL);
+		return UV_DEBUG(UV_ERR_WARNING);
 	}
 	plugin = (*iter).second;
 	uv_assert_ret(plugin);
+	
+	/*
+	Initialize dependencies
+	TODO: check for circular refs
+	*/
+	std::vector<UVDPlugin *> dependencies;
+	uv_assert_err_ret(getAllPluginDependencies(name, dependencies));
+
+	//std::string pluginName;
+	for( std::vector<UVDPlugin *>::iterator iter = dependencies.begin();
+			iter != dependencies.end(); ++iter )
+	{
+		//std::string dependentPluginName = *iter;
+		UVDPlugin *dependentPlugin = *iter;
+		
+		uv_assert_err_ret(ensurePluginActiveByName(dependentPlugin->getName()));
+	}
+	
 	uv_assert_err_ret(plugin->init(g_config));
 	m_loadedPlugins[name] = plugin;
 
 	return UV_ERR_OK;
+}
+
+uv_err_t UVDPluginEngine::ensurePluginActiveByName(const std::string &name)
+{
+	if( m_plugins.find(name) == m_plugins.end() )
+	{
+		printf_error("no plugin loaded named %s\n", name.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+
+	if( m_loadedPlugins.find(name) != m_loadedPlugins.end() )
+	{
+		printf_plugin_debug("skpping activated loaded plugin %s\n", name.c_str());
+		return UV_ERR_OK;
+	}
+	
+	return UV_DEBUG(activatePluginByName(name));
 }
 
 uv_err_t UVDPluginEngine::deactivatePluginByName(const std::string &name)
@@ -364,17 +490,28 @@ uv_err_t UVDPluginEngine::deactivatePluginByName(const std::string &name)
 
 uv_err_t UVDPluginEngine::onUVDInit()
 {
+	std::vector<UVDPlugin *> dependencyOrderedPlugins;
 	uv_assert_ret(m_uvd);
 
-	for( std::map<std::string, UVDPlugin *>::iterator iter = m_loadedPlugins.begin();
-			iter != m_loadedPlugins.end(); ++iter )
+	uv_assert_err_ret(getPluginDependencyOrder(dependencyOrderedPlugins));
+printf("on uvd init, to init: %d\n", dependencyOrderedPlugins.size());
+
+	for( std::vector<UVDPlugin *>::iterator iter = dependencyOrderedPlugins.begin();
+			iter != dependencyOrderedPlugins.end(); ++iter )
 	{
-		UVDPlugin *plugin = (*iter).second;
+		UVDPlugin *plugin = *iter;
+		
+		//Not a loaded plugin?
+		if( m_loadedPlugins.find(plugin->getName()) == m_loadedPlugins.end() )
+		{
+			continue;
+		}
 		
 		uv_assert_ret(plugin);
 		//FIXME: add config for potentially nonfatal errors
 		uv_assert_err_ret(plugin->onUVDInit());
 	}
+
 	return UV_ERR_OK;
 }
 

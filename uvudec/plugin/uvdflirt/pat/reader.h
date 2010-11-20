@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_FLIRT_PAT_READER_H
 
 #include "uvd/util/types.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
 
 /*
 UVDPatLoaderCore

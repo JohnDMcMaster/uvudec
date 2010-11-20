@@ -9,7 +9,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdbfd/flirt/module.h"
 #include "uvdbfd/flirt/section.h"
 #include "uvd/config/config.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/config.h"
+#include "uvdflirt/flirt.h"
 
 /*
 UVDBFDPatSection
@@ -136,7 +137,7 @@ uv_err_t UVDBFDPatSection::addFunction(asymbol *functionSymbol)
 	function->m_size = 0;
 
 	//Should we group functions into single modules or each its own module?
-	if( g_config->m_flirt.m_functionsAsModules )
+	if( g_UVDFLIRTConfig->m_functionsAsModules )
 	{
 		module = new UVDBFDPatModule();
 		uv_assert_ret(module);

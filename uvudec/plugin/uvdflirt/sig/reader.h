@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_SIG_READER_H
 #define UVD_FLIRT_SIG_READER_H
 
-#include "uvd/flirt/function.h"
+#include "uvdflirt/function.h"
 #include "uvd/util/types.h"
 
 /*

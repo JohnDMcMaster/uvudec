@@ -5,10 +5,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/config/config.h"
-#include "uvd/flirt/pat/pat.h"
-#include "uvd/flirt/sig/tree/tree.h"
+#include "uvdflirt/config.h"
+#include "uvdflirt/pat/pat.h"
+#include "uvdflirt/sig/tree/tree.h"
 #include "uvd/util/util.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
 #include <limits.h>
 
 /*
@@ -171,7 +172,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNodeInserter::insert(UVDFLIRTSignatureTreeL
 	//Careful not to delete it upon cleanup (or double frees rather)
 	uint32_t leadingLength = 0;
 	
-	leadingLength = uvd_min(function->m_sequence.size(), g_config->m_flirt.m_patLeadingLength);	
+	leadingLength = uvd_min(function->m_sequence.size(), g_UVDFLIRTConfig->m_patLeadingLength);	
 	uv_assert_err_ret(function->m_sequence.subseqTo(&m_leadingSequence, function->m_sequence.const_begin(), leadingLength));
 	
 	m_function = function;
@@ -467,7 +468,7 @@ uv_err_t UVDFLIRTSignatureTreeLeadingNode::dump(const std::string &prefixIn, boo
 			printf(" (0x%08X)", (int)this);
 		}
 		printf(":\n");
-		prefix += g_config->m_flirt.m_debugDumpTab;
+		prefix += g_UVDFLIRTConfig->m_debugDumpTab;
 	}
 	
 	//Display shorter fellows first

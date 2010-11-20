@@ -5,11 +5,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
+#include "uvdflirt/flirt.h"
 #include "uvdbfd/architecture.h"
 #include "uvdbfd/object.h"
 #include "uvdbfd/plugin.h"
 #include "uvdbfd/flirt/flirt.h"
+#include "uvdflirt/plugin.h"
 
 UVDBFDPlugin *g_bfdPlugin = NULL;
 
@@ -24,6 +25,8 @@ UVDBFDPlugin::~UVDBFDPlugin()
 
 uv_err_t UVDBFDPlugin::init(UVDConfig *config)
 {
+	uv_assert_ret(this);
+	uv_assert_ret(config);
 	uv_assert_err_ret(UVDPlugin::init(config));
 	uv_assert_err_ret(m_config.init(config));
 	return UV_ERR_OK;
@@ -31,7 +34,8 @@ uv_err_t UVDBFDPlugin::init(UVDConfig *config)
 
 uv_err_t UVDBFDPlugin::onUVDInit()
 {
-	printf_flirt_debug("bfd on uvd init\n");
+	uv_assert_ret(this);
+printf("bfd on uvd init\n");
 	/*
 	UVDFLIRTPatternGeneratorBFD *generatorBFD = NULL;
 	
@@ -40,7 +44,10 @@ uv_err_t UVDBFDPlugin::onUVDInit()
 	*/
 	std::string pluginName;
 	uv_assert_err_ret(getName(pluginName));
-	uv_assert_err_ret(m_uvd->m_flirt->m_patFactory.registerObject(pluginName,
+	uv_assert_ret(m_uvd);
+	uv_assert_ret(g_uvdFLIRTPlugin);
+	uv_assert_ret(g_uvdFLIRTPlugin->m_flirt);
+	uv_assert_err_ret(g_uvdFLIRTPlugin->m_flirt->m_patFactory.registerObject(pluginName,
 			UVDFLIRTPatternGeneratorBFD::canLoad, UVDFLIRTPatternGeneratorBFD::tryLoad,
 			this));
 	return UV_ERR_OK;
@@ -88,5 +95,12 @@ uv_err_t UVDBFDPlugin::canGetArchitecture(const UVDObject *object, const UVDRunt
 uv_err_t UVDBFDPlugin::getArchitecture(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out)
 {
 	return UV_DEBUG(UVDBFDArchitecture::tryLoad(object, hints, out, this));
+}
+
+uv_err_t UVDBFDPlugin::getDependencies(PluginDependencies &out)
+{
+	out.clear();
+	out["uvdflirt"] = UVDVersionRange();
+	return UV_ERR_OK;
 }
 

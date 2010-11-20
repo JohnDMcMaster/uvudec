@@ -11,6 +11,7 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 			$(PAT2SIG_DIR)/main.cpp \
 
+LIBS += -luvdflirt
 USING_LIB_UVUDEC=Y
 
 ROOT_DIR=..

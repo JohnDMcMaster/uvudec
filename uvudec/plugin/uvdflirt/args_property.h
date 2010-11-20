@@ -7,8 +7,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_FLIRT_ARGS_PROPERTY_H
 #define UVD_FLIRT_ARGS_PROPERTY_H
 
-#include "uvd/flirt/sig/format.h"
-#include "uvd/flirt/sig/sig.h"
+#include "uvdflirt/sig/format.h"
+#include "uvdflirt/sig/sig.h"
 
 //Enable options that make output more closely resemble what FLAIR would do
 #define UVD_PROP_FLIRT_FLAIR_COMPATIBILITY						"flirt.flair_compatibility"

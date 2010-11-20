@@ -4,11 +4,11 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/flirt.h"
-#include "uvd/flirt/function.h"
-#include "uvd/flirt/sig/sig.h"
-#include "uvd/flirt/sig/tree/tree.h"
-#include "uvd/flirt/sig/writer.h"
+#include "uvdflirt/flirt.h"
+#include "uvdflirt/function.h"
+#include "uvdflirt/sig/sig.h"
+#include "uvdflirt/sig/tree/tree.h"
+#include "uvdflirt/sig/writer.h"
 #include <string.h>
 
 UVDFLIRTSignatureDBWriter::UVDFLIRTSignatureDBWriter(UVDFLIRTSignatureDB *db)

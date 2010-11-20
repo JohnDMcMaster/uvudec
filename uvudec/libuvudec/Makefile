@@ -53,23 +53,6 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/elf/string_table.cpp \
 			$(UVD_DIR)/elf/symbol.cpp \
 			$(UVD_DIR)/elf/writer.cpp \
-			$(UVD_DIR)/flirt/config.cpp \
-			$(UVD_DIR)/flirt/lib/bfd.cpp \
-			$(UVD_DIR)/flirt/lib/elf.cpp \
-			$(UVD_DIR)/flirt/lib/lib.cpp \
-			$(UVD_DIR)/flirt/args.cpp \
-			$(UVD_DIR)/flirt/flirt.cpp \
-			$(UVD_DIR)/flirt/function.cpp \
-			$(UVD_DIR)/flirt/pat/factory.cpp \
-			$(UVD_DIR)/flirt/pat/pat.cpp \
-			$(UVD_DIR)/flirt/pat/reader.cpp \
-			$(UVD_DIR)/flirt/sig/tree/basic_node.cpp \
-			$(UVD_DIR)/flirt/sig/tree/hash_node.cpp \
-			$(UVD_DIR)/flirt/sig/tree/leading_node.cpp \
-			$(UVD_DIR)/flirt/sig/format.cpp \
-			$(UVD_DIR)/flirt/sig/reader.cpp \
-			$(UVD_DIR)/flirt/sig/sig.cpp \
-			$(UVD_DIR)/flirt/sig/writer.cpp \
 			$(UVD_DIR)/hash/crc.cpp \
 			$(UVD_DIR)/hash/md5.cpp \
 			$(UVD_DIR)/language/format.cpp \

@@ -6,10 +6,11 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/config/config.h"
 #include "uvd/hash/crc.h"
-#include "uvd/flirt/pat/pat.h"
-#include "uvd/flirt/lib/lib.h"
-#include "uvd/flirt/function.h"
+#include "uvdflirt/pat/pat.h"
+#include "uvdflirt/lib/lib.h"
+#include "uvdflirt/function.h"
 #include "uvd/util/util.h"
+#include "uvdflirt/config.h"
 
 static uv_err_t checkPadding(const std::string &in, const std::string &printName, uint32_t expectedSize)
 {
@@ -61,7 +62,7 @@ uv_err_t UVDFLIRTPatternGenerator::saveToString(UVDObject *object, std::string &
 	
 	if( terminateFile )
 	{
-		output += UVD_FLIRT_PAT_TERMINATOR + g_config->m_flirt.m_patternFileNewline;
+		output += UVD_FLIRT_PAT_TERMINATOR + g_UVDFLIRTConfig->m_patternFileNewline;
 	}
 
 	return UV_ERR_OK;
@@ -120,7 +121,7 @@ uv_err_t UVDFLIRTPatternGenerator::patLineToFunction(const std::string &in, UVDF
 
 	printf_flirt_debug("going to load seq\n");
 	uint32_t leadingLengthConfig = 0x20;
-	//leadingLengthConfig = m_flirt->m_uvd->m_config->m_flirt.m_patLeadingLength;
+	//leadingLengthConfig = g_UVDFLIRTConfig.m_patLeadingLength;
 	leadingSignatureLength = uvd_min(function->m_totalLength, leadingLengthConfig);
 	uv_assert_err_ret(function->m_sequence.fromStringCore(sLeadingSignature, leadingSignatureLength));
 	printf_flirt_debug("loaded seq from string: %s\n", function->m_sequence.toString().c_str());

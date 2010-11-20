@@ -4,11 +4,15 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/flirt/config.h"
-#include "uvd/flirt/args_property.h"
+#include "uvdflirt/config.h"
+#include "uvdflirt/args_property.h"
 
-UVDConfigFLIRT::UVDConfigFLIRT()
+UVDFLIRTConfig *g_UVDFLIRTConfig = NULL;
+
+UVDFLIRTConfig::UVDFLIRTConfig()
 {
+	g_UVDFLIRTConfig = this;
+	
 	m_FLAIRCompatibility = UVD_PROP_FLIRT_FLAIR_COMPATIBILITY_DEFAULT;
 	m_patSignatureLengthMin = UVD_PROP_FLIRT_MIN_SIGNATURE_LENGTH_DEFAULT;
 	m_patSignatureLengthMax = UVD_PROP_FLIRT_MAX_SIGNATURE_LENGTH_DEFAULT;
@@ -37,17 +41,22 @@ UVDConfigFLIRT::UVDConfigFLIRT()
 	makeFLAIRCompatible();
 }
 
-UVDConfigFLIRT::~UVDConfigFLIRT()
-{
-	deinit();
-}
-
-uv_err_t UVDConfigFLIRT::deinit()
+uv_err_t UVDFLIRTConfig::init()
 {
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDConfigFLIRT::makeFLAIRCompatible(bool makeCompatible)
+UVDFLIRTConfig::~UVDFLIRTConfig()
+{
+	deinit();
+}
+
+uv_err_t UVDFLIRTConfig::deinit()
+{
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDFLIRTConfig::makeFLAIRCompatible(bool makeCompatible)
 {
 	m_FLAIRCompatibility = makeCompatible;
 	m_prefixUnderscores = makeCompatible;
