@@ -4,7 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/elf/elf.h"
+#include "uvdelf/object.h"
 #include "uvd/data/data.h"
 #include "uvd/util/types.h"
 #include "uvd/util/util.h"
@@ -16,7 +16,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDElf::UVDElf()
 {
-	m_data = NULL;
+	//m_data = NULL;
 	memset(&m_elfHeader, 0, sizeof(Elf32_Ehdr));
 }
 
@@ -118,6 +118,7 @@ uv_err_t UVDElf::loadFromFile(const std::string &sFile)
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDElf::getUVDElf(UVDElf **elfOut)
 {
 	UVDElf *elf = NULL;
@@ -133,7 +134,7 @@ uv_err_t UVDElf::getUVDElf(UVDElf **elfOut)
 
 	return UV_ERR_OK;
 }
-
+*/
 
 uv_err_t UVDElf::getFromRelocatableData(UVDRelocatableData *relocatableData,
 		const std::string &symbolPrefix, UVDElf **out)
@@ -171,7 +172,8 @@ uv_err_t UVDElf::getFromRelocatableDataCore(UVDRelocatableData *relocatableData,
 	//uv_assert_ret(sectionHeaderEntry);
 	
 	//Get a template ELF object
-	uv_assert_err_ret(UVDElf::getUVDElf(&elf));
+	//uv_assert_err_ret(UVDElf::getUVDElf(&elf));
+	uv_assert_err_ret(tryLoad(NULL, UVDRuntimeHints(), (UVDObject **)&elf));
 	uv_assert_ret(elf);
 	uv_assert_err_ret(elf->addRelocatableDataCore(relocatableData, symbolPrefix, sDataSection, sRelocationSection));
 	*out = elf;
@@ -246,8 +248,16 @@ public:
 };
 */
 
-uv_err_t UVDElf::init()
+uv_err_t UVDElf::init(UVDData *data)
 {
+	if( data != NULL )
+	{
+		printf_plugin_debug("ELF loader not currently maintained (only write), aborting\n");
+		return UV_ERR_NOTSUPPORTED;
+	}
+
+	uv_assert_err_ret(UVDObject::init(data));
+	
 	/*
 	Setup default sections
 	We could discard these later if needed
@@ -337,3 +347,4 @@ void UVDElf::printDebug()
 	}
 	printf_debug("Dump completed\n");
 }
+

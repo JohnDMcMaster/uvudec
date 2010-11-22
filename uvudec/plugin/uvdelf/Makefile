@@ -8,21 +8,16 @@ ROOT_DIR=../..
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			flirt/flirt.cpp \
-			flirt/core.cpp \
-			flirt/function.cpp \
-			flirt/module.cpp \
-			flirt/module_printer.cpp \
-			flirt/relocation.cpp \
-			flirt/section.cpp \
-			architecture.cpp \
-			config.cpp \
-			instruction.cpp \
-			main.cpp \
+			data.cpp \
+			header.cpp \
+			init.cpp \
 			object.cpp \
 			plugin.cpp \
+			relocation.cpp \
+			string_table.cpp \
+			symbol.cpp \
+			writer.cpp \
+
 
 include ../Makefile.mk
-
-LIBS += -luvdflirt
 

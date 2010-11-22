@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_ELF_SYMBOL_H
 
 #include "uvd/data/data.h"
-#include "uvd/elf/header.h"
+#include "uvdelf/header.h"
 #include "uvd/util/types.h"
 #include "uvd/relocation/relocation.h"
 #include <elf.h>

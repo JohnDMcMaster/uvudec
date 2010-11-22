@@ -35,7 +35,6 @@ uv_err_t UVDBFDPlugin::init(UVDConfig *config)
 uv_err_t UVDBFDPlugin::onUVDInit()
 {
 	uv_assert_ret(this);
-printf("bfd on uvd init\n");
 	/*
 	UVDFLIRTPatternGeneratorBFD *generatorBFD = NULL;
 	

@@ -4,21 +4,21 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#ifndef UVD_ELF_H
-#define UVD_ELF_H
+#ifndef UVDELF_OBJECT_H
+#define UVDELF_OBJECT_H
 
 /*
 Original use was to store relocatable object files to aid in static analysis
-FIXME: class is a mess, needs cleanup
-	working on it...finally
+FIXME: own class to UVDObject, needs cleanup to only conform to UVDObject interfaces
 TODO: intead of searching through string tables, use handles
 	Didn't want to do this before because thought I'd have to #define values
 	Can make these common ones reserved and use a factory function to retrieve new indexes if needed
 */
 
+#include "uvd/object/object.h"
 #include "uvd/data/data.h"
-#include "uvd/elf/header.h"
-#include "uvd/elf/symbol.h"
+#include "uvdelf/header.h"
+#include "uvdelf/symbol.h"
 #include "uvd/relocation/relocation.h"
 #include "uvd/util/types.h"
 #include <string>
@@ -49,7 +49,7 @@ public:
 An ELF (Executable and Linker Format) reader/writer for working with relocatable object files
 Focus will be on section header since original idea was only to do object file storing/loading for reloc
 */
-class UVDElf
+class UVDElf : public UVDObject
 {
 public:
 	/*
@@ -62,9 +62,9 @@ public:
 	Factory function to create a blank conforming item
 	Fills in basic header information and other peices
 	*/
-	static uv_err_t getUVDElf(UVDElf **out);
+	//static uv_err_t getUVDElf(UVDElf **out);
 	//Setup with default stuffs
-	uv_err_t init();
+	uv_err_t init(UVDData *data);
 	uv_err_t initHeader();
 	
 	static uv_err_t getFromFile(const std::string &file, UVDElf **elf);
@@ -208,9 +208,12 @@ public:
 	//Like above, but will be added to the section header table
 	uv_err_t addUVDElfSectionHeaderEntry(const std::string &sSection, UVDElfSectionHeaderEntry **sectionHeaderOut);
 
+	static uv_err_t canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence);
+	static uv_err_t tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out);
+
 public:
 	//If we loaded this, pointer to the raw data source
-	UVDData *m_data;
+	//UVDData *m_data;
 	//Program header sections
 	std::vector<UVDElfProgramHeaderEntry *> m_programHeaderEntries;
 	//Section headers

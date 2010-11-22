@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/error.h"
 #include "uvd/relocation/relocation.h"
-#include "uvd/elf/symbol.h"
+#include "uvdelf/symbol.h"
 #include <string>
 
 /*

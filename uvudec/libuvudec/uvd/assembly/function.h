@@ -18,7 +18,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //A function as found in an executable (binary) as opposed to a config function
 //Intended for current analysis
 class UVD;
-class UVDElf;
 class UVDBinaryFunction : public UVDBinarySymbol
 {
 public:
@@ -30,10 +29,6 @@ public:
 	uv_err_t getMin(uint32_t *out);
 	uv_err_t getMax(uint32_t *out);
 
-	uv_err_t toUVDElf(UVDElf **out);
-	//Factory function to create from ELF file
-	//It is callee responsibilty to free
-	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out);
 	static uv_err_t getUVDBinaryFunctionInstance(UVDBinaryFunction **out);
 
 	uv_err_t setData(UVDData *data);

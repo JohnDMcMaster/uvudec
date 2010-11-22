@@ -8,8 +8,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 ELF I/O related stuff
 */
 
-#include "uvd/elf/elf.h"
-#include "uvd/elf/writer.h"
+#include "uvdelf/object.h"
+#include "uvdelf/writer.h"
 
 /*
 Top level construction

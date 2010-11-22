@@ -45,14 +45,6 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/data/placeholder.cpp \
 			$(UVD_DIR)/event/engine.cpp \
 			$(UVD_DIR)/event/event.cpp \
-			$(UVD_DIR)/elf/elf.cpp \
-			$(UVD_DIR)/elf/data.cpp \
-			$(UVD_DIR)/elf/header.cpp \
-			$(UVD_DIR)/elf/init.cpp \
-			$(UVD_DIR)/elf/relocation.cpp \
-			$(UVD_DIR)/elf/string_table.cpp \
-			$(UVD_DIR)/elf/symbol.cpp \
-			$(UVD_DIR)/elf/writer.cpp \
 			$(UVD_DIR)/hash/crc.cpp \
 			$(UVD_DIR)/hash/md5.cpp \
 			$(UVD_DIR)/language/format.cpp \

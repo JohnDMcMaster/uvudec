@@ -3,6 +3,7 @@
 # Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 # Licensed under terms of the three clause BSD license, see LICENSE for details
 
+NO_PLUGIN_NAME=Y
 ALL_TARGETS += recurse
 CLEAN_DEPS+=cleanRecurse
 ROOT_DIR=..

@@ -4,9 +4,9 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/elf/writer.h"
+#include "uvdelf/writer.h"
 #include "uvd/data/data.h"
-#include "uvd/elf/elf.h"
+#include "uvdelf/object.h"
 #include "uvd/relocation/relocation.h"
 #include "uvd/util/util.h"
 #include <stdio.h>

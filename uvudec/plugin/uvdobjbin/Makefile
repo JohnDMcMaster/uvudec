@@ -4,7 +4,6 @@
 # Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 ROOT_DIR=../..
-PLUGIN_NAME=uvdobjbin
 
 CC_SRCS =   \
 

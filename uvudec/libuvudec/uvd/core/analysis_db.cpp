@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/core/analysis_db.h"
 #include "uvd/util/config_section.h"
 #include "uvd/util/util.h"
-#include "uvd/elf/elf.h"
+//#include "uvdelf/object.h"
 #include <vector>
 #include <stdio.h>
 
@@ -262,6 +262,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	}
 #endif
 
+#if 0
 	//Preferred relocation format
 	if( config->m_writeElfFile)
 	{
@@ -280,6 +281,7 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 		uv_assert_err_ret(elf->saveToFile(elfFile));
 		delete elf;
 	}	
+#endif
 
 	//Code is optional, sometimes we just have binary and know its, say, printf
 #if 0

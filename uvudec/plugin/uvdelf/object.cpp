@@ -44,8 +44,8 @@ typedef struct
 
 #endif
 
-#include "uvd/elf/elf.h"
-#include "uvd/elf/relocation.h"
+#include "uvdelf/object.h"
+#include "uvdelf/relocation.h"
 #include "uvd/data/data.h"
 #include "uvd/relocation/relocation.h"
 #include "uvd/util/types.h"
@@ -502,3 +502,157 @@ uv_err_t UVDElf::getTextSectionHeaderEntry(UVDElfTextSectionHeaderEntry **sectio
 	*sectionOut = section;
 	return UV_ERR_OK;
 }
+
+uv_err_t UVDElf::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
+{
+	Elf32_Ehdr elfHeader;
+
+	if( UV_SUCCEEDED(data->readData(0, (char *)&elfHeader, sizeof(Elf32_Ehdr)))
+			&& elfHeader.e_ident[EI_MAG0] == ELFMAG0
+			&& elfHeader.e_ident[EI_MAG1] == ELFMAG1
+			&& elfHeader.e_ident[EI_MAG2] == ELFMAG2
+			&& elfHeader.e_ident[EI_MAG3] == ELFMAG3 )
+	{
+		*confidence = UVD_MATCH_ACCEPTABLE;
+	}
+	else
+	{
+		*confidence = UVD_MATCH_NONE;
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDElf::tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject **out)
+{
+	UVDElf *object = NULL;
+	
+	object = new UVDElf();
+	uv_assert_ret(object);
+	uv_assert_err_ret(object->init(data));
+	
+	uv_assert_ret(out);
+	*out = object;
+	return UV_ERR_OK;
+}
+
+#if 0
+	uv_err_t toUVDElf(UVDElf **out);
+	//Factory function to create from ELF file
+	//It is callee responsibilty to free
+	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out);
+
+#include "uvdelf/object.h"
+#include "uvdelf/relocation.h"
+
+//
+static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFixup *analysisRelocation)
+{
+	//analysisRelocation param forms analysis place
+	//Offsets are assumed for now to be for the single symbol we have in the file that these apply to
+	//Analysis fixup value
+	UVDRelocatableElement *analysisSymbol = NULL;
+	//ELF fixup value
+	UVDElfSymbol *elfSymbol = NULL;
+	//ELF place to apply fixup
+	UVDElfRelocation *elfRelocation = NULL;
+
+	std::string symbolName;
+
+
+	//Setup related
+	
+	uv_assert_ret(elf);
+	uv_assert_ret(analysisRelocation);
+	
+	//Analysis symbol
+	analysisSymbol = analysisRelocation->m_symbol;
+	uv_assert_ret(analysisSymbol);
+
+	//Symbol name
+	uv_assert_err_ret(analysisSymbol->getName(symbolName));
+	uv_assert_ret(!symbolName.empty());
+	
+	//ELF symbol
+	uv_assert_err_ret(elf->getFunctionSymbol(symbolName, &elfSymbol));
+	uv_assert_ret(elfSymbol);
+
+	//ELF relocation
+	uv_assert_err_ret(elfSymbol->getRelocation(&elfRelocation));
+	uv_assert_ret(elfRelocation);
+
+	//Transfer the relocation
+	//Assume are relative to the symbol (assumed function) for now
+	
+	//Size
+	uv_assert_err_ret(elfRelocation->updateRelocationTypeByBits(analysisRelocation->getSizeBits()));
+	//Where
+	//elfRelocation->setSectionOffset(analysisRelocation->m_offset);
+	elfRelocation->m_offset = analysisRelocation->m_offset;
+	//Note value is the external symbol value
+
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinaryFunction::toUVDElf(UVDElf **out)
+{
+	UVDElf *elf = NULL;
+	std::string symbolName;
+	
+	uv_assert_ret(m_relocatableData);
+	//uv_assert_ret(m_relocatableData->m_data);
+	//Get a base representation
+	//printf("symbol: %s, symbol relocations: %d\n", name.c_str(), m_relocatableData->m_fixups.size()); 
+	uv_assert_err_ret(getSymbolName(symbolName));
+	uv_assert_ret(!symbolName.empty());
+	uv_assert_err_ret(UVDElf::getFromRelocatableData(m_relocatableData, symbolName, &elf));
+
+	/*
+	Add in the relocations
+	For each relocation, register the symbol if it doesn't exist
+	Then, add it as an instance of relocation for that symbol
+	*/
+	uv_assert_ret(m_relocatableData);
+	for( std::set<UVDRelocationFixup *>::iterator iter = m_relocatableData->m_fixups.begin();
+			iter != m_relocatableData->m_fixups.end(); ++iter )
+	{
+		UVDRelocationFixup *fixup = *iter;
+		
+		uv_assert_ret(fixup);
+		uv_assert_ret(fixup->m_symbol);
+		/*
+		{
+			std::string name;
+			uv_assert_err_ret(fixup->m_symbol->getName(name));
+			printf("Fixup name: %s\n", name.c_str());
+			uv_assert_ret(!name.empty());
+		}
+		*/
+		uv_assert_err_ret(relocationFixupToElfRelocationFixup(elf, fixup));
+	}
+	
+	{
+		std::string sourceFilename;
+		std::string mangledSourceFilename;
+
+		sourceFilename = g_uvd->m_runtime->m_object->m_data->getSource();
+		uv_assert_ret(!sourceFilename.empty());
+		//TODO: add option here for absolute path save
+		mangledSourceFilename = uv_basename(sourceFilename);
+		uv_assert_ret(!mangledSourceFilename.empty());
+		uv_assert_err_ret(elf->setSourceFilename(mangledSourceFilename));
+	}
+
+	uv_assert_ret(out);
+	*out = elf;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinaryFunction::getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out)
+{
+	return UV_DEBUG(UV_ERR_GENERAL);
+}
+
+#endif
+

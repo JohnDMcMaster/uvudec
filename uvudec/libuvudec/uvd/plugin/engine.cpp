@@ -494,7 +494,7 @@ uv_err_t UVDPluginEngine::onUVDInit()
 	uv_assert_ret(m_uvd);
 
 	uv_assert_err_ret(getPluginDependencyOrder(dependencyOrderedPlugins));
-printf("on uvd init, to init: %d\n", dependencyOrderedPlugins.size());
+	printf_plugin_debug("on uvd init, to init: %d\n", dependencyOrderedPlugins.size());
 
 	for( std::vector<UVDPlugin *>::iterator iter = dependencyOrderedPlugins.begin();
 			iter != dependencyOrderedPlugins.end(); ++iter )

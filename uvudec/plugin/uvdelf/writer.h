@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef UVD_ELF_WRITER_H
 #define UVD_ELF_WRITER_H
 
-#include "uvd/elf/elf.h"
+#include "uvdelf/object.h"
 
 /*
 #define UVD__ELF_WRITER__PHASE__UNKNOWN						0

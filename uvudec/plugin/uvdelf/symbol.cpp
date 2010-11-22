@@ -112,8 +112,8 @@ symbol @ index 0x000001C0
 00000010       O *COM*  00000004 g_string_table_indexes
 */
 
-#include "uvd/elf/elf.h"
-#include "uvd/elf/relocation.h"
+#include "uvdelf/object.h"
+#include "uvdelf/relocation.h"
 #include "uvd/relocation/relocation.h"
 #include "uvd/util/util.h"
 #include <string>

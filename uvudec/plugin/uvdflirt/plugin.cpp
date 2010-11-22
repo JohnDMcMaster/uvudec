@@ -54,7 +54,6 @@ uv_err_t UVDFLIRTPlugin::getAuthor(std::string &out)
 
 uv_err_t UVDFLIRTPlugin::onUVDInit()
 {
-printf("FLIRT plugin init\n");
 	m_flirt = new UVDFLIRT();
 	uv_assert_ret(m_flirt);
 	m_flirt->m_uvd = m_uvd;

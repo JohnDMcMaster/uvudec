@@ -8,6 +8,13 @@
 
 # DEFINES += -DUVDPluginMain=UVDPluginMain$(PLUGIN_NAME)
 
+ifndef NO_PLUGIN_NAME
+ifndef PLUGIN_NAME
+PLUGIN_NAME=$(shell basename $$PWD)
+endif
+endif
+
+
 # TODO: substitute chars for underscores?
 # We wrap this with PLUGIN_NAME since current dur uses it as well
 ifdef PLUGIN_NAME
