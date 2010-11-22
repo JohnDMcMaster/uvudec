@@ -43,7 +43,7 @@ X11R6_LIB_DIR=@x11r6_lib_dir@
 USING_LIBBFD=Y
 
 USING_UVUDEC=@enable_uvudec@
-USING_BINTOOBJ=@enable_bin2obj@
+USING_BIN2OBJ=@enable_bin2obj@
 USING_OBJ2PAT=@enable_obj2pat@
 USING_PAT2SIG=@enable_pat2sig@
 USING_FLIRTUTIL=@enable_flirtutil@

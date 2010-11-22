@@ -4,12 +4,10 @@
 
 EXE_NAME=$(BIN2OBJ_EXE)
 
-BIN2OBJ_DIR=$(ROOT_DIR)/bin2obj
-
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-			$(BIN2OBJ_DIR)/main.cpp \
+			main.cpp \
 
 USING_LIB_UVUDEC=Y
 

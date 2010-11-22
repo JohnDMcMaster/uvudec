@@ -16,72 +16,108 @@ bin2obj entry point
 #include "uvd/core/init.h"
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
-#include "uvd/flirt/flirt.h"
-#include "uvd/flirt/args.h"
-#include "uvd/flirt/args_property.h"
 #include "uvd/data/data.h"
+
+static std::string g_inputFile;
+//TODO: support one large annotated object file
+//static std::string g_outputFile;
+static std::string g_outputDir;
 
 static uv_err_t versionPrintPrefixThunk();
 
-std::string g_inputFile;
-std::string g_outputFile;
-
-static const char *GetVersion()
+static uv_err_t runTasks()
 {
-	return UVUDEC_VER_STRING;
+	uv_err_t rc = UV_ERR_GENERAL;
+	std::string output;
+	UVD *uvd = NULL;
+	UVDData *data = NULL;
+
+	printf_debug_level(UVD_DEBUG_PASSES, "main: initializing data streams\n");
+
+	uv_assert_ret(g_config);
+	if( g_config->m_targetFileName.empty() )
+	{
+		printf_error("Target file not specified\n");
+		g_config->printHelp();
+		uv_assert(UV_ERR_GENERAL);
+	}
+
+	//Select input
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Initializing data stream on %s...\n", g_config->m_targetFileName.c_str());
+	if( UV_FAILED(UVDDataFile::getUVDDataFile(&data, g_config->m_targetFileName)) )
+	{
+		printf_error("Failed to initialize data stream!\n");
+		printf_error("Could not read file: %s\n", g_config->m_targetFileName.c_str());
+		return UV_DEBUG(UV_ERR_GENERAL);
+	}
+	uv_assert(data);
+	
+	//Create a runTasksr engine active on that input
+	printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
+	if( UV_FAILED(UVD::getUVDFromData(&uvd, data)) )
+	{
+		printf_error("Failed to initialize engine\n");
+		uv_assert_err(UV_ERR_GENERAL);
+	}
+	uv_assert(uvd);
+	uv_assert(g_uvd);
+
+	uv_assert_err_ret(uvd->analyze());
+	
+	rc = UV_ERR_OK;
+	
+error:
+	delete data;
+	return rc;
 }
 
-static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments)
+static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user)
 {
 	UVDConfig *config = NULL;
-	UVDConfigFLIRT *flirtConfig = NULL;
 	//If present
 	std::string firstArg;
 	uint32_t firstArgNum = 0;
+	bool firstArgBool = true;
 	
 	config = g_config;
 	uv_assert_ret(config);
 	uv_assert_ret(config->m_argv);
 	uv_assert_ret(argConfig);
 
-	flirtConfig = &g_config->m_flirt;
-
 	if( !argumentArguments.empty() )
 	{
 		firstArg = argumentArguments[0];
 		firstArgNum = strtol(firstArg.c_str(), NULL, 0);
+		firstArgBool = UVDArgToBool(firstArg);
 	}
 
 	if( argConfig->isNakedHandler() )
 	{
 		/*
-		Target files
-		Assume first input argument is input and second is output
+		Try to guess type based on file suffixes
 		*/
+		
 		if( argumentArguments.size() >= 1 )
 		{
 			g_inputFile = argumentArguments[0];
 		}
 		if( argumentArguments.size() >= 2 )
 		{
-			g_outputFile = argumentArguments[1];
-		}
-		if( argumentArguments.size() >= 3 )
-		{
-			printf_error("only 2 max bare arguments, given: %d\n", argumentArguments.size());
-			return UV_DEBUG(UV_ERR_GENERAL);
+			g_outputDir = argumentArguments[1];
 		}
 	}
-	/*
-	else if( argConfig->m_propertyForm == UVD_PROP_ANALYSIS_DIR )
+	else if( argConfig->m_propertyForm == UVD_PROP_TARGET_FILE )
 	{
 		uv_assert_ret(!argumentArguments.empty());
-		config->m_analysisDir = firstArg;
+		g_inputFile = firstArg;
 	}
-	*/
+	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_FILE )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		g_outputDir = firstArg;
+	}
 	else
 	{
-		//return UV_DEBUG(argParserDefault(argConfig, argumentArguments));
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
@@ -90,29 +126,24 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 uv_err_t initProgConfig()
 {
-	uv_assert_err_ret(initFLIRTSharedConfig());
+	uv_assert_ret(g_config);
+	
+	//Arguments
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input binary, analyzed program]"));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output directory", 1, argParser, false));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
-
-	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input object file] [output .pat file]"));	
-	//uv_assert_err_ret(g_config->registerArgument(UVD_PROP_ANALYSIS_DIR, 0, "analysis-dir", "create data suitible for stored analysis", 1, argParser, false));
 
 	return UV_ERR_OK;	
 }
 
 static uv_err_t versionPrintPrefixThunk()
 {
-	const char *program_name = "uvbin2obj";
+	const char *program_name = "uvudec";
 	
-	/*
-	if( g_config && g_config->m_argv )
-	{
-		program_name = g_config->m_argv[0];
-	}
-	*/
-
-	printf_help("%s version %s\n", program_name, GetVersion());
+	printf_help("%s version %s\n", program_name, UVUDEC_VER_STRING);
 	return UV_ERR_OK;
 }
 
@@ -120,18 +151,13 @@ uv_err_t uvmain(int argc, char **argv)
 {
 	uv_err_t rc = UV_ERR_GENERAL;
 	UVDConfig *config = NULL;
-	UVD *uvd = NULL;
 	uv_err_t parseMainRc = UV_ERR_GENERAL;
-	std::string inputFile;
 	
-	if( strcmp(GetVersion(), UVDGetVersion()) )
-	{
-		printf_warn("libuvudec version mismatch (exe: %s, libuvudec: %s)\n", GetVersion(), UVDGetVersion());
-		fflush(stdout);
-	}
+	UVD_WARN_IF_VERSION_MISMATCH();
 	
 	//Early library initialization.  Logging and arg parsing structures
 	uv_assert_err_ret(UVDInit());
+
 	config = g_config;
 	uv_assert_ret(config);
 	//Early local initialization
@@ -146,29 +172,11 @@ uv_err_t uvmain(int argc, char **argv)
 		goto error;
 	}
 
-	if( g_inputFile.empty() )
+	if( UV_FAILED(runTasks()) )
 	{
-		printf_error("Target file not specified\n");
-		UVDHelp();
-		uv_assert_err(UV_ERR_GENERAL);
-	}
-	if( g_outputFile.empty() )
-	{
-		g_outputFile = "/dev/stdout";
-	}
-	if( UV_FAILED(UVD::getUVD(&uvd, g_inputFile)) )
-	{
-		printf_error("Failed to initialize UVD engine\n");
-		rc = UV_ERR_OK;
-		goto error;
-	}
-	uv_assert_ret(uvd);
-
-	//Get string output
-	printf_debug_level(UVD_DEBUG_SUMMARY, "main: creating object file...\n");
-	uv_assert_err_ret(uvd->analyze());
-	uv_assert_err_ret(uvd->m_analyzer->m_curDb->saveData(g_outputFile));
-	printf_debug_level(UVD_DEBUG_PASSES, "main: object file done\n");
+		printf_error("Top level runTasks failed\n");
+		uv_assert(UV_ERR_GENERAL);
+	}	
 
 	rc = UV_ERR_OK;
 
@@ -195,3 +203,4 @@ int main(int argc, char **argv)
 		return 0;
 	}
 }
+
