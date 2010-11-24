@@ -196,9 +196,9 @@ public:
 	//Program data
 	//Add arbitrary data to the text section
 	//uv_err_t addTextData(UVDElfVariable *variable);
-	uv_err_t addFunction(UVDElfFunctionSymbol *function);
+	//uv_err_t addFunction(UVDElfFunctionSymbol *function);
 	//Register a variable to current ELF file
-	uv_err_t addVariable(UVDElfVariableSymbol *variable);
+	//uv_err_t addVariable(UVDElfVariableSymbol *variable);
 
 	void printDebug();
 

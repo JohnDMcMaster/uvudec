@@ -254,7 +254,7 @@ public:
 	//Add the core definition
 	//May return error if addFunction() was already called
 	//Will not error if it was added previously as a relocation
-	uv_err_t addFunction(uv_addr_t functionAddress);
+	//uv_err_t addFunction(uv_addr_t functionAddress);
 	//Do we need this?  Labels are local and imply a relocation or they are useless
 	//Vectors are similar, but global.  Add a diff func for them
 	//uv_err_t addLabel(uv_addr_t labelAddress);

@@ -649,10 +649,5 @@ uv_err_t UVDBinaryFunction::toUVDElf(UVDElf **out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBinaryFunction::getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out)
-{
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
-
 #endif
 
