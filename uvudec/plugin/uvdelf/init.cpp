@@ -136,6 +136,7 @@ uv_err_t UVDElf::getUVDElf(UVDElf **elfOut)
 }
 */
 
+#if 0
 uv_err_t UVDElf::getFromRelocatableData(UVDRelocatableData *relocatableData,
 		const std::string &symbolPrefix, UVDElf **out)
 {
@@ -180,6 +181,7 @@ uv_err_t UVDElf::getFromRelocatableDataCore(UVDRelocatableData *relocatableData,
 
 	return UV_DEBUG(UV_ERR_OK);
 }
+#endif
 
 uv_err_t UVDElf::initHeader()
 {

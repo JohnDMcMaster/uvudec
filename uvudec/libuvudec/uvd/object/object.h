@@ -82,6 +82,7 @@ public:
 	//virtual uv_err_t getFunctions(
 
 	virtual uv_err_t addRelocation(UVDRelocationFixup *relocation);
+	virtual uv_err_t addFunction(UVDBinaryFunction *function);
 
 public:
 	UVDBinarySymbolManager m_symbols;

@@ -583,38 +583,34 @@ uv_err_t UVDElf::addRelocation(UVDRelocationFixup *analysisRelocation)
 	return UV_ERR_OK;
 }
 
-#if 0
-	uv_err_t toUVDElf(UVDElf **out);
-	//Factory function to create from ELF file
-	//It is callee responsibilty to free
-	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out);
+#include "uvd/assembly/function.h"
 
-#include "uvdelf/object.h"
-#include "uvdelf/relocation.h"
-
-//
-
-uv_err_t UVDBinaryFunction::toUVDElf(UVDElf **out)
+uv_err_t UVDElf::addFunction(UVDBinaryFunction *function)
 {
 	UVDElf *elf = NULL;
 	std::string symbolName;
 	
-	uv_assert_ret(m_relocatableData);
+	uv_assert_ret(function->m_relocatableData);
 	//uv_assert_ret(m_relocatableData->m_data);
 	//Get a base representation
 	//printf("symbol: %s, symbol relocations: %d\n", name.c_str(), m_relocatableData->m_fixups.size()); 
-	uv_assert_err_ret(getSymbolName(symbolName));
+	uv_assert_err_ret(function->getSymbolName(symbolName));
 	uv_assert_ret(!symbolName.empty());
-	uv_assert_err_ret(UVDElf::getFromRelocatableData(m_relocatableData, symbolName, &elf));
+	//uv_assert_err_ret(UVDElf::getFromRelocatableData(function->m_relocatableData, symbolName, &elf));
+
+
+	uv_assert_err_ret(addRelocatableDataCore(function->m_relocatableData, symbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
+
+
 
 	/*
 	Add in the relocations
 	For each relocation, register the symbol if it doesn't exist
 	Then, add it as an instance of relocation for that symbol
 	*/
-	uv_assert_ret(m_relocatableData);
-	for( std::set<UVDRelocationFixup *>::iterator iter = m_relocatableData->m_fixups.begin();
-			iter != m_relocatableData->m_fixups.end(); ++iter )
+	uv_assert_ret(function->m_relocatableData);
+	for( std::set<UVDRelocationFixup *>::iterator iter = function->m_relocatableData->m_fixups.begin();
+			iter != function->m_relocatableData->m_fixups.end(); ++iter )
 	{
 		UVDRelocationFixup *fixup = *iter;
 		
@@ -628,26 +624,21 @@ uv_err_t UVDBinaryFunction::toUVDElf(UVDElf **out)
 			uv_assert_ret(!name.empty());
 		}
 		*/
-		uv_assert_err_ret(relocationFixupToElfRelocationFixup(elf, fixup));
+		uv_assert_err_ret(addUVDRelocationFixup(fixup));
 	}
 	
 	{
 		std::string sourceFilename;
 		std::string mangledSourceFilename;
 
-		sourceFilename = g_uvd->m_runtime->m_object->m_data->getSource();
+		sourceFilename = m_data->getSource();
 		uv_assert_ret(!sourceFilename.empty());
 		//TODO: add option here for absolute path save
 		mangledSourceFilename = uv_basename(sourceFilename);
 		uv_assert_ret(!mangledSourceFilename.empty());
 		uv_assert_err_ret(elf->setSourceFilename(mangledSourceFilename));
 	}
-
-	uv_assert_ret(out);
-	*out = elf;
 	
 	return UV_ERR_OK;
 }
-
-#endif
 

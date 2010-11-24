@@ -86,9 +86,8 @@ public:
 	
 
 	virtual uv_err_t addRelocation(UVDRelocationFixup *analysisRelocation);
-	
-	
-	
+	virtual uv_err_t addFunction(UVDBinaryFunction *function);
+		
 	//Add another symbol along with supporting data
 	//uv_err_t addRelocatableData(UVDRelocatableData *relocatableData,
 	//		const std::string &rawDataSymbolName);

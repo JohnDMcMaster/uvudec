@@ -32,3 +32,8 @@ uv_err_t UVDObject::addRelocation(UVDRelocationFixup *analysisRelocation)
 	return UV_ERR_NOTSUPPORTED;
 }
 
+uv_err_t UVDObject::addFunction(UVDBinaryFunction *function)
+{
+	return UV_ERR_NOTSUPPORTED;
+}
+
