@@ -535,17 +535,7 @@ uv_err_t UVDElf::tryLoad(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 	return UV_ERR_OK;
 }
 
-#if 0
-	uv_err_t toUVDElf(UVDElf **out);
-	//Factory function to create from ELF file
-	//It is callee responsibilty to free
-	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out);
-
-#include "uvdelf/object.h"
-#include "uvdelf/relocation.h"
-
-//
-static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFixup *analysisRelocation)
+uv_err_t UVDElf::addRelocation(UVDRelocationFixup *analysisRelocation)
 {
 	//analysisRelocation param forms analysis place
 	//Offsets are assumed for now to be for the single symbol we have in the file that these apply to
@@ -561,7 +551,6 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 
 	//Setup related
 	
-	uv_assert_ret(elf);
 	uv_assert_ret(analysisRelocation);
 	
 	//Analysis symbol
@@ -573,7 +562,7 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 	uv_assert_ret(!symbolName.empty());
 	
 	//ELF symbol
-	uv_assert_err_ret(elf->getFunctionSymbol(symbolName, &elfSymbol));
+	uv_assert_err_ret(getFunctionSymbol(symbolName, &elfSymbol));
 	uv_assert_ret(elfSymbol);
 
 	//ELF relocation
@@ -593,6 +582,17 @@ static uv_err_t relocationFixupToElfRelocationFixup(UVDElf *elf, UVDRelocationFi
 	
 	return UV_ERR_OK;
 }
+
+#if 0
+	uv_err_t toUVDElf(UVDElf **out);
+	//Factory function to create from ELF file
+	//It is callee responsibilty to free
+	static uv_err_t getFromUVDElf(const UVDElf *in, UVDBinaryFunction **out);
+
+#include "uvdelf/object.h"
+#include "uvdelf/relocation.h"
+
+//
 
 uv_err_t UVDBinaryFunction::toUVDElf(UVDElf **out)
 {

@@ -81,6 +81,8 @@ public:
 
 	//virtual uv_err_t getFunctions(
 
+	virtual uv_err_t addRelocation(UVDRelocationFixup *relocation);
+
 public:
 	UVDBinarySymbolManager m_symbols;
 	//Raw pointer to the data

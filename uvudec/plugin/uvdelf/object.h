@@ -84,6 +84,8 @@ public:
 			const std::string &sDataSection, const std::string &sRelocationSection,
 			UVDElf **out);
 	
+
+	virtual uv_err_t addRelocation(UVDRelocationFixup *analysisRelocation);
 	
 	
 	
@@ -165,6 +167,7 @@ public:
 	uv_err_t addSymbol(UVDElfSymbol *symbol);
 	uv_err_t findSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	uv_err_t getVariableSymbol(const std::string &sName, UVDElfSymbol **symbol);
+	//Get a new function symbol including adding it to our object
 	uv_err_t getFunctionSymbol(const std::string &sName, UVDElfSymbol **symbol);
 	uv_err_t setSourceFilename(const std::string &s);
 	

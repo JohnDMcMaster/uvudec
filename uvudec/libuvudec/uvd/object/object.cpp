@@ -27,3 +27,8 @@ uv_err_t UVDObject::init(UVDData *data)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDObject::addRelocation(UVDRelocationFixup *analysisRelocation)
+{
+	return UV_ERR_NOTSUPPORTED;
+}
+
