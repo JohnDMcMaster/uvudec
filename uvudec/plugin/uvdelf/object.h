@@ -85,7 +85,9 @@ public:
 			UVDElf **out);
 	
 
+	//Primary difference between these two seems maybe second didn't actually add the relocation to the symbol?
 	virtual uv_err_t addRelocation(UVDRelocationFixup *analysisRelocation);
+	//uv_err_t addUVDRelocationFixup(UVDRelocationFixup *fixup);
 	virtual uv_err_t addFunction(UVDBinaryFunction *function);
 		
 	//Add another symbol along with supporting data
@@ -94,7 +96,6 @@ public:
 	uv_err_t addRelocatableDataCore(UVDRelocatableData *relocatableData,
 			const std::string &rawDataSymbolName,
 			const std::string &sDataSection, const std::string &sRelocationSection);
-	uv_err_t addUVDRelocationFixup(UVDRelocationFixup *fixup);
 
 
 
