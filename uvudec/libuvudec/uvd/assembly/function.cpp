@@ -6,10 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/core/uvd.h"
 #include "uvd/assembly/function.h"
-#include "uvd/language/language.h"
-#include "uvd/hash/md5.h"
 #include "uvd/util/util.h"
-#include "uvd/core/runtime.h"
 
 uv_err_t UVDBinaryFunction::setData(UVDData *data)
 {
