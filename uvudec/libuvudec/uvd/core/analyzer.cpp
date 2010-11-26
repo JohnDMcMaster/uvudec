@@ -7,7 +7,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/event/engine.h"
 #include "uvd/core/uvd.h"
-#include "uvd/core/analysis_db.h"
 #include "uvd/core/analyzer.h"
 #include "uvd/assembly/function.h"
 #include "uvd/core/event.h"
@@ -273,13 +272,6 @@ UVDAnalyzer::~UVDAnalyzer()
 
 uv_err_t UVDAnalyzer::init()
 {
-	//Create a blank archive to fill from current program
-	//m_curDb = new UVDAnalysisDBArchive(this);
-	//uv_assert_ret(m_curDb);
-	//uv_assert_err_ret(m_curDb->init());
-	
-	//Should add to DB concentrator?  Prob not as it might create loops or other anomalies
-
 	return UV_ERR_OK;
 }
 
@@ -462,21 +454,6 @@ uv_err_t UVDAnalyzer::rebuildDb()
 	}
 
 	return UV_ERR_OK;
-}
-*/
-
-/*
-uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
-{
-	uv_assert_ret(db);
-	uv_assert_ret(m_curDb);
-	
-	//Just always rebuild for now, add dirty field later if needed
-	//uv_assert_err_ret(rebuildDb());
-	
-	*db = m_curDb;
-	
-	return UV_ERR_OK;	
 }
 */
 
@@ -689,29 +666,62 @@ uv_err_t UVDAnalyzer::identifyKnownFunctions()
 	return UV_ERR_OK;
 }
 
+
 /*
-uv_err_t UVDAnalyzer::generateAnalysisDir(const std::string &analysisDir)
+Saved in case they might be useful as ref or other
+Other method of interest might have been save function to binary,
+but it was just simple fetch the UVDData and save it 
+
+uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunction *functionShared)
 {
-	UVDAnalysisDBArchive *curDb = NULL;
-
-	uv_assert_ret(!analysisDir.empty());
+	UVDConfig *config = m_analyzer->m_uvd->m_config;
+	UVDBinaryFunction *function = functionShared;
+	uint32_t iFunctionAddress = 0;
+		
+	uv_assert_ret(config);	
+	if( config->m_analysisOutputAddresses.empty() )
+	{
+		return UV_ERR_OK;
+	}
 	
-	printf_debug_level(UVD_DEBUG_PASSES, "generating analysis save files...\n");
-	UVDBenchmark analysisSaveBenchmark;
-	analysisSaveBenchmark.start();
+	uv_assert_ret(function);
+	iFunctionAddress = function->m_offset;
 
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Fetching DB...\n");
-	uv_assert_err_ret(getAnalyzedProgramDB(&curDb));
-	uv_assert_ret(curDb);
-	printf_debug_level(UVD_DEBUG_SUMMARY, "going to save functions: %d\n", curDb->m_functions.size());
+	if( config->m_analysisOutputAddresses.find(iFunctionAddress) != config->m_analysisOutputAddresses.end() )
+	{
+		return UV_ERR_OK;
+	}
+	else
+	{
+		return UV_ERR_GENERAL;
+	}
+}
 
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving data...\n");
-	uv_assert_err_ret(curDb->saveData(analysisDir));
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Data saved!\n");
+uv_err_t UVDAnalysisDBArchive::queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear)
+{
+	if( bClear )
+	{
+		funcs.clear();
+	}
+	for( std::vector<UVDBinaryFunction *>::size_type i = 0; i < m_functions.size(); ++i )
+	{
+		UVDBinaryFunction *function = m_functions[i];
+		
+		uv_assert_ret(function);
+		
+		UVDBinaryFunction *functionShared = function;
+		uv_assert_ret(functionShared);
+		
+		//Match?
+		if( dataChunk == functionShared->getData() )
+		{
+			//Yipee!
+			funcs.push_back(function);
+			//We already have a match for this function
+			break;
+		}
+	}
 	
-	analysisSaveBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "analysis save time: %s\n", analysisSaveBenchmark.toString().c_str());
-
 	return UV_ERR_OK;
 }
 */

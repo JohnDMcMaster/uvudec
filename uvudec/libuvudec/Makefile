@@ -33,7 +33,6 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/core/runtime_hints.cpp \
 			$(UVD_DIR)/core/uvd.cpp \
 			$(UVD_DIR)/core/analysis.cpp \
-			$(UVD_DIR)/core/analysis_db.cpp \
 			$(UVD_DIR)/core/analyzer.cpp \
 			$(UVD_DIR)/core/event.cpp \
 			$(UVD_DIR)/core/init.cpp \

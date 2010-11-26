@@ -152,7 +152,6 @@ public:
 //TODO: make a compare method to key to UVDAddressRange instead 
 typedef std::map<uint32_t, UVDAnalyzedMemoryRange *> UVDAnalyzedMemorySpace;
 typedef std::vector<UVDAnalyzedMemoryRange *> UVDAnalyzedMemoryRanges;
-class UVDAnalysisDBArchive;
 class UVDBinaryFunctionShared;
 class UVDBinaryFunctionInstance;
 class UVD;
@@ -178,16 +177,10 @@ public:
 	uv_err_t getCalledAddresses(UVDAnalyzedMemorySpace &calledAddresses);
 	uv_err_t getJumpedAddresses(UVDAnalyzedMemorySpace &calledAddresses);
 	
-	//DB of currently analyzed program
-	//uv_err_t getAnalyzedProgramDB(UVDAnalysisDBArchive **db);
 	//Register a newly analyzed function
 	//Will reflect the analyzedProgramDB to reflect the newly found function instance
 	//Note that the function's shared data will be from current analysis and must be free'd here
 	uv_err_t loadFunction(UVDBinaryFunction *function);
-
-	//To fetch the original data
-	//uv_err_t functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **function);
-	//uv_err_t functionInstanceToFunction(UVDBinaryFunctionInstance *functionInstance, UVDBinaryFunction **function);
 
 	uv_err_t mapSymbols();
 
@@ -198,18 +191,12 @@ public:
 	uv_err_t assignDefaultSymbolNames();
 	uv_err_t identifyKnownFunctions();
 
-	//static uv_err_t(UVDInstruction *instruction, const UVDVariableMap &attributes);
-
-	//uv_err_t generateAnalysisDir(const std::string &m_analysisDir);
-
 public:
 	//Superblock for block representation of program
 	UVDAnalyzedBlock *m_block;
 
+	//Keeps track of jumped to and called addresses
 	UVDAnalyzedMemorySpace m_referencedAddresses;
-	//Deprecated by above
-	//UVDAnalyzedMemorySpace m_calledAddresses;
-	//UVDAnalyzedMemorySpace m_jumpedAddresses;
 	
 	//A location where any change in code flow can occur
 	//Branch target/source, call target/source
@@ -220,10 +207,6 @@ public:
 	UVDAnalyzedMemorySpace m_ROMADataddresses;
 	//String data addresses
 	UVDAnalyzedMemorySpace m_stringAddresses;
-	
-	//Database constructed from currnet program
-	//May be listed in m_db
-	//UVDAnalysisDBArchive *m_curDb;
 	
 	//List of functions found during analysis
 	//XXX: should this get replaced by the symbol DB?
