@@ -336,34 +336,6 @@ uv_err_t UVD::analyzeBlock(UVDAnalyzedBlock *block)
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVD::generateAnalysisDir(const std::string &analysisDir)
-{
-	UVDAnalysisDBArchive *curDb = NULL;
-
-	uv_assert_ret(m_config);
-	uv_assert_ret(!analysisDir.empty());
-	
-	printf_debug_level(UVD_DEBUG_PASSES, "uvd: generating analysis save files...\n");
-	UVDBenchmark analysisSaveBenchmark;
-	analysisSaveBenchmark.start();
-
-	uv_assert_ret(m_analyzer);
-	
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Fetching DB...\n");
-	uv_assert_err_ret(m_analyzer->getAnalyzedProgramDB(&curDb));
-	uv_assert_ret(curDb);
-	printf_debug_level(UVD_DEBUG_SUMMARY, "going to save functions: %d\n", curDb->m_functions.size());
-
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving data...\n");
-	uv_assert_err_ret(curDb->saveData(analysisDir));
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Data saved!\n");
-	
-	analysisSaveBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "analysis save time: %s\n", analysisSaveBenchmark.toString().c_str());
-
-	return UV_ERR_OK;
-}
-
 uv_err_t UVD::analyzeControlFlow()
 {
 	UVDBenchmark controlStructureAnalysisBenchmark;

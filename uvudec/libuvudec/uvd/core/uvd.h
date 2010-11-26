@@ -228,7 +228,6 @@ public:
 	//Analyze control structures: if, else, etc
 	uv_err_t analyzeBlock(UVDAnalyzedBlock *block);
 	//Create output suitible for building analysis database
-	uv_err_t generateAnalysisDir(const std::string &m_analysisDir);
 	uv_err_t analyze();
 	
 	//Convert a block (should be UVDDataChunk?) suspected to be a function to a skeleton analyzed function structure

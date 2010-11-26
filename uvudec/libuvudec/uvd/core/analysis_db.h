@@ -102,34 +102,5 @@ public:
 	std::vector<UVDBinaryFunction *> m_functions;
 };
 
-/*
-Collection of UVDAnalysisDB
-*/
-class UVDAnalysisDBConcentrator : public UVDAnalysisDB
-{
-public:
-	UVDAnalysisDBConcentrator(UVDAnalyzer *analyzer);
-	~UVDAnalysisDBConcentrator();
-	
-	uv_err_t init();
-
-	//Do a recursive load on given data
-	uv_err_t loadData(std::string &out);
-	//Creates a directory with sub dirs/archives
-	uv_err_t saveData(std::string &out);
-	//All
-	uv_err_t queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear = false);
-	
-	//A DB used for the binary we are currently examining
-	//FIXME: what if we are examining a multi-part executable?
-	//Not an issue for now since embedded are fully static
-	uv_err_t getAnalyzedProgramDB(UVDAnalysisDB **db);
-
-	virtual uv_err_t clear();
-
-public:
-	std::vector<UVDAnalysisDB *> m_dbs;
-};
-
 #endif //UVD_ANALYSIS_DB_H
 

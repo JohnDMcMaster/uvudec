@@ -17,8 +17,11 @@ bin2obj entry point
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvd/data/data.h"
+#include "uvdelf/object.h"
 
-static std::string g_inputFile;
+#define UVDBIN2OBJ_PROP_OUTPUT_DIR		"output.dir"
+
+static std::string g_inputFile = DEFAULT_DECOMPILE_FILE;
 //TODO: support one large annotated object file
 //static std::string g_outputFile;
 static std::string g_outputDir;
@@ -31,6 +34,7 @@ static uv_err_t runTasks()
 	std::string output;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
+	UVDAnalysisDBArchive *analysisDB = NULL;
 
 	printf_debug_level(UVD_DEBUG_PASSES, "main: initializing data streams\n");
 
@@ -63,6 +67,35 @@ static uv_err_t runTasks()
 	uv_assert(g_uvd);
 
 	uv_assert_err_ret(uvd->analyze());
+
+
+
+
+	if( UV_FAILED(isDir(g_outputDir)) )
+	{
+		uv_assert_err_ret(createDir(g_outputDir, false));
+	}
+
+	uv_assert_err_ret(uvd->m_analyzer->getAnalyzedProgramDB(&analysisDB));
+
+
+
+	for( std::vector<UVDBinaryFunction *>::size_type i = 0; i < analysisDB->m_functions.size(); ++i )
+	{
+		UVDBinaryFunction *function = analysisDB->m_functions[i];
+		std::string symbolName;
+		UVDElf elf;
+		
+		uv_assert_ret(function);
+		uv_assert_err_ret(function->getSymbolName(symbolName));
+	
+		std::string elfFile = UVDSprintf("%s/%s%s", g_outputDir.c_str(), symbolName.c_str(), g_config->m_elfFileSuffix.c_str());
+		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting ELF file to: %s\n", elfFile.c_str());
+
+		uv_assert_err_ret(elf.addFunction(function));
+		//And save it
+		uv_assert_err_ret(elf.saveToFile(elfFile));
+	}	
 	
 	rc = UV_ERR_OK;
 	
@@ -111,7 +144,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		uv_assert_ret(!argumentArguments.empty());
 		g_inputFile = firstArg;
 	}
-	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_FILE )
+	else if( argConfig->m_propertyForm == UVDBIN2OBJ_PROP_OUTPUT_DIR )
 	{
 		uv_assert_ret(!argumentArguments.empty());
 		g_outputDir = firstArg;
@@ -129,9 +162,10 @@ uv_err_t initProgConfig()
 	uv_assert_ret(g_config);
 	
 	//Arguments
-	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input binary, analyzed program]"));
+	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input binary] [ELF files dir]"));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output directory", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVDBIN2OBJ_PROP_OUTPUT_DIR, 0, "output-dir", "output directory", 1, argParser, false));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
@@ -171,11 +205,17 @@ uv_err_t uvmain(int argc, char **argv)
 		rc = UV_ERR_OK;
 		goto error;
 	}
+	
+	if( g_outputDir.empty() )
+	{
+		printf("requires output dir, try --help\n");
+		goto error;
+	}
 
 	if( UV_FAILED(runTasks()) )
 	{
 		printf_error("Top level runTasks failed\n");
-		uv_assert(UV_ERR_GENERAL);
+		goto error;
 	}	
 
 	rc = UV_ERR_OK;

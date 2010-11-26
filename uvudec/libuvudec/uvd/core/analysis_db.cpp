@@ -262,27 +262,6 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionInstanceSharedData(
 	}
 #endif
 
-#if 0
-	//Preferred relocation format
-	if( config->m_writeElfFile)
-	{
-		UVDElf *elf = NULL;
-		std::string elfFileSuffix = ".elf";
-		
-		std::string elfFile;
-		snprintf(buff, sizeof(buff), "%s/%s%s", outputDir.c_str(), sOutputFilePrefix.c_str(), config->m_elfFileSuffix.c_str());
-		elfFile = buff;
-		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting ELF file to: %s\n", elfFile.c_str());
-		out += "BINARY_ELF=" + elfFile + "\n";
-
-		uv_assert_err_ret(functionInstance->toUVDElf(&elf));
-		uv_assert_ret(elf);
-		//And save it
-		uv_assert_err_ret(elf->saveToFile(elfFile));
-		delete elf;
-	}	
-#endif
-
 	//Code is optional, sometimes we just have binary and know its, say, printf
 #if 0
 	if( !functionInstance->m_code.empty() )
@@ -325,24 +304,15 @@ uv_err_t UVDAnalysisDBArchive::saveFunctionData(UVDBinaryFunction *function, con
 uv_err_t UVDAnalysisDBArchive::shouldSaveFunction(UVDBinaryFunction *functionShared)
 {
 	UVDConfig *config = m_analyzer->m_uvd->m_config;
-	
+	UVDBinaryFunction *function = functionShared;
+	uint32_t iFunctionAddress = 0;
+		
 	uv_assert_ret(config);	
 	if( config->m_analysisOutputAddresses.empty() )
 	{
 		return UV_ERR_OK;
 	}
 	
-	UVD *uvd = NULL;
-	UVDAnalyzer *analyzer = NULL;
-	UVDBinaryFunction *function = functionShared;
-	uint32_t iFunctionAddress = 0;
-	
-	//FIXME: global reference
-	uvd = g_uvd;
-	uv_assert_ret(uvd);
-	analyzer = uvd->m_analyzer;
-	uv_assert_ret(analyzer);
-	//uv_assert_err_ret(analyzer->functionSharedToFunction(functionShared, &function));
 	uv_assert_ret(function);
 	iFunctionAddress = function->m_offset;
 
@@ -428,74 +398,6 @@ uv_err_t UVDAnalysisDBArchive::queryFunctionByBinary(UVDDataChunk *dataChunk, st
 			//We already have a match for this function
 			break;
 		}
-	}
-	
-	return UV_ERR_OK;
-}
-
-UVDAnalysisDBConcentrator::UVDAnalysisDBConcentrator(UVDAnalyzer *analyzer) : UVDAnalysisDB(analyzer)
-{
-}
-
-UVDAnalysisDBConcentrator::~UVDAnalysisDBConcentrator()
-{
-}
-
-uv_err_t UVDAnalysisDBConcentrator::init()
-{
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDAnalysisDBConcentrator::loadData(std::string &file)
-{
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
-
-uv_err_t UVDAnalysisDBConcentrator::saveData(std::string &file)
-{
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
-
-uv_err_t UVDAnalysisDBConcentrator::queryFunctionByBinary(UVDDataChunk *dataChunk, std::vector<UVDBinaryFunction *> &funcs, bool bClear)
-{
-	if( bClear )
-	{
-		funcs.clear();
-	}
-	for( std::vector<UVDAnalysisDB *>::size_type i = 0; i < m_dbs.size(); ++i )
-	{
-		UVDAnalysisDB *db = m_dbs[i];
-		
-		uv_assert_ret(db);
-		uv_assert_err_ret(db->queryFunctionByBinary(dataChunk, funcs, false));
-	}
-	
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDAnalysisDBConcentrator::getAnalyzedProgramDB(UVDAnalysisDB **db)
-{
-	for( std::vector<UVDAnalysisDB *>::size_type i = 0; i < m_dbs.size(); ++i )
-	{
-		UVDAnalysisDB *db = m_dbs[i];
-		
-		uv_assert_ret(db);
-		
-		//FIXME: add implemetnation
-	}
-	
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
-
-uv_err_t UVDAnalysisDBConcentrator::clear()
-{
-	//Clear all encapsulated DBs
-	for( std::vector<UVDAnalysisDB *>::size_type i = 0; i < m_dbs.size(); ++i )
-	{
-		UVDAnalysisDB *db = m_dbs[i];
-		
-		uv_assert_ret(db);
-		uv_assert_err_ret(db-clear());
 	}
 	
 	return UV_ERR_OK;

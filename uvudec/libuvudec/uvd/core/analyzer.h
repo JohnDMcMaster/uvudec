@@ -200,6 +200,8 @@ public:
 
 	//static uv_err_t(UVDInstruction *instruction, const UVDVariableMap &attributes);
 
+	uv_err_t generateAnalysisDir(const std::string &m_analysisDir);
+
 public:
 	//Superblock for block representation of program
 	UVDAnalyzedBlock *m_block;
@@ -219,10 +221,6 @@ public:
 	//String data addresses
 	UVDAnalyzedMemorySpace m_stringAddresses;
 	
-#if USING_PREVIOUS_ANALYSIS
-	//Database of previous analysis
-	UVDAnalysisDBConcentrator *m_db;
-#endif
 	//Database constructed from currnet program
 	//May be listed in m_db
 	UVDAnalysisDBArchive *m_curDb;

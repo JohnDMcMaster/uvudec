@@ -11,6 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/core/analyzer.h"
 #include "uvd/assembly/function.h"
 #include "uvd/core/event.h"
+#include "uvd/util/benchmark.h"
 #include <algorithm>
 #include <stdio.h>
 
@@ -272,12 +273,6 @@ UVDAnalyzer::~UVDAnalyzer()
 
 uv_err_t UVDAnalyzer::init()
 {
-#if USING_PREVIOUS_ANALYSIS
-	m_db = new UVDAnalysisDBConcentrator();
-	uv_assert_ret(m_db);
-	uv_assert_err_ret(m_db->init());
-#endif
-
 	//Create a blank archive to fill from current program
 	m_curDb = new UVDAnalysisDBArchive(this);
 	uv_assert_ret(m_curDb);
@@ -697,6 +692,31 @@ uv_err_t UVDAnalyzer::assignDefaultSymbolNames()
 uv_err_t UVDAnalyzer::identifyKnownFunctions()
 {
 	//TODO: compare symbols with database
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAnalyzer::generateAnalysisDir(const std::string &analysisDir)
+{
+	UVDAnalysisDBArchive *curDb = NULL;
+
+	uv_assert_ret(!analysisDir.empty());
+	
+	printf_debug_level(UVD_DEBUG_PASSES, "generating analysis save files...\n");
+	UVDBenchmark analysisSaveBenchmark;
+	analysisSaveBenchmark.start();
+
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Fetching DB...\n");
+	uv_assert_err_ret(getAnalyzedProgramDB(&curDb));
+	uv_assert_ret(curDb);
+	printf_debug_level(UVD_DEBUG_SUMMARY, "going to save functions: %d\n", curDb->m_functions.size());
+
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Saving data...\n");
+	uv_assert_err_ret(curDb->saveData(analysisDir));
+	printf_debug_level(UVD_DEBUG_SUMMARY, "Data saved!\n");
+	
+	analysisSaveBenchmark.stop();
+	printf_debug_level(UVD_DEBUG_PASSES, "analysis save time: %s\n", analysisSaveBenchmark.toString().c_str());
+
 	return UV_ERR_OK;
 }
 
