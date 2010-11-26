@@ -16,23 +16,22 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <vector>
-#include "uvd/architecture/architecture.h"
+#include "uvd/core/uvd.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
 #include "uvd/util/util.h"
-#include "uvd/core/uvd.h"
 #include "uvd/assembly/address.h"
-#include "uvd/core/analysis.h"
-#include "uvd/util/benchmark.h"
+#include "uvd/assembly/function.h"
+#include "uvd/assembly/instruction.h"
 #include "uvd/compiler/assembly.h"
+#include "uvd/core/analysis.h"
+#include "uvd/core/runtime.h"
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
-#include "uvd/assembly/instruction.h"
 #include "uvd/language/language.h"
 #include "uvd/util/types.h"
-#include "uvd/core/runtime.h"
+#include "uvd/util/benchmark.h"
 
 UVD *g_uvd = NULL;
 

@@ -106,7 +106,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 	//UVDAnalyzedMemorySpace jumpedAddresses;
 	//UVDAnalyzedMemorySpace calledAddresses;
 
-	UVDAnalysisDBArchive *curDb = NULL;	
+	//UVDAnalysisDBArchive *curDb = NULL;	
 	uv_addr_t absoluteMaxAddress = 0;
 	UVDAddressSpace *space = superblock->m_addressSpace;
 	
@@ -119,8 +119,8 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 	printf_debug("\n");
 	
 	uv_assert_ret(m_analyzer);
-	uv_assert_err_ret(m_analyzer->getAnalyzedProgramDB(&curDb));
-	uv_assert_ret(curDb);
+	//uv_assert_err_ret(m_analyzer->getAnalyzedProgramDB(&curDb));
+	//uv_assert_ret(curDb);
 
 	uv_assert_ret(superblock);
 	uv_assert_err_ret(superblock->getMinAddress(superblockMinAddress));
@@ -215,7 +215,7 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 	
 		iterAddresses = iterNextAddress;
 	}
-	printf_debug_level(UVD_DEBUG_SUMMARY, "found functions: %d\n", curDb->m_functions.size());
+	printf_debug_level(UVD_DEBUG_SUMMARY, "found functions: %d\n", m_analyzer->m_functions.size());
 
 	rc = UV_ERR_OK;
 	

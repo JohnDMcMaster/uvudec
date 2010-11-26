@@ -18,6 +18,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 
 */
 
+#include "uvd/assembly/function.h"
 #include "uvd/project/file_extensions.h"
 #include "uvd/language/language.h"
 #include "uvd/util/io.h"

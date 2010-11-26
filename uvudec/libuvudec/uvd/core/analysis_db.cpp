@@ -204,7 +204,16 @@ uv_err_t UVDAnalysisDBArchive::loadData(std::string &file)
 uv_err_t UVDAnalysisDBArchive::loadFunction(UVDBinaryFunction *function)
 {
 	uv_assert_ret(function);
-	printf_debug("loadFunction: 0x%.8X\n", (unsigned int)function);
+
+	{
+		UVDData *rawData = NULL;
+
+		uv_assert_ret(function->m_relocatableData);
+		uv_assert_err_ret(function->m_relocatableData->getRelocatableData(&rawData));
+		uv_assert_ret(rawData);
+	}
+
+	printf("loadFunction: 0x%.8X\n", (unsigned int)function);
 	m_functions.push_back(function);
 	return UV_ERR_OK;
 }

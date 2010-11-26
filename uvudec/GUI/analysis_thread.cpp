@@ -4,6 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
+#include "uvd/assembly/function.h"
 #include "uvd/util/benchmark.h"
 #include "uvd/util/io.h"
 #include "uvd/language/language.h"

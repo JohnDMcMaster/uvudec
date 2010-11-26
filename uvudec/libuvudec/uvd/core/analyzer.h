@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <set>
 #include <stdint.h>
-#include "uvd/core/analysis_db.h"
+//#include "uvd/core/analysis_db.h"
 #include "uvd/assembly/address.h"
 #include "uvd/data/data.h"
 #include "uvd/assembly/symbol.h"
@@ -179,7 +179,7 @@ public:
 	uv_err_t getJumpedAddresses(UVDAnalyzedMemorySpace &calledAddresses);
 	
 	//DB of currently analyzed program
-	uv_err_t getAnalyzedProgramDB(UVDAnalysisDBArchive **db);
+	//uv_err_t getAnalyzedProgramDB(UVDAnalysisDBArchive **db);
 	//Register a newly analyzed function
 	//Will reflect the analyzedProgramDB to reflect the newly found function instance
 	//Note that the function's shared data will be from current analysis and must be free'd here
@@ -200,7 +200,7 @@ public:
 
 	//static uv_err_t(UVDInstruction *instruction, const UVDVariableMap &attributes);
 
-	uv_err_t generateAnalysisDir(const std::string &m_analysisDir);
+	//uv_err_t generateAnalysisDir(const std::string &m_analysisDir);
 
 public:
 	//Superblock for block representation of program
@@ -223,7 +223,7 @@ public:
 	
 	//Database constructed from currnet program
 	//May be listed in m_db
-	UVDAnalysisDBArchive *m_curDb;
+	//UVDAnalysisDBArchive *m_curDb;
 	
 	//List of functions found during analysis
 	//XXX: should this get replaced by the symbol DB?

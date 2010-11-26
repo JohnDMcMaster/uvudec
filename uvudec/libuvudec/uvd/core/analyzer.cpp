@@ -274,8 +274,8 @@ UVDAnalyzer::~UVDAnalyzer()
 uv_err_t UVDAnalyzer::init()
 {
 	//Create a blank archive to fill from current program
-	m_curDb = new UVDAnalysisDBArchive(this);
-	uv_assert_ret(m_curDb);
+	//m_curDb = new UVDAnalysisDBArchive(this);
+	//uv_assert_ret(m_curDb);
 	//uv_assert_err_ret(m_curDb->init());
 	
 	//Should add to DB concentrator?  Prob not as it might create loops or other anomalies
@@ -288,13 +288,8 @@ uv_err_t UVDAnalyzer::deinit()
 	delete m_block;
 	m_block = NULL;
 
-#if USING_PREVIOUS_ANALYSIS
-	delete m_db;
-	m_db = NULL;
-#endif
-
-	delete m_curDb;
-	m_curDb = NULL;
+	//delete m_curDb;
+	//m_curDb = NULL;
 	
 	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
 	{
@@ -470,6 +465,7 @@ uv_err_t UVDAnalyzer::rebuildDb()
 }
 */
 
+/*
 uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
 {
 	uv_assert_ret(db);
@@ -482,20 +478,18 @@ uv_err_t UVDAnalyzer::getAnalyzedProgramDB(UVDAnalysisDBArchive **db)
 	
 	return UV_ERR_OK;	
 }
+*/
 
 uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 {
-	UVDBinaryFunction *functionShared = NULL;
-
 	uv_assert_ret(function);
 
 	//Register it as a found function
 	m_functions.insert(function);
 	
 	//Register the instance to our function analysis database
-	functionShared = function;
-	uv_assert_ret(m_curDb);
-	uv_assert_err_ret(m_curDb->loadFunction(functionShared));
+	//uv_assert_ret(m_curDb);
+	//uv_assert_err_ret(m_curDb->loadFunction(function));
 
 	//Tell the world
 	UVDEventFunctionChanged functionChangedEvent;
@@ -695,6 +689,7 @@ uv_err_t UVDAnalyzer::identifyKnownFunctions()
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDAnalyzer::generateAnalysisDir(const std::string &analysisDir)
 {
 	UVDAnalysisDBArchive *curDb = NULL;
@@ -719,4 +714,5 @@ uv_err_t UVDAnalyzer::generateAnalysisDir(const std::string &analysisDir)
 
 	return UV_ERR_OK;
 }
+*/
 

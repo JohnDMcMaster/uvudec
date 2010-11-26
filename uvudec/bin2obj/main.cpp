@@ -18,6 +18,7 @@ bin2obj entry point
 #include "uvd/core/uvd.h"
 #include "uvd/data/data.h"
 #include "uvdelf/object.h"
+#include "uvd/assembly/function.h"
 
 #define UVDBIN2OBJ_PROP_OUTPUT_DIR		"output.dir"
 
@@ -34,7 +35,6 @@ static uv_err_t runTasks()
 	std::string output;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
-	UVDAnalysisDBArchive *analysisDB = NULL;
 
 	printf_debug_level(UVD_DEBUG_PASSES, "main: initializing data streams\n");
 
@@ -76,13 +76,12 @@ static uv_err_t runTasks()
 		uv_assert_err_ret(createDir(g_outputDir, false));
 	}
 
-	uv_assert_err_ret(uvd->m_analyzer->getAnalyzedProgramDB(&analysisDB));
 
 
-
-	for( std::vector<UVDBinaryFunction *>::size_type i = 0; i < analysisDB->m_functions.size(); ++i )
+	for( std::set<UVDBinaryFunction *>::iterator iter = uvd->m_analyzer->m_functions.begin();
+			iter != uvd->m_analyzer->m_functions.end(); ++iter )
 	{
-		UVDBinaryFunction *function = analysisDB->m_functions[i];
+		UVDBinaryFunction *function = *iter;
 		std::string symbolName;
 		UVDElf elf;
 		
