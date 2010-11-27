@@ -8,28 +8,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/function.h"
 #include "uvd/util/util.h"
 
-uv_err_t UVDBinaryFunction::setData(UVDData *data)
-{
-	delete m_data;
-	uv_assert_ret(data);
-	uv_assert_err_ret(data->deepCopy(&m_data));
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVDBinaryFunction::transferData(UVDData *data)
-{
-	delete m_data;
-	m_data = data;
-
-	return UV_ERR_OK;
-}
-
-UVDData *UVDBinaryFunction::getData()
-{
-	return m_data;
-}
-
 /*
 During the symbol mapping process, the symbol names remain the same, they are the PK link on both sides
 */
@@ -40,9 +18,6 @@ UVDBinaryFunction
 
 UVDBinaryFunction::UVDBinaryFunction()
 {
-	m_data = NULL;
-	m_uvd = NULL;
-	m_offset = 0;
 }
 
 UVDBinaryFunction::~UVDBinaryFunction()
@@ -52,24 +27,29 @@ UVDBinaryFunction::~UVDBinaryFunction()
 
 uv_err_t UVDBinaryFunction::deinit()
 {
-	delete m_data;
-	m_data = NULL;
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinaryFunction::getMin(uint32_t *out)
 {
+	uv_addr_t offset = 0;
+
+	uv_assert_err_ret(getSymbolAddress(&offset));
+
 	uv_assert_ret(out);
-	*out = m_offset;
+	*out = offset;
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinaryFunction::getMax(uint32_t *out)
 {
-	uv_assert_ret(m_data);
+	uv_addr_t minAddress = 0;
+	
 	uv_assert_ret(out);
-	uv_assert_ret(m_data->size(out));
-	*out += m_offset;
+	uv_assert_ret(m_relocatableData.size(out));
+	uv_assert_err_ret(getMin(&minAddress));
+	*out += minAddress;
+
 	return UV_ERR_OK;
 }
 

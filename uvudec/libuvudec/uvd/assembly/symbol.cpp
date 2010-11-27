@@ -18,8 +18,6 @@ UVDBinarySymbol
 
 UVDBinarySymbol::UVDBinarySymbol()
 {
-	m_data = NULL;
-	m_relocatableData = NULL;
 }
 
 UVDBinarySymbol::~UVDBinarySymbol()
@@ -29,36 +27,11 @@ UVDBinarySymbol::~UVDBinarySymbol()
 
 uv_err_t UVDBinarySymbol::init()
 {
-	m_relocatableData = new UVDRelocatableData();
-	uv_assert_ret(m_relocatableData);
-
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDBinarySymbol::deinit()
 {
-	//FIXME: should probably move to storing these as two instances in the long run
-	//If we shared the data, don't double free it
-	if( m_relocatableData )
-	{
-		UVDData *relocatableDataData = NULL;
-		uv_assert_err_ret(m_relocatableData->getRelocatableData(&relocatableDataData));
-
-		if( relocatableDataData && relocatableDataData == m_data )
-		{
-			printf_deprecated("m_data in m_relocatableData must be unique, will cause crashes in future releases\n");
-			m_data = NULL;
-		}
-		//***Not causing mem issues, still present when removed
-		delete m_relocatableData;
-		m_relocatableData = NULL;
-	}
-
-	//This should be a mapped type and not be the actual data
-	//Its deletion should not cause issues
-	delete m_data;
-	m_data = NULL;
-
 	for( std::set<UVDRelocationFixup *>::iterator iter = m_symbolUsageLocations.begin(); iter != m_symbolUsageLocations.end(); ++iter )
 	{
 		delete *iter;
@@ -66,6 +39,28 @@ uv_err_t UVDBinarySymbol::deinit()
 	m_symbolUsageLocations.clear();
 
 	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbol::setData(UVDData *data)
+{
+	uv_assert_err_ret(m_relocatableData.setData(data));
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBinarySymbol::transferData(UVDData *data)
+{
+	uv_assert_err_ret(m_relocatableData.transferData(data, true));
+
+	return UV_ERR_OK;
+}
+
+UVDData *UVDBinarySymbol::getData()
+{
+	UVDData *ret = NULL;
+	
+	UV_DEBUG(m_relocatableData.getRelocatableData(&ret));
+	return ret;
 }
 
 void UVDBinarySymbol::setSymbolName(const std::string &name)
@@ -109,7 +104,7 @@ uv_err_t UVDBinarySymbol::addRelativeRelocation(uint32_t relocatableDataOffset, 
 	//We do not know the symbol it is assicated with yet, these will be collected and fixed in collectRelocations()
 	uv_assert_err_ret(UVDRelocationFixup::getUnknownSymbolRelocationFixup(&fixup, relocatableDataOffset, relocatableDataSize));
 	uv_assert_ret(fixup);
-	m_relocatableData->addFixup(fixup);
+	m_relocatableData.addFixup(fixup);
 
 	return UV_ERR_OK;
 }
@@ -169,8 +164,7 @@ uv_err_t UVDBinarySymbol::setSymbolAddress(uint32_t symbolAddress)
 uv_err_t UVDBinarySymbol::getSymbolSize(uint32_t *symbolSize)
 {
 	//return UV_DEBUG(m_symbolSize.getDynamicValue(symbolSize));
-	uv_assert_ret(m_data);
-	uv_assert_err_ret(m_data->size(symbolSize));
+	uv_assert_err_ret(getData()->size(symbolSize));
 	return UV_ERR_OK;
 }
 
@@ -206,14 +200,11 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 	uint32_t symbolEnd = 0;
 	uint32_t symbolSize = 0;
 
-	uv_assert_ret(m_relocatableData);
 	uv_assert_ret(otherSymbol);
 
 	uv_assert_err_ret(getSymbolAddress(&symbolStart));
 	uv_assert_err_ret(getSymbolSize(&symbolSize));
 	symbolEnd = symbolStart + symbolSize;
-
-	uv_assert_ret(m_relocatableData);
 
 	//Loop through all of the locations otherSymbol was used, seeing if any of them were inside of the this symbol
 	for( std::set<UVDRelocationFixup *>::iterator iter = otherSymbol->m_symbolUsageLocations.begin();
@@ -244,7 +235,7 @@ uv_err_t UVDBinarySymbol::addRelocations(const UVDBinarySymbol *otherSymbol)
 			*scaledFixup = *curFixup;
 			//Do the scale
 			scaledFixup->m_offset -= symbolStart;
-			m_relocatableData->addFixup(scaledFixup);
+			m_relocatableData.addFixup(scaledFixup);
 		}
 	}
 

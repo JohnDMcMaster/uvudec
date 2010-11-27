@@ -594,7 +594,7 @@ uv_err_t UVDElf::addFunction(UVDBinaryFunction *function)
 	UVDElf *elf = NULL;
 	std::string symbolName;
 	
-	uv_assert_ret(function->m_relocatableData);
+	uv_assert_ret(function->m_relocatableData.getData());
 	//uv_assert_ret(m_relocatableData->m_data);
 	//Get a base representation
 	//printf("symbol: %s, symbol relocations: %d\n", name.c_str(), m_relocatableData->m_fixups.size()); 
@@ -603,7 +603,7 @@ uv_err_t UVDElf::addFunction(UVDBinaryFunction *function)
 	//uv_assert_err_ret(UVDElf::getFromRelocatableData(function->m_relocatableData, symbolName, &elf));
 
 
-	uv_assert_err_ret(addRelocatableDataCore(function->m_relocatableData, symbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
+	uv_assert_err_ret(addRelocatableDataCore(&function->m_relocatableData, symbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
 
 
 
@@ -612,9 +612,9 @@ uv_err_t UVDElf::addFunction(UVDBinaryFunction *function)
 	For each relocation, register the symbol if it doesn't exist
 	Then, add it as an instance of relocation for that symbol
 	*/
-	uv_assert_ret(function->m_relocatableData);
-	for( std::set<UVDRelocationFixup *>::iterator iter = function->m_relocatableData->m_fixups.begin();
-			iter != function->m_relocatableData->m_fixups.end(); ++iter )
+	uv_assert_ret(function->m_relocatableData.getData());
+	for( std::set<UVDRelocationFixup *>::iterator iter = function->m_relocatableData.m_fixups.begin();
+			iter != function->m_relocatableData.m_fixups.end(); ++iter )
 	{
 		UVDRelocationFixup *fixup = *iter;
 		

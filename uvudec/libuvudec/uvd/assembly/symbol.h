@@ -34,6 +34,10 @@ public:
 	virtual uv_err_t init();
 	virtual uv_err_t deinit();
 
+	uv_err_t setData(UVDData *data);
+	uv_err_t transferData(UVDData *data);
+	UVDData *getData();
+
 	/*
 	UVDRelocatableElement also has a name, this has caused some conflicts
 		CHECKME: wasn't this forced to use the symbol val
@@ -106,13 +110,13 @@ public:
 		Use a mapped UVDData that assumes target data will remain valid until prog close
 		May consider a ref count for UVDData to make some of this easier
 	*/
-	UVDData *m_data;
-
+	//Since we want to store relocations, use m_relocatableData only
+	//UVDData *m_data;
 	//The relocations contained within this symbol
 	//Stuff like where g_debug is used
 	//Also stored is a relocatable version of the function
 	//Note that all relocation fixups should be of type UVDBinarySymbolElement as they are expected to all be symbol fixups
-	UVDRelocatableData *m_relocatableData;
+	UVDRelocatableData m_relocatableData;
 	//Locations where this symbol is used throughout the code, ie not (necessary) in this function
 	//Done primarily because early on we only know the symbol destination and must concentrate where it is used
 	std::set<UVDRelocationFixup *> m_symbolUsageLocations;

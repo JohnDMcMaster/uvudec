@@ -162,6 +162,10 @@ public:
 	//Relocatable elements will have the last appliex fixup value, if any
 	//It will be freed at the destruction of this object
 	virtual uv_err_t getRelocatableData(UVDData **data);
+	//Non-error checked version of above, returns NULL on errors or empty
+	//I'd like to make this class non-virtual and make UVDMultiRelocatableData a separate entity
+	//This class was intended to be lightweight and the Multi version is light use and complicating this 
+	UVDData *getData();
 
 	//Get a default representation of the relocatable data
 	//Fills in relocatable entries with 0's and returns

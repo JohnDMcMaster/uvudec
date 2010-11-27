@@ -167,6 +167,18 @@ uv_err_t UVDRelocatableData::getRelocatableData(UVDData **data)
 	return UV_ERR_OK;
 }
 
+UVDData *UVDRelocatableData::getData()
+{
+	UVDData *data = NULL;
+	
+	if( UV_FAILED(getRelocatableData(&data)) )
+	{
+		return NULL;
+	}
+	
+	return data;
+}
+
 uv_err_t UVDRelocatableData::getDefaultRelocatableData(UVDData **data)
 {
 	uv_assert_ret(data);

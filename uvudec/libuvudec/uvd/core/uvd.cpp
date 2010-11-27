@@ -91,12 +91,8 @@ error:
 uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionOut)
 {
 	UVDBinaryFunction *function = NULL;
-	//UVDBinaryFunction *functionShared = NULL;
 	//Since ownership will be xferred to object, we need to map it twice
 	UVDDataChunk *functionBlockDataChunk = NULL;
-	//UVDDataChunk *functionDataChunk = NULL;
-	//UVDDataChunk *functionInstanceDataChunk = NULL;
-	UVDBinaryFunction *functionInstance = NULL;
 
 	uv_assert_ret(functionBlock);
 	uv_assert_ret(functionOut);
@@ -104,49 +100,29 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	
 	uv_assert_err_ret(functionBlock->getDataChunk(&functionBlockDataChunk));
 	uv_assert_ret(functionBlockDataChunk)
-	//uv_assert_err_ret(functionBlock->getDataChunk(&functionDataChunk));
-	//uv_assert_err_ret(functionBlock->getDataChunk(&functionInstanceDataChunk));
-	//uv_assert_ret(functionDataChunk);
-	//uv_assert_ret(functionInstanceDataChunk);
-	//uv_assert_ret(functionDataChunk->m_data);
-	//uv_assert_ret(functionInstanceDataChunk->m_data);
 
 	//Create the single known instance of this function
-	uv_assert_err_ret(UVDBinaryFunction::getUVDBinaryFunctionInstance(&functionInstance));
-	uv_assert_ret(functionInstance);
-	function = functionInstance;
-	//function = new UVDBinaryFunction();
-	//uv_assert_ret(function);
-	//uv_assert_err_ret(function->init());
-
-	//functionShared = new UVDBinaryFunction();
-	//printf_debug("new UVDBinaryFunctionShared: 0x%.8X\n", (unsigned int)function);	
-	//uv_assert_ret(functionShared);
+	uv_assert_err_ret(UVDBinaryFunction::getUVDBinaryFunctionInstance(&function));
+	uv_assert_ret(function);
 
 	uint32_t minAddress = 0;
 	uv_assert_err_ret(functionBlock->getMinAddress(minAddress));
-	function->m_offset = minAddress;
+	uv_assert_err_ret(function->setSymbolAddress(minAddress));
 	
 	//The true name of the function is unknown
 	//This name is stored as a way to figure out the real name vs the current symbol name 
 	//functionShared->m_name = "";
 	//functionShared->m_description = "Automatically generated";	
 
-	functionInstance->m_symbolAddress = UVDRelocatableElement(minAddress);
+	function->m_symbolAddress = UVDRelocatableElement(minAddress);
 	//Only specific instances get symbol designations
 	std::string symbolName;
 	uv_assert_err_ret(m_analyzer->m_symbolManager.analyzedSymbolName(minAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
-	functionInstance->setSymbolName(symbolName);
+	function->setSymbolName(symbolName);
 	
 	//This will perform copy
-	uv_assert_err_ret(functionInstance->setData(functionBlockDataChunk));
-	//And register it to that particular function
-	//functionShared->m_representations.push_back(functionInstance);
-	
-	//function->m_shared = functionShared;
-	function->m_uvd = this;
-	uv_assert_err_ret(functionBlockDataChunk->deepCopy(&function->m_data));
-	
+	uv_assert_err_ret(function->setData(functionBlockDataChunk));
+
 	*functionOut = function;
 
 	return UV_ERR_OK;

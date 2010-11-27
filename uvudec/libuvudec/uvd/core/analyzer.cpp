@@ -151,68 +151,52 @@ uv_err_t UVDAnalyzedBlock::deinit()
 
 uv_err_t UVDAnalyzedBlock::getDataChunk(UVDDataChunk **dataChunkIn)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDDataChunk *dataChunk = NULL;
 	
-	uv_assert(m_code);
+	uv_assert_ret(m_code);
 	dataChunk = m_code->m_dataChunk;
-	uv_assert(dataChunk);
+	uv_assert_ret(dataChunk);
 	
-	uv_assert(dataChunkIn);
+	uv_assert_ret(dataChunkIn);
 	*dataChunkIn = dataChunk;
 
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDAnalyzedBlock::getMinAddress(uint32_t &address)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDDataChunk *dataChunk = NULL;
 	
-	uv_assert_err(getDataChunk(&dataChunk));
-	uv_assert(dataChunk);
+	uv_assert_err_ret(getDataChunk(&dataChunk));
+	uv_assert_ret(dataChunk);
 	
 	address = dataChunk->m_offset;
 
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDAnalyzedBlock::getMaxAddress(uint32_t &address)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDDataChunk *dataChunk = NULL;
 	
-	uv_assert_err(getDataChunk(&dataChunk));
-	uv_assert(dataChunk);
+	uv_assert_err_ret(getDataChunk(&dataChunk));
+	uv_assert_ret(dataChunk);
 	
 	address = dataChunk->m_offset + dataChunk->m_bufferSize;
 
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDAnalyzedBlock::getSize(uint32_t &address)
 {
-	uv_err_t rc = UV_ERR_GENERAL;
 	UVDDataChunk *dataChunk = NULL;
 	
-	uv_assert_err(getDataChunk(&dataChunk));
-	uv_assert(dataChunk);
+	uv_assert_err_ret(getDataChunk(&dataChunk));
+	uv_assert_ret(dataChunk);
 	
 	address = dataChunk->m_bufferSize;
 
-	rc = UV_ERR_OK;
-
-error:
-	return UV_DEBUG(rc);
+	return UV_ERR_OK;
 }
 
 UVDAnalyzedCode::UVDAnalyzedCode()
@@ -256,9 +240,6 @@ uv_err_t UVDAnalyzedFunction::deinit()
 UVDAnalyzer::UVDAnalyzer()
 {
 	m_block = NULL;
-#if USING_PREVIOUS_ANALYSIS
-	m_db = NULL;
-#endif
 	m_uvd = NULL;
 	//m_symbolManager = NULL;
 	m_symbolManager.m_analyzer = this;
@@ -279,9 +260,6 @@ uv_err_t UVDAnalyzer::deinit()
 	delete m_block;
 	m_block = NULL;
 
-	//delete m_curDb;
-	//m_curDb = NULL;
-	
 	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
 	{
 		UVDBinaryFunction *binaryFunction = *iter;
@@ -425,48 +403,14 @@ uv_err_t UVDAnalyzer::getJumpedAddresses(UVDAnalyzedMemorySpace &jumpedAddresses
 	return UV_DEBUG(getAddresses(jumpedAddresses, UVD_MEMORY_REFERENCE_JUMP_DEST));
 }
 
-/*
-uv_err_t UVDAnalyzer::rebuildDb()
-{
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Rebuilding analyzer database\n");
-	//Assumes all functions are already here and just need to be individually picked apart
-	
-	//Start clean
-	uv_assert_ret(m_curDb);
-	m_curDb->clear();
-
-	//Rebuild database for each function
-	//Since each UVDBinaryFunction had the UVDBinaryFunctionShared created with it,
-	//we simply strip out the local analysis specific data
-	for( std::vector<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
-	{
-		UVDBinaryFunction *binaryFunction = *iter;
-		//The metadata and such for this function
-		UVDBinaryFunctionShared *binaryFunctionShared = NULL;
-	
-		uv_assert_ret(binaryFunction);
-		//Get the shared section
-		binaryFunctionShared = binaryFunction->m_shared;
-		uv_assert_ret(binaryFunctionShared);
-		//And register it to the DB
-		uv_assert_err_ret(m_curDb->loadFunction(binaryFunctionShared));
-	}
-
-	return UV_ERR_OK;
-}
-*/
-
 uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 {
 	uv_assert_ret(function);
+	uv_assert_ret(function->m_relocatableData.getData());
 
 	//Register it as a found function
 	m_functions.insert(function);
 	
-	//Register the instance to our function analysis database
-	//uv_assert_ret(m_curDb);
-	//uv_assert_err_ret(m_curDb->loadFunction(function));
-
 	//Tell the world
 	UVDEventFunctionChanged functionChangedEvent;
 	functionChangedEvent.m_function = function;
@@ -475,55 +419,6 @@ uv_err_t UVDAnalyzer::loadFunction(UVDBinaryFunction *function)
 
 	return UV_ERR_OK;
 }
-
-/*
-uv_err_t UVDAnalyzer::functionSharedToFunction(UVDBinaryFunctionShared *functionShared, UVDBinaryFunction **functionOut)
-{
-	UVDBinaryFunctionInstance *functionInstance = NULL;
-	
-	uv_assert_ret(functionShared);
-	//A newly analyzed function should only know of the one occurance
-	uv_assert_ret(functionShared->m_representations.size() == 1);
-	//Get that occurance
-	functionInstance = functionShared->m_representations[0];
-	
-	return UV_DEBUG(functionInstanceToFunction(functionInstance, functionOut));
-}
-
-uv_err_t UVDAnalyzer::functionInstanceToFunction(UVDBinaryFunctionInstance *targetFunctionInstance, UVDBinaryFunction **functionOut)
-{
-	UVDBinaryFunction *functionToOutput = NULL;
-
-	uv_assert_ret(targetFunctionInstance);
-	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin();
-			iter != m_functions.end(); ++iter )
-	{
-		UVDBinaryFunction *function = *iter;
-		UVDBinaryFunctionShared *functionShared = NULL;
-		UVDBinaryFunctionInstance *functionInstance = NULL;
-
-		//Get the function instance generated by this raw function object
-		uv_assert_ret(function);
-		functionShared = function->m_shared;
-		uv_assert_ret(functionShared->m_representations.size() == 1);
-		functionInstance = functionShared->m_representations[0];
-		uv_assert_ret(functionInstance);	
-			
-		//See if the associated function instance is the one we are looking for
-		if( functionInstance == targetFunctionInstance )
-		{
-			functionToOutput = function;
-			break;
-		}
-	}
-	uv_assert_ret(functionToOutput);
-
-	//We found a match, good to go
-	uv_assert_ret(functionOut);
-	*functionOut = functionToOutput;
-	return UV_ERR_OK;
-}
-*/
 
 uv_err_t UVDAnalyzer::mapSymbols()
 {
@@ -585,8 +480,8 @@ uv_err_t UVDAnalyzer::assignDefaultSymbolNames()
 		For all of the places we have to patch this symbol, 
 		make sure each of those symbols we must resolve will have a name associated with them
 		*/
-		for( std::set<UVDRelocationFixup *>::iterator iter = functionInstance->m_relocatableData->m_fixups.begin();
-				iter != functionInstance->m_relocatableData->m_fixups.end(); ++iter )
+		for( std::set<UVDRelocationFixup *>::iterator iter = functionInstance->m_relocatableData.m_fixups.begin();
+				iter != functionInstance->m_relocatableData.m_fixups.end(); ++iter )
 		{
 			UVDRelocationFixup *fixup = *iter;
 			UVDRelocatableElement *relocatableElement = NULL;
