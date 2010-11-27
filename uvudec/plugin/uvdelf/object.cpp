@@ -44,12 +44,13 @@ typedef struct
 
 #endif
 
-#include "uvdelf/object.h"
-#include "uvdelf/relocation.h"
+#include "uvd/assembly/function.h"
 #include "uvd/data/data.h"
 #include "uvd/relocation/relocation.h"
 #include "uvd/util/types.h"
 #include "uvd/util/util.h"
+#include "uvdelf/object.h"
+#include "uvdelf/relocation.h"
 #include <elf.h>
 #include <vector>
 #include <string>
@@ -587,25 +588,17 @@ uv_err_t UVDElf::addRelocation(UVDRelocationFixup *analysisRelocation)
 	return UV_ERR_OK;
 }
 
-#include "uvd/assembly/function.h"
-
 uv_err_t UVDElf::addFunction(UVDBinaryFunction *function)
 {
-	UVDElf *elf = NULL;
 	std::string symbolName;
 	
 	uv_assert_ret(function->m_relocatableData.getData());
-	//uv_assert_ret(m_relocatableData->m_data);
 	//Get a base representation
 	//printf("symbol: %s, symbol relocations: %d\n", name.c_str(), m_relocatableData->m_fixups.size()); 
 	uv_assert_err_ret(function->getSymbolName(symbolName));
 	uv_assert_ret(!symbolName.empty());
-	//uv_assert_err_ret(UVDElf::getFromRelocatableData(function->m_relocatableData, symbolName, &elf));
-
 
 	uv_assert_err_ret(addRelocatableDataCore(&function->m_relocatableData, symbolName, UVD_ELF_SECTION_EXECUTABLE, ".rel.text"));
-
-
 
 	/*
 	Add in the relocations
@@ -631,17 +624,20 @@ uv_err_t UVDElf::addFunction(UVDBinaryFunction *function)
 		uv_assert_err_ret(addRelocation(fixup));
 	}
 	
+	//FIXME: is this the best place to put this?
+	/*
 	{
 		std::string sourceFilename;
 		std::string mangledSourceFilename;
 
-		sourceFilename = m_data->getSource();
+		sourceFilename = function->m_relocatableData.getData()->getSource();
 		uv_assert_ret(!sourceFilename.empty());
 		//TODO: add option here for absolute path save
 		mangledSourceFilename = uv_basename(sourceFilename);
 		uv_assert_ret(!mangledSourceFilename.empty());
-		uv_assert_err_ret(elf->setSourceFilename(mangledSourceFilename));
+		uv_assert_err_ret(setSourceFilename(mangledSourceFilename));
 	}
+	*/
 	
 	return UV_ERR_OK;
 }
