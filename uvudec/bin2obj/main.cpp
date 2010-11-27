@@ -85,6 +85,9 @@ static uv_err_t runTasks()
 		std::string symbolName;
 		UVDElf elf;
 		
+		//Empty file
+		uv_assert_err_ret(elf.init(NULL));
+
 		uv_assert_ret(function);
 		uv_assert_err_ret(function->getSymbolName(symbolName));
 	
