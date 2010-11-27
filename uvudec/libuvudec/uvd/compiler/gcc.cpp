@@ -79,7 +79,7 @@ uv_err_t UVDCompilerGCC::demangleByCppfilt(const std::string &in, std::string &o
 	args.push_back(in);
 	
 	//Should return not supported if not present
-	uv_assert_err_ret(executeToText("c++filt",
+	uv_assert_err_ret(UVDExecuteToText("c++filt",
 			args,
 			rcProcess,
 			&stdOut,

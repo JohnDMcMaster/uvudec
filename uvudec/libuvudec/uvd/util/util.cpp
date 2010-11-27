@@ -84,7 +84,7 @@ std::string escapeArg(const std::string &sIn)
 	return sRet;
 }
 
-uv_err_t executeToFile(const std::string &sCommand,
+uv_err_t UVDExecuteToFile(const std::string &sCommand,
 		const std::vector<std::string> &args,
 		int &rcProcess,
 		const std::string *stdOutIn,
@@ -93,7 +93,6 @@ uv_err_t executeToFile(const std::string &sCommand,
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string stdOut;
 	std::string stdErr;
-	int iRet = 0;
 	std::string sExec;
 	
 	UV_ENTER();
@@ -127,16 +126,17 @@ uv_err_t executeToFile(const std::string &sCommand,
 	sExec += stdErr;	
 	
 	printf_debug("Executing: %s\n", sExec.c_str());
-	iRet = system(sExec.c_str());
-	printf_debug("Ret: %d\n", iRet);
-	uv_assert(!(iRet & 0xFF));
+	rcProcess = system(sExec.c_str());
+	printf_debug("Ret: %d\n", rcProcess);
+	uv_assert(!(rcProcess & 0xFF));
+	rcProcess /= 256;
 	rc = UV_ERR_OK;
 
 error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t executeToText(const std::string &sCommand,
+uv_err_t UVDExecuteToText(const std::string &sCommand,
 		const std::vector<std::string> &args,
 		int &rcProcess,
 		std::string *stdOut,
@@ -176,7 +176,7 @@ uv_err_t executeToText(const std::string &sCommand,
 		}
 	}
 	
-	uv_assert_err(executeToFile(sCommand,
+	uv_assert_err(UVDExecuteToFile(sCommand,
 			args,
 			rcProcess,
 			&stdOutFileLocal,

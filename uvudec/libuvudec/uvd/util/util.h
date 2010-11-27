@@ -103,12 +103,12 @@ uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t
 uv_err_t getTempFile(std::string &out);
 std::string escapeArg(const std::string &sIn);
 uv_err_t deleteFile(std::string &out);
-uv_err_t executeToFile(const std::string &sCommand,
+uv_err_t UVDExecuteToFile(const std::string &sCommand,
 		const std::vector<std::string> &args,
 		int &rcProcess,
 		const std::string *stdOutIn,
 		const std::string *stdErrIn);
-uv_err_t executeToText(const std::string &sCommand,
+uv_err_t UVDExecuteToText(const std::string &sCommand,
 		const std::vector<std::string> &args,
 		int &rcProcess,
 		std::string *stdOut,

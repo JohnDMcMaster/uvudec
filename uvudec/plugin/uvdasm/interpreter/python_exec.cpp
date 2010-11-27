@@ -66,7 +66,7 @@ uv_err_t UVDPythonExecInterpreter::interpret(const UVDInterpreterExpression &exp
 	/*
 	Run it!
 	*/
-	uv_assert_err(executeToText("python",
+	uv_assert_err(UVDExecuteToText("python",
 			args,
 			iRet,
 			&sRet,
