@@ -20,7 +20,8 @@ bin2obj entry point
 #include "uvdelf/object.h"
 #include "uvd/assembly/function.h"
 
-#define UVDBIN2OBJ_PROP_OUTPUT_DIR		"output.dir"
+#define UVDBIN2OBJ_PROP_OUTPUT_DIR					"bin2obj.output.dir"
+#define UVDBIN2OBJ_PROP_TARGET_FUNCTION_ADDRESS		"bin2obj.function.address"
 
 static std::string g_inputFile = DEFAULT_DECOMPILE_FILE;
 //TODO: support one large annotated object file
@@ -28,6 +29,8 @@ static std::string g_inputFile = DEFAULT_DECOMPILE_FILE;
 static std::string g_outputDir;
 
 static uv_err_t versionPrintPrefixThunk();
+
+std::set<uv_addr_t> g_exportedFunctions;
 
 static uv_err_t runTasks()
 {
@@ -68,15 +71,10 @@ static uv_err_t runTasks()
 
 	uv_assert_err_ret(uvd->analyze());
 
-
-
-
 	if( UV_FAILED(isDir(g_outputDir)) )
 	{
 		uv_assert_err_ret(createDir(g_outputDir, false));
 	}
-
-
 
 	for( std::set<UVDBinaryFunction *>::iterator iter = uvd->m_analyzer->m_functions.begin();
 			iter != uvd->m_analyzer->m_functions.end(); ++iter )
@@ -85,6 +83,17 @@ static uv_err_t runTasks()
 		std::string symbolName;
 		UVDObject *object = NULL;
 
+		if( !g_exportedFunctions.empty() )
+		{
+			uv_addr_t symbolAddress = 0;
+			
+			uv_assert_err_ret(function->getSymbolAddress(&symbolAddress));
+			if( g_exportedFunctions.find(symbolAddress) == g_exportedFunctions.end() )
+			{
+				continue;
+			}
+		}
+		
 		uv_assert_err_ret(UVDObject::fromString("uvdelf", NULL, &object));
 		
 		uv_assert_ret(function);
@@ -151,6 +160,11 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		uv_assert_ret(!argumentArguments.empty());
 		g_outputDir = firstArg;
 	}
+	else if( argConfig->m_propertyForm == UVDBIN2OBJ_PROP_TARGET_FUNCTION_ADDRESS )
+	{
+		uv_assert_ret(!argumentArguments.empty());
+		g_exportedFunctions.insert(firstArgNum);
+	}
 	else
 	{
 		return UV_DEBUG(UV_ERR_GENERAL);
@@ -166,13 +180,14 @@ uv_err_t initProgConfig()
 	//Arguments
 	uv_assert_err_ret(g_config->registerDefaultArgument(argParser, " [input binary] [ELF files dir]"));
 	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_TARGET_FILE, 0, "input", "source file for data", 1, argParser, false));
-	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output directory", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVD_PROP_OUTPUT_FILE, 0, "output", "output file", 1, argParser, false));
 	uv_assert_err_ret(g_config->registerArgument(UVDBIN2OBJ_PROP_OUTPUT_DIR, 0, "output-dir", "output directory", 1, argParser, false));
+	uv_assert_err_ret(g_config->registerArgument(UVDBIN2OBJ_PROP_TARGET_FUNCTION_ADDRESS, 0, "function-address", "add function at address to be included (default: all)", 1, argParser, false));
 
 	//Callbacks
 	g_config->versionPrintPrefixThunk = versionPrintPrefixThunk;
 
-	return UV_ERR_OK;	
+	return UV_ERR_OK;
 }
 
 static uv_err_t versionPrintPrefixThunk()

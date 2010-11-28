@@ -56,12 +56,12 @@ public:
 	uv_err_t getSymbolName(std::string &out);
 	uv_err_t getSymbolNames(std::set<std::string> &names);	
 	
-	//FIXME: this is analysis specific...should it be here?
-	//If this is a symbol in our currently analyzed data, the address it presides at 
+	//If this is a symbol in our currently analyzed data, the address it presides at
+	//XXX: should return UV_ERR_NOTFOUND if undefined?
 	//Also, is there the possibility that a symbol could have differing values depending on the address space?
 	//Or should a symbol be specific to an address space?
-	uv_err_t getSymbolAddress(uint32_t *symbolAddress);
-	uv_err_t setSymbolAddress(uint32_t symbolAddress);
+	uv_err_t getSymbolAddress(uv_addr_t *symbolAddress);
+	uv_err_t setSymbolAddress(uv_addr_t symbolAddress);
 	/*
 	uv_err_t getOffset(uint32_t *offset);
 	*/
