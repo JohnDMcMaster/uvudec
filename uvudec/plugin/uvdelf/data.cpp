@@ -29,7 +29,7 @@ uv_err_t UVDElf::constructBinary(UVDData **dataOut)
 Misc functions
 */
 
-uv_err_t UVDElf::saveToFile(const std::string &file)
+uv_err_t UVDElf::writeToFileName(const std::string &file)
 {
 	UVDData *data = NULL;
 	//Get the raw binary data
@@ -40,3 +40,4 @@ uv_err_t UVDElf::saveToFile(const std::string &file)
 	
 	return UV_ERR_OK;
 }
+

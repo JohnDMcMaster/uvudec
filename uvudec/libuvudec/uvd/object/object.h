@@ -83,6 +83,16 @@ public:
 
 	virtual uv_err_t addRelocation(UVDRelocationFixup *relocation);
 	virtual uv_err_t addFunction(UVDBinaryFunction *function);
+	virtual uv_err_t writeToFileName(const std::string &fileName);
+
+	/*
+	Get an initialized UVDObject of a specific type based on a human readable string property
+	Intended for argument based approaches
+	Base portion should be the plugin the object is in followed by plugin specific data, if any
+	Ex: "uvdobjbin", "uvdbfd.ihex"
+	If type is empty, will try to automatically guess plugin type based on canLoad() priorities
+	*/
+	static uv_err_t fromString(const std::string &type, UVDData *data, UVDObject **out);
 
 public:
 	UVDBinarySymbolManager m_symbols;

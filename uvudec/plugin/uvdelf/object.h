@@ -71,7 +71,7 @@ public:
 	uv_err_t loadFromFile(const std::string &file);
 	//Get the raw binary image of this object
 	uv_err_t constructBinary(UVDData **data);
-	uv_err_t saveToFile(const std::string &file);
+	virtual uv_err_t writeToFileName(const std::string &fileName);
 
 	//Deprecated
 	//Construct from a UVD relocatable

@@ -83,20 +83,20 @@ static uv_err_t runTasks()
 	{
 		UVDBinaryFunction *function = *iter;
 		std::string symbolName;
-		UVDElf elf;
-		
-		//Empty file
-		uv_assert_err_ret(elf.init(NULL));
+		UVDObject *object = NULL;
 
+		uv_assert_err_ret(UVDObject::fromString("uvdelf", NULL, &object));
+		
 		uv_assert_ret(function);
 		uv_assert_err_ret(function->getSymbolName(symbolName));
 	
-		std::string elfFile = UVDSprintf("%s/%s%s", g_outputDir.c_str(), symbolName.c_str(), g_config->m_elfFileSuffix.c_str());
-		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting ELF file to: %s\n", elfFile.c_str());
+		std::string objectFileName = UVDSprintf("%s/%s%s", g_outputDir.c_str(), symbolName.c_str(), g_config->m_elfFileSuffix.c_str());
+		printf_debug_level(UVD_DEBUG_VERBOSE, "Writting ELF file to: %s\n", objectFileName.c_str());
 
-		uv_assert_err_ret(elf.addFunction(function));
+		uv_assert_err_ret(object->addFunction(function));
 		//And save it
-		uv_assert_err_ret(elf.saveToFile(elfFile));
+		uv_assert_err_ret(object->writeToFileName(objectFileName));
+		delete object;
 	}	
 	
 	rc = UV_ERR_OK;
