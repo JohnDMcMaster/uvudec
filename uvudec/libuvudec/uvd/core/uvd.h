@@ -196,15 +196,17 @@ public:
 	Disassemble binary file to output string
 	*/
 	uv_err_t disassemble(std::string &output);
+	uv_err_t disassembleByCallback(uvd_string_callback_t callback, void *user);
 	/*
 	Given file, generate best representation possible in specified langauge to output file
 	Using what created the engine init
 	*/
 	uv_err_t decompile(std::string &output);
+	uv_err_t decompileByCallback(uvd_string_callback_t callback, void *user);
 	//Intended for things like printing a function
 	uv_err_t printRange(uv_addr_t start, uv_addr_t end, uint32_t destinationLanguage, std::string &output);
 	//iterEnd is not inclusive
-	uv_err_t printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::string &output);
+	uv_err_t printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_string_callback_t callback, void *user);
 	//What we will try to output when printing
 	//Used to format assembly output and such
 	uv_err_t setDestinationLanguage(uint32_t destinationLanguage);

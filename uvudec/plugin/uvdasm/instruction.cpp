@@ -296,7 +296,6 @@ uv_err_t UVDDisasmInstruction::print_disasm(std::string &out)
 	uv_err_t rc = UV_ERR_GENERAL;
 	std::string operand_pad = "";
 	UVDConfig *config = g_config;
-	char buff[256];
 	
 	uv_assert_ret(config);
 	
@@ -312,8 +311,7 @@ uv_err_t UVDDisasmInstruction::print_disasm(std::string &out)
 	
 	if( config->m_asm_instruction_info )
 	{
-		snprintf(buff, sizeof(buff), "%s (0x%.2X/%s)%s", getShared()->m_memoric.c_str(), ((unsigned int)m_inst[0]) & 0xFF, getShared()->m_desc.c_str(), operand_pad.c_str());
-		out += buff;
+		out += UVDSprintf("%s (0x%.2X/%s)%s", getShared()->m_memoric.c_str(), ((unsigned int)m_inst[0]) & 0xFF, getShared()->m_desc.c_str(), operand_pad.c_str());
 	}
 	else
 	{
@@ -323,7 +321,6 @@ uv_err_t UVDDisasmInstruction::print_disasm(std::string &out)
 	if( !m_operands.empty() )
 	{
 		printf_debug("Has operand\n");
-		printf_debug("Pre operand buff: <%s>\n", buff);
 		for( unsigned int i = 0; i < m_operands.size(); ++i )
 		{
 			UVDDisasmOperand *operand = (UVDDisasmOperand *)m_operands[i];

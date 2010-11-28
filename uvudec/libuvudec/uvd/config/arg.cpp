@@ -66,8 +66,7 @@ uv_err_t UVDArgConfigs::registerArgument(const std::string &propertyForm,
 		void *user)
 {
 	UVDArgConfig *argConfig = NULL;
-		
-	uv_assert_ret(user);
+	
 	argConfig = new UVDArgConfig(propertyForm, shortForm, longForm, helpMessage, helpMessageExtra, numberExpectedValues, handler, hasDefault, user);
 	uv_assert_ret(argConfig);
 	m_argConfigs[propertyForm] = argConfig;

@@ -8,10 +8,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <algorithm>
 #include <ctype.h>
 #include <errno.h>
-//What we need...IS SOME ROPE!
-#if USING_ROPE
-#include <ext/rope>
-#endif //USING_ROPE
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -691,12 +687,41 @@ uv_err_t UVD::disassemble(std::string &output)
 	return UV_DEBUG(decompile(output));
 }
 
+uv_err_t UVD::disassembleByCallback(uvd_string_callback_t callback, void *user)
+{
+	return UV_DEBUG(decompileByCallback(callback, user));
+}
+
 uv_err_t UVD::decompile(std::string &output)
 {
 	UVDBenchmark decompileBenchmark;
 	UVDIterator iterBegin;
 	UVDIterator iterEnd;
 
+	output.clear();
+	decompileBenchmark.start();
+
+	//Most of program time should be spent here
+	uv_assert_err_ret(analyze());
+	//Until we can do better
+	setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY);
+	//And print
+	uv_assert_err_ret(begin(iterBegin));
+	uv_assert_err_ret(end(iterEnd));
+	uv_assert_err_ret(printRangeCore(iterBegin, iterEnd, UVDPrintToStringStringCallback, &output));
+
+	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
+	decompileBenchmark.stop();
+	printf_debug_level(UVD_DEBUG_PASSES, "decompile time: %s\n", decompileBenchmark.toString().c_str());
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVD::decompileByCallback(uvd_string_callback_t callback, void *user)
+{
+	UVDBenchmark decompileBenchmark;
+	UVDIterator iterBegin;
+	UVDIterator iterEnd;
 
 	decompileBenchmark.start();
 
@@ -707,15 +732,12 @@ uv_err_t UVD::decompile(std::string &output)
 	//And print
 	uv_assert_err_ret(begin(iterBegin));
 	uv_assert_err_ret(end(iterEnd));
-	uv_assert_err_ret(printRangeCore(iterBegin, iterEnd, output));
+	uv_assert_err_ret(printRangeCore(iterBegin, iterEnd, callback, user));
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
 	decompileBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile time: %s\n", decompileBenchmark.toString().c_str());
 	
-//printf("DEBUG BREAK\n");
-//exit(1);
-
 	return UV_ERR_OK;
 }
 
@@ -745,7 +767,7 @@ uv_err_t UVD::setDestinationLanguage(uint32_t destinationLanguage)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::string &output)
+uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_string_callback_t callback, void *user)
 {
 	UVDIterator iter;
 	//UVDIterator iterEnd;
@@ -767,11 +789,6 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::st
 	iter = iterBegin;
 
 	//Due to the huge number of concatenations
-#ifdef USING_ROPE
-	__gnu_cxx::crope outputRope;
-#else
-	output.clear();
-#endif //USING_ROPE
 	int iterations = 0;
 	//FIXME: what if we misalign by accident and surpass?
 	//need to add some check for that
@@ -799,23 +816,12 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, std::st
 		printf_debug("Line (0x%.8X): %s\n", iter.getPosition(), line.c_str());
 
 		//This didn't help for the bottleneck under investigation
-#if USING_ROPE
-		outputRope += (
-#else
-		output +=
-#endif //USING_ROPE
-				line + "\n"
-#if USING_ROPE
-				).c_str()
-#endif //USING_ROPE
-				;				
+
+		uv_assert_err_ret(callback(line + "\n", user));
+		
 		printf_debug("\n");
 		uv_assert_err_ret(iter.next());
 	}
-#ifdef USING_ROPE
-	output = outputRope.c_str();
-	outputRope.clear();
-#endif //USING_ROPE
 	
 	/*
 	drop for now during architecture abstraction

@@ -87,7 +87,7 @@ static uv_err_t runTasks()
 		{
 			//Get string output
 			printf_debug_level(UVD_DEBUG_SUMMARY, "Disassembling...\n");
-			rc = uvd->disassemble(output);
+			rc = uvd->disassembleByCallback(UVDPrintToFileStringCallback, g_pOutputFile);
 			if( UV_FAILED(rc) )
 			{
 				printf_error("Failed to runTasks!\n");
@@ -97,11 +97,6 @@ static uv_err_t runTasks()
 	}
 
 	printf_debug_level(UVD_DEBUG_PASSES, "main: runTasksd\n");
-
-	printf_debug_level(UVD_DEBUG_SUMMARY, "Ready to print!\n");
-	//Print string output
-	//It already will have a newline on the end of each line
-	fprintf(g_pOutputFile, "%s", output.c_str());
 	rc = UV_ERR_OK;
 	
 error:

@@ -210,5 +210,12 @@ std::string UVDSprintf(const char *format, ...)  __attribute__ ((format (printf,
 		}\
 		while( 0 )
 
+//uvd_string_callback_t for printing, user does nothing
+uv_err_t UVDPrintToStdoutStringCallback(const std::string &s, void *user);
+//user should be FILE *
+uv_err_t UVDPrintToFileStringCallback(const std::string &s, void *user);
+//user should be std::string *
+uv_err_t UVDPrintToStringStringCallback(const std::string &cur, void *user);
+
 #endif /* ifndef UV_UTIL_H */
 

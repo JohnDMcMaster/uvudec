@@ -50,6 +50,7 @@ typedef int32_t uvd_tri_t;
 
 //A function with appropriete return type that takes no args
 typedef uv_err_t (*uv_thunk_t)();
+typedef uv_err_t (*uvd_string_callback_t)(const std::string &s, void *user);
 
 //An analyzed data address
 //FIXME: do massive replaces to get this into code

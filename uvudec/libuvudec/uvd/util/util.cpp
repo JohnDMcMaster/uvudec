@@ -543,7 +543,8 @@ void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix)
 			{
 				printf("%c", '.');
 				fflush(stdout);
-			}
+			}uv_err_t UVDPrintStringCallback(const std::string &s, void *user);
+
 		} 
 		for( ; i < row_start + g_bytesPerRow; ++i )
 		{
@@ -555,5 +556,25 @@ void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix)
 		fflush(stdout);
 	}
 	fflush(stdout);
+}
+
+uv_err_t UVDPrintToStdoutStringCallback(const std::string &s, void *user)
+{
+	printf("%s", s.c_str());
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPrintToFileStringCallback(const std::string &s, void *user)
+{
+	fprintf((FILE *)user, "%s", s.c_str());
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPrintToStringStringCallback(const std::string &cur, void *user)
+{
+	std::string &output = *(std::string *)user;
+	
+	output += cur;
+	return UV_ERR_OK;
 }
 
