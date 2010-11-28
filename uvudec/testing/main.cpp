@@ -34,9 +34,7 @@ UVDArgRegistry g_argRegistry;
 UVDArgConfigs *g_configArgs = NULL;
 std::vector<CPPUNIT_NS::Test *> g_tests;
 std::map<std::string, CPPUNIT_NS::Test *> g_fixtureNameMap;
-uvd_bool_t g_propagateArgs = false;
 #define UVD_PROP_TESTING_FIXTURE			"testing.fixture"
-#define UVD_PROP_TESTING_ARGS				"testing.args"
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
@@ -53,7 +51,6 @@ static uv_err_t initArgs()
 	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_HELP, 'h', "help", "print this message and exit", "", 0, argParser, false, NULL));
 	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_ACTION_VERSION, 0, "version", "print version and exit", "", 0, argParser, false, NULL));
 	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_TESTING_FIXTURE, 0, "fixture", "add a fixture to be tested", "", 1, argParser, false, NULL));
-	uv_assert_err_ret(g_configArgs->registerArgument(UVD_PROP_TESTING_ARGS, 0, "args", "all future arguments passed to library initialization", "", 0, argParser, false, NULL));
 
 	return UV_ERR_OK;
 }
@@ -91,21 +88,11 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		firstArgBool = UVDArgToBool(firstArg);
 	}
 
-	//eat everything after --args?
-	if( g_propagateArgs )
-	{
-		//Load'er up
-		g_extraArgs.insert(g_extraArgs.begin(), argumentArguments.begin(), argumentArguments.end());
-	}
-	else if( argConfig->isNakedHandler() )
+	if( argConfig->isNakedHandler() )
 	{
 		UVDPrintfError("no undecorated arg support, maybe you need --args\n");
 		printfHelp();
 		return UV_DEBUG(UV_ERR_GENERAL);
-	}
-	else if( argConfig->m_propertyForm == UVD_PROP_TESTING_ARGS )
-	{
-		g_propagateArgs = true;
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_ACTION_HELP )
 	{
@@ -139,16 +126,32 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 int main(int argc, char **argv)
 {
+	int parsed_argc = 0;
+	
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	//Report time for ALL tests
 	UVDBenchmark benchmark;
 	uint32_t wasSuccessful = false;
 	
-	initArgs();
-	rcTemp = g_argRegistry.processMain(argc, argv);
+	//Everything after --args and remove it
+	for( parsed_argc = 1; parsed_argc < argc; ++parsed_argc )
+	{
+		if( std::string(argv[parsed_argc]) == "--args" )
+		{
+			for( int i = parsed_argc + 1; i < argc; ++i )
+			{
+				g_extraArgs.push_back(argv[i]);
+			}
+			break;
+		}
+	}
+	
+	UV_DEBUG(initArgs());
+	rcTemp = g_argRegistry.processMain(parsed_argc, argv);
 	if( UV_FAILED(rcTemp) )
 	{
 		printf_error("faled to parse args\n");
+		printfHelp();
 		goto error;
 	}
 	else if( rcTemp == UV_ERR_DONE )
