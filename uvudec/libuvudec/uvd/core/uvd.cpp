@@ -494,13 +494,6 @@ uv_err_t UVD::getUVDFromData(UVD **uvdOut, UVDData *data)
 	return UV_ERR_OK;
 }
 
-/*
-uv_err_t UVD::opcodeDeinit()
-{
-	return m_opcodeTable->deinit();
-}
-*/
-
 UVDIterator UVD::begin()
 {
 	UVDIterator iter;
@@ -540,15 +533,6 @@ uv_err_t UVD::begin(UVDAddress address, UVDIterator &iter)
 	return UV_ERR_OK;
 }
 
-/*
-UVDIterator UVD::begin(UVDData *data)
-{
-	UVDIterator iter = begin();
-	iter.m_data = data;
-	return iter;
-}
-*/
-
 UVDIterator UVD::end()
 {
 	UVDIterator iter;
@@ -572,15 +556,6 @@ uv_err_t UVD::end(UVDIterator &iter)
 	//UV_DEBUG(iter.makeEnd());
 	return UV_ERR_OK;
 }
-
-/*
-UVDIterator UVD::end(UVDData *data)
-{
-	UVDIterator iter = end();
-	iter.m_data = data;
-	return iter;
-}
-*/
 
 UVDInstructionIterator UVD::instructionBegin()
 {
@@ -648,38 +623,6 @@ uv_err_t UVD::stringListAppend(UVDInstruction *inst, std::vector<std::string> &l
 	
 	return UV_ERR_OK;
 }
-
-/*
-uv_err_t UVD::createAnalysisDir(const std::string &file, const std::string &outputDir)
-{
-	std::string oldDir;
-	
-	oldDir = m_config->m_analysisDir;
-	m_config->m_analysisDir = outputDir;
-	uv_assert_err_ret(createAnalysisDir());
-	m_config->m_analysisDir = oldDir;
-
-	return UV_ERR_OK;
-}
-
-uv_err_t UVD::createAnalysisDir()
-{
-	uint32_t oldAnalysisOnly = 0;
-	//Due to decompile hack
-	std::string discard;
-	
-	uv_assert_ret(m_config);
-	oldAnalysisOnly = m_config->m_analysisOnly;
-	m_config->m_analysisOnly = 1;
-	//Sorta hackish, do some cleanup later
-	//Lang is relativly unimportant, assembly indicates don't do any high level analysis
-	//(although it is ignored for now anyway)
-	uv_assert_err_ret(analyze());
-	m_config->m_analysisOnly = oldAnalysisOnly;
-	
-	return UV_ERR_OK;
-}
-*/
 
 uv_err_t UVD::disassemble(std::string &output)
 {
@@ -838,18 +781,6 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_str
 
 	return UV_ERR_OK;
 }
-
-/*
-uv_err_t UVD::changeConfig(UVDConfig *config)
-{
-	if( m_config )
-	{
-		delete m_config;
-	}
-	m_config = config;
-	return UV_ERR_OK;
-}
-*/
 
 uv_err_t UVD::setOutputFormatting(UVDFormat *format)
 {
