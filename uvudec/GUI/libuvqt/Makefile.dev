@@ -1,0 +1,12 @@
+# Sets up symbolic link from qt dir to here
+
+ROOT_DIR=../..
+include $(ROOT_DIR)/Makefile.mk
+
+SRC=$$PWD/libuvqtdesigner.so
+DST=$(QT_PREFIX)/qt/plugins/designer/libuvqtdesigner.so
+
+all:
+	rm -f $(DST)
+	ln -s $(SRC) $(DST)
+
