@@ -7,7 +7,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #ifndef UVD_GUI_ANALYSIS_THREAD_H
 #define UVD_GUI_ANALYSIS_THREAD_H
 
-#include "GUI/ui_uvudec.h"
+#include "GUI/uvudec.ui.h"
 #include <QThread>
 #include <QMutex>
 #include <QObject>

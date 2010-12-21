@@ -8,7 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_GUI_H
 
 #include "uvd/util/error.h"
-#include "GUI/ui_uvudec.h"
+#include "GUI/uvudec.ui.h"
 #include "GUI/analysis_thread.h"
 #include "GUI/project.h"
 #include <string>

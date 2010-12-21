@@ -99,6 +99,13 @@ LIBS += -l$(LIB_UVUDEC_DYNAMIC_USED)
 endif
 endif
 
+ifdef MOC_HEADERS
+USING_QT=Y
+endif
+ifeq ($(USING_QT),Y)
+include $(ROOT_DIR)/Makefile.qt.mk
+endif
+
 ifeq ($(USING_LIBBFD),Y)
 FLAGS_SHARED += -DUSING_LIBBFD
 FLAGS_SHARED += -DUVD_FLIRT_PATTERN_BFD

@@ -1,3 +1,3 @@
 *.moc.*
-ui_uvudec.h
+*.ui.h
 
