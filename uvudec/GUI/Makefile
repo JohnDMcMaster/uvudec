@@ -23,6 +23,13 @@ CXX_SRCS = 	\
 USING_LIB_UVUDEC=Y
 USING_LIB_JANSSON=Y
 
+PHONY += libuvqt
+
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk
+
+$(EXE_NAME_FULL): libuvqt
+
+libuvqt:
+	cd libuvqt && $(MAKE)
 

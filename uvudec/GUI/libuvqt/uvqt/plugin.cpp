@@ -1,11 +1,15 @@
 #include "uvqt/hexdump.h"
 #include "uvqt/plugin.h"
+#include "uvd/util/util.h"
 
 #include <QtPlugin>
 
 UVQtPlugin::UVQtPlugin(QObject *parent)
     : QObject(parent)
 {
+	std::vector<std::string> the_split = UVDSplit("blah blah blah", ' ', true);
+	printf("split items: %d\n", the_split.size());
+
     initialized = false;
 }
 
