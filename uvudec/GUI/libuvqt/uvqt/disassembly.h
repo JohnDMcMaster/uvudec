@@ -4,8 +4,8 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
-#ifndef UVQT_HEXDUMP_H
-#define UVQT_HEXDUMP_H
+#ifndef UVQT_DISASSEMBLY_H
+#define UVQT_DISASSEMBLY_H
 
 #include <QWidget>
 #include <QtDesigner/QDesignerExportWidget>
@@ -13,18 +13,20 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include <string>
 #include <stdint.h>
 
-class UVQtHexdump : public QWidget
+class UVQtDisassembly : public QWidget
 {
     Q_OBJECT
 
 public:
-	UVQtHexdump(QWidget *parent = NULL);
+	UVQtDisassembly(QWidget *parent = NULL);
 	QSize sizeHint() const;
 	
 public:
-	unsigned int getNumberLines();
-	//I'm not clear why this doesn't get paint events, but Okteta seems to do the same thing (ColumnsView)
-	//I put render code in UVQtHexdump, they have it in the scroll widget
+	unsigned int getMinAddress();
+	unsigned int getMaxAddress();
+
+	unsigned int getMinDisplayedAddress();
+	unsigned int getMaxDisplayedAddress();
 	void doPaintEvent(QPaintEvent *event);
 
 protected:
@@ -47,19 +49,19 @@ When inheriting QAbstractScrollArea, you need to do the following:
     * Use viewport->update() to update the contents of the viewport instead of update() as all painting operations take place on the viewport.
 */
 
-class QDESIGNER_WIDGET_EXPORT UVQtScrollableHexdump : public QAbstractScrollArea
+class QDESIGNER_WIDGET_EXPORT UVQtScrollableDisassembly : public QAbstractScrollArea
 {
     Q_OBJECT
 
 public:
-	UVQtScrollableHexdump(QWidget *parent = NULL);
+	UVQtScrollableDisassembly(QWidget *parent = NULL);
 
 protected:
 	void paintEvent(QPaintEvent *event);
 	void scrollContentsBy(int dx, int dy);
 
 public:
-	UVQtHexdump *m_viewportShadow;
+	UVQtDisassembly *m_viewportShadow;
 };
 
 #endif

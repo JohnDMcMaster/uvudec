@@ -9,12 +9,21 @@ TARGET      = uvqtdesigner
 TEMPLATE    = lib
 QTDIR_build:DESTDIR     = $$QT_BUILD_TREE/plugins/designer
 
-HEADERS     = 	uvqt/hexdump.h \
+HEADERS     = 	\
+				uvqt/disassembly.h \
+				uvqt/disassembly_plugin.h \
+				uvqt/hexdump.h \
+				uvqt/hexdump_plugin.h \
 				uvqt/plugin.h \
+				uvqt/util.h \
 
-SOURCES     = 	uvqt/hexdump.cpp \
+SOURCES     = 	\
+				uvqt/disassembly.cpp \
+				uvqt/disassembly_plugin.cpp \
+				uvqt/hexdump.cpp \
+				uvqt/hexdump_plugin.cpp \
 				uvqt/plugin.cpp \
-				uvqt/plugin2.cpp \
+				uvqt/util.cpp \
 
 LIBS += -L../../lib -luvudec
 INCLUDEPATH += ../../libuvudec

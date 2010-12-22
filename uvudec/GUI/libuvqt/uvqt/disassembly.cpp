@@ -4,8 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
-#include "uvqt/hexdump.h"
-#include "uvqt/util.h"
+#include "uvqt/disassembly.h"
 #include <QPainter>
 #include <QPaintEvent>
 #include <QScrollBar>
@@ -13,11 +12,18 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include <stdint.h>
 #include <math.h>
 
+//using std::cout;
+
+void printRect(QRect rect)
+{
+	printf("rect: (%d, %d), width: %d, height: %d\n", rect.x(), rect.y(), rect.width(), rect.height());
+}
+
 /*
-UVQtHexdump
+UVQtDisassembly
 */
 
-UVQtHexdump::UVQtHexdump(QWidget *parent) : QWidget(parent)
+UVQtDisassembly::UVQtDisassembly(QWidget *parent) : QWidget(parent)
 {
 	QFont font;
 	font.setFamily(QString::fromUtf8("Courier [unknown]"));
@@ -30,7 +36,7 @@ UVQtHexdump::UVQtHexdump(QWidget *parent) : QWidget(parent)
 	m_numberRows = 5;
 }
 
-QSize UVQtHexdump::sizeHint() const 
+QSize UVQtDisassembly::sizeHint() const 
 {
 	printf("sizeHint()\n");
 	//Best way to get width size hint really is to render something
@@ -40,14 +46,9 @@ QSize UVQtHexdump::sizeHint() const
 			fontMetrics().height() * m_numberRows);
 }
 
-unsigned int UVQtHexdump::getNumberLines()
+void UVQtDisassembly::doPaintEvent(QPaintEvent *event)
 {
-	return ceil(1.0 * m_data.size() / m_bytesPerRow);
-}
-
-void UVQtHexdump::doPaintEvent(QPaintEvent *event)
-{
-	printf("***UVQtHexdump::doPaintEvent()\n");
+	printf("***UVQtDisassembly::doPaintEvent()\n");
 
 	const uint8_t *data = (const uint8_t *)m_data.c_str();
 	size_t size = m_data.size();
@@ -116,7 +117,7 @@ void UVQtHexdump::doPaintEvent(QPaintEvent *event)
 	}
 }
 
-unsigned int UVQtHexdump::hexdumpHalfRow(const uint8_t *data, size_t size, uint32_t start, std::string &ret)
+unsigned int UVQtDisassembly::hexdumpHalfRow(const uint8_t *data, size_t size, uint32_t start, std::string &ret)
 {
 	uint32_t col = 0;
 	char buff[4];
@@ -144,12 +145,12 @@ unsigned int UVQtHexdump::hexdumpHalfRow(const uint8_t *data, size_t size, uint3
 }
 
 /*
-UVQtScrollableHexdump
+UVQtScrollableDisassembly
 */
 
-UVQtScrollableHexdump::UVQtScrollableHexdump(QWidget *parent) : QAbstractScrollArea(parent)
+UVQtScrollableDisassembly::UVQtScrollableDisassembly(QWidget *parent) : QAbstractScrollArea(parent)
 {
-	m_viewportShadow = new UVQtHexdump(this);
+	m_viewportShadow = new UVQtDisassembly(this);
 	setViewport(m_viewportShadow);
 	m_viewportShadow->resize(320, 240);
 	//Title bar is blocking top of widget?
@@ -158,18 +159,18 @@ UVQtScrollableHexdump::UVQtScrollableHexdump(QWidget *parent) : QAbstractScrollA
 
 	verticalScrollBar()->setPageStep(1);
 	horizontalScrollBar()->setPageStep(1);
-	verticalScrollBar()->setRange(0, m_viewportShadow->getNumberLines() - m_viewportShadow->m_numberRows);
+	verticalScrollBar()->setRange(m_viewportShadow->getMinDisplayedAddress(), m_viewportShadow->getMaxDisplayedAddress());
 	verticalScrollBar()->setPageStep(3);
 	//horizontalScrollBar()->setRange(0, 20);
 	//updateWidgetPosition();
 }
 
-void UVQtScrollableHexdump::paintEvent(QPaintEvent *event)
+void UVQtScrollableDisassembly::paintEvent(QPaintEvent *event)
 {
-	printf("UVQtScrollableHexdump::paintEvent()\n");
+	printf("UVQtScrollableDisassembly::paintEvent()\n");
     QAbstractScrollArea::paintEvent(event);
 
-	UVDQtPrintRect(event->rect());
+	printRect(event->rect());
 	//Will this clip for us?
 	//current tests are only single widget, so hard to tell
 	//Also paint even makes this harder to tell
@@ -186,10 +187,10 @@ void UVQtScrollableHexdump::paintEvent(QPaintEvent *event)
 	m_viewportShadow->doPaintEvent(event);
 }
 
-void UVQtScrollableHexdump::scrollContentsBy(int dx, int dy)
+void UVQtScrollableDisassembly::scrollContentsBy(int dx, int dy)
 {
 	//FIXME: guidelines say not to use dx/dy, but rather directly query from scrollbar
-	printf("\nUVQtScrollableHexdump::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
+	printf("\nUVQtScrollableDisassembly::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
 	m_viewportShadow->m_startAddress -= dy;
 	printf("start address: %d\n", m_viewportShadow->m_startAddress);
 	//Why doesn't this do it?
