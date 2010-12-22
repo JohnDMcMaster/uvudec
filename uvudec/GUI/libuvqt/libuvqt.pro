@@ -14,6 +14,7 @@ HEADERS     = 	uvqt/hexdump.h \
 
 SOURCES     = 	uvqt/hexdump.cpp \
 				uvqt/plugin.cpp \
+				uvqt/plugin2.cpp \
 
 LIBS += -L../../lib -luvudec
 INCLUDEPATH += ../../libuvudec

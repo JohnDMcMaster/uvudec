@@ -4,24 +4,7 @@
 
 #include <QtPlugin>
 
-UVQtPlugin::UVQtPlugin(QObject *parent)
-		: QObject(parent)
-{
-	printf("constructor\n");
-	m_widgets.append(new UVQtPlugin1(this));
-	m_widgets.append(new UVQtPlugin2(this));
-}
-
-QList<QDesignerCustomWidgetInterface*> UVQtPlugin::customWidgets() const
-{
-	return m_widgets;
-}
-
-/*
-UVQtPlugin1
-*/
-
-UVQtPlugin1::UVQtPlugin1(QObject *parent)
+UVQtPlugin2::UVQtPlugin2(QObject *parent)
     : QObject(parent)
 {
 	std::vector<std::string> the_split = UVDSplit("blah blah blah", ' ', true);
@@ -30,7 +13,7 @@ UVQtPlugin1::UVQtPlugin1(QObject *parent)
     initialized = false;
 }
 
-void UVQtPlugin1::initialize(QDesignerFormEditorInterface * /* core */)
+void UVQtPlugin2::initialize(QDesignerFormEditorInterface * /* core */)
 {
     if (initialized)
         return;
@@ -38,50 +21,50 @@ void UVQtPlugin1::initialize(QDesignerFormEditorInterface * /* core */)
     initialized = true;
 }
 
-bool UVQtPlugin1::isInitialized() const
+bool UVQtPlugin2::isInitialized() const
 {
     return initialized;
 }
 
-QWidget *UVQtPlugin1::createWidget(QWidget *parent)
+QWidget *UVQtPlugin2::createWidget(QWidget *parent)
 {
     return new UVQtScrollableHexdump(parent);
 }
 
-QString UVQtPlugin1::name() const
+QString UVQtPlugin2::name() const
 {
-    return "UVQtScrollableHexdump";
+    return "UVQtScrollableHexdump2";
 }
 
-QString UVQtPlugin1::group() const
+QString UVQtPlugin2::group() const
 {
     return "UVNet";
 }
 
-QIcon UVQtPlugin1::icon() const
+QIcon UVQtPlugin2::icon() const
 {
     return QIcon();
 }
 
-QString UVQtPlugin1::toolTip() const
+QString UVQtPlugin2::toolTip() const
 {
     return "";
 }
 
-QString UVQtPlugin1::whatsThis() const
+QString UVQtPlugin2::whatsThis() const
 {
     return "";
 }
 
-bool UVQtPlugin1::isContainer() const
+bool UVQtPlugin2::isContainer() const
 {
     return false;
 }
 
-QString UVQtPlugin1::domXml() const
+QString UVQtPlugin2::domXml() const
 {
     return "<ui language=\"c++\">\n"
-           " <widget class=\"UVQtScrollableHexdump\" name=\"scrollableHexdump\">\n"
+           " <widget class=\"UVQtScrollableHexdump2\" name=\"scrollableHexdump\">\n"
            "  <property name=\"geometry\">\n"
            "   <rect>\n"
            "    <x>0</x>\n"
@@ -100,11 +83,8 @@ QString UVQtPlugin1::domXml() const
            "</ui>\n";
 }
 
-QString UVQtPlugin1::includeFile() const
+QString UVQtPlugin2::includeFile() const
 {
     return "uvdqt/hexdump.h";
 }
-
-//Q_EXPORT_PLUGIN2(customwidgetplugin, UVQtPlugin1)
-Q_EXPORT_PLUGIN2(customwidgetsplugin, UVQtPlugin)
 
