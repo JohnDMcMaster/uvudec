@@ -4,22 +4,25 @@
 
 # install -m 755 -p "libcustomwidgetplugin.so" "/opt/qtsdk-2010.04/qt/plugins/designer/libcustomwidgetplugin.so"
 
+QMAKE_CXXFLAGS += -g
 CONFIG      += designer plugin
 TARGET      = uvqtdesigner
 TEMPLATE    = lib
 QTDIR_build:DESTDIR     = $$QT_BUILD_TREE/plugins/designer
 
 HEADERS     = 	\
-				uvqt/disassembly.h \
-				uvqt/disassembly_plugin.h \
+				uvqt/dynamic_text.h \
+				uvqt/dynamic_text_plugin.h \
+				uvqt/dynamic_text_plugin_impl.h \
 				uvqt/hexdump.h \
 				uvqt/hexdump_plugin.h \
 				uvqt/plugin.h \
 				uvqt/util.h \
 
 SOURCES     = 	\
-				uvqt/disassembly.cpp \
-				uvqt/disassembly_plugin.cpp \
+				uvqt/dynamic_text.cpp \
+				uvqt/dynamic_text_plugin.cpp \
+				uvqt/dynamic_text_plugin_impl.cpp \
 				uvqt/hexdump.cpp \
 				uvqt/hexdump_plugin.cpp \
 				uvqt/plugin.cpp \

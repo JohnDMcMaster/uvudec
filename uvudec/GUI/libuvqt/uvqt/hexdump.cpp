@@ -32,12 +32,13 @@ UVQtHexdump::UVQtHexdump(QWidget *parent) : QWidget(parent)
 
 QSize UVQtHexdump::sizeHint() const 
 {
-	printf("sizeHint()\n");
 	//Best way to get width size hint really is to render something
 	//Otherwise, maintenance nightmare
 	//leading address + hex view + char view + spacer contribution + char view padding
-	return QSize((7 + m_bytesPerRow * 5 + m_bytesPerRow / m_bytesPerSubRow + 2) * fontMetrics().width('0'),
+	QSize ret = QSize((7 + m_bytesPerRow * 5 + m_bytesPerRow / m_bytesPerSubRow + 2) * fontMetrics().width('0'),
 			fontMetrics().height() * m_numberRows);
+	printf("UVQtHexdump::sizeHint() = (width=%d, height=%d)\n", ret.width(), ret.height());
+	return ret;
 }
 
 unsigned int UVQtHexdump::getNumberLines()
@@ -47,7 +48,7 @@ unsigned int UVQtHexdump::getNumberLines()
 
 void UVQtHexdump::doPaintEvent(QPaintEvent *event)
 {
-	printf("***UVQtHexdump::doPaintEvent()\n");
+	//printf("***UVQtHexdump::doPaintEvent()\n");
 
 	const uint8_t *data = (const uint8_t *)m_data.c_str();
 	size_t size = m_data.size();
@@ -166,7 +167,7 @@ UVQtScrollableHexdump::UVQtScrollableHexdump(QWidget *parent) : QAbstractScrollA
 
 void UVQtScrollableHexdump::paintEvent(QPaintEvent *event)
 {
-	printf("UVQtScrollableHexdump::paintEvent()\n");
+	//printf("UVQtScrollableHexdump::paintEvent()\n");
     QAbstractScrollArea::paintEvent(event);
 
 	UVDQtPrintRect(event->rect());
@@ -188,10 +189,11 @@ void UVQtScrollableHexdump::paintEvent(QPaintEvent *event)
 
 void UVQtScrollableHexdump::scrollContentsBy(int dx, int dy)
 {
+	(void)dx;
 	//FIXME: guidelines say not to use dx/dy, but rather directly query from scrollbar
-	printf("\nUVQtScrollableHexdump::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
+	//printf("\nUVQtScrollableHexdump::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
 	m_viewportShadow->m_startAddress -= dy;
-	printf("start address: %d\n", m_viewportShadow->m_startAddress);
+	//printf("start address: %d\n", m_viewportShadow->m_startAddress);
 	//Why doesn't this do it?
 	viewport()->update();
 }

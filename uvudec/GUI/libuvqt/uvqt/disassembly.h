@@ -12,7 +12,21 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include <QAbstractScrollArea>
 #include <string>
 #include <stdint.h>
+#include "uvd/core/uvd.h"
 
+/*
+class UVDQtDissassemblyData
+{
+public:
+	UVDQtDissassemblyData();
+	
+	virtual uv_err_t getLines(unsigned int startAddress, unsigned int startOffset,  
+};
+*/
+
+/*
+A text edit widget
+*/
 class UVQtDisassembly : public QWidget
 {
     Q_OBJECT
@@ -25,19 +39,10 @@ public:
 	unsigned int getMinAddress();
 	unsigned int getMaxAddress();
 
-	unsigned int getMinDisplayedAddress();
-	unsigned int getMaxDisplayedAddress();
 	void doPaintEvent(QPaintEvent *event);
 
-protected:
-	unsigned int hexdumpHalfRow(const uint8_t *data, size_t size, uint32_t start, std::string &ret);
-	void hexdump(const uint8_t *data, size_t size);
-
 public:
-	unsigned int m_startAddress;
-	std::string m_data;
-	unsigned int m_bytesPerRow;
-	unsigned int m_bytesPerSubRow;
+	UVDIterator m_startPosition;
 	unsigned int m_numberRows;
 };
 

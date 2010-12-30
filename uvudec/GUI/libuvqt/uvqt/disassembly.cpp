@@ -5,6 +5,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
 #include "uvqt/disassembly.h"
+#include "uvqt/util.h"
 #include <QPainter>
 #include <QPaintEvent>
 #include <QScrollBar>
@@ -13,11 +14,6 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include <math.h>
 
 //using std::cout;
-
-void printRect(QRect rect)
-{
-	printf("rect: (%d, %d), width: %d, height: %d\n", rect.x(), rect.y(), rect.width(), rect.height());
-}
 
 /*
 UVQtDisassembly
@@ -38,12 +34,13 @@ UVQtDisassembly::UVQtDisassembly(QWidget *parent) : QWidget(parent)
 
 QSize UVQtDisassembly::sizeHint() const 
 {
-	printf("sizeHint()\n");
 	//Best way to get width size hint really is to render something
 	//Otherwise, maintenance nightmare
 	//leading address + hex view + char view + spacer contribution + char view padding
-	return QSize((7 + m_bytesPerRow * 5 + m_bytesPerRow / m_bytesPerSubRow + 2) * fontMetrics().width('0'),
+	QSize ret = QSize((7 + m_bytesPerRow * 5 + m_bytesPerRow / m_bytesPerSubRow + 2) * fontMetrics().width('0'),
 			fontMetrics().height() * m_numberRows);
+	printf("UVQtDisassembly::sizeHint() = (width=%d, height=%d)\n", ret.width(), ret.height());
+	return ret;
 }
 
 void UVQtDisassembly::doPaintEvent(QPaintEvent *event)
@@ -117,31 +114,18 @@ void UVQtDisassembly::doPaintEvent(QPaintEvent *event)
 	}
 }
 
-unsigned int UVQtDisassembly::hexdumpHalfRow(const uint8_t *data, size_t size, uint32_t start, std::string &ret)
+unsigned int UVQtDisassembly::getMinAddress()
 {
-	uint32_t col = 0;
-	char buff[4];
+	uv_addr_t ret = 0;
+	UV_DEBUG(m_startPosition.m_addressSpace->getMinValidAddress(ret));
+	return ret;
+}
 
-	for( ; col < m_bytesPerSubRow && start + col < size; ++col )
-	{
-		uint32_t index = start + col;
-		uint8_t c = data[index];
-		
-		snprintf(buff, sizeof(buff), " %02X ", (unsigned int)c);
-		ret += buff;
-	}
-
-	//pad remaining
-	while( col < m_bytesPerSubRow )
-	{
-		ret += "   ";
-		++col;
-	}
-
-	//End pad
-	ret += " ";
-
-	return start + m_bytesPerSubRow;
+unsigned int UVQtDisassembly::getMaxAddress()
+{
+	uv_addr_t ret = 0;
+	UV_DEBUG(m_startPosition.m_addressSpace->getMaxValidAddress(ret));
+	return ret;
 }
 
 /*
@@ -152,25 +136,27 @@ UVQtScrollableDisassembly::UVQtScrollableDisassembly(QWidget *parent) : QAbstrac
 {
 	m_viewportShadow = new UVQtDisassembly(this);
 	setViewport(m_viewportShadow);
-	m_viewportShadow->resize(320, 240);
+	//m_viewportShadow->resize(320, 240);
+	m_viewportShadow->resize(sizeHint());
 	//Title bar is blocking top of widget?
-	setViewportMargins(0, 20, 0, 0);
+	//not an issue once we got our own area
+	//setViewportMargins(0, 20, 0, 0);
 	m_viewportShadow->show();
 
-	verticalScrollBar()->setPageStep(1);
-	horizontalScrollBar()->setPageStep(1);
-	verticalScrollBar()->setRange(m_viewportShadow->getMinDisplayedAddress(), m_viewportShadow->getMaxDisplayedAddress());
-	verticalScrollBar()->setPageStep(3);
 	//horizontalScrollBar()->setRange(0, 20);
+	//horizontalScrollBar()->setPageStep(1);
+	verticalScrollBar()->setRange(m_viewportShadow->getMinAddress(), m_viewportShadow->getMaxAddress());
+	verticalScrollBar()->setPageStep(3);
+
 	//updateWidgetPosition();
 }
 
 void UVQtScrollableDisassembly::paintEvent(QPaintEvent *event)
 {
-	printf("UVQtScrollableDisassembly::paintEvent()\n");
+	//printf("UVQtScrollableDisassembly::paintEvent()\n");
     QAbstractScrollArea::paintEvent(event);
 
-	printRect(event->rect());
+	UVDQtPrintRect(event->rect());
 	//Will this clip for us?
 	//current tests are only single widget, so hard to tell
 	//Also paint even makes this harder to tell
@@ -189,10 +175,11 @@ void UVQtScrollableDisassembly::paintEvent(QPaintEvent *event)
 
 void UVQtScrollableDisassembly::scrollContentsBy(int dx, int dy)
 {
+	(void)dx;
 	//FIXME: guidelines say not to use dx/dy, but rather directly query from scrollbar
-	printf("\nUVQtScrollableDisassembly::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
+	//printf("\nUVQtScrollableDisassembly::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
 	m_viewportShadow->m_startAddress -= dy;
-	printf("start address: %d\n", m_viewportShadow->m_startAddress);
+	//printf("start address: %d\n", m_viewportShadow->m_startAddress);
 	//Why doesn't this do it?
 	viewport()->update();
 }
