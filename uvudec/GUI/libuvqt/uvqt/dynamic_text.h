@@ -5,13 +5,15 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 */
 
 /*
+Functionality among the lines of what could be QAbstractPlainTextEdit
+
 Like QPlainTextEdit, but rows are dynamically generated
 Original use is to take care of disassembly listings, which have some unusual indexing behavior
 Scroll bar is to be indexed by address, but incremental changes are by line
 This takes care of difficulty of knowing exact index with intermediate data taken into account
 
 If an index is no longer availible, should roll back to take the first availible data
-Roughly modeling this off of Model-View Controller so I can port it to it as I become more comfterable
+Roughly modeling this off of MVC so I can port it to it as I become more comfterable
 with the basic widgets
 Ex:
 	Original
@@ -42,6 +44,9 @@ Subclass this to implement render
 UVDIterator doesn't have previous(), so try not to rely on any prevoius operation
 Doesn't have begin(address, index), (only begin(addresS)), 
 but can be implemented without too much trouble
+
+Also, it might make sense to allow offset to be negative
+I want 32 bit address ranges though, so I want easy 32 bit access over neg value possibility
 */
 class UVQtDynamicTextData
 {
@@ -60,6 +65,7 @@ public:
 		iterator_impl(unsigned int offset, unsigned int index);
 		virtual ~iterator_impl();
 	
+		virtual unsigned int offset() = 0;
 		virtual int compare(const iterator_impl *other) = 0;
 		virtual iterator_impl *copy() = 0;
 		virtual uv_err_t get(std::string &ret) = 0;
@@ -90,6 +96,7 @@ public:
 		bool operator !=(const iterator &other);
 		int compare(const iterator *other);
 
+		unsigned int offset();
 		uv_err_t get(std::string &ret);
 		uv_err_t next();
 		//If this would underflow or overflow, set to max possible value
@@ -163,6 +170,7 @@ class QDESIGNER_WIDGET_EXPORT UVQtScrollableDynamicText : public QAbstractScroll
 public:
 	UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent = NULL);
 	uv_err_t setData(UVQtDynamicTextData *data);
+	uv_err_t scrollUnits(int units);
 
 protected:
 	void paintEvent(QPaintEvent *event);
@@ -171,6 +179,10 @@ protected:
 
 public:
 	UVQtDynamicText *m_viewportShadow;
+	/*
+	This is needed to differentiate incremental adjustments versus those set by the slider
+	*/
+	int m_verticalScrollbarValueShadow;
 };
 
 #endif

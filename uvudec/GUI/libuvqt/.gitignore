@@ -1,2 +1,4 @@
 Makefile
 moc_*
+test
+*.so

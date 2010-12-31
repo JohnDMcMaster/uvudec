@@ -16,6 +16,7 @@ HEADERS     = 	\
 				uvqt/dynamic_text_plugin_impl.h \
 				uvqt/hexdump.h \
 				uvqt/hexdump_plugin.h \
+				uvqt/plain_text_edit.h \
 				uvqt/plugin.h \
 				uvqt/util.h \
 
@@ -25,6 +26,7 @@ SOURCES     = 	\
 				uvqt/dynamic_text_plugin_impl.cpp \
 				uvqt/hexdump.cpp \
 				uvqt/hexdump_plugin.cpp \
+				uvqt/plain_text_edit.cpp \
 				uvqt/plugin.cpp \
 				uvqt/util.cpp \
 

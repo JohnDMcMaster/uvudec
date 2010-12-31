@@ -53,6 +53,11 @@ std::string UVQtDynamicTextDataPluginImpl::iterator_impl::toString()
 	return UVDSprintf("m_offset=0x%08X, m_index=0x%08X", m_offset, m_index);
 }
 
+unsigned int UVQtDynamicTextDataPluginImpl::iterator_impl::offset()
+{
+	return m_offset;
+}
+
 uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::get(std::string &ret)
 {
 	ret = UVDSprintf("%d:%d", m_offset, m_index);
@@ -86,6 +91,7 @@ uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::previous()
 
 	if( m_index > 0 )
 	{
+		printf("previous: adjusting m_index\n");
 		--m_index;
 	}
 	//No more room?
@@ -95,8 +101,9 @@ uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::previous()
 	}
 	else
 	{
+		printf("previous: adjusting m_offset\n");
 		--m_offset;
-		m_index = 0;
+		m_index = m_dataImpl->m_numberOffsetIndexes - 1;
 	}
 
 	return UV_ERR_OK;
@@ -149,6 +156,11 @@ uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionByDelta(int
 	{
 		for( int i = 0; i < delta; ++i )
 		{
+			//About to go out of bounds?
+			if( m_offset == m_dataImpl->m_offsetMax && m_index == m_dataImpl->m_numberOffsetIndexes - 1 )
+			{
+				break;
+			}
 			uv_assert_err_ret(next());
 		}
 	}
@@ -156,6 +168,11 @@ uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionByDelta(int
 	{
 		for( int i = 0; i > delta; --i )
 		{
+			//About to go out of bounds?
+			if( m_offset == m_dataImpl->m_offsetMin && m_index == 0 )
+			{
+				break;
+			}
 			uv_assert_err_ret(previous());
 		}
 	}

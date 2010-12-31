@@ -158,6 +158,12 @@ uv_err_t UVQtDynamicTextData::iterator::changePositionToAbsolute(unsigned int of
 	return UV_DEBUG(m_impl->changePositionToAbsolute(offset, index));
 }
 
+unsigned int UVQtDynamicTextData::iterator::offset()
+{
+	uv_assert_ret(m_impl);
+	return UV_DEBUG(m_impl->offset());
+}
+
 /*
 UVQtDynamicTextData
 */
@@ -301,7 +307,6 @@ UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, 
 	//Title bar is blocking top of widget?
 	//not an issue once we got our own area
 	//setViewportMargins(0, 20, 0, 0);
-	m_viewportShadow->show();
 
 	//horizontalScrollBar()->setRange(0, 20);
 	//horizontalScrollBar()->setPageStep(1);
@@ -309,7 +314,11 @@ UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, 
 	verticalScrollBar()->setRange(m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
 	verticalScrollBar()->setPageStep(3);
 
+	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
+	verticalScrollBar()->setSliderPosition(m_viewportShadow->m_start.offset());
+
 	//updateWidgetPosition();
+	m_viewportShadow->show();
 }
 
 void UVQtScrollableDynamicText::paintEvent(QPaintEvent *event)
@@ -344,7 +353,12 @@ void UVQtScrollableDynamicText::scrollContentsBy(int dx, int dy)
 	//UV_DEBUG(m_viewportShadow->changePositionByDelta(-dy));
 	int currentAbsoluate = verticalScrollBar()->value();
 	printf("currentAbsolute: %d\n", currentAbsoluate);
-	UV_DEBUG(m_viewportShadow->changePositionToAbsolute(currentAbsoluate, 0));
+	//Externally generated event?
+	if( m_verticalScrollbarValueShadow != currentAbsoluate )
+	{
+		UV_DEBUG(m_viewportShadow->changePositionToAbsolute(currentAbsoluate, 0));
+		m_verticalScrollbarValueShadow = currentAbsoluate;
+	}
 	printf("finished scroll at %s\n", m_viewportShadow->m_start.m_impl->toString().c_str());
 	//printf("start address: %d\n", m_viewportShadow->m_startAddress);
 	//Why doesn't this do it?
@@ -357,6 +371,7 @@ uv_err_t UVQtDynamicText::setData(UVQtDynamicTextData *data)
 	fflush(stdout);
 	uv_assert_ret(data);
 	m_textData = data;
+	//Reset to top if we swap out the data completly
 	UV_DEBUG(m_textData->begin(getMinOffset(), 0, &m_start));
 	//printf("set data done\n");
 	//UVQtDynamicTextDataPluginImpl::iterator_impl *iter_impl = dynamic_cast<UVQtDynamicTextDataPluginImpl::iterator_impl *>(m_start.m_impl);
@@ -370,13 +385,40 @@ uv_err_t UVQtScrollableDynamicText::setData(UVQtDynamicTextData *data)
 	return UV_DEBUG(m_viewportShadow->setData(data));
 }
 
-#define UVQT_KEY_LEFT		0x01000012
-#define UVQT_KEY_UP			0x01000013
-#define UVQT_KEY_RIGHT		0x01000014
-#define UVQT_KEY_DOWN		0x01000015
+uv_err_t UVQtScrollableDynamicText::scrollUnits(int units)
+{
+	UV_DEBUG(m_viewportShadow->changePositionByDelta(units));
+	//We need to update the slider to keep in sync
+	//This emits dx/dy events though
+	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
+	verticalScrollBar()->setSliderPosition(m_viewportShadow->m_start.offset());
+	viewport()->update();
+	return UV_ERR_OK;
+}
 
 void UVQtScrollableDynamicText::keyPressEvent(QKeyEvent *event)
 {
 	printf("key event: 0x%08X\n", event->key());
+	switch( event->key() )
+	{
+	case UVQT_KEY_UP:
+		printf("UVQT_KEY_UP\n");
+		UV_DEBUG(scrollUnits(-1));
+		break;
+	case UVQT_KEY_DOWN:
+		printf("UVQT_KEY_DOWN\n");
+		UV_DEBUG(scrollUnits(1));
+		break;
+	case UVQT_KEY_PAGEUP:
+		printf("UVQT_KEY_PAGEUP\n");
+		UV_DEBUG(scrollUnits(-3));
+		break;
+	case UVQT_KEY_PAGEDOWN:
+		printf("UVQT_KEY_PAGEDOWN\n");
+		UV_DEBUG(scrollUnits(3));
+		break;
+	default:
+		return;
+	}
 }
 

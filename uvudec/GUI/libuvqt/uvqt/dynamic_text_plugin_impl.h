@@ -1,7 +1,7 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under the terms of the GPL V3 or later, see COPYING for details
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #ifndef UVQT_DYNAMIC_TEXT_PLUGIN_IMPL_H
@@ -27,6 +27,7 @@ public:
 		virtual uv_err_t changePositionToAbsolute(unsigned int offset, unsigned int index);	
 		virtual int compare(const UVQtDynamicTextData::iterator_impl *other);
 		virtual std::string toString();
+		virtual unsigned int offset();
 
 	public:
 		unsigned int m_offset;
