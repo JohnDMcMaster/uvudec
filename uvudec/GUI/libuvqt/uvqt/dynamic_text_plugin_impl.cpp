@@ -44,7 +44,7 @@ UVQtDynamicTextData::iterator_impl *UVQtDynamicTextDataPluginImpl::iterator_impl
 {
 	UVQtDynamicTextDataPluginImpl::iterator_impl *ret = new UVQtDynamicTextDataPluginImpl::iterator_impl();
 	*ret = *this;
-	printf("copy with %s\n", toString().c_str());
+	//printf("copy with %s\n", toString().c_str());
 	return ret;
 }
 

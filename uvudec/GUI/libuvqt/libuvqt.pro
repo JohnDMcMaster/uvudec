@@ -4,7 +4,7 @@
 
 # install -m 755 -p "libcustomwidgetplugin.so" "/opt/qtsdk-2010.04/qt/plugins/designer/libcustomwidgetplugin.so"
 
-QMAKE_CXXFLAGS += -g
+QMAKE_CXXFLAGS += -g -Wno-unused-parameter -Werror -O0
 CONFIG      += designer plugin
 TARGET      = uvqtdesigner
 TEMPLATE    = lib

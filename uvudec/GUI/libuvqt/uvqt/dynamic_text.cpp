@@ -199,7 +199,7 @@ UVQtDynamicText::UVQtDynamicText(UVQtDynamicTextData *textData, QWidget *parent)
 	//m_startOffset = 0;
 	//m_startIndex = 0;
 	//UV_DEBUG(m_textData->begin(0, 0, &iter));
-	m_numberLines = 10;
+	//m_numberLines = 10;
 	//m_textData = NULL;
 	setData(textData);
 }
@@ -209,7 +209,7 @@ QSize UVQtDynamicText::sizeHint() const
 	//Really, we should see if we can impose a QScrollArea for x size, we are mostly concerned with y size right now
 	//QSize ret = QSize((7 + m_bytesPerRow * 5 + m_bytesPerRow / m_bytesPerSubRow + 2) * fontMetrics().width('0'),
 	QSize ret = QSize(300,
-			fontMetrics().height() * m_numberLines);
+			fontMetrics().height() * getNumberLines());
 	//printf("UVQtDynamicText::sizeHint() = (width=%d, height=%d)\n", ret.width(), ret.height());
 	return ret;
 }
@@ -222,19 +222,57 @@ printf("global call\n");
 }
 */
 
-void UVQtDynamicText::doPaintEvent(QPaintEvent *event)
+void UVQtDynamicText::doPaintEventTest(QPaintEvent *event)
+{
+	printf("doPaintEventTest()\n");
+	QPainter painter(this);
+	printf("painter made\n");
+
+	UVDQtPrintRect(event->rect());
+printf("pos x: %d, y: %d\n", pos().x(), pos().y());
+printf("basic x: %d, y: %d\n", x(), y());
+printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
+
+	for( int i = 0; i < 3; ++i )
+	{
+		painter.drawLine(0, i * 5, 100, i * 5);
+	}
+	for( int i = 0; i < 3; ++i )
+	{
+		painter.drawLine(i * 5, 0, i * 5, 100);
+	}
+
+	painter.drawText(0, fontMetrics().height(), "ABC123");
+}
+
+unsigned int UVQtDynamicText::getNumberLines() const
+{
+	return height() / fontMetrics().height();
+	//return m_numberLines;
+}
+
+void UVQtDynamicText::doPaintEvent(QPaintEvent *event, QPainter &painter)
 {
 	printf("***UVQtDynamicText::doPaintEvent()\n");
 	printf("paint with %s\n", m_start.m_impl->toString().c_str());
 	
+printf("pos x: %d, y: %d\n", pos().x(), pos().y());
+printf("basic x: %d, y: %d\n", x(), y());
+printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
 	//It paints the entire window, but the title bar cuts us off
 	//Is this just expected?
-	int curX = event->rect().x();
+	int curX = 0;
+	//int curX = event->rect().x();
+	//int curX = event->rect().x() + geometry().x();
 	//FIXME: why do I need this delta not to get cut off?
 	//setting viewport margin shifts, but still results in cutoff
-	int curY = event->rect().y() + 20;
+	//int curY = event->rect().y();
+	//int curY = event->rect().y() + geometry().y();
+	//Text painting is at baseline, so "skip" a line
+	int curY = fontMetrics().height();
+	printf("curX/Y: %d/%d\n", curX, curY);
 	
-	QPainter painter(this);
+	//QPainter painter(this);
 
 	//printf("begin start copy\n");
 	//wtf why doesn't this use the overloaded oper?
@@ -244,7 +282,7 @@ void UVQtDynamicText::doPaintEvent(QPaintEvent *event)
 	iter.operator=(m_start);
 	//printf("copy done, old iter m_impl 0x%08X new 0x%08X\n", (int)m_start.m_impl, (int)iter.m_impl); 
 //exit(1);
-	for( unsigned int curLines = 0; curLines < m_numberLines; ++curLines )
+	for( unsigned int curLines = 0; curLines < getNumberLines(); ++curLines )
 	{
 		std::string curLine;
 
@@ -321,12 +359,72 @@ UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, 
 	m_viewportShadow->show();
 }
 
+/*
+void UVQtDynamicText::paintEvent(QPaintEvent *event)
+{
+	printf("UVQtDynamicText::paintEvent()\n");
+}
+
+void UVQtDynamicText::resizeEvent(QResizeEvent *event)
+{
+	printf("UVQtDynamicText::resizeEvent()\n");
+}
+*/
+
+void UVQtScrollableDynamicText::resizeEvent(QResizeEvent *event)
+{
+	/*
+	Is there any reason to use the resize information in the event vs querying from the widget?
+	*/
+	printf("UVQtScrollableDynamicText::resizeEvent()\n");
+	//Keep 2 common lines per step, or a minimum of 3 lines for it to remain useful
+	int pageStep = uvd_max(3, (int)m_viewportShadow->getNumberLines() - 2);
+	printf("page step: %d\n", pageStep);
+	verticalScrollBar()->setPageStep(pageStep);
+}
+
 void UVQtScrollableDynamicText::paintEvent(QPaintEvent *event)
 {
+	/*
+	The event seems to have to be on the viewport
+	Creating it on the scrollable widget does not work
+	Moreover, the viewport itself doesnt' seem to get paint events
+	Why doesn't the widget get the paint events instead then?	
+		Also, it seems the geometry is incorrect if we construct the painter in the viewport class
+	
+	"Note: The y-position is used as the baseline of the font."
+	missed that in the documentation, was found out experimentally
+	*/
+
 	printf("UVQtScrollableDynamicText::paintEvent()\n");
-    QAbstractScrollArea::paintEvent(event);
+	//QAbstractScrollArea::paintEvent(event);
+
+	printf("constructing painter\n");
+	//Incorrect
+	//QPainter painter(this);
+  	//Correct
+   	QPainter painter(viewport());
+	printf("painter made\n");
 
 	UVDQtPrintRect(event->rect());
+printf("pos x: %d, y: %d\n", pos().x(), pos().y());
+printf("basic x: %d, y: %d\n", x(), y());
+printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
+
+	/*
+	if( true )
+	{
+		for( int i = 0; i < 3; ++i )
+		{
+			painter.drawLine(0, i * 5, 100, i * 5);
+		}
+		for( int i = 0; i < 3; ++i )
+		{
+			painter.drawLine(i * 5, 0, i * 5, 100);
+		}
+	}
+	*/
+
 	//Will this clip for us?
 	//current tests are only single widget, so hard to tell
 	//Also paint even makes this harder to tell
@@ -340,7 +438,10 @@ void UVQtScrollableDynamicText::paintEvent(QPaintEvent *event)
 	//CPU usage spikes if this is called
 	//Why does updating the viewport cause a repaint on the parent widget?
 	//viewport()->update();
-	m_viewportShadow->doPaintEvent(event);
+	
+	m_viewportShadow->doPaintEvent(event, painter);
+	//m_viewportShadow->doPaintEventTest(event);
+	printf("paint done\n\n");
 }
 
 void UVQtScrollableDynamicText::scrollContentsBy(int dx, int dy)
@@ -411,11 +512,11 @@ void UVQtScrollableDynamicText::keyPressEvent(QKeyEvent *event)
 		break;
 	case UVQT_KEY_PAGEUP:
 		printf("UVQT_KEY_PAGEUP\n");
-		UV_DEBUG(scrollUnits(-3));
+		UV_DEBUG(scrollUnits(-verticalScrollBar()->pageStep()));
 		break;
 	case UVQT_KEY_PAGEDOWN:
 		printf("UVQT_KEY_PAGEDOWN\n");
-		UV_DEBUG(scrollUnits(3));
+		UV_DEBUG(scrollUnits(verticalScrollBar()->pageStep()));
 		break;
 	default:
 		return;

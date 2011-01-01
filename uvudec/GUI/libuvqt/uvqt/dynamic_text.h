@@ -136,12 +136,23 @@ public:
 	//For scrollbar positions
 	unsigned int getMinOffset();
 	unsigned int getMaxOffset();
-	void doPaintEvent(QPaintEvent *event);
+	
+	unsigned int getNumberLines() const;
+	void doPaintEvent(QPaintEvent *event, QPainter &painter);
+	void doPaintEventTest(QPaintEvent *event);
 	virtual uv_err_t changePositionByDelta(int delta);
 	virtual uv_err_t changePositionToAbsolute(unsigned int offset, unsigned int index);
 
 	uv_err_t setData(UVQtDynamicTextData *data);
 
+protected:
+	/*
+	//A test, never gets called
+	void paintEvent(QPaintEvent *event);
+	//this either
+	void resizeEvent(QResizeEvent *event);
+	*/
+	
 public:
 	//Primary position
 	//unsigned int m_startOffset;
@@ -150,7 +161,7 @@ public:
 	UVQtDynamicTextData::iterator m_start;
 	
 	//How many lines we should display
-	unsigned int m_numberLines;
+	//unsigned int m_numberLines;
 	//For fetching actual data
 	UVQtDynamicTextData *m_textData;
 };
@@ -174,6 +185,9 @@ public:
 
 protected:
 	void paintEvent(QPaintEvent *event);
+	//Seems this gets called when the program starts up
+	//Is that reliable?
+	void resizeEvent(QResizeEvent *event);
 	void scrollContentsBy(int dx, int dy);
 	void keyPressEvent(QKeyEvent *event);
 
