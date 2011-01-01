@@ -363,6 +363,7 @@ void UVQtScrollableDynamicText::resizeEvent(QResizeEvent *event)
 	Is there any reason to use the resize information in the event vs querying from the widget?
 	*/
 	printf("UVQtScrollableDynamicText::resizeEvent()\n");
+	UV_ASSERT_VOID(m_viewportShadow);
 	//Keep 2 common lines per step, or a minimum of 3 lines for it to remain useful
 	int pageStep = uvd_max(3, (int)m_viewportShadow->getNumberLines() - 2);
 	printf("page step: %d\n", pageStep);

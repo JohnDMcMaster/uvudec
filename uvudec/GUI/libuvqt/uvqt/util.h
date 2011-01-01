@@ -8,6 +8,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #define UVQT_UTIL_H
 
 #include <QWidget>
+#include "uvd/util/util.h"
 
 //Are these defined somewhere?
 #define UVQT_KEY_LEFT		0x01000012
@@ -18,6 +19,8 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #define UVQT_KEY_PAGEDOWN	0x01000017
 
 void UVDQtPrintRect(QRect rect);
+
+#define UV_ASSERT_VOID(x)	if( !x ) { printf("ERROR %s@%s:%d: assertion failed\n", __FUNCTION__, __FILE__, __LINE__); fflush(stdout); UVD_PRINT_STACK(); exit(1); }
 
 #endif
 

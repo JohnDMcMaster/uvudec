@@ -18,6 +18,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 
 */
 
+#include "uvqt/dynamic_text_plugin_impl.h"
 #include "uvd/assembly/function.h"
 #include "uvd/project/file_extensions.h"
 #include "uvd/language/language.h"
@@ -60,6 +61,9 @@ UVDMainWindow::~UVDMainWindow()
 uv_err_t UVDMainWindow::init()
 {
 	//printf("mainwindow init, this: 0x%08X\n", this);
+
+	m_mainWindow.hexdumpDynamicText->setData(new UVQtDynamicTextDataPluginImpl());
+	m_mainWindow.disassemblyDynamicText->setData(new UVQtDynamicTextDataPluginImpl());
 
 	m_projectFileNameDialogFilter = tr("uvudec oject (*.upj);;All Files (*)");
 
