@@ -24,6 +24,9 @@ USING_LIB_UVUDEC=Y
 USING_LIB_JANSSON=Y
 
 PHONY += libuvqt
+LIBS += -luvqtdesigner
+LDFLAGS+= -Llibuvqt
+INCLUDES += -Ilibuvqt
 
 ROOT_DIR=..
 include $(ROOT_DIR)/Makefile.mk

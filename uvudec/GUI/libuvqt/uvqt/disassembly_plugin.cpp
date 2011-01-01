@@ -86,6 +86,6 @@ QString UVQtDisassemblyPlugin::domXml() const
 
 QString UVQtDisassemblyPlugin::includeFile() const
 {
-    return "uvdqt/disassembly.h";
+    return "uvqt/disassembly.h";
 }
 

@@ -179,6 +179,8 @@ class QDESIGNER_WIDGET_EXPORT UVQtScrollableDynamicText : public QAbstractScroll
     Q_OBJECT
 
 public:
+	//QtDesigner requires this form for .ui generation
+	UVQtScrollableDynamicText(QWidget *parent = NULL);
 	UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent = NULL);
 	uv_err_t setData(UVQtDynamicTextData *data);
 	uv_err_t scrollUnits(int units);

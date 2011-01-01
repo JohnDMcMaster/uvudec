@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>782</width>
-    <height>518</height>
+    <width>860</width>
+    <height>698</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -116,7 +116,7 @@
         <item>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
-           <widget class="UVQtDisassembly" name="scrollableDisassembly">
+           <widget class="UVQtScrollableDynamicText" name="disassemblyDynamicText">
             <property name="toolTip">
              <string>Binary hexdump</string>
             </property>
@@ -135,18 +135,12 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="UVQtScrollableHexdump" name="scrollableHexdump">
-          <property name="minimumSize">
-           <size>
-            <width>740</width>
-            <height>0</height>
-           </size>
-          </property>
+         <widget class="UVQtScrollableDynamicText" name="hexdumpDynamicText">
           <property name="toolTip">
            <string>Binary hexdump</string>
           </property>
           <property name="whatsThis">
-           <string>Hexdump displays hexidecimal and ASCII of a binary.</string>
+           <string>Display disassembly.</string>
           </property>
          </widget>
         </item>
@@ -158,7 +152,7 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QListWidget" name="symbolsListWidget">
+         <widget class="QListWidget" name="symbolsList">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -197,7 +191,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>782</width>
+     <width>860</width>
      <height>30</height>
     </rect>
    </property>
@@ -394,15 +388,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>UVQtScrollableHexdump</class>
+   <class>UVQtScrollableDynamicText</class>
    <extends>QFrame</extends>
-   <header>uvdqt/hexdump.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>UVQtDisassembly</class>
-   <extends>QWidget</extends>
-   <header>uvdqt/disassembly.h</header>
+   <header>uvqt/dynamic_text.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

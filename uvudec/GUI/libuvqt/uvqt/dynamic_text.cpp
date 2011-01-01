@@ -334,29 +334,15 @@ unsigned int UVQtDynamicText::getMaxOffset()
 UVQtScrollableDynamicText
 */
 
+UVQtScrollableDynamicText::UVQtScrollableDynamicText(QWidget *parent)
+{
+	m_viewportShadow = NULL;
+	m_verticalScrollbarValueShadow = 0;
+}
+	
 UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent) : QAbstractScrollArea(parent)
 {
-	m_viewportShadow = new UVQtDynamicText(data, this);
-	UVQtDynamicTextDataPluginImpl::iterator_impl *iter_impl = dynamic_cast<UVQtDynamicTextDataPluginImpl::iterator_impl *>(m_viewportShadow->m_start.m_impl);
-	printf("iter impl: 0x%08X\n", (int)iter_impl->m_dataImpl);
-	setViewport(m_viewportShadow);
-	//m_viewportShadow->resize(320, 240);
-	m_viewportShadow->resize(sizeHint());
-	//Title bar is blocking top of widget?
-	//not an issue once we got our own area
-	//setViewportMargins(0, 20, 0, 0);
-
-	//horizontalScrollBar()->setRange(0, 20);
-	//horizontalScrollBar()->setPageStep(1);
-	//doesn't work because data wasn't set yet
-	verticalScrollBar()->setRange(m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
-	verticalScrollBar()->setPageStep(3);
-
-	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
-	verticalScrollBar()->setSliderPosition(m_viewportShadow->m_start.offset());
-
-	//updateWidgetPosition();
-	m_viewportShadow->show();
+	setData(data);
 }
 
 /*
@@ -468,6 +454,7 @@ void UVQtScrollableDynamicText::scrollContentsBy(int dx, int dy)
 
 uv_err_t UVQtDynamicText::setData(UVQtDynamicTextData *data)
 {
+
 	//printf("start set, data: 0x%08X\n", (int)data);
 	fflush(stdout);
 	uv_assert_ret(data);
@@ -482,7 +469,28 @@ uv_err_t UVQtDynamicText::setData(UVQtDynamicTextData *data)
 
 uv_err_t UVQtScrollableDynamicText::setData(UVQtDynamicTextData *data)
 {
-	uv_assert_ret(m_viewportShadow);
+	m_viewportShadow = new UVQtDynamicText(data, this);
+	UVQtDynamicTextDataPluginImpl::iterator_impl *iter_impl = dynamic_cast<UVQtDynamicTextDataPluginImpl::iterator_impl *>(m_viewportShadow->m_start.m_impl);
+	printf("iter impl: 0x%08X\n", (int)iter_impl->m_dataImpl);
+	setViewport(m_viewportShadow);
+	//m_viewportShadow->resize(320, 240);
+	m_viewportShadow->resize(sizeHint());
+	//Title bar is blocking top of widget?
+	//not an issue once we got our own area
+	//setViewportMargins(0, 20, 0, 0);
+
+	//horizontalScrollBar()->setRange(0, 20);
+	//horizontalScrollBar()->setPageStep(1);
+	//doesn't work because data wasn't set yet
+	verticalScrollBar()->setRange(m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
+	verticalScrollBar()->setPageStep(3);
+
+	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
+	verticalScrollBar()->setSliderPosition(m_viewportShadow->m_start.offset());
+
+	//updateWidgetPosition();
+	m_viewportShadow->show();
+
 	return UV_DEBUG(m_viewportShadow->setData(data));
 }
 

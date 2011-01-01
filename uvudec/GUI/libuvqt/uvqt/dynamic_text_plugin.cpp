@@ -92,6 +92,6 @@ QString UVQtScrollableDynamicTextPlugin::domXml() const
 
 QString UVQtScrollableDynamicTextPlugin::includeFile() const
 {
-	return "uvdqt/dynamic_text.h";
+	return "uvqt/dynamic_text.h";
 }
 

@@ -38,9 +38,9 @@ public slots:
 	uv_err_t newFunction(QString functionName);
 	uv_err_t deleteFunction(QString functionName);
 	//Inserts a newline before the current text if the text area is not empty
-	uv_err_t appendDisassembledLine(QString line);
+	//uv_err_t appendDisassembledLine(QString line);
 	//Don't think this inserts a newline
-	uv_err_t appendDisassembledHTML(QString html);
+	//uv_err_t appendDisassembledHTML(QString html);
 	uv_err_t appendLogLine(QString line);
 
 private slots:
@@ -52,7 +52,7 @@ private slots:
 	uv_err_t on_actionClose_triggered();
 	uv_err_t on_actionAbout_triggered();
 
-	uv_err_t on_symbolsListWidget_itemClicked(QListWidgetItem *item);
+	uv_err_t on_symbolsList_itemClicked(QListWidgetItem *item);
 
 public:
 	Ui::UVDMainWindow m_mainWindow;

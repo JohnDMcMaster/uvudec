@@ -88,6 +88,7 @@ uv_err_t UVDMainWindow::init()
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDMainWindow::assemblyDisplayTests()
 {
 	appendDisassembledLine("<A href=\"#anchor\">to anchor</A>");
@@ -166,13 +167,14 @@ uv_err_t UVDMainWindow::assemblyDisplayTests()
 
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVDMainWindow::on_actionNew_triggered()
 {
 	printf("%s\n", __FUNCTION__);
 	
 	printf("adding an item\n");
-	m_mainWindow.symbolsListWidget->addItem(tr("An item!"));
+	m_mainWindow.symbolsList->addItem(tr("An item!"));
 	return UV_ERR_OK;
 }
 
@@ -224,7 +226,7 @@ uv_err_t UVDMainWindow::rebuildFunctionList()
 
 	//Save old selected?
 	//uv_assert_err_ret(updateFunctionList());
-	m_mainWindow.symbolsListWidget->clear();
+	m_mainWindow.symbolsList->clear();
 	for( std::set<UVDBinaryFunction *>::iterator iter = analyzer->m_functions.begin();
 			iter != analyzer->m_functions.end(); ++iter )
 	{
@@ -242,7 +244,7 @@ uv_err_t UVDMainWindow::newFunction(QString functionName)
 {
 	ASSERT_THREAD();
 	//printf("new func\n");
-	m_mainWindow.symbolsListWidget->addItem(functionName);
+	m_mainWindow.symbolsList->addItem(functionName);
 	return UV_ERR_OK;
 }
 
@@ -250,7 +252,7 @@ uv_err_t UVDMainWindow::deleteFunction(QString functionName)
 {
 	ASSERT_THREAD();
 	//FIXME
-	//m_mainWindow.symbolsListWidget->addItem(QString::fromStdString(functionName));
+	//m_mainWindow.symbolsList->addItem(QString::fromStdString(functionName));
 	return UV_ERR_OK;
 }
 
@@ -283,23 +285,24 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 	uv_assert_err_ret(m_project->setFileName(fileName));
 	uv_assert_err_ret(m_project->init(m_argc, m_argv));
 	//hmm not working
-	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembledMonospaced(QString)),
-			this, SLOT(appendDisassembledLine(QString))));
-	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembledHTML(QString)),
-			this, SLOT(appendDisassembledHTML(QString))));
+	//uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembledMonospaced(QString)),
+	//		this, SLOT(appendDisassembledLine(QString))));
+	//uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(lineDisassembledHTML(QString)),
+	//		this, SLOT(appendDisassembledHTML(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
 			this, SLOT(newFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(deleteFunction(QString)),
 			this, SLOT(deleteFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(printLog(QString)),
 			this, SLOT(appendLogLine(QString))));
-	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(setDisassemblyAreaActive(bool)),
-			m_mainWindow.disassemblyArea, SLOT(setVisible(bool))));
+	//uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(setDisassemblyAreaActive(bool)),
+	//		m_mainWindow.disassemblyArea, SLOT(setVisible(bool))));
 	m_analysisThread->queueAnalysis(new UVDAnalysisActionBegin());
 
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDMainWindow::appendDisassembledLine(QString line)
 {
 	ASSERT_THREAD();
@@ -314,7 +317,9 @@ uv_err_t UVDMainWindow::appendDisassembledLine(QString line)
 	//usleep(1000);
 	return UV_ERR_OK;
 }
+*/
 
+/*
 uv_err_t UVDMainWindow::appendDisassembledHTML(QString html)
 {
 	ASSERT_THREAD();
@@ -323,6 +328,7 @@ uv_err_t UVDMainWindow::appendDisassembledHTML(QString html)
 	m_mainWindow.disassemblyArea->insertHtml(html);
 	return UV_ERR_OK;
 }
+*/
 
 uv_err_t UVDMainWindow::appendLogLine(QString line)
 {
@@ -375,7 +381,7 @@ uv_err_t UVDMainWindow::on_actionPrint_triggered()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDMainWindow::on_symbolsListWidget_itemClicked(QListWidgetItem *item)
+uv_err_t UVDMainWindow::on_symbolsList_itemClicked(QListWidgetItem *item)
 {
 	std::string text;
 	

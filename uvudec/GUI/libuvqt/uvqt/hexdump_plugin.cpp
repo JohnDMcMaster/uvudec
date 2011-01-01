@@ -90,6 +90,6 @@ QString UVQtHexdumpPlugin::domXml() const
 
 QString UVQtHexdumpPlugin::includeFile() const
 {
-    return "uvdqt/hexdump.h";
+    return "uvqt/hexdump.h";
 }
 
