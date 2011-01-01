@@ -10,13 +10,13 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include <QtDesigner/QtDesigner>
 #include <QtCore/qplugin.h>
 
-class UVQtDynamicTextPlugin : public QObject, public QDesignerCustomWidgetInterface
+class UVQtScrollableDynamicTextPlugin : public QObject, public QDesignerCustomWidgetInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 
 public:
-    UVQtDynamicTextPlugin(QObject *parent = 0);
+    UVQtScrollableDynamicTextPlugin(QObject *parent = 0);
 
     bool isContainer() const;
     bool isInitialized() const;

@@ -213,6 +213,7 @@ UVQtDynamicTextDataPluginImpl
 
 UVQtDynamicTextDataPluginImpl::UVQtDynamicTextDataPluginImpl()
 {
+	printf("UVQtDynamicTextDataPluginImpl::UVQtDynamicTextDataPluginImpl()\n");
 	m_offsetMin = 1;
 	m_offsetMax = 20;
 	m_numberOffsetIndexes = 3;

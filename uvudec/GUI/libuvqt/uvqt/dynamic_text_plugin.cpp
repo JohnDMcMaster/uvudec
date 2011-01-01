@@ -9,14 +9,16 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvqt/dynamic_text_plugin_impl.h"
 #include <QtPlugin>
 
-UVQtDynamicTextPlugin::UVQtDynamicTextPlugin(QObject *parent)
+UVQtScrollableDynamicTextPlugin::UVQtScrollableDynamicTextPlugin(QObject *parent)
 	: QObject(parent)
 {
+	printf("UVQtScrollableDynamicTextPlugin::UVQtScrollableDynamicTextPlugin()\n");
 	m_initialized = false;
 }
 
-void UVQtDynamicTextPlugin::initialize(QDesignerFormEditorInterface * /* core */)
+void UVQtScrollableDynamicTextPlugin::initialize(QDesignerFormEditorInterface * /* core */)
 {
+	printf("UVQtScrollableDynamicTextPlugin::initialize()\n");
 	if( m_initialized )
 	{
 		return;
@@ -25,50 +27,51 @@ void UVQtDynamicTextPlugin::initialize(QDesignerFormEditorInterface * /* core */
 	m_initialized = true;
 }
 
-bool UVQtDynamicTextPlugin::isInitialized() const
+bool UVQtScrollableDynamicTextPlugin::isInitialized() const
 {
 	return m_initialized;
 }
 
-QWidget *UVQtDynamicTextPlugin::createWidget(QWidget *parent)
+QWidget *UVQtScrollableDynamicTextPlugin::createWidget(QWidget *parent)
 {
-	return new UVQtDynamicText(new UVQtDynamicTextDataPluginImpl(), parent);
+	printf("UVQtScrollableDynamicTextPlugin::createWidget()\n");
+	return new UVQtScrollableDynamicText(new UVQtDynamicTextDataPluginImpl(), parent);
 }
 
-QString UVQtDynamicTextPlugin::name() const
+QString UVQtScrollableDynamicTextPlugin::name() const
 {
-	return "UVQtDynamicText";
+	return "UVQtScrollableDynamicText";
 }
 
-QString UVQtDynamicTextPlugin::group() const
+QString UVQtScrollableDynamicTextPlugin::group() const
 {
 	return "UVNet";
 }
 
-QIcon UVQtDynamicTextPlugin::icon() const
+QIcon UVQtScrollableDynamicTextPlugin::icon() const
 {
 	return QIcon();
 }
 
-QString UVQtDynamicTextPlugin::toolTip() const
+QString UVQtScrollableDynamicTextPlugin::toolTip() const
 {
 	return "";
 }
 
-QString UVQtDynamicTextPlugin::whatsThis() const
+QString UVQtScrollableDynamicTextPlugin::whatsThis() const
 {
 	return "";
 }
 
-bool UVQtDynamicTextPlugin::isContainer() const
+bool UVQtScrollableDynamicTextPlugin::isContainer() const
 {
 	return false;
 }
 
-QString UVQtDynamicTextPlugin::domXml() const
+QString UVQtScrollableDynamicTextPlugin::domXml() const
 {
 	return "<ui language=\"c++\">\n"
-		   " <widget class=\"UVQtDynamicText\" name=\"dynamicText\">\n"
+		   " <widget class=\"UVQtScrollableDynamicText\" name=\"dynamicText\">\n"
 		   "  <property name=\"geometry\">\n"
 		   "   <rect>\n"
 		   "	<x>0</x>\n"
@@ -87,7 +90,7 @@ QString UVQtDynamicTextPlugin::domXml() const
 		   "</ui>\n";
 }
 
-QString UVQtDynamicTextPlugin::includeFile() const
+QString UVQtScrollableDynamicTextPlugin::includeFile() const
 {
 	return "uvdqt/dynamic_text.h";
 }

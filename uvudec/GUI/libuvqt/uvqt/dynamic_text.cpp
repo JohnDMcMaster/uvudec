@@ -210,7 +210,7 @@ QSize UVQtDynamicText::sizeHint() const
 	//QSize ret = QSize((7 + m_bytesPerRow * 5 + m_bytesPerRow / m_bytesPerSubRow + 2) * fontMetrics().width('0'),
 	QSize ret = QSize(300,
 			fontMetrics().height() * getNumberLines());
-	//printf("UVQtDynamicText::sizeHint() = (width=%d, height=%d)\n", ret.width(), ret.height());
+	printf("UVQtDynamicText::sizeHint() = (width=%d, height=%d)\n", ret.width(), ret.height());
 	return ret;
 }
 
