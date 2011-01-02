@@ -20,9 +20,6 @@ UVQtHexdump
 
 UVQtHexdump::UVQtHexdump(QWidget *parent) : UVQtScrollableDynamicText(parent)
 {
-	QFont font;
-	font.setFamily(QString::fromUtf8("Courier [unknown]"));
-	setFont(font);
 }
 
 uv_err_t UVQtHexdump::setData(UVDData *data)
@@ -33,6 +30,12 @@ uv_err_t UVQtHexdump::setData(UVDData *data)
 	//If we called setDynamicData() before m_data was valid,
 	//it would blow up since we wouldn't be able to query the ranges
 	setDynamicData(hexdumpData);
+
+	//Now that the viewport is setup, we can set its font
+	QFont font;
+	font.setFamily(QString::fromUtf8("Courier"));
+	m_viewportShadow->setFont(font);
+
 	return UV_ERR_OK;
 }
 

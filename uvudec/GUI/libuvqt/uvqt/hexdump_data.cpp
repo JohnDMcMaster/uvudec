@@ -45,7 +45,7 @@ uv_err_t UVQtHexdumpData::begin(unsigned int offset, unsigned int index, UVQtDyn
 uv_err_t UVQtHexdumpData::end(iterator *out)
 {
 	UVQtHexdumpData::iterator_impl *iter_impl = new UVQtHexdumpData::iterator_impl(this, 0);
-	printf("data size: %d\n", m_data->size());
+	//printf("data size: %d\n", m_data->size());
 	iter_impl->m_offset = m_data->size();
 	UVQtDynamicTextData::iterator iter = UVQtDynamicTextData::iterator(iter_impl);
 	*out = iter;

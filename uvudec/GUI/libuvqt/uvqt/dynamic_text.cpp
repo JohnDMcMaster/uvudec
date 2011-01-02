@@ -192,10 +192,6 @@ UVQtDynamicText
 
 UVQtDynamicText::UVQtDynamicText(UVQtDynamicTextData *textData, QWidget *parent) : QWidget(parent)
 {
-	QFont font;
-	font.setFamily(QString::fromUtf8("Courier [unknown]"));
-	setFont(font);
-
 	//m_startOffset = 0;
 	//m_startIndex = 0;
 	//UV_DEBUG(m_textData->begin(0, 0, &iter));
@@ -229,9 +225,9 @@ void UVQtDynamicText::doPaintEventTest(QPaintEvent *event)
 	printf("painter made\n");
 
 	UVDQtPrintRect(event->rect());
-printf("pos x: %d, y: %d\n", pos().x(), pos().y());
-printf("basic x: %d, y: %d\n", x(), y());
-printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
+	printf("pos x: %d, y: %d\n", pos().x(), pos().y());
+	printf("basic x: %d, y: %d\n", x(), y());
+	printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
 
 	for( int i = 0; i < 3; ++i )
 	{
@@ -256,9 +252,9 @@ void UVQtDynamicText::doPaintEvent(QPaintEvent *event, QPainter &painter)
 	printf("***UVQtDynamicText::doPaintEvent()\n");
 	printf("paint with %s\n", m_start.m_impl->toString().c_str());
 	
-printf("pos x: %d, y: %d\n", pos().x(), pos().y());
-printf("basic x: %d, y: %d\n", x(), y());
-printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
+	//printf("pos x: %d, y: %d\n", pos().x(), pos().y());
+	//printf("basic x: %d, y: %d\n", x(), y());
+	//printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
 	//It paints the entire window, but the title bar cuts us off
 	//Is this just expected?
 	int curX = 0;
@@ -270,7 +266,7 @@ printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
 	//int curY = event->rect().y() + geometry().y();
 	//Text painting is at baseline, so "skip" a line
 	int curY = fontMetrics().height();
-	printf("curX/Y: %d/%d\n", curX, curY);
+	//printf("curX/Y: %d/%d\n", curX, curY);
 	
 	//QPainter painter(this);
 

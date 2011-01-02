@@ -83,7 +83,7 @@ unsigned int UVQtHexdumpData::iterator_impl::hexdumpHalfRow(uint32_t start, std:
 		uint32_t index = start + col;
 		//printf("index: %d, size: %d\n", index, size());
 		uint8_t c = read(index);
-printf("read %c (%d) @ 0x%04X\n", c, (int)c, index);
+		//printf("read %c (%d) @ 0x%04X\n", c, (int)c, index);
 		
 		(void)c;
 		ret += UVDSprintf(" %02X ", (unsigned int)c);
@@ -153,7 +153,6 @@ uv_err_t UVQtHexdumpData::iterator_impl::get(std::string &ret)
 	}
 
 	curLine += "|";
-printf("%s\n", curLine.c_str());
 	ret = curLine;
 	return UV_ERR_OK;
 }
@@ -170,7 +169,7 @@ unsigned int UVQtHexdumpData::iterator_impl::maxValidOffset()
 		return 0;
 	}
 	unsigned int maxIndex = size() - 1;
-	printf("size: %d\n", size());
+	//printf("size: %d\n", size());
 	return maxIndex - maxIndex % m_dataImpl->m_bytesPerRow;
 }
 
@@ -203,7 +202,7 @@ uv_err_t UVQtHexdumpData::iterator_impl::next()
 	//Advancing to end()?
 	if( m_offset >= size() - m_dataImpl->m_bytesPerRow )
 	{
-printf("next overflow, m_offset: %d, size: %d, bytes per row: %d\n", m_offset, size(), m_dataImpl->m_bytesPerRow);
+		//printf("next overflow, m_offset: %d, size: %d, bytes per row: %d\n", m_offset, size(), m_dataImpl->m_bytesPerRow);
 		m_offset = size();
 	}
 	else
@@ -216,7 +215,7 @@ printf("next overflow, m_offset: %d, size: %d, bytes per row: %d\n", m_offset, s
 
 uv_err_t UVQtHexdumpData::iterator_impl::changePositionByLineDelta(int delta)
 {
-printf("**got a delta: %d\n", delta);
+	//printf("**got a delta: %d\n", delta);
 	int offsetDelta = scrollbarPositionDeltaToOffsetDelta(delta);
 	if( delta > 0 )
 	{
@@ -241,7 +240,7 @@ printf("**got a delta: %d\n", delta);
 			m_offset += offsetDelta;
 		}
 	}
-	printf("end offset: %d\n", m_offset);
+	//printf("end offset: %d\n", m_offset);
 	return UV_ERR_OK;
 }
 
@@ -257,7 +256,7 @@ int UVQtHexdumpData::iterator_impl::compare(const UVQtDynamicTextData::iterator_
 	//Should be of this type
 	const iterator_impl *other = static_cast<const iterator_impl *>(otherIn);
 	
-	printf("compare %d to %d\n", m_offset, other->m_offset);
+	//printf("compare %d to %d\n", m_offset, other->m_offset);
 	return m_offset - other->m_offset;
 }
 
