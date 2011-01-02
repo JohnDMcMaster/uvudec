@@ -57,6 +57,12 @@ public:
 		Got annoyed because of all of the shadow()->m_data, casts, etc
 	auto_ptr<T> isn't really right either
 	Really what was going to happen is was going to have to wrap ref count, but thats already done for us
+	
+	All of these are in units of lines, not w/e internal data representation scheme it might use
+	This is required so that slider bar updates work correctly when we vector to a location
+		and can only go to valid locations
+		Although if we implement a goto keyboard shortcut sort of thing, it should be in natural units
+		might get passed in as a string and translated to proper indexes
 	*/
 	class iterator_impl
 	{
@@ -74,9 +80,9 @@ public:
 		//we would not want to allow advancing to the very end
 		virtual uv_err_t next() = 0;
 		//Try to process in the scroll class somehow
-		virtual uv_err_t changePositionByDelta(int delta) = 0;
+		virtual uv_err_t changePositionByLineDelta(int delta) = 0;
 		//Set the position absolutly
-		virtual uv_err_t changePositionToAbsolute(unsigned int offset, unsigned int index) = 0;
+		virtual uv_err_t changePositionToLine(unsigned int offset, unsigned int index) = 0;
 		//For debugging
 		virtual std::string toString();
 	public:
@@ -103,9 +109,9 @@ public:
 		//What about making sure we have at least one page viewable?
 		//we would not want to allow advancing to the very end
 		//Try to process in the scroll class somehow
-		uv_err_t changePositionByDelta(int delta);
+		uv_err_t changePositionByLineDelta(int delta);
 		//Set the position absolutly
-		uv_err_t changePositionToAbsolute(unsigned int offset, unsigned int index);
+		uv_err_t changePositionToLine(unsigned int offset, unsigned int index);
 
 	public:
 		iterator_impl *m_impl;
@@ -140,10 +146,10 @@ public:
 	unsigned int getNumberLines() const;
 	void doPaintEvent(QPaintEvent *event, QPainter &painter);
 	void doPaintEventTest(QPaintEvent *event);
-	virtual uv_err_t changePositionByDelta(int delta);
-	virtual uv_err_t changePositionToAbsolute(unsigned int offset, unsigned int index);
+	virtual uv_err_t changePositionByLineDelta(int delta);
+	virtual uv_err_t changePositionToLine(unsigned int offset, unsigned int index);
 
-	uv_err_t setData(UVQtDynamicTextData *data);
+	uv_err_t setDynamicData(UVQtDynamicTextData *data);
 
 protected:
 	/*
@@ -182,7 +188,7 @@ public:
 	//QtDesigner requires this form for .ui generation
 	UVQtScrollableDynamicText(QWidget *parent = NULL);
 	UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent = NULL);
-	uv_err_t setData(UVQtDynamicTextData *data);
+	uv_err_t setDynamicData(UVQtDynamicTextData *data);
 	uv_err_t scrollUnits(int units);
 
 protected:

@@ -55,13 +55,13 @@ uv_err_t UVQtDynamicTextData::iterator_impl::next()
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-uv_err_t UVQtDynamicTextData::iterator_impl::changePositionByDelta(int delta)
+uv_err_t UVQtDynamicTextData::iterator_impl::changePositionByLineDelta(int delta)
 {
 	(void)delta;
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-uv_err_t UVQtDynamicTextData::iterator_impl::changePositionToAbsolute(unsigned int offset, unsigned int index)
+uv_err_t UVQtDynamicTextData::iterator_impl::changePositionToLine(unsigned int offset, unsigned int index)
 {
 	(void)offset;
 	(void)index;
@@ -146,16 +146,16 @@ uv_err_t UVQtDynamicTextData::iterator::next()
 	return UV_DEBUG(m_impl->next());
 }
 
-uv_err_t UVQtDynamicTextData::iterator::changePositionByDelta(int delta)
+uv_err_t UVQtDynamicTextData::iterator::changePositionByLineDelta(int delta)
 {
 	uv_assert_ret(m_impl);
-	return UV_DEBUG(m_impl->changePositionByDelta(delta));
+	return UV_DEBUG(m_impl->changePositionByLineDelta(delta));
 }
 
-uv_err_t UVQtDynamicTextData::iterator::changePositionToAbsolute(unsigned int offset, unsigned int index)
+uv_err_t UVQtDynamicTextData::iterator::changePositionToLine(unsigned int offset, unsigned int index)
 {
 	uv_assert_ret(m_impl);
-	return UV_DEBUG(m_impl->changePositionToAbsolute(offset, index));
+	return UV_DEBUG(m_impl->changePositionToLine(offset, index));
 }
 
 unsigned int UVQtDynamicTextData::iterator::offset()
@@ -201,7 +201,7 @@ UVQtDynamicText::UVQtDynamicText(UVQtDynamicTextData *textData, QWidget *parent)
 	//UV_DEBUG(m_textData->begin(0, 0, &iter));
 	//m_numberLines = 10;
 	//m_textData = NULL;
-	setData(textData);
+	setDynamicData(textData);
 }
 
 QSize UVQtDynamicText::sizeHint() const 
@@ -306,14 +306,14 @@ printf("geomtry x: %d, y: %d\n", geometry().x(), geometry().y());
 	}
 }
 
-uv_err_t UVQtDynamicText::changePositionByDelta(int delta)
+uv_err_t UVQtDynamicText::changePositionByLineDelta(int delta)
 {
-	return UV_DEBUG(m_start.changePositionByDelta(delta));
+	return UV_DEBUG(m_start.changePositionByLineDelta(delta));
 }
 
-uv_err_t UVQtDynamicText::changePositionToAbsolute(unsigned int offset, unsigned int index)
+uv_err_t UVQtDynamicText::changePositionToLine(unsigned int offset, unsigned int index)
 {
-	return UV_DEBUG(m_start.changePositionToAbsolute(offset, index));
+	return UV_DEBUG(m_start.changePositionToLine(offset, index));
 }
 
 unsigned int UVQtDynamicText::getMinOffset()
@@ -342,7 +342,7 @@ UVQtScrollableDynamicText::UVQtScrollableDynamicText(QWidget *parent)
 	
 UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent) : QAbstractScrollArea(parent)
 {
-	setData(data);
+	setDynamicData(data);
 }
 
 /*
@@ -438,13 +438,13 @@ void UVQtScrollableDynamicText::scrollContentsBy(int dx, int dy)
 	printf("\nUVQtScrollableDynamicText::scrollContentsBy(dx = %d, dy = %d)\n", dx, dy);
 	printf("start scroll at %s\n", m_viewportShadow->m_start.m_impl->toString().c_str());
 	//m_viewportShadow->m_startAddress -= dy;
-	//UV_DEBUG(m_viewportShadow->changePositionByDelta(-dy));
+	//UV_DEBUG(m_viewportShadow->changePositionByLineDelta(-dy));
 	int currentAbsoluate = verticalScrollBar()->value();
 	printf("currentAbsolute: %d\n", currentAbsoluate);
 	//Externally generated event?
 	if( m_verticalScrollbarValueShadow != currentAbsoluate )
 	{
-		UV_DEBUG(m_viewportShadow->changePositionToAbsolute(currentAbsoluate, 0));
+		UV_DEBUG(m_viewportShadow->changePositionToLine(currentAbsoluate, 0));
 		m_verticalScrollbarValueShadow = currentAbsoluate;
 	}
 	printf("finished scroll at %s\n", m_viewportShadow->m_start.m_impl->toString().c_str());
@@ -453,7 +453,7 @@ void UVQtScrollableDynamicText::scrollContentsBy(int dx, int dy)
 	viewport()->update();
 }
 
-uv_err_t UVQtDynamicText::setData(UVQtDynamicTextData *data)
+uv_err_t UVQtDynamicText::setDynamicData(UVQtDynamicTextData *data)
 {
 
 	//printf("start set, data: 0x%08X\n", (int)data);
@@ -468,11 +468,13 @@ uv_err_t UVQtDynamicText::setData(UVQtDynamicTextData *data)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVQtScrollableDynamicText::setData(UVQtDynamicTextData *data)
+uv_err_t UVQtScrollableDynamicText::setDynamicData(UVQtDynamicTextData *data)
 {
 	m_viewportShadow = new UVQtDynamicText(data, this);
-	UVQtDynamicTextDataPluginImpl::iterator_impl *iter_impl = dynamic_cast<UVQtDynamicTextDataPluginImpl::iterator_impl *>(m_viewportShadow->m_start.m_impl);
-	printf("iter impl: 0x%08X\n", (int)iter_impl->m_dataImpl);
+	//UV_ASSERT_VOID(m_viewportShadow->m_start.m_impl);
+	//UVQtDynamicTextDataPluginImpl::iterator_impl *iter_impl = dynamic_cast<UVQtDynamicTextDataPluginImpl::iterator_impl *>(m_viewportShadow->m_start.m_impl);
+	//UV_ASSERT_VOID(iter_impl);
+	//printf("iter impl: 0x%08X\n", (int)iter_impl->m_dataImpl);
 	setViewport(m_viewportShadow);
 	//m_viewportShadow->resize(320, 240);
 	m_viewportShadow->resize(sizeHint());
@@ -484,6 +486,7 @@ uv_err_t UVQtScrollableDynamicText::setData(UVQtDynamicTextData *data)
 	//horizontalScrollBar()->setPageStep(1);
 	//doesn't work because data wasn't set yet
 	verticalScrollBar()->setRange(m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
+	//printf("%d, %d\n", m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
 	verticalScrollBar()->setPageStep(3);
 
 	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
@@ -492,12 +495,12 @@ uv_err_t UVQtScrollableDynamicText::setData(UVQtDynamicTextData *data)
 	//updateWidgetPosition();
 	m_viewportShadow->show();
 
-	return UV_DEBUG(m_viewportShadow->setData(data));
+	return UV_DEBUG(m_viewportShadow->setDynamicData(data));
 }
 
 uv_err_t UVQtScrollableDynamicText::scrollUnits(int units)
 {
-	UV_DEBUG(m_viewportShadow->changePositionByDelta(units));
+	UV_DEBUG(m_viewportShadow->changePositionByLineDelta(units));
 	//We need to update the slider to keep in sync
 	//This emits dx/dy events though
 	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();

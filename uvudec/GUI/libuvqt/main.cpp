@@ -4,6 +4,8 @@
 #include "uvd/core/init.h"
 #include "uvd/util/debug.h"
 #include "uvqt/plain_text_edit.h"
+#include "uvqt/hexdump.h"
+#include "uvqt/hexdump_plugin.h"
 
 int UVQtScrollableDynamicTextMain(int argc, char **argv)
 {
@@ -14,6 +16,29 @@ int UVQtScrollableDynamicTextMain(int argc, char **argv)
 	printf("plugin scrolling widget ex\n");
 	widget = new UVQtScrollableDynamicText(new UVQtDynamicTextDataPluginImpl());
 
+	widget->resize(1024, 480);
+	widget->show();
+	
+	printf("Exec'ing...\n");
+	ret = app.exec();
+	//delete widget;
+	printf("Done\n");
+	return ret;
+}
+
+int UVQtHexdumpMain(int argc, char **argv)
+{
+	QApplication app(argc, argv);
+	int ret = 0;
+	QWidget *widget = NULL;
+
+	printf("hexdump widget ex\n");
+	
+	UVQtHexdumpPlugin plugin;
+	
+	//plugin.initialize();
+	widget = plugin.createWidget(NULL);
+	
 	widget->resize(1024, 480);
 	widget->show();
 	
@@ -90,9 +115,10 @@ int main(int argc, char **argv)
 	UVDInit();
 	UVDSetDebugFlag(UVD_DEBUG_TYPE_ALL, true);
 
-	return UVQtScrollableDynamicTextMain(argc, argv);
+	//return UVQtScrollableDynamicTextMain(argc, argv);
 	//return QPlainTextEditMain(argc, argv);
 	//return QTextEditMain(argc, argv);
 	//return labelMain(argc, argv);
+	return UVQtHexdumpMain(argc, argv);
 }
 

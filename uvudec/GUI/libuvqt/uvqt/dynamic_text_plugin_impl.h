@@ -23,8 +23,8 @@ public:
 		virtual uv_err_t get(std::string &ret);
 		virtual uv_err_t previous();
 		virtual uv_err_t next();
-		virtual uv_err_t changePositionByDelta(int delta);
-		virtual uv_err_t changePositionToAbsolute(unsigned int offset, unsigned int index);	
+		virtual uv_err_t changePositionByLineDelta(int delta);
+		virtual uv_err_t changePositionToLine(unsigned int offset, unsigned int index);	
 		virtual int compare(const UVQtDynamicTextData::iterator_impl *other);
 		virtual std::string toString();
 		virtual unsigned int offset();

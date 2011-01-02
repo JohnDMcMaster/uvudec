@@ -150,7 +150,7 @@ uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::next()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionByDelta(int delta)
+uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionByLineDelta(int delta)
 {
 	if( delta > 0 )
 	{
@@ -179,7 +179,7 @@ uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionByDelta(int
 	return UV_ERR_OK;
 }
 
-uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionToAbsolute(unsigned int offset, unsigned int index)
+uv_err_t UVQtDynamicTextDataPluginImpl::iterator_impl::changePositionToLine(unsigned int offset, unsigned int index)
 {
 	m_offset = offset;
 	m_index = index;
