@@ -80,6 +80,8 @@ public:
 	//Somewhat dangerous for new classes...maybe should do something different
 	virtual int read(uint32_t offset, char *buffer, uint32_t bufferSize) const;	
 	virtual int read(uint32_t offset) const;
+	//Named resolved version of above
+	inline int readByte(uint32_t offset) const { return read(offset); }
 
 	//Try to move away from returning int
 	virtual uv_err_t writeData(uint32_t offset, const char *buffer, uint32_t bufferSize);

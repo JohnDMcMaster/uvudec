@@ -159,6 +159,8 @@ std::string UVDDataMemory::getSource() const
 
 int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSize) const
 {
+	unsigned int effectiveBufferSize = 0;
+	
 	uint32_t thisBufferSize = size();
 	//printf("read, offset: 0x%08X, dest buffer: 0x%08X, dest buffer size: 0x%08X, src buffer: 0x%08X, src buffer size: 0x%08X\n", offset, buffer, bufferSize, m_buffer, thisBufferSize);
 	if( offset > thisBufferSize )
@@ -167,12 +169,23 @@ int UVDDataMemory::read(unsigned int offset, char *buffer, unsigned int bufferSi
 	}
 	
 	unsigned int leftToRead = thisBufferSize - offset;
-	if( leftToRead > bufferSize )
+	//Less to read than we have space?
+	if( leftToRead < bufferSize )
 	{
-		bufferSize = leftToRead;
+		//truncate buffer
+		effectiveBufferSize = leftToRead;
+	}
+	else
+	{
+		effectiveBufferSize = bufferSize;
 	}
 	
-	memcpy(buffer, m_buffer, bufferSize);
+	if( effectiveBufferSize > bufferSize )
+	{
+		printf_error("impending crash\n");
+	}
+	
+	memcpy(buffer, m_buffer + offset, effectiveBufferSize);
 	return bufferSize;
 }
 
