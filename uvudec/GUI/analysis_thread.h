@@ -47,6 +47,7 @@ signals:
 	void deleteFunction(QString functionName);
 	void printLog(QString line);
 	void setDisassemblyAreaActive(bool);
+	void binaryStateChanged();
 
 protected:
 	uv_err_t getNextAction(UVDAnalysisAction **action);

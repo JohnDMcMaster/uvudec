@@ -33,6 +33,7 @@ public:
 protected:
 	uv_err_t rebuildFunctionList();
 	uv_err_t assemblyDisplayTests();
+	UVDData *getObjectData();
 
 public slots:
 	uv_err_t newFunction(QString functionName);
@@ -42,6 +43,11 @@ public slots:
 	//Don't think this inserts a newline
 	//uv_err_t appendDisassembledHTML(QString html);
 	uv_err_t appendLogLine(QString line);
+	/*
+	Indicates we have changed the status of (a?) binary
+	May be now present, values changes, or no longer present
+	*/
+	uv_err_t updateBinaryView();
 
 private slots:
 	uv_err_t on_actionNew_triggered();

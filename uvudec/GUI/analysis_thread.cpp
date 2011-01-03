@@ -170,6 +170,7 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	uv_assert_ret(uvd);
 	uv_assert_ret(g_uvd);
 	m_mainWindow->m_project->m_uvd = uvd;
+	emit binaryStateChanged();
 
 	//Get our callbacks ready...
 	uv_assert_err_ret(initializeUVDCallbacks());

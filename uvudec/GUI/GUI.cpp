@@ -24,6 +24,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 #include "uvd/language/language.h"
 #include "uvd/util/io.h"
 #include "uvd/util/util.h"
+#include "uvd/core/runtime.h"
 #include "uvd/util/debug.h"
 #include "GUI/analysis_action.h"
 #include "GUI/GUI.h"
@@ -62,8 +63,8 @@ uv_err_t UVDMainWindow::init()
 {
 	//printf("mainwindow init, this: 0x%08X\n", this);
 
-	m_mainWindow.hexdump->setDynamicData(new UVQtDynamicTextDataPluginImpl());
-	m_mainWindow.disassembly->setDynamicData(new UVQtDynamicTextDataPluginImpl());
+	//m_mainWindow.hexdump->setDynamicData(new UVQtDynamicTextDataPluginImpl());
+	//m_mainWindow.disassembly->setDynamicData(new UVQtDynamicTextDataPluginImpl());
 
 	m_projectFileNameDialogFilter = tr("uvudec oject (*.upj);;All Files (*)");
 
@@ -295,12 +296,18 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 	//		this, SLOT(appendDisassembledHTML(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
 			this, SLOT(newFunction(QString))));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
+			this, SLOT(newFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(deleteFunction(QString)),
 			this, SLOT(deleteFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(printLog(QString)),
 			this, SLOT(appendLogLine(QString))));
 	//uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(setDisassemblyAreaActive(bool)),
 	//		m_mainWindow.disassemblyArea, SLOT(setVisible(bool))));
+
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(binaryStateChanged()),
+			this, SLOT(updateBinaryView())));
+
 	m_analysisThread->queueAnalysis(new UVDAnalysisActionBegin());
 
 	return UV_ERR_OK;
@@ -339,6 +346,25 @@ uv_err_t UVDMainWindow::appendLogLine(QString line)
 	ASSERT_THREAD();
 	m_mainWindow.plainTextEdit_log->appendPlainText(line);
 	return UV_ERR_OK;
+}
+
+UVDData *UVDMainWindow::getObjectData()
+{
+	//To prevent various crashes
+	if( m_project == NULL
+			|| m_project->m_uvd == NULL 
+			|| m_project->m_uvd->m_runtime == NULL
+			|| m_project->m_uvd->m_runtime->m_object == NULL )
+	{
+		return NULL;
+	}
+
+	return m_project->m_uvd->m_runtime->m_object->m_data;
+}
+
+uv_err_t UVDMainWindow::updateBinaryView()
+{
+	return UV_DEBUG(m_mainWindow.hexdump->setData(getObjectData()));
 }
 
 uv_err_t UVDMainWindow::on_actionSave_triggered()
