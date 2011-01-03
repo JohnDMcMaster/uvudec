@@ -8,7 +8,8 @@ ROOT_DIR=../..
 CC_SRCS =   \
 
 CXX_SRCS = 	\
-#			main.cpp
+			plugin.cpp \
+			strings.cpp \
 
 include ../Makefile.mk
 

@@ -7,8 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/plugin/plugin.h"
 #include "uvd/util/io.h"
 #include "uvd/core/uvd.h"
-#include "uvdgb/object.h"
-#include "uvdgb/plugin.h"
+#include "uvdstrings/plugin.h"
 #include "uvd/core/uvd.h"
 
 UVDStringsPlugin::UVDStringsPlugin()
@@ -52,6 +51,7 @@ uv_err_t UVDStringsPlugin::getAuthor(std::string &out)
 uv_err_t UVDPluginMain(UVDConfig *config, UVDPlugin **out)
 {
 	UVDPrint("Plugin " UVD_PLUGIN_NAME " loaded!\n");
+	*out = new UVDStringsPlugin();
 	return UV_ERR_OK;
 }
 

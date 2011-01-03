@@ -20,16 +20,18 @@ Other ways to find strings
 -String arguments to functions
 	ex: format string on printf
 */
+class UVDSection;
+class UVDStringsPlugin;
 class UVDStringsAnalyzerImpl : public UVDStringsAnalyzer
 {
 public:
 	UVDStringsAnalyzerImpl(UVDStringsPlugin *plugin);
 	~UVDStringsAnalyzerImpl();
 
-	virtual uv_err_t appendAllStrings(std::vector<UVDStringsString> &out);
+	virtual uv_err_t appendAllStrings(std::vector<UVDString> &out);
 
 protected:
-	uv_err_t doAppendAllStrings(UVDSection *section, std::vector<UVDAddressRange> &out);
+	uv_err_t doAppendAllStrings(UVDAddressSpace *addressSpace, std::vector<UVDString> &out);
 
 public:
 	UVDStringsPlugin *m_plugin;
