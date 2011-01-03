@@ -86,7 +86,11 @@ unsigned int UVQtHexdumpData::iterator_impl::hexdumpHalfRow(uint32_t start, std:
 		//printf("read %c (%d) @ 0x%04X\n", c, (int)c, index);
 		
 		(void)c;
-		ret += UVDSprintf(" %02X ", (unsigned int)c);
+		if( col != 0 )
+		{
+			ret += " ";
+		}
+		ret += UVDSprintf("%02X", (unsigned int)c);
 	}
 
 	//pad remaining
@@ -127,6 +131,10 @@ uv_err_t UVQtHexdumpData::iterator_impl::get(std::string &ret)
 
 	for( unsigned int curRow = 0; curRow < m_dataImpl->m_bytesPerRow; curRow += m_dataImpl->m_bytesPerSubRow )
 	{
+		if( curRow != 0 )
+		{
+			curLine += " ";
+		}
 		pos = hexdumpHalfRow(pos, curLine);
 	}
 	
