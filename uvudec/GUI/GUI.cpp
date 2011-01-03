@@ -299,8 +299,6 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 	//		this, SLOT(appendDisassembledHTML(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
 			this, SLOT(newFunction(QString))));
-	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(newFunction(QString)),
-			this, SLOT(newFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(deleteFunction(QString)),
 			this, SLOT(deleteFunction(QString))));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(printLog(QString)),

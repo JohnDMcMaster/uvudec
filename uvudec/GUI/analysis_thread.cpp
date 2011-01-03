@@ -188,8 +188,9 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 
 	uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
 
-	UVDPrintf("Disassembling");
-	uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
+	UVDPrintf("Disassembling (sending signal)");
+	//uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
+	emit assemblyChanged();
 
 	UVDPrintf("Initial analysis completed");
 	
@@ -198,6 +199,7 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	return UV_ERR_OK;
 }
 
+#if 0
 uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterator iterEnd)
 {
 	UVDIterator iter;
@@ -286,6 +288,7 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 	//emit setDisassemblyAreaActive(true);
 	return UV_ERR_OK;
 }
+#endif
 
 uv_err_t UVDGUIAnalysisThread::initializeUVDCallbacks()
 {

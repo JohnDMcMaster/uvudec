@@ -32,7 +32,7 @@ public:
 	void queueAnalysis(UVDAnalysisAction *action);
 
 	uv_err_t beginAnalysis();
-	uv_err_t disassembleRange(UVDIterator iterBegin, UVDIterator iterEnd);
+	//uv_err_t disassembleRange(UVDIterator iterBegin, UVDIterator iterEnd);
 
 	uv_err_t initializeUVDCallbacks();
 	uv_err_t handleUVDEvent(const UVDEvent *event);
@@ -41,13 +41,17 @@ public:
 
 signals:
 	//We finished disassembling the next line, line is the result
-	void lineDisassembledMonospaced(QString name);
-	void lineDisassembledHTML(QString name);
+	//void lineDisassembledMonospaced(QString name);
+	//void lineDisassembledHTML(QString name);
 	void newFunction(QString functionName);
 	void deleteFunction(QString functionName);
 	void printLog(QString line);
-	void setDisassemblyAreaActive(bool);
+	//void setDisassemblyAreaActive(bool);
+	
+	//For hexdump, strings
 	void binaryStateChanged();
+	//Analysis may have changed the way disassembling works
+	void assemblyChanged();
 
 protected:
 	uv_err_t getNextAction(UVDAnalysisAction **action);
