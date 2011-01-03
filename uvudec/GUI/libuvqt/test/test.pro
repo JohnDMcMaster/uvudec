@@ -14,6 +14,9 @@ HEADERS     = 	\
 SOURCES     = 	\
 				main.cpp \
 
-LIBS += -L../../lib -luvudec -luvqtdesigner -L.
-INCLUDEPATH += ../../libuvudec
+LIBS += -L../../../lib -luvudec -luvqtdesigner -L..
+INCLUDEPATH += ../../../libuvudec
+INCLUDEPATH += ..
+
+
 
