@@ -448,7 +448,29 @@ uv_err_t UVDPluginEngine::activatePluginByName(const std::string &name)
 	
 	uv_assert_err_ret(plugin->init(g_config));
 	m_loadedPlugins[name] = plugin;
+	
+	//Notify callbacks
+	for( std::set<OnPluginActivatedItem>::iterator iter = m_onPluginActivated.begin();
+			iter != m_onPluginActivated.end(); ++iter )
+	{
+		OnPluginActivated callback = (*iter).first;
+		void *user = (*iter).second;
+	
+		if( !callback )
+		{
+			printf_error("bad callback\n");
+			continue;
+		}
+		//Ready to roll
+		UV_DEBUG(callback(plugin, user));
+	}
+	
+	return UV_ERR_OK;
+}
 
+uv_err_t UVDPluginEngine::registerPluginActivatedCallback(OnPluginActivated callback, void *user)
+{
+	m_onPluginActivated.insert(OnPluginActivatedItem(callback, user));
 	return UV_ERR_OK;
 }
 

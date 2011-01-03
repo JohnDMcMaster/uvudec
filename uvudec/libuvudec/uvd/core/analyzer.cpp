@@ -4,11 +4,12 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "uvd/event/engine.h"
+#include "uvd/assembly/function.h"
 #include "uvd/core/uvd.h"
 #include "uvd/core/analyzer.h"
-#include "uvd/assembly/function.h"
 #include "uvd/core/event.h"
+#include "uvd/event/engine.h"
+#include "uvd/string/engine.h"
 #include "uvd/util/benchmark.h"
 #include <algorithm>
 #include <stdio.h>
@@ -250,8 +251,13 @@ UVDAnalyzer::~UVDAnalyzer()
 	deinit();
 }
 
-uv_err_t UVDAnalyzer::init()
+uv_err_t UVDAnalyzer::init(UVD *uvd)
 {
+	m_uvd = uvd;
+	
+	m_stringEngine = new UVDStringEngine();
+	uv_assert_err_ret(m_stringEngine->init(m_uvd));
+	
 	return UV_ERR_OK;
 }
 

@@ -357,8 +357,7 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 
 	m_analyzer = new UVDAnalyzer();
 	uv_assert(m_analyzer);
-	m_analyzer->m_uvd = this;
-	uv_assert_err(m_analyzer->init());
+	uv_assert_err(m_analyzer->init(this));
 	m_format = new UVDFormat();
 	uv_assert(m_format);
 	m_eventEngine = new UVDEventEngine();

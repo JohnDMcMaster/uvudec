@@ -18,18 +18,20 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 
 */
 
-#include "uvqt/dynamic_text_plugin_impl.h"
+#include "GUI/analysis_action.h"
+#include "GUI/GUI.h"
+#include "GUI/lock.h"
+#include "GUI/main.h"
+#include "GUI/project.h"
+#include "uvd/core/runtime.h"
 #include "uvd/assembly/function.h"
 #include "uvd/project/file_extensions.h"
 #include "uvd/language/language.h"
+#include "uvd/string/engine.h"
+#include "uvd/util/debug.h"
 #include "uvd/util/io.h"
 #include "uvd/util/util.h"
-#include "uvd/core/runtime.h"
-#include "uvd/util/debug.h"
-#include "GUI/analysis_action.h"
-#include "GUI/GUI.h"
-#include "GUI/project.h"
-#include "GUI/main.h"
+#include "uvqt/dynamic_text_plugin_impl.h"
 #include <QtGui>
 
 UVDMainWindow *g_mainWindow = NULL;
@@ -366,6 +368,26 @@ UVDData *UVDMainWindow::getObjectData()
 uv_err_t UVDMainWindow::updateBinaryView()
 {
 	return UV_DEBUG(m_mainWindow.hexdump->setData(getObjectData()));
+}
+
+uv_err_t UVDMainWindow::updateAssemblyView()
+{
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDMainWindow::updateStringsView()
+{
+	UVDStringEngine *stringEngine = NULL;
+	std::vector<UVDString> strings;
+	
+	UVD_AUTOLOCK_ENGINE_BEGIN();
+	
+	stringEngine = m_project->m_uvd->m_analyzer->m_stringEngine;
+	uv_assert_err_ret(stringEngine->getAllStrings(strings));
+	
+	UVD_AUTOLOCK_ENGINE_END();
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDMainWindow::on_actionSave_triggered()

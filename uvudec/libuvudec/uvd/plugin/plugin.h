@@ -22,6 +22,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //#define UVD_PLUGIN_MAIN_MANGLED_SYMBOL			_Z13UVDPluginMainP9UVDConfigPP9UVDPlugin
 #define UVD_PLUGIN_MAIN_MANGLED_SYMBOL_STRING	"_Z13UVDPluginMainP9UVDConfigPP9UVDPlugin"
 
+#define UVD_PLUGIN_PROPERTY(_property)			"plugin." UVD_PLUGIN_NAME "." _property
+
 /*
 Unless otherwise specified, no functions need to be called on the parent UVDPlugin class if overriden
 Don't throw exceptions, I won't catch them
@@ -35,6 +37,7 @@ class UVDConfig;
 class UVDArchitecture;
 class UVDData;
 class UVDObject;
+class UVDStringsAnalyzer;
 class UVDPlugin
 {
 public:
@@ -149,6 +152,9 @@ public:
 	//As defined in the architecture registry
 	//If it uses an internal architecture representation (ex: binutils), it must be converted
 	virtual uv_err_t getSupportedArchitectures(std::set<std::string> &architectures);
+
+	//For doing static memory/exeuctable area analysis
+	virtual uv_err_t getStringsAnalyzer(UVDStringsAnalyzer **out);
 
 public:
 	//returned by dlopen()

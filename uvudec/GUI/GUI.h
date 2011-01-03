@@ -48,6 +48,8 @@ public slots:
 	May be now present, values changes, or no longer present
 	*/
 	uv_err_t updateBinaryView();
+	uv_err_t updateAssemblyView();
+	uv_err_t updateStringsView();
 
 private slots:
 	uv_err_t on_actionNew_triggered();

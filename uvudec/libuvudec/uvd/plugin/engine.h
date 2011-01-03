@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/util/types.h"
 #include <map>
+#include <set>
 #include <string>
 
 /*
@@ -22,6 +23,12 @@ class UVDConfig;
 class UVDArgConfig;
 class UVDPluginEngine
 {
+public:
+	//Things really shouldn't depend on plugins that are loaded but not activated actually
+	//typedef uv_err_t (*OnPluginLoaded)(UVDPlugin *plugin, void *user);
+	typedef uv_err_t (*OnPluginActivated)(UVDPlugin *plugin, void *user);
+	typedef std::pair<OnPluginActivated, void *> OnPluginActivatedItem;
+
 public:
 	//Just because a plugin is registered, does not mean it is active
 	UVDPluginEngine();
@@ -69,6 +76,8 @@ public:
 	uv_err_t getAllPluginDependencies(const std::string &name, std::vector<UVDPlugin *> &out);
 	uv_err_t getPluginDependencyOrder(std::vector<UVDPlugin *> &out);
 
+	uv_err_t registerPluginActivatedCallback(OnPluginActivated callback, void *user);
+
 protected:
 	//Initialize statically linked plugins
 	uv_err_t staticInit();
@@ -80,6 +89,10 @@ public:
 	std::map<UVDArgConfig *, std::string> m_pluginArgMap;
 	//WARNING: this won't get set until later
 	UVD *m_uvd;
+
+	//For things that need to be aware of new plugins loaded
+	//Primarily to query for plugin factory interfaces
+	std::set<OnPluginActivatedItem> m_onPluginActivated;
 };
 
 #endif

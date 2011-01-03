@@ -59,6 +59,9 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/relocation/manager.cpp \
 			$(UVD_DIR)/relocation/writer.cpp \
 			$(UVD_DIR)/relocation/simple_fixup.cpp \
+			$(UVD_DIR)/string/analyzer.cpp \
+			$(UVD_DIR)/string/engine.cpp \
+			$(UVD_DIR)/string/string.cpp \
 			$(UVD_DIR)/util/io.cpp \
 			$(UVD_DIR)/util/benchmark.cpp \
 			$(UVD_DIR)/util/config_section.cpp \

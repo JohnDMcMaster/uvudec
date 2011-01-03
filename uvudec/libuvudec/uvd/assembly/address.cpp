@@ -126,6 +126,25 @@ bool UVDAddressRange::operator==(const UVDAddressRange *other) const
 	return compare(other) == 0;
 }
 
+unsigned int UVDAddressRange::size() const
+{
+	return m_max_addr - m_min_addr;
+}
+
+uv_err_t UVDAddressRange::memoryToString(std::string &out, bool safe) const
+{
+	uv_assert_ret(m_space);
+	uv_assert_ret(m_space->m_data);
+	if( safe )
+	{
+		return UV_DEBUG(m_space->m_data->readDataAsSafeString(m_min_addr, size(), out));	
+	}
+	else
+	{
+		return UV_DEBUG(m_space->m_data->readDataAsString(m_min_addr, size(), out));	
+	}
+}
+
 /*
 UVDAddressSpace
 */

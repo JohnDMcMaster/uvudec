@@ -153,6 +153,7 @@ public:
 typedef std::map<uint32_t, UVDAnalyzedMemoryRange *> UVDAnalyzedMemorySpace;
 typedef std::vector<UVDAnalyzedMemoryRange *> UVDAnalyzedMemoryRanges;
 class UVDBinaryFunctionShared;
+class UVDStringEngine;
 class UVDBinaryFunctionInstance;
 class UVD;
 class UVDInstruction;
@@ -162,7 +163,7 @@ class UVDAnalyzer
 public:
 	UVDAnalyzer();
 	~UVDAnalyzer();
-	uv_err_t init();
+	uv_err_t init(UVD *uvd);
 	uv_err_t deinit();
 
 	uv_err_t insertReference(uint32_t targetAddress, uint32_t from, uint32_t type);
@@ -214,6 +215,8 @@ public:
 	//All of the symbols discovered during this analysis
 	//m_functions should be contained in this as well
 	UVDBinarySymbolManager m_symbolManager;
+	
+	UVDStringEngine *m_stringEngine;
 
 	UVD *m_uvd;
 };

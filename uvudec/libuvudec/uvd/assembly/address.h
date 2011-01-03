@@ -56,12 +56,18 @@ public:
 	bool operator<(const UVDAddressRange *other) const;
 	bool operator>(const UVDAddressRange *other) const;
 	bool operator==(const UVDAddressRange *other) const;
+	//In bytes
+	unsigned int size() const;
+	//Return string representation of the referenced memory area
+	//See string utils to explanation of safe
+	uv_err_t memoryToString(std::string &out, bool safe = true) const;
 
 public:
 	//Address space
 	UVDAddressSpace *m_space;
 	//Address
 	uv_addr_t m_min_addr;
+	//Inclusive
 	uv_addr_t m_max_addr;
 };
 

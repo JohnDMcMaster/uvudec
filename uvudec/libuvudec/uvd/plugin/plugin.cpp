@@ -192,6 +192,11 @@ uv_err_t UVDPlugin::getSupportedArchitectures(std::set<std::string> &architectur
 	return UV_ERR_NOTSUPPORTED;
 }
 
+uv_err_t UVDPlugin::getStringsAnalyzer(UVDStringsAnalyzer **out)
+{
+	return UV_ERR_NOTSUPPORTED;	
+}
+
 uv_err_t UVDPlugin::registerArgument(const std::string &propertyForm,
 		char shortForm, std::string longForm, 
 		std::string helpMessage,
