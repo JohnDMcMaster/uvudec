@@ -1,7 +1,7 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under the terms of the GPL V3 or later, see COPYING for details
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 /*
@@ -32,6 +32,8 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 #include "GUI/main.h"
 #include <QtGui>
 
+UVDMainWindow *g_mainWindow = NULL;
+
 //#define ROLE_FUNCTION_LIST_FUNCTION		(Qt::UserRole + 0)
 
 #define ASSERT_THREAD() \
@@ -47,6 +49,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 	: QMainWindow(parent)
 {
+	g_mainWindow = this;
 	m_project = NULL;
 	m_argc = 0;
 	m_argv = NULL;

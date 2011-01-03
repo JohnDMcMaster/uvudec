@@ -1,7 +1,7 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under the terms of the GPL V3 or later, see COPYING for details
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/assembly/function.h"
@@ -17,6 +17,7 @@ Licensed under the terms of the GPL V3 or later, see COPYING for details
 #include "GUI/analysis_thread.h"
 #include "GUI/analysis_action.h"
 #include "GUI/format.h"
+#include "GUI/lock.h"
 #include <typeinfo>
 
 static uv_err_t printCallback(const std::string &in, void *data)
@@ -100,8 +101,9 @@ uv_err_t UVDGUIAnalysisThread::runLoop()
 		usleep(10000);
 		return UV_ERR_OK;
 	}
-	printf("GUI analysis thread request recieved\n");
+	printf("GUI analysis thread request recieved, aquiring lock\n");
 	fflush(stdout);
+	
 	if( typeid(*action) == typeid(UVDAnalysisActionBegin) )
 	{
 		uv_assert_err_ret(beginAnalysis());
@@ -148,7 +150,6 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	/*
 	This is where the magic starts
 	*/
-
 	std::string output;
 	UVD *uvd = NULL;
 	UVDData *data = NULL;
@@ -164,34 +165,35 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	uv_assert_err_ret(UVDDataFile::getUVDDataFile(&data, g_config->m_targetFileName));
 	uv_assert_ret(data);
 	
-	//Create a runTasksr engine active on that input
-	printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
-	uv_assert_err_ret(UVD::getUVDFromData(&uvd, data));
-	uv_assert_ret(uvd);
-	uv_assert_ret(g_uvd);
-	m_mainWindow->m_project->m_uvd = uvd;
-	emit binaryStateChanged();
+	//Begin engine operations, lock engine
+	{
+		UVD_AUTOLOCK_ENGINE();
 
-	//Get our callbacks ready...
-	uv_assert_err_ret(initializeUVDCallbacks());
-	UVDFormat *format = new UVDGUIFormat();
-	uv_assert_ret(format);
-	uv_assert_err_ret(uvd->setOutputFormatting(format));
+		//Create a runTasksr engine active on that input
+		printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
+		uv_assert_err_ret(UVD::getUVDFromData(&uvd, data));
+		uv_assert_ret(uvd);
+		uv_assert_ret(g_uvd);
+		m_mainWindow->m_project->m_uvd = uvd;
+		emit binaryStateChanged();
 
-	//Fire at will
-	UVDPrintf("Analyzing");
-	uv_assert_err_ret(uvd->analyze());
+		//Get our callbacks ready...
+		uv_assert_err_ret(initializeUVDCallbacks());
+		UVDFormat *format = new UVDGUIFormat();
+		uv_assert_ret(format);
+		uv_assert_err_ret(uvd->setOutputFormatting(format));
 
-	uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
+		//Fire at will
+		UVDPrintf("Analyzing");
+		uv_assert_err_ret(uvd->analyze());
 
-	UVDPrintf("Disassembling");
-	uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
+		uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
+
+		UVDPrintf("Disassembling");
+		uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
 	
-	UVDPrintf("Initial analysis completed");
-
-	//FIXME: we should make UVD own this
-	//delete data;
-
+		UVDPrintf("Initial analysis completed");
+	}
 	return UV_ERR_OK;
 }
 

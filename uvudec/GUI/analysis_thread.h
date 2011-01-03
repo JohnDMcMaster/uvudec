@@ -1,7 +1,7 @@
 /*
 UVNet Universal Decompiler (uvudec)
 Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-Licensed under the terms of the GPL V3 or later, see COPYING for details
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #ifndef UVD_GUI_ANALYSIS_THREAD_H
@@ -56,7 +56,11 @@ public:
 	UVDMainWindow *m_mainWindow;
 	//
 	std::list<UVDAnalysisAction *> m_analyisActionsQueue;
+	//For adding analysis events
 	QMutex m_analyisActionsQueueMutex;
+	//For performing GUI operations
+	//We must wait until no analysis is running so that we can update the GUI state
+	QMutex m_uvdMutex;
 	//Add some sort of queue here to queue up analsis events
 	uint32_t m_active;
 };

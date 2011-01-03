@@ -73,5 +73,7 @@ public:
 	char **m_argv;
 };
 
+extern UVDMainWindow *g_mainWindow;
+
 #endif
 
