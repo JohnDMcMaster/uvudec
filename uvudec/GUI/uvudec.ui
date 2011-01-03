@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>860</width>
+    <width>745</width>
     <height>698</height>
    </rect>
   </property>
@@ -106,36 +106,15 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
-      <widget class="QWidget" name="disassembly">
+      <widget class="QWidget" name="disassemblyTab">
        <attribute name="title">
         <string>Disassembly</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="UVQtScrollableDynamicText" name="disassemblyDynamicText">
-            <property name="toolTip">
-             <string>Binary hexdump</string>
-            </property>
-            <property name="whatsThis">
-             <string>Display disassembly.</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="hexdump">
-       <attribute name="title">
-        <string>Hex</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="UVQtScrollableDynamicText" name="hexdumpDynamicText">
+         <widget class="UVQtScrollableDynamicText" name="disassembly">
           <property name="toolTip">
            <string>Binary hexdump</string>
           </property>
@@ -146,7 +125,24 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="symbols">
+      <widget class="QWidget" name="hexdumpTab">
+       <attribute name="title">
+        <string>Hex</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="UVQtHexdump" name="hexdump">
+          <property name="toolTip">
+           <string>Binary hexdump</string>
+          </property>
+          <property name="whatsThis">
+           <string>Hexdump displays hexidecimal and ASCII of a binary.</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="symbolsTab">
        <attribute name="title">
         <string>Symbols</string>
        </attribute>
@@ -158,6 +154,23 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="stringsTab">
+       <attribute name="title">
+        <string>Strings</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="UVQtScrollableDynamicText" name="strings">
+          <property name="toolTip">
+           <string>Binary hexdump</string>
+          </property>
+          <property name="whatsThis">
+           <string>Display disassembly.</string>
           </property>
          </widget>
         </item>
@@ -191,7 +204,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>860</width>
+     <width>745</width>
      <height>30</height>
     </rect>
    </property>
@@ -236,17 +249,6 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_2">
-   <property name="windowTitle">
     <string>toolBar_2</string>
    </property>
    <attribute name="toolBarArea">
@@ -255,72 +257,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_3">
-   <property name="windowTitle">
-    <string>toolBar_3</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_4">
-   <property name="windowTitle">
-    <string>toolBar_4</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_5">
-   <property name="windowTitle">
-    <string>toolBar_5</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_6">
-   <property name="windowTitle">
-    <string>toolBar_6</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_7">
-   <property name="windowTitle">
-    <string>toolBar_7</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBar_8">
-   <property name="windowTitle">
-    <string>toolBar_8</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
+   <addaction name="separator"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -391,6 +328,11 @@
    <class>UVQtScrollableDynamicText</class>
    <extends>QFrame</extends>
    <header>uvqt/dynamic_text.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UVQtHexdump</class>
+   <extends>UVQtScrollableDynamicText</extends>
+   <header>uvqt/hexdump.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -62,8 +62,8 @@ uv_err_t UVDMainWindow::init()
 {
 	//printf("mainwindow init, this: 0x%08X\n", this);
 
-	m_mainWindow.hexdumpDynamicText->setDynamicData(new UVQtDynamicTextDataPluginImpl());
-	m_mainWindow.disassemblyDynamicText->setDynamicData(new UVQtDynamicTextDataPluginImpl());
+	m_mainWindow.hexdump->setDynamicData(new UVQtDynamicTextDataPluginImpl());
+	m_mainWindow.disassembly->setDynamicData(new UVQtDynamicTextDataPluginImpl());
 
 	m_projectFileNameDialogFilter = tr("uvudec oject (*.upj);;All Files (*)");
 

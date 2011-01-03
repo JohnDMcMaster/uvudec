@@ -136,6 +136,7 @@ class UVQtDynamicText : public QWidget
     Q_OBJECT
 
 public:
+	UVQtDynamicText(QWidget *parent = NULL);
 	UVQtDynamicText(UVQtDynamicTextData *data, QWidget *parent = NULL);
 	QSize sizeHint() const;
 
@@ -187,11 +188,15 @@ class QDESIGNER_WIDGET_EXPORT UVQtScrollableDynamicText : public QAbstractScroll
 public:
 	//QtDesigner requires this form for .ui generation
 	UVQtScrollableDynamicText(QWidget *parent = NULL);
+	//We get ownership of the supplied data object
 	UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent = NULL);
+	//We get ownership of the supplied data object
 	uv_err_t setDynamicData(UVQtDynamicTextData *data);
 	uv_err_t scrollUnits(int units);
 
 protected:
+	uv_err_t initViewport();
+
 	void paintEvent(QPaintEvent *event);
 	//Seems this gets called when the program starts up
 	//Is that reliable?

@@ -23,6 +23,7 @@ HEADERS     = 	\
 
 SOURCES     = 	\
 				uvqt/dynamic_text.cpp \
+				uvqt/dynamic_text_data.cpp \
 				uvqt/dynamic_text_plugin.cpp \
 				uvqt/dynamic_text_plugin_impl.cpp \
 				uvqt/hexdump.cpp \
@@ -31,6 +32,7 @@ SOURCES     = 	\
 				uvqt/hexdump_plugin.cpp \
 				uvqt/plain_text_edit.cpp \
 				uvqt/plugin.cpp \
+				uvqt/scrollable_dynamic_text.cpp \
 				uvqt/util.cpp \
 
 LIBS += -L../../lib -luvudec
