@@ -11,6 +11,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 //Will unlock when out of scope
 #define UVD_AUTOLOCK_ENGINE() UVDGUIAutolock _uvdEngineAutolock(&g_mainWindow->m_analysisThread->m_uvdMutex)
+#define UVD_AUTOLOCK_ENGINE_BEGIN() { UVD_AUTOLOCK_ENGINE()
+#define UVD_AUTOLOCK_ENGINE_END() }
 
 /*
 Locks the mutex when constructed, unlocks when destructed

@@ -166,34 +166,35 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	uv_assert_ret(data);
 	
 	//Begin engine operations, lock engine
-	{
-		UVD_AUTOLOCK_ENGINE();
+	UVD_AUTOLOCK_ENGINE_BEGIN();
 
-		//Create a runTasksr engine active on that input
-		printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
-		uv_assert_err_ret(UVD::getUVDFromData(&uvd, data));
-		uv_assert_ret(uvd);
-		uv_assert_ret(g_uvd);
-		m_mainWindow->m_project->m_uvd = uvd;
-		emit binaryStateChanged();
+	//Create a runTasksr engine active on that input
+	printf_debug_level(UVD_DEBUG_SUMMARY, "runTasks: initializing engine...\n");
+	uv_assert_err_ret(UVD::getUVDFromData(&uvd, data));
+	uv_assert_ret(uvd);
+	uv_assert_ret(g_uvd);
+	m_mainWindow->m_project->m_uvd = uvd;
+	emit binaryStateChanged();
 
-		//Get our callbacks ready...
-		uv_assert_err_ret(initializeUVDCallbacks());
-		UVDFormat *format = new UVDGUIFormat();
-		uv_assert_ret(format);
-		uv_assert_err_ret(uvd->setOutputFormatting(format));
+	//Get our callbacks ready...
+	uv_assert_err_ret(initializeUVDCallbacks());
+	UVDFormat *format = new UVDGUIFormat();
+	uv_assert_ret(format);
+	uv_assert_err_ret(uvd->setOutputFormatting(format));
 
-		//Fire at will
-		UVDPrintf("Analyzing");
-		uv_assert_err_ret(uvd->analyze());
+	//Fire at will
+	UVDPrintf("Analyzing");
+	uv_assert_err_ret(uvd->analyze());
 
-		uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
+	uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
 
-		UVDPrintf("Disassembling");
-		uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
+	UVDPrintf("Disassembling");
+	uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
+
+	UVDPrintf("Initial analysis completed");
 	
-		UVDPrintf("Initial analysis completed");
-	}
+	UVD_AUTOLOCK_ENGINE_END();
+
 	return UV_ERR_OK;
 }
 
