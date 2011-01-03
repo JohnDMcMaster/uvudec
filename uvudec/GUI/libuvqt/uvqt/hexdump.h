@@ -22,7 +22,7 @@ public:
 	UVQtHexdump(QWidget *parent = NULL);
 
 	//To cast it
-	inline UVQtHexdumpData *getHexdumpData() { return (UVQtHexdumpData *)m_viewportShadow->m_textData; }
+	UVQtHexdumpData *getHexdumpData();
 	//We might want to be a hex editor later, so try not to be too const friendly
 	uv_err_t setData(UVDData *data);
 };

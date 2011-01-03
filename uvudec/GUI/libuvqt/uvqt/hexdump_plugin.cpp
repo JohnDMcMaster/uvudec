@@ -15,20 +15,22 @@ UVQtHexdumpPlugin::UVQtHexdumpPlugin(QObject *parent)
 	//std::vector<std::string> the_split = UVDSplit("blah blah blah", ' ', true);
 	//printf("split items: %d\n", the_split.size());
 
-    initialized = false;
+    m_initialized = false;
 }
 
 void UVQtHexdumpPlugin::initialize(QDesignerFormEditorInterface * /* core */)
 {
-    if (initialized)
-        return;
-
-    initialized = true;
+	if( m_initialized )
+	{
+		return;
+	}
+	
+	m_initialized = true;
 }
 
 bool UVQtHexdumpPlugin::isInitialized() const
 {
-    return initialized;
+    return m_initialized;
 }
 
 //static const char *g_dataRaw = "***Rensselaer Center for Open Source Software***";

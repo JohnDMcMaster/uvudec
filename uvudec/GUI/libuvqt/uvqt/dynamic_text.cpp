@@ -330,7 +330,7 @@ unsigned int UVQtDynamicText::getMaxOffset()
 UVQtScrollableDynamicText
 */
 
-UVQtScrollableDynamicText::UVQtScrollableDynamicText(QWidget *parent)
+UVQtScrollableDynamicText::UVQtScrollableDynamicText(QWidget *parent) : QAbstractScrollArea(parent)
 {
 	m_viewportShadow = NULL;
 	m_verticalScrollbarValueShadow = 0;
@@ -338,6 +338,9 @@ UVQtScrollableDynamicText::UVQtScrollableDynamicText(QWidget *parent)
 	
 UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent) : QAbstractScrollArea(parent)
 {
+	m_viewportShadow = NULL;
+	m_verticalScrollbarValueShadow = 0;
+
 	setDynamicData(data);
 }
 

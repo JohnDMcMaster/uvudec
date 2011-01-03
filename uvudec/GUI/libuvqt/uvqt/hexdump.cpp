@@ -22,6 +22,11 @@ UVQtHexdump::UVQtHexdump(QWidget *parent) : UVQtScrollableDynamicText(parent)
 {
 }
 
+UVQtHexdumpData *UVQtHexdump::getHexdumpData()
+{
+	return (UVQtHexdumpData *)m_viewportShadow->m_textData; 
+}
+
 uv_err_t UVQtHexdump::setData(UVDData *data)
 {
 	UVQtHexdumpData *hexdumpData = new UVQtHexdumpData();

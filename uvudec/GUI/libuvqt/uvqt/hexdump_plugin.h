@@ -31,7 +31,7 @@ public:
     void initialize(QDesignerFormEditorInterface *core);
 
 private:
-    bool initialized;
+    bool m_initialized;
 };
 
 #endif

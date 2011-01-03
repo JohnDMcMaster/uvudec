@@ -17,7 +17,7 @@ UVQtPlugin::UVQtPlugin(QObject *parent)
 	printf("UVQtPlugin:constructor\n");
 	m_widgets.append(new UVQtHexdumpPlugin(this));
 //	m_widgets.append(new UVQtDisassemblyPlugin(this));
-	m_widgets.append(new UVQtScrollableDynamicTextPlugin(this));
+//	m_widgets.append(new UVQtScrollableDynamicTextPlugin(this));
 }
 
 QList<QDesignerCustomWidgetInterface*> UVQtPlugin::customWidgets() const
