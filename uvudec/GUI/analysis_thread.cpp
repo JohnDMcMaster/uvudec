@@ -122,7 +122,7 @@ uv_err_t UVDGUIAnalysisThread::runLoop()
 void UVDGUIAnalysisThread::queueAnalysis(UVDAnalysisAction *action)
 {
 	m_analyisActionsQueueMutex.lock();
-	m_analyisActionsQueue.push_back(action);	
+	m_analyisActionsQueue.push_back(action);
 	m_analyisActionsQueueMutex.unlock();
 }
 
@@ -185,12 +185,14 @@ uv_err_t UVDGUIAnalysisThread::beginAnalysis()
 	//Fire at will
 	UVDPrintf("Analyzing");
 	uv_assert_err_ret(uvd->analyze());
+	//uv_assert_err_ret(uvd->analyzeStrings());
 
 	uv_assert_err_ret(uvd->setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY));
 
 	UVDPrintf("Disassembling (sending signal)");
 	//uv_assert_err_ret(disassembleRange(uvd->begin(), uvd->end()));
 	emit assemblyChanged();
+	emit stringsChanged();
 
 	UVDPrintf("Initial analysis completed");
 	

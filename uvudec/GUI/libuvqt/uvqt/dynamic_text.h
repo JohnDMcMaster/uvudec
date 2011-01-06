@@ -192,6 +192,8 @@ public:
 	UVQtScrollableDynamicText(UVQtDynamicTextData *data, QWidget *parent = NULL);
 	//We get ownership of the supplied data object
 	uv_err_t setDynamicData(UVQtDynamicTextData *data);
+	uv_err_t refreshDynamicData();
+	uv_err_t refreshVerticalPageStep();
 	uv_err_t scrollUnits(int units);
 
 protected:

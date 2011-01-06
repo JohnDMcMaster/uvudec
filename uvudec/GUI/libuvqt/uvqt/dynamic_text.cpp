@@ -6,7 +6,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <QPainter>
 #include <QPaintEvent>
-#include <QScrollBar>
 #include "stdio.h"
 #include <stdint.h>
 #include <math.h>
@@ -180,8 +179,11 @@ uv_err_t UVQtDynamicText::setDynamicData(UVQtDynamicTextData *data)
 	//printf("start set, data: 0x%08X\n", (int)data);
 	//fflush(stdout);
 	uv_assert_ret(data);
-	delete m_textData;
-	m_textData = data;
+	if( data != m_textData )
+	{
+		delete m_textData;
+		m_textData = data;
+	}
 	//Reset to top if we swap out the data completly
 	UV_DEBUG(m_textData->begin(getMinOffset(), 0, &m_start));
 	//printf("set data done\n");

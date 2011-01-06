@@ -52,6 +52,8 @@ signals:
 	void binaryStateChanged();
 	//Analysis may have changed the way disassembling works
 	void assemblyChanged();
+	//Update strings view
+	void stringsChanged();
 
 protected:
 	uv_err_t getNextAction(UVDAnalysisAction **action);

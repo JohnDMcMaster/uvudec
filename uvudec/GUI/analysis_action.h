@@ -16,7 +16,13 @@ public:
 public:
 };
 
+//Do initial analysis
 class UVDAnalysisActionBegin : public UVDAnalysisAction
+{
+};
+
+//Re-analyze the strings database
+class UVDAnalysisActionAnalyzeStrings : public UVDAnalysisAction
 {
 };
 

@@ -68,6 +68,7 @@ UVDStringEngine *UVDGUIStringData::getStringEngine()
 	}
 	else
 	{
+printf("string engine inaccessible\n");
 		return NULL;
 	}
 }
@@ -76,6 +77,7 @@ uv_err_t UVDGUIStringData::getMaxOffset(unsigned int *out)
 {
 	if( getNumberStrings() == 0 )
 	{
+printf("no strings\n");
 		*out = 0;
 	}
 	else

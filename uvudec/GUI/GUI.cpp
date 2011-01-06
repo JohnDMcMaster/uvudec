@@ -311,6 +311,8 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(binaryStateChanged()),
 			this, SLOT(updateBinaryView())));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(stringsChanged()),
+			this, SLOT(updateStringsView())));
 
 	m_analysisThread->queueAnalysis(new UVDAnalysisActionBegin());
 
@@ -378,7 +380,8 @@ uv_err_t UVDMainWindow::updateAssemblyView()
 
 uv_err_t UVDMainWindow::updateStringsView()
 {
-	emit m_mainWindow.strings->update();
+printf("\n\nUVDMainWindow::updateStringsView()\n");
+	m_mainWindow.strings->refreshDynamicData();
 	return UV_ERR_OK;
 
 #if 0

@@ -65,17 +65,23 @@ void UVQtDynamicText::resizeEvent(QResizeEvent *event)
 }
 */
 
+uv_err_t UVQtScrollableDynamicText::refreshVerticalPageStep()
+{
+	UV_ASSERT_VOID(m_viewportShadow);
+	//Keep 2 common lines per step, or a minimum of 3 lines for it to remain useful
+	int pageStep = uvd_max(3, (int)m_viewportShadow->getNumberLines() - 2);
+	printf("page step: %d\n", pageStep);
+	verticalScrollBar()->setPageStep(pageStep);
+	return UV_ERR_OK;
+}
+
 void UVQtScrollableDynamicText::resizeEvent(QResizeEvent *event)
 {
 	/*
 	Is there any reason to use the resize information in the event vs querying from the widget?
 	*/
 	printf("UVQtScrollableDynamicText::resizeEvent()\n");
-	UV_ASSERT_VOID(m_viewportShadow);
-	//Keep 2 common lines per step, or a minimum of 3 lines for it to remain useful
-	int pageStep = uvd_max(3, (int)m_viewportShadow->getNumberLines() - 2);
-	printf("page step: %d\n", pageStep);
-	verticalScrollBar()->setPageStep(pageStep);
+	UV_DEBUG(refreshVerticalPageStep());
 }
 
 void UVQtScrollableDynamicText::paintEvent(QPaintEvent *event)
@@ -161,21 +167,40 @@ void UVQtScrollableDynamicText::scrollContentsBy(int dx, int dy)
 	viewport()->update();
 }
 
-uv_err_t UVQtScrollableDynamicText::setDynamicData(UVQtDynamicTextData *data)
+uv_err_t UVQtScrollableDynamicText::refreshDynamicData()
 {
-	//Prepare child, then try to do higher level queries on it now that it should be setup
-	uv_assert_err_ret(m_viewportShadow->setDynamicData(data));
-
+printf("refreshDynamicData()\n");
 	//Probably best not to try to display until after propagated
 	//horizontalScrollBar()->setRange(0, 20);
 	//horizontalScrollBar()->setPageStep(1);
 	//doesn't work because data wasn't set yet
-	verticalScrollBar()->setRange(m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
+	if( m_viewportShadow )
+	{
+		verticalScrollBar()->setRange(m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
+		m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
+		verticalScrollBar()->setSliderPosition(m_verticalScrollbarValueShadow);
+printf("refreshDynamicData(): min: %d, max: %d, pos: %d\n", m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset(), m_verticalScrollbarValueShadow);
+	}
+	else
+	{
+printf("refreshDynamicData(): no shadow set\n");
+		verticalScrollBar()->setRange(0, 0);
+		m_verticalScrollbarValueShadow = 0;
+		verticalScrollBar()->setSliderPosition(0);
+	}
+	
 	//printf("%d, %d\n", m_viewportShadow->getMinOffset(), m_viewportShadow->getMaxOffset());
-	verticalScrollBar()->setPageStep(3);
-	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
-	verticalScrollBar()->setSliderPosition(m_viewportShadow->m_start.offset());
+	uv_assert_err_ret(refreshVerticalPageStep());
 	//updateWidgetPosition();
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVQtScrollableDynamicText::setDynamicData(UVQtDynamicTextData *data)
+{
+	//Prepare child, then try to do higher level queries on it now that it should be setup
+	uv_assert_err_ret(m_viewportShadow->setDynamicData(data));
+	uv_assert_err_ret(refreshDynamicData());
 	m_viewportShadow->show();
 
 	return UV_ERR_OK;

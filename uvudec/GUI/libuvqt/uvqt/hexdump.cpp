@@ -9,7 +9,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvqt/util.h"
 #include <QPainter>
 #include <QPaintEvent>
-#include <QScrollBar>
 #include "stdio.h"
 #include <stdint.h>
 #include <math.h>
