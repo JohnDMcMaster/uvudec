@@ -45,6 +45,9 @@ public:
 public:
 	UVDGUIStringData();
 	
+	unsigned int getNumberStrings();
+	UVDStringEngine *getStringEngine();
+	
 	virtual uv_err_t begin(unsigned int offset, unsigned int index, UVQtDynamicTextData::iterator *out);
 	virtual uv_err_t end(iterator *out);
 	virtual uv_err_t getMinOffset(unsigned int *out);

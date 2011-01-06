@@ -32,7 +32,7 @@ uv_err_t UVDGUIStringData::begin(unsigned int offset, unsigned int index, UVQtDy
 uv_err_t UVDGUIStringData::end(iterator *out)
 {
 	UVDGUIStringData::iterator_impl *iter_impl = new UVDGUIStringData::iterator_impl(this,
-			g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine->m_strings.size());
+			getNumberStrings());
 	UVQtDynamicTextData::iterator iter = UVQtDynamicTextData::iterator(iter_impl);
 	*out = iter;
 	return UV_ERR_OK;
@@ -44,9 +44,44 @@ uv_err_t UVDGUIStringData::getMinOffset(unsigned int *out)
 	return UV_ERR_OK;
 }
 
+unsigned int UVDGUIStringData::getNumberStrings()
+{
+	if( getStringEngine() )
+	{
+		return getStringEngine()->m_strings.size();
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+UVDStringEngine *UVDGUIStringData::getStringEngine()
+{
+	if( g_mainWindow
+			&& g_mainWindow->m_project
+			&& g_mainWindow->m_project->m_uvd
+			&& g_mainWindow->m_project->m_uvd->m_analyzer
+			&& g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine )
+	{
+		return g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 uv_err_t UVDGUIStringData::getMaxOffset(unsigned int *out)
 {
-	*out = g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine->m_strings.size() - 1;
+	if( getNumberStrings() == 0 )
+	{
+		*out = 0;
+	}
+	else
+	{
+		*out = getNumberStrings() - 1;
+	}
 	return UV_ERR_OK;
 }
 
