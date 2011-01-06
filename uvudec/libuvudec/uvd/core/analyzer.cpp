@@ -244,6 +244,7 @@ UVDAnalyzer::UVDAnalyzer()
 	m_uvd = NULL;
 	//m_symbolManager = NULL;
 	m_symbolManager.m_analyzer = this;
+	m_stringEngine = NULL;
 }
 
 UVDAnalyzer::~UVDAnalyzer()
@@ -284,6 +285,8 @@ uv_err_t UVDAnalyzer::deinit()
 		delete (*iter).second;
 	}
 	m_referencedAddresses.clear();
+	
+	delete m_stringEngine;
 
 	m_uvd = NULL;
 

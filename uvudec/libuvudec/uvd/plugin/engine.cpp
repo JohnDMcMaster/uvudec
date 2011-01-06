@@ -468,9 +468,20 @@ uv_err_t UVDPluginEngine::activatePluginByName(const std::string &name)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPluginEngine::registerPluginActivatedCallback(OnPluginActivated callback, void *user)
+uv_err_t UVDPluginEngine::registerPluginActivatedCallback(OnPluginActivated callback, void *user, bool emitAlreadyLoaded)
 {
 	m_onPluginActivated.insert(OnPluginActivatedItem(callback, user));
+
+	if( emitAlreadyLoaded )
+	{
+		for( std::map<std::string, UVDPlugin *>::iterator iter = m_loadedPlugins.begin();
+				iter != m_loadedPlugins.end(); ++iter )
+		{
+			UVDPlugin *plugin = (*iter).second;
+			
+			uv_assert_err_ret(callback(plugin, user));
+		}
+	}
 	return UV_ERR_OK;
 }
 

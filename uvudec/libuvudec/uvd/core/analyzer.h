@@ -206,8 +206,6 @@ public:
 	//ROM data addresses, not including string addresses
 	//Provide utility func later if need conglomeration
 	UVDAnalyzedMemorySpace m_ROMADataddresses;
-	//String data addresses
-	UVDAnalyzedMemorySpace m_stringAddresses;
 	
 	//List of functions found during analysis
 	//XXX: should this get replaced by the symbol DB?

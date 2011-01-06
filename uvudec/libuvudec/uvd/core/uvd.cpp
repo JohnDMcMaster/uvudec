@@ -26,6 +26,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
 #include "uvd/language/language.h"
+#include "uvd/string/engine.h"
 #include "uvd/util/types.h"
 #include "uvd/util/benchmark.h"
 
@@ -133,71 +134,8 @@ uv_err_t UVD::analyzeCode(UVDAnalyzedCode &analyzedCode)
 
 uv_err_t UVD::analyzeStrings()
 {
-#if 0
-	/*
-	Do strings(3) like processing to find ROM/string data
-	For some formats like ELF, it is possible to get this string table more directly
-	*/
-
-	uv_err_t rc = UV_ERR_GENERAL;
-	
-	UV_ENTER();
-
-	printf_debug_level(UVD_DEBUG_PASSES, "uvd: analyzing strings...\n");
-	UVDBenchmark stringAnalysisBenchmark;
-	stringAnalysisBenchmark.start();
-	
-	//For now assume non-coding addresses are ROM data since thats primary motiviation to exclude them
-	for( unsigned int i = 0; i < m_noncodingAddresses.size(); ++i )
-	{
-		UVDAddressRange memLoc = m_noncodingAddresses[i];
-		//Do a C string table analysis
-		for( unsigned int i = memLoc.m_min_addr; i < memLoc.m_max_addr; )
-		{
-			unsigned int j = 0;
-			for( j = i; j <= memLoc.m_max_addr; )
-			{
-				int readRaw = 0; 
-				char c = 0;
-				
-				readRaw = m_data->read(j);
-				++j;
-				
-				if( readRaw < 0 )
-				{
-					UV_DEBUG(rc);
-					goto error;
-				}
-				c = (char)readRaw;
-				//null terminator
-				if( c == 0 )
-				{
-					//Add the string
-					uv_addr_t endAddr = j - 1;
-
-					//Just insert one reference to each string for now
-					//A map
-					m_analyzer->m_stringAddresses[i] = new UVDAnalyzedMemoryRange(i, endAddr);
-					m_analyzer->m_stringAddresses[i]->insertReference(i, UVD_MEMORY_REFERENCE_CONSTANT | UVD_MEMORY_REFERENCE_STRING);
-					break;
-				}
-			}
-			
-			//Start is where we left off			
-			i = j;
-		}
-	}
-	
-	stringAnalysisBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "string analysis time: %s\n", stringAnalysisBenchmark.toString().c_str());
-	
-
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
-#endif
-	return UV_ERR_OK;
+	uv_assert_ret(m_analyzer->m_stringEngine);
+	return UV_DEBUG(m_analyzer->m_stringEngine->analyze());
 }
 
 uv_err_t UVD::constructBlock(UVDAddressRange addressRange, UVDAnalyzedBlock **blockOut)

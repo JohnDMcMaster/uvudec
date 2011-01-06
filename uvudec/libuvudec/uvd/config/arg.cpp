@@ -422,6 +422,7 @@ uv_err_t UVDConfig::initArgConfig()
 	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_CALLED_ADDRESSES, 0, "print-called-addresses", "whether to print information about called to addresses (*1)", 1, argParser, true));
 	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_ADDRESS_COMMENT, 0, "addr-comment", "put comments on addresses", 1, argParser, true));
 	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_ADDRESS_LABEL, 0, "addr-label", "label addresses for jumping", 1, argParser, true));
+	uv_assert_err_ret(registerArgument(UVD_PROP_OUTPUT_STRING_TABLE, 0, "string-table", "print string table in output", 1, argParser, true));
 
 	return UV_ERR_OK;	
 }
@@ -547,6 +548,10 @@ uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argum
 	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_ADDRESS_LABEL )
 	{
 		config->m_addressLabel = firstArgBool;
+	}
+	else if( argConfig->m_propertyForm == UVD_PROP_OUTPUT_STRING_TABLE )
+	{
+		config->m_print_string_table = firstArgBool;
 	}
 	//Maybe it was in the early config?
 	else

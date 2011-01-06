@@ -76,7 +76,7 @@ UVDConfig::UVDConfig()
 	m_memoric = false;
 	m_asm_instruction_info = false;
 	m_print_used = false;
-	m_print_string_table = false;
+	m_print_string_table = UVD_PROP_OUTPUT_STRING_TABLE_DEFAULT;
 	m_print_block_id = false;
 	m_print_header = false;
 

@@ -4,6 +4,7 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include <algorithm>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -11,25 +12,24 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <math.h>
-#include <assert.h>
 #include <sys/stat.h>
 #include <vector>
-#include <algorithm>
-#include "uvd/util/debug.h"
-#include "uvd/util/error.h"
-#include "uvd/util/util.h"
-#include "uvd/core/uvd.h"
+#include "uvd/architecture/architecture.h"
 #include "uvd/assembly/address.h"
+#include "uvd/assembly/instruction.h"
 #include "uvd/core/analysis.h"
-#include "uvd/util/benchmark.h"
+#include "uvd/core/runtime.h"
+#include "uvd/core/uvd.h"
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
-#include "uvd/assembly/instruction.h"
+#include "uvd/string/engine.h"
+#include "uvd/string/string.h"
+#include "uvd/util/benchmark.h"
+#include "uvd/util/debug.h"
+#include "uvd/util/error.h"
 #include "uvd/util/types.h"
-#include "uvd/architecture/architecture.h"
-#include "uvd/core/runtime.h"
+#include "uvd/util/util.h"
 
 UVDIteratorCommon::UVDIteratorCommon()
 {
@@ -469,45 +469,48 @@ uv_err_t UVDIterator::initialProcessHeader()
 
 uv_err_t UVDIterator::initialProcessStringTable()
 {
-	char szBuff[256];
 	UVDAnalyzer *analyzer = m_uvd->m_analyzer;
 
-	snprintf(szBuff, 256, "# String table:");
-	m_indexBuffer.push_back(szBuff);
+	m_indexBuffer.push_back("# String table:");
 
 	uv_assert_ret(m_addressSpace);
 	uv_assert_ret(m_addressSpace->m_data);
 
-	for( UVDAnalyzedMemorySpace::iterator iter = analyzer->m_stringAddresses.begin(); iter != analyzer->m_stringAddresses.end(); ++iter )
+	for( std::vector<UVDString>::iterator iter = analyzer->m_stringEngine->m_strings.begin();
+			iter != analyzer->m_stringEngine->m_strings.end(); ++iter )
 	{
-		UVDAnalyzedMemoryRange *mem = (*iter).second;
-		std::string sData;
+		UVDString uvdString = *iter;
+		std::string string;
 		std::vector<std::string> lines;
 		
 		//Read a string
-		uv_assert_err_ret(m_addressSpace->m_data->readDataAsSafeString(mem->m_min_addr, mem->m_max_addr - mem->m_min_addr, sData));
-		
-		lines = split(sData, '\n', true);
-		
+		uv_assert_err_ret(uvdString.readString(string));
+
+		lines = split(string, '\n', true);		
 		if( lines.size() == 1 )
 		{
-			snprintf(szBuff, 256, "# 0x%.8X: %s", mem->m_min_addr, stringTableStringFormat(lines[0]).c_str());
-			m_indexBuffer.push_back(szBuff);				
+			m_indexBuffer.push_back(UVDSprintf("# 0x%.8X: %s", uvdString.m_addressRange.m_min_addr, stringTableStringFormat(lines[0]).c_str()));				
 		}
 		else
 		{
-			snprintf(szBuff, 256, "# 0x%.8X:", mem->m_min_addr);
-			m_indexBuffer.push_back(szBuff);				
+			m_indexBuffer.push_back(UVDSprintf("# 0x%.8X:", uvdString.m_addressRange.m_min_addr));				
 			for( std::vector<std::string>::size_type i = 0; i < lines.size(); ++i )
 			{
-				snprintf(szBuff, 256, "#\t%s", stringTableStringFormat(lines[i]).c_str());
-				m_indexBuffer.push_back(szBuff);				
+				m_indexBuffer.push_back(UVDSprintf("#\t%s", stringTableStringFormat(lines[i]).c_str()));				
 			}
 		}
 	}
 	m_indexBuffer.push_back("");
 	m_indexBuffer.push_back("");
 
+	/*
+	printf("index buffer size: %d\n", m_indexBuffer.size());
+	for( unsigned int i = 0; i < m_indexBuffer.size(); ++i )
+	{
+	printf("%s\n", m_indexBuffer[i].c_str());
+	}
+	exit(1);
+	*/
 	return UV_ERR_OK;
 }
 
@@ -642,7 +645,9 @@ uv_err_t UVDIterator::nextCore()
 	{
 		return UV_ERR_OK;
 	}
-	uv_assert_ret(m_instruction->m_inst_size);
+	//These assertions aren't valid because initial process might be things like string table etc that has no instruction
+	//uv_assert_ret(m_instruction);
+	//uv_assert_ret(m_instruction->m_inst_size);
 
 	if( config->m_addressLabel )
 	{
@@ -667,7 +672,11 @@ uv_err_t UVDIterator::nextCore()
 	//Best to have data follow analysis
 	//Instruction is fully parsed now
 	//Convert to necessary string values
-	uv_assert_err_ret(m_uvd->stringListAppend(m_instruction, m_indexBuffer));
+	if( m_instruction )
+	{
+		uv_assert_ret(m_instruction->m_inst_size);
+		uv_assert_err_ret(m_uvd->stringListAppend(m_instruction, m_indexBuffer));
+	}
 	printf_debug("Generated string list, size: %d\n", m_indexBuffer.size());
 
 	benchmark.stop();

@@ -16,7 +16,6 @@ UVDStringEngine
 static uv_err_t onPluginActivated(UVDPlugin *plugin, void *user)
 {
 	UVDStringEngine *stringAnalyzers = (UVDStringEngine *)user;
-	
 	return UV_DEBUG(stringAnalyzers->pluginActivatedCallback(plugin));
 }
 
@@ -32,7 +31,8 @@ uv_err_t UVDStringEngine::init(UVD *uvd)
 	m_uvd = uvd;
 	pluginEngine = &m_uvd->m_config->m_plugin.m_pluginEngine;
 
-	uv_assert_err_ret(pluginEngine->registerPluginActivatedCallback(onPluginActivated, this));
+	uv_assert_err_ret(pluginEngine->registerPluginActivatedCallback(onPluginActivated, this, true));
+	//uv_assert_err_ret(findAnalyzers());
 	
 	return UV_ERR_OK;
 }
@@ -56,6 +56,11 @@ uv_err_t UVDStringEngine::analyze()
 	return UV_ERR_OK;
 }
 */
+
+uv_err_t UVDStringEngine::analyze()
+{
+	return UV_DEBUG(getAllStrings(m_strings));
+}
 
 uv_err_t UVDStringEngine::findAnalyzers()
 {

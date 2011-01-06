@@ -52,6 +52,7 @@ uv_err_t UVDArchitecture::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
 		uv_assert_ret(iterCommon.m_instruction);
 	}
 	uv_assert_err_ret(iterCommon.m_instruction->parseCurrentInstruction(iterCommon));
+	uv_assert_ret(iterCommon.m_instruction);
 
 	return UV_ERR_OK;
 }

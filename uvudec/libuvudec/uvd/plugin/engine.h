@@ -76,7 +76,7 @@ public:
 	uv_err_t getAllPluginDependencies(const std::string &name, std::vector<UVDPlugin *> &out);
 	uv_err_t getPluginDependencyOrder(std::vector<UVDPlugin *> &out);
 
-	uv_err_t registerPluginActivatedCallback(OnPluginActivated callback, void *user);
+	uv_err_t registerPluginActivatedCallback(OnPluginActivated callback, void *user, bool emitAlreadyLoaded);
 
 protected:
 	//Initialize statically linked plugins

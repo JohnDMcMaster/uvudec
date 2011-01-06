@@ -55,6 +55,9 @@ public:
 	UVDString();
 	UVDString(UVDAddressRange addressRange, UVDStringEncoding encoding = UVD_STRING_ENCODING_ASCII);
 	~UVDString();
+	
+	//Try to convert to a std::string
+	uv_err_t readString(std::string &out, bool safe = true) const;
 
 public:
 	UVDStringEncoding m_encoding;

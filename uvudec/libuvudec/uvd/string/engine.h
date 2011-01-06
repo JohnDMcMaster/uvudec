@@ -35,8 +35,8 @@ public:
 	
 	//Called when a new plugin is loaded/activated
 	uv_err_t pluginActivatedCallback(UVDPlugin *plugin);
-	//Have all string analyzers do their magic
-	//uv_err_t analyze();
+	//Have all string analyzers do their magic and populate the DB
+	uv_err_t analyze();
 	//Clear analyzer DB and re-populate it
 	//FIXME: maybe need to register callback to probe new plugins as loaded?
 	uv_err_t findAnalyzers();
@@ -48,6 +48,10 @@ public:
 	uv_err_t getAllStrings(std::vector<UVDString> &out);
 
 public:
+	//String data addresses
+	//UVDAnalyzedMemorySpace m_stringAddresses;
+	std::vector<UVDString> m_strings;
+
 	//There are no priority rules right now
 	//Mostly I'm currently just trying to create an updgrade path to make the system more flexible later
 	std::set<UVDStringsAnalyzer *> m_analyzers;
