@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdobjbin/object.h"
+#include <typeinfo>
 
 UVDBinaryObject::UVDBinaryObject()
 {
@@ -48,6 +49,17 @@ uv_err_t UVDBinaryObject::canLoad(const UVDData *data, const UVDRuntimeHints &hi
 		void *user)
 {
 	//While this may work, likely its not a good loader and should be a last resort
+	//By convention though, if its a file and ends in .bin, seems likely its a binary image
+	if( typeid(*data) == typeid(UVDDataFile) )
+	{
+		const UVDDataFile *dataFile = static_cast<const UVDDataFile *>(data);
+		
+		if( dataFile->m_sFile.find(".bin") != std::string::npos )
+		{
+			*confidence = UVD_MATCH_ACCEPTABLE;
+			return UV_ERR_OK;
+		}
+	}
 	*confidence = UVD_MATCH_POOR;
 	return UV_ERR_OK;
 }
