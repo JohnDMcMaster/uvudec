@@ -69,7 +69,7 @@ public:
 	
 	//Need to add some sort of thread safe queue object
 	UVDGUIAnalysisThread *m_analysisThread;
-	
+		
 	//So we can pass options off to children later
 	int m_argc;
 	char **m_argv;

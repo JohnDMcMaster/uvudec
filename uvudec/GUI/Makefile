@@ -20,6 +20,8 @@ CXX_SRCS = 	\
 		$(GUI_DIR)/lock.cpp \
 		$(GUI_DIR)/main.cpp \
 		$(GUI_DIR)/project.cpp \
+		$(GUI_DIR)/string_data.cpp \
+		$(GUI_DIR)/string_data_iterator.cpp \
 
 USING_LIB_UVUDEC=Y
 USING_LIB_JANSSON=Y

@@ -23,6 +23,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 #include "GUI/lock.h"
 #include "GUI/main.h"
 #include "GUI/project.h"
+#include "GUI/string_data.h"
 #include "uvd/core/runtime.h"
 #include "uvd/assembly/function.h"
 #include "uvd/project/file_extensions.h"
@@ -78,8 +79,8 @@ uv_err_t UVDMainWindow::init()
 	//qRegisterMetaType("QTextBlock");
 	//qRegisterMetaType("QTextCursor");
 	
-	//FIXME: this is an ugly hack for preventing some crashes until I figure how to fix them properly
-	//the original issue of closing properly should be fixed now, I should be able to fix this now
+	uv_assert_err_ret(m_mainWindow.strings->setDynamicData(new UVDGUIStringData()));
+
 	m_analysisThread = new UVDGUIAnalysisThread();
 	m_analysisThread->m_mainWindow = this;
 	uv_assert_err_ret(m_analysisThread->init());
@@ -377,16 +378,30 @@ uv_err_t UVDMainWindow::updateAssemblyView()
 
 uv_err_t UVDMainWindow::updateStringsView()
 {
+	emit m_mainWindow.strings->update();
+	return UV_ERR_OK;
+
+#if 0
 	UVDStringEngine *stringEngine = NULL;
-	std::vector<UVDString> strings;
 	
 	UVD_AUTOLOCK_ENGINE_BEGIN();
 	
 	stringEngine = m_project->m_uvd->m_analyzer->m_stringEngine;
-	uv_assert_err_ret(stringEngine->getAllStrings(strings));
+
+	for( std::vector<UVDString>::iterator iter = stringEngine->m_strings.begin();
+			iter != stringEngine->m_strings.end(); ++iter )
+	{
+		UVDString uvdString = *iter;
+		std::string string;
+		
+		//Read a string
+		uv_assert_err_ret(uvdString.readString(string));
+
+		m_indexBuffer.push_back(UVDSprintf("# 0x%.8X: %s", uvdString.m_addressRange.m_min_addr, stringTableStringFormat(lines[0]).c_str()));				
+	}
 	
 	UVD_AUTOLOCK_ENGINE_END();
-
+#endif
 	return UV_ERR_OK;
 }
 
