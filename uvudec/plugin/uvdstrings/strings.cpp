@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDStringsAnalyzerImpl::UVDStringsAnalyzerImpl(UVDStringsPlugin *plugin)
 {
 	m_plugin = plugin;
+	m_minLength = 3;
 }
 
 UVDStringsAnalyzerImpl::~UVDStringsAnalyzerImpl()
@@ -53,7 +54,6 @@ uv_err_t UVDStringsAnalyzerImpl::doAppendAllStrings(UVDAddressSpace *addressSpac
 	{
 		return UV_ERR_OK;
 	}
-	
 	//Do a C/ASCII string table analysis
 	for( unsigned int i = 0; i < data->size(); )
 	{

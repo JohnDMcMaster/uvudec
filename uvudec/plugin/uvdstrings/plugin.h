@@ -21,6 +21,7 @@ public:
 	virtual uv_err_t getDescription(std::string &out);	
 	virtual uv_err_t getVersion(UVDVersion &out);
 	virtual uv_err_t getAuthor(std::string &out);
+	virtual uv_err_t getStringsAnalyzer(UVDStringsAnalyzer **out);
 
 public:
 };

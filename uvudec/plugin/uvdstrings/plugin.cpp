@@ -4,11 +4,11 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvd/core/uvd.h"
 #include "uvd/plugin/plugin.h"
 #include "uvd/util/io.h"
-#include "uvd/core/uvd.h"
 #include "uvdstrings/plugin.h"
-#include "uvd/core/uvd.h"
+#include "uvdstrings/strings.h"
 
 UVDStringsPlugin::UVDStringsPlugin()
 {
@@ -45,6 +45,12 @@ uv_err_t UVDStringsPlugin::getVersion(UVDVersion &out)
 uv_err_t UVDStringsPlugin::getAuthor(std::string &out)
 {
 	out = "John McMaster <JohnDMcMaster@gmail.com>";
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDStringsPlugin::getStringsAnalyzer(UVDStringsAnalyzer **out)
+{
+	*out = new UVDStringsAnalyzerImpl(this);
 	return UV_ERR_OK;
 }
 
