@@ -77,13 +77,13 @@ uv_err_t UVDGUIStringData::getMaxOffset(unsigned int *out)
 {
 	if( getNumberStrings() == 0 )
 	{
-printf("no strings\n");
 		*out = 0;
 	}
 	else
 	{
 		*out = getNumberStrings() - 1;
 	}
+printf("set max offset: %d\n", *out);
 	return UV_ERR_OK;
 }
 

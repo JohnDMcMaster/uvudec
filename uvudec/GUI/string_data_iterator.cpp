@@ -50,7 +50,25 @@ unsigned int UVDGUIStringData::iterator_impl::offset()
 
 uv_err_t UVDGUIStringData::iterator_impl::get(std::string &ret)
 {
-	return UV_DEBUG(g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine->m_strings[m_offset].readString(ret));
+	uv_assert_ret(m_dataImpl);
+	uv_assert_ret(m_dataImpl->getStringEngine());
+	if( m_offset >= m_dataImpl->getStringEngine()->m_strings.size() )
+	{
+		//Maybe instead we should adjust this to the max value?
+		printf_error("string database index out of range!\n");
+		printf_error("m_offset: %d, # strings: %d\n", m_offset, m_dataImpl->getStringEngine()->m_strings.size());
+		//This is suppose to be a const operations and this object isn't necessarily saved anyway, so first is better
+		if( true )
+		{
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		else
+		{
+			UV_DEBUG(UV_ERR_GENERAL);
+			uv_assert_err_ret(m_dataImpl->getMaxOffset(&m_offset));
+		}
+	}
+	return UV_DEBUG(m_dataImpl->getStringEngine()->m_strings[m_offset].readString(ret));
 }
 
 uv_err_t UVDGUIStringData::iterator_impl::previous()
@@ -65,9 +83,9 @@ uv_err_t UVDGUIStringData::iterator_impl::previous()
 	
 uv_err_t UVDGUIStringData::iterator_impl::next()
 {
-	if( m_offset >= g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine->m_strings.size() )
+	if( m_offset >= m_dataImpl->getStringEngine()->m_strings.size() )
 	{
-		m_offset = g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine->m_strings.size() - 1;
+		m_offset = m_dataImpl->getStringEngine()->m_strings.size() - 1;
 	}
 	else
 	{
@@ -79,35 +97,28 @@ uv_err_t UVDGUIStringData::iterator_impl::next()
 
 uv_err_t UVDGUIStringData::iterator_impl::changePositionByLineDelta(int delta)
 {
-	m_offset += delta;
-	/*
-	//printf("**got a delta: %d\n", delta);
-	int offsetDelta = scrollbarPositionDeltaToOffsetDelta(delta);
+	//Don't do this, leads to under/overflow issues
+	//m_offset += delta;
+	
 	if( delta > 0 )
 	{
-		m_offset += offsetDelta;
-		
-		printf("%d\n", maxValidOffset());
-		if( m_offset > maxValidOffset() )
+		m_offset += delta;
+		if( m_offset >= m_dataImpl->getStringEngine()->m_strings.size() )
 		{
-			printf("overflow\n");
-			m_offset = maxValidOffset();
+			m_offset = m_dataImpl->getStringEngine()->m_strings.size() - 1;
 		}
 	}
 	else
 	{
-		if( (unsigned)-offsetDelta > m_offset )
+		if( (unsigned)-delta > m_offset )
 		{
-			printf("predicted underflow\n");
 			m_offset = 0;
 		}
 		else
 		{
-			m_offset += offsetDelta;
+			m_offset += delta;
 		}
 	}
-	//printf("end offset: %d\n", m_offset);
-	*/
 	return UV_ERR_OK;
 }
 
@@ -134,7 +145,7 @@ int UVDGUIStringData::iterator_impl::compare(const UVQtDynamicTextData::iterator
 	
 	UVD_AUTOLOCK_ENGINE_BEGIN();
 	
-	stringEngine = g_mainWindow->m_project->m_uvd->m_analyzer->m_stringEngine;
+	stringEngine = m_dataImpl->getStringEngine();
 
 	for( std::vector<UVDString>::iterator iter = stringEngine->m_strings.begin();
 			iter != stringEngine->m_strings.end(); ++iter )
