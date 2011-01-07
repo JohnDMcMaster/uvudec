@@ -37,5 +37,6 @@ include $(ROOT_DIR)/Makefile.mk
 $(EXE_NAME_FULL): libuvqt
 
 libuvqt:
+	cd libuvqt && qmake
 	cd libuvqt && $(MAKE)
 
