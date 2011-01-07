@@ -1,6 +1,6 @@
 # UVNet Universal Decompiler (uvudec)
 # Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-# Licensed under terms of the three clause BSD license, see LICENSE for details
+# Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 EXE_NAME=$(GUI_EXE)
 

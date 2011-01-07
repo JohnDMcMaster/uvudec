@@ -1,7 +1,7 @@
 # Plugin boiler plate makefile
 # UVNet Universal Decompiler (uvudec)
 # Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
-# Licensed under terms of the three clause BSD license, see LICENSE for details
+# Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 # For static builds, we statically link the plugin
 # For dynamic builds, we 

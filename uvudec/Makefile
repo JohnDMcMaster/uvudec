@@ -1,6 +1,6 @@
 # UVNet Universal Decompiler (uvudec)
 # Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
-# Licensed under GPL V3+, see COPYING for details
+# Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 PHONY += uvudec bin2obj obj2pat pat2sig flirtutil lib doc cleanSub cleanSubCore installer dist distCore python test gui plugin uvudec
 
