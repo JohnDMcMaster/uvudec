@@ -29,7 +29,7 @@
       <brush brushstyle="SolidPattern">
        <color alpha="255">
         <red>0</red>
-        <green>255</green>
+        <green>0</green>
         <blue>0</blue>
        </color>
       </brush>
@@ -37,9 +37,9 @@
      <colorrole role="Base">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -49,7 +49,7 @@
       <brush brushstyle="SolidPattern">
        <color alpha="255">
         <red>0</red>
-        <green>255</green>
+        <green>0</green>
         <blue>0</blue>
        </color>
       </brush>
@@ -57,9 +57,9 @@
      <colorrole role="Base">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>0</red>
-        <green>0</green>
-        <blue>0</blue>
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -106,7 +106,7 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="disassemblyTab">
        <attribute name="title">
@@ -146,7 +146,26 @@
        <attribute name="title">
         <string>Symbols</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QComboBox" name="symbolsFilter">
+          <item>
+           <property name="text">
+            <string>All</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Functions</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Variables</string>
+           </property>
+          </item>
+         </widget>
+        </item>
         <item>
          <widget class="QListWidget" name="symbolsList">
           <property name="sizePolicy">
