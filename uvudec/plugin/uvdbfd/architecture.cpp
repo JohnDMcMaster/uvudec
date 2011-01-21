@@ -42,7 +42,7 @@ uv_err_t UVDBFDArchitecture::getAddresssSpaceNames(std::vector<std::string> &nam
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBFDArchitecture::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
+uv_err_t UVDBFDArchitecture::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
 {
 	//Reduce errors from stale data
 	if( !iterCommon.m_instruction )

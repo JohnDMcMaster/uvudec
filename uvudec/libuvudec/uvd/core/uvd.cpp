@@ -432,9 +432,9 @@ uv_err_t UVD::getUVDFromData(UVD **uvdOut, UVDData *data)
 	return UV_ERR_OK;
 }
 
-UVDIterator UVD::begin()
+UVDPrintIterator UVD::begin()
 {
-	UVDIterator iter;
+	UVDPrintIterator iter;
 	
 	if( UV_FAILED(begin(iter)) )
 	{
@@ -443,7 +443,7 @@ UVDIterator UVD::begin()
 	return iter;
 }
 	
-uv_err_t UVD::begin(UVDIterator &iter)
+uv_err_t UVD::begin(UVDPrintIterator &iter)
 {
 	UVDAddressSpace *addressSpace = NULL;
 	
@@ -453,9 +453,9 @@ uv_err_t UVD::begin(UVDIterator &iter)
 	return UV_ERR_OK;
 }
 
-UVDIterator UVD::begin(uv_addr_t offset)
+UVDPrintIterator UVD::begin(uv_addr_t offset)
 {
-	UVDIterator iter;
+	UVDPrintIterator iter;
 	UVDAddressSpace *addressSpace = NULL;
 	
 	UV_DEBUG(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
@@ -464,28 +464,28 @@ UVDIterator UVD::begin(uv_addr_t offset)
 	return iter;
 }
 
-uv_err_t UVD::begin(UVDAddress address, UVDIterator &iter)
+uv_err_t UVD::begin(UVDAddress address, UVDPrintIterator &iter)
 {
 	uv_assert_err_ret(iter.init(this, address, 0));
 
 	return UV_ERR_OK;
 }
 
-UVDIterator UVD::end()
+UVDPrintIterator UVD::end()
 {
-	UVDIterator iter;
+	UVDPrintIterator iter;
 
 	UV_DEBUG(end(iter));
 	return iter;
 }
 
-uv_err_t UVD::end(UVDIterator &iter)
+uv_err_t UVD::end(UVDPrintIterator &iter)
 {
 	//Pos is "next position"
 	//Size is first invalid position
-	//UVDIterator iter;
+	//UVDPrintIterator iter;
 	
-	uv_assert_err_ret(UVDIterator::getEnd(this, iter));
+	uv_assert_err_ret(UVDPrintIterator::getEnd(this, iter));
 	
 	//This will work fine unless we fill up the entire address space
 	//UV_DEBUG(iter.init(this));
@@ -511,6 +511,11 @@ uv_err_t UVD::instructionBegin(UVDInstructionIterator &iter)
 	uv_assert_err_ret(iter.init(this, addressSpace));
 
 	return UV_ERR_OK;	
+}
+
+uv_err_t UVD::instructionBeginByAddress(UVDAddress address, UVDInstructionIterator &iter)
+{
+	return UV_DEBUG(iter.init(this, address));
 }
 
 UVDInstructionIterator UVD::instructionEnd()
@@ -576,8 +581,8 @@ uv_err_t UVD::disassembleByCallback(uvd_string_callback_t callback, void *user)
 uv_err_t UVD::decompile(std::string &output)
 {
 	UVDBenchmark decompileBenchmark;
-	UVDIterator iterBegin;
-	UVDIterator iterEnd;
+	UVDPrintIterator iterBegin;
+	UVDPrintIterator iterEnd;
 
 	output.clear();
 	decompileBenchmark.start();
@@ -601,8 +606,8 @@ uv_err_t UVD::decompile(std::string &output)
 uv_err_t UVD::decompileByCallback(uvd_string_callback_t callback, void *user)
 {
 	UVDBenchmark decompileBenchmark;
-	UVDIterator iterBegin;
-	UVDIterator iterEnd;
+	UVDPrintIterator iterBegin;
+	UVDPrintIterator iterEnd;
 
 	decompileBenchmark.start();
 
@@ -648,10 +653,10 @@ uv_err_t UVD::setDestinationLanguage(uint32_t destinationLanguage)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_string_callback_t callback, void *user)
+uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEnd, uvd_string_callback_t callback, void *user)
 {
-	UVDIterator iter;
-	//UVDIterator iterEnd;
+	UVDPrintIterator iter;
+	//UVDPrintIterator iterEnd;
 	int printPercentage = 1;
 	int printNext = printPercentage;
 	uint32_t analyzedBytes = 0;
@@ -659,7 +664,7 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_str
 
 	uv_assert_ret(m_config);
 	//FIXME: this should be delta, not single...w/e
-	uv_assert_err_ret(iterBegin.m_addressSpace->getNumberAnalyzedBytes(&analyzedBytes));
+	uv_assert_err_ret(iterBegin.m_iter.m_addressSpace->getNumberAnalyzedBytes(&analyzedBytes));
 	uv_assert_ret(analyzedBytes != 0);
 	verbose_old = m_config->m_verbose;
 	m_config->m_verbose = m_config->m_verbose_printing;
@@ -677,11 +682,10 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_str
 	while( iter != iterEnd )
 	{
 		std::string line;
-		uint32_t startPos = iter.getPosition();
+		uint32_t startPos = iter.m_iter.getPosition();
 
 		++iterations;				
 		printf_debug("\n\n\n");
-		printf_debug("Iteration loop iteration\n");		
 
 		int curPercent = 100 * startPos / analyzedBytes;
 		if( curPercent >= printNext )
@@ -694,7 +698,7 @@ uv_err_t UVD::printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_str
 		}
 
 		uv_assert_err_ret(iter.getCurrent(line));
-		printf_debug("Line (0x%.8X): %s\n", iter.getPosition(), line.c_str());
+		printf_debug("Line (0x%.8X): %s\n", iter.m_iter.getPosition(), line.c_str());
 
 		//This didn't help for the bottleneck under investigation
 

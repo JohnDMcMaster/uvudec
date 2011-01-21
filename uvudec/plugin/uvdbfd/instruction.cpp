@@ -30,7 +30,7 @@ UVDBFDInstruction::~UVDBFDInstruction()
 {
 }
 
-uv_err_t UVDBFDInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
+uv_err_t UVDBFDInstruction::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
 {
 	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 }

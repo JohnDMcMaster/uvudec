@@ -27,7 +27,7 @@ public:
 	UVDBFDInstruction();
 	~UVDBFDInstruction();
 	
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
+	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
 	virtual uv_err_t print_disasm(std::string &out);
 	virtual uv_err_t analyzeControlFlow(UVDInstructionAnalysis *out);
 

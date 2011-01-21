@@ -21,6 +21,7 @@ TODO: break this into a base class with only virtual functions and one with data
 */
 class UVD;
 class UVDCPUVector;
+class UVDInstructionIterator;
 class UVDArchitecture
 {
 public:
@@ -37,7 +38,7 @@ public:
 	//...and added below, so we should make this instead (at least by default) simply dump the below
 	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names) = 0;
 
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
+	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &out);
 
 	/*
 	In the future this might even return something if we are debugging

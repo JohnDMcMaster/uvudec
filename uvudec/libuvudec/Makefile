@@ -29,14 +29,15 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/config/config_symbols.cpp \
 			$(UVD_DIR)/config/file.cpp \
 			$(UVD_DIR)/config/plugin.cpp \
-			$(UVD_DIR)/core/runtime.cpp \
-			$(UVD_DIR)/core/runtime_hints.cpp \
-			$(UVD_DIR)/core/uvd.cpp \
 			$(UVD_DIR)/core/analysis.cpp \
 			$(UVD_DIR)/core/analyzer.cpp \
 			$(UVD_DIR)/core/event.cpp \
 			$(UVD_DIR)/core/init.cpp \
-			$(UVD_DIR)/core/iterator.cpp \
+			$(UVD_DIR)/core/instruction_iterator.cpp \
+			$(UVD_DIR)/core/print_iterator.cpp \
+			$(UVD_DIR)/core/runtime.cpp \
+			$(UVD_DIR)/core/runtime_hints.cpp \
+			$(UVD_DIR)/core/uvd.cpp \
 			$(UVD_DIR)/data/data.cpp \
 			$(UVD_DIR)/data/chunk.cpp \
 			$(UVD_DIR)/data/file.cpp \

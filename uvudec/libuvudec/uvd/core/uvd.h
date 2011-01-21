@@ -167,18 +167,19 @@ public:
 	*/
 	//Printing related
 	//These try to guess the primary executable address space
-	UVDIterator begin();
-	uv_err_t begin(UVDIterator &iter);
+	UVDPrintIterator begin();
+	uv_err_t begin(UVDPrintIterator &iter);
 	
-	UVDIterator begin(uv_addr_t offset);
-	uv_err_t begin(UVDAddress address, UVDIterator &iter);
-	//UVDIterator begin(UVDData *data);
-	UVDIterator end();
-	uv_err_t end(UVDIterator &iter);
-	//UVDIterator end(UVDData *data);
+	UVDPrintIterator begin(uv_addr_t offset);
+	uv_err_t begin(UVDAddress address, UVDPrintIterator &iter);
+	//UVDPrintIterator begin(UVDData *data);
+	UVDPrintIterator end();
+	uv_err_t end(UVDPrintIterator &iter);
+	//UVDPrintIterator end(UVDData *data);
 	//Analysis related
 	UVDInstructionIterator instructionBegin();
 	uv_err_t instructionBegin(UVDInstructionIterator &iter);
+	uv_err_t instructionBeginByAddress(UVDAddress address, UVDInstructionIterator &iter);
 	UVDInstructionIterator instructionEnd();
 	uv_err_t instructionEnd(UVDInstructionIterator &iter);
 
@@ -206,7 +207,7 @@ public:
 	//Intended for things like printing a function
 	uv_err_t printRange(uv_addr_t start, uv_addr_t end, uint32_t destinationLanguage, std::string &output);
 	//iterEnd is not inclusive
-	uv_err_t printRangeCore(UVDIterator iterBegin, UVDIterator iterEnd, uvd_string_callback_t callback, void *user);
+	uv_err_t printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEnd, uvd_string_callback_t callback, void *user);
 	//What we will try to output when printing
 	//Used to format assembly output and such
 	uv_err_t setDestinationLanguage(uint32_t destinationLanguage);

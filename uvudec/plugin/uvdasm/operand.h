@@ -17,7 +17,7 @@ public:
 	~UVDDisasmOperandShared();
 	uv_err_t deinit();
 
-	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out);
+	virtual uv_err_t parseOperand(UVDInstructionIterator *uvdIter, UVDDisasmOperand **out);
 
 	//Returns error if it isn't an immediate
 	//uv_err_t getImmediateSize(uint32_t *immediateSizeOut);
@@ -75,7 +75,7 @@ public:
 	UVDDisasmConstantOperandShared();
 	~UVDDisasmConstantOperandShared();
 		
-	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out);
+	virtual uv_err_t parseOperand(UVDInstructionIterator *uvdIter, UVDDisasmOperand **out);
 
 public:
 	//A constant value associated with a mmemoric
@@ -95,7 +95,7 @@ public:
 
 	//uv_err_t uvd_parsed2opshared(const struct uvd_parsed_t *parsed_type, UVDOperandShared **op_shared_in);
 	//DEPRECATED: move things to shared parsing so we can alloc instead of using union stuff
-	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter);
+	virtual uv_err_t parseOperand(UVDInstructionIterator *uvdIter);
 
 	virtual uv_err_t printDisassemblyOperand(std::string &out);
 	//uv_err_t print_disasm_operand(char *buff, unsigned int buffsz, unsigned int *buff_used_in);
