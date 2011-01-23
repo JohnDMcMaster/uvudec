@@ -156,9 +156,9 @@ public:
 
 protected:
 	//sets up begin()
-	//uv_err_t prime();
+	uv_err_t prime();
 	uv_err_t clearBuffers();
-	uv_err_t nextCore();
+	uv_err_t parseCurrentLocation();
 
 	//Some sort of disassembly issue
 	uv_err_t addWarning(const std::string &lineRaw);	
@@ -178,7 +178,7 @@ public:
 	//Printed startup information yet?
 	//FIXME: get rid of this and instead check for start address condition maybe?
 	//This yields lots of problems including more complicated code and annoying headers on small chunks we want to print
-	int m_initialProcess;
+	//int m_initialProcess;
 	//Otherwise there are weird corner cases not knowing if we are actually at the end
 	//or the highest address or looped back to start
 	//int m_isEnd;

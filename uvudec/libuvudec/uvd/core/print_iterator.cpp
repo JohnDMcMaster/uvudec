@@ -57,7 +57,6 @@ UVDPrintIterator
 UVDPrintIterator::UVDPrintIterator()
 {
 	m_positionIndex = 0;
-	m_initialProcess = FALSE;
 }
 
 UVDPrintIterator::~UVDPrintIterator()
@@ -68,8 +67,7 @@ uv_err_t UVDPrintIterator::init(UVD *uvd, UVDAddressSpace *addressSpace)
 {
 	uv_assert_err_ret(m_iter.init(uvd, addressSpace));
 	m_positionIndex = 0;
-	m_initialProcess = FALSE;
-	uv_assert_err_ret(next());
+	uv_assert_err_ret(parseCurrentLocation());
 	return UV_ERR_OK;
 }
 
@@ -78,8 +76,7 @@ uv_err_t UVDPrintIterator::init(UVD *uvd, UVDAddress address, uint32_t index)
 	uv_assert_err_ret(m_iter.init(uvd, address));
 	//Initially set to 0 to trigger next()
 	m_positionIndex = 0;
-	m_initialProcess = FALSE;
-	uv_assert_err_ret(next());
+	uv_assert_err_ret(parseCurrentLocation());
 	m_positionIndex = index;
 	return UV_ERR_OK;
 }
@@ -238,7 +235,6 @@ uv_err_t UVDPrintIterator::initialProcess()
 		uv_assert_err_ret(initialProcessStringTable());
 	}
 
-	m_initialProcess = TRUE;
 	//printf("initial process done, lines: %d\n", m_indexBuffer.size());
 	//Don't include instructions in the first batch if we printed stuff
 	if( !m_indexBuffer.empty() )
@@ -327,65 +323,90 @@ uv_err_t UVDPrintIterator::previous()
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
-uv_err_t UVDPrintIterator::next()
+uv_err_t UVDPrintIterator::prime()
 {
-	//Shouldn't this be after the initial process check?
-	++m_positionIndex;
+	/*
+	FIXME:
+	The way that this is done makes going backwards different than begin() for the same address
+	Fix later if important
+	Otherwise we are going to have to be always checking if at the special "begin" address
+	Need to create a hash map of special addresses to check each time maybe?
+	Don't want a hack for a single address
+	*/
 
-	printf_debug("next(), position index: %d, index buffer size: %d\n", m_positionIndex, m_indexBuffer.size());
-	
 	/*
 	For printing, there are certain things which may need to be added before the first line
 	In the longer term, this should be replaced with checking a special action list indexed by address
 	That way there is a clean way to print function starts and such as well
 	This should be done with a virtual function like checkSpecialActions() or something
 	*/
-	if( !m_initialProcess )
-	{
-		uv_err_t rcInitialProcess = UV_ERR_GENERAL;
-	
-		rcInitialProcess = initialProcess();
-		uv_assert_err_ret(rcInitialProcess);	
-		uv_assert_ret(m_initialProcess);
-		//We may have had all prelim prints disabled
-		if( rcInitialProcess == UV_ERR_DONE )
-		{
-			return UV_ERR_OK;
-		}
-		//printf("initial process inconclusive, continuing\n");
-	}
+	uv_err_t rcInitialProcess = UV_ERR_GENERAL;
 
+	rcInitialProcess = initialProcess();
+	uv_assert_err_ret(rcInitialProcess);	
+	/*
+	//We may have had all prelim prints disabled
+	if( rcInitialProcess == UV_ERR_DONE )
+	{
+		printf("initial parse did stuff\n");
+		//eliminated state var, don't do this
+		//return UV_ERR_OK;
+	}
+	else
+	{
+		printf("initial process inconclusive, continuing\n");
+	}
+	*/
+
+	uv_assert_err_ret(parseCurrentLocation());
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDPrintIterator::next()
+{
+	uv_err_t rcTemp = UV_ERR_GENERAL;
+
+	//Shouldn't this be after the initial process check?
+	++m_positionIndex;
+
+	//printf("next(), position index: %d, index buffer size: %d\n", m_positionIndex, m_indexBuffer.size());
+	
 	//We may have buffered data leftover form last parse
 	//Check this before seeing if we are at end
 	//Take buffered element if availible
 	if( m_positionIndex < m_indexBuffer.size() )
 	{
+		//printf("still have room\n");
 		return UV_ERR_OK;
 	}
 	
-	uv_assert_err_ret(nextCore());
+	//Advance to next instruction location
+	//printf("advancing instruction\n");
+	rcTemp = m_iter.next();
+	uv_assert_err_ret(rcTemp);
+	if( rcTemp == UV_ERR_DONE )
+	{
+		uv_assert_err_ret(makeEnd());
+		return UV_ERR_OK;
+	}
+
+	//Do the actual parsing
+	uv_assert_err_ret(parseCurrentLocation());
 	//printf("next done, m_positionIndex %d, m_indexBuffer.size() %d\n", m_positionIndex, m_indexBuffer.size());
 	
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPrintIterator::nextCore()
+uv_err_t UVDPrintIterator::parseCurrentLocation()
 {
 	//uv_err_t rcSuper = UV_ERR_GENERAL;
 	UVDBenchmark benchmark;
 	uv_addr_t startPosition = m_iter.m_curPosition;
-	uv_err_t rcTemp = UV_ERR_GENERAL;
 	UVDConfig *config = m_iter.m_uvd->m_config;
 	
 	benchmark.start();
 	
-	//Advance to next instruction location
-	rcTemp = m_iter.next();
-	uv_assert_err_ret(rcTemp);
-	if( rcTemp == UV_ERR_DONE )
-	{
-		return UV_ERR_OK;
-	}
 	//These assertions aren't valid because initial process might be things like string table etc that has no instruction
 	//uv_assert_ret(m_instruction);
 	//uv_assert_ret(m_instruction->m_inst_size);
