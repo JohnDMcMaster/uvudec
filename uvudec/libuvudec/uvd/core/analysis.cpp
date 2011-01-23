@@ -378,7 +378,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	uv_assert_err_ret(instructionBegin(iter));
 	uv_assert_err_ret(instructionEnd(iterEnd));
 	uv_assert_ret(m_config);
-	uv_assert_err_ret(iter.m_addressSpace->getNumberAnalyzedBytes(&numberAnalyzedBytes));
+	uv_assert_err_ret(iter.m_address.m_space->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
 	for( ;; )
 	{

@@ -83,23 +83,10 @@ protected:
 
 public:
 	/*
-	Source of data to disassemble
-	Usually equal to m_uvd.m_data, but may be a smaller segment for finer analysis
-	We do NOT own this, it must be deleted by the user
-	Is this still needed?  Now favoring generating appropriete iters and having funcs pass in start and end iters
-	XXX
-	What we actually should have is a list of memory areas to iterate over
-	Forget list, give a single area and they can iterate over their mult areas if needed
-	Do a wrapper multi-iterater if really want it and keep that functionality separate
-	/*/
-	//UVDData *m_data;
-	UVDAddressSpace *m_addressSpace;
+	Source of data to disassemble, there what and where
+	*/
+	UVDAddress m_address;
 
-	//Next position in file to check
-	//FIXME FIXME FIXME
-	//FIXME: this is now being used as current position
-	//Also combine with m_addressSpace to form a UVDAddress m_address
-	uv_addr_t m_curPosition;
 	//How many bytes we consumed to create currently analyzed instruction
 	//Think this is actually more used to calculate instruction size than actual iteration
 	//Maybe we should move it to a next() helper object

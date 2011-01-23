@@ -664,7 +664,7 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 
 	uv_assert_ret(m_config);
 	//FIXME: this should be delta, not single...w/e
-	uv_assert_err_ret(iterBegin.m_iter.m_addressSpace->getNumberAnalyzedBytes(&analyzedBytes));
+	uv_assert_err_ret(iterBegin.m_iter.m_address.m_space->getNumberAnalyzedBytes(&analyzedBytes));
 	uv_assert_ret(analyzedBytes != 0);
 	verbose_old = m_config->m_verbose;
 	m_config->m_verbose = m_config->m_verbose_printing;

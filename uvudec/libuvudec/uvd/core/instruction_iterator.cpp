@@ -28,8 +28,8 @@ UVDInstructionIterator::UVDInstructionIterator()
 {
 	m_instruction = NULL;
 	m_uvd = NULL;
-	m_addressSpace = NULL;
-	m_curPosition = 0;
+	//m_addressSpace = NULL;
+	//m_curPosition = 0;
 	//m_isEnd = FALSE;
 	m_currentSize = 0;
 }
@@ -66,10 +66,9 @@ uv_err_t UVDInstructionIterator::init(UVD *uvd, UVDAddress address)
 {
 	//m_isEnd = FALSE;
 	m_currentSize = 0;
-	m_addressSpace = address.m_space;
-	uv_assert_ret(m_addressSpace);
+	uv_assert_ret(address.m_space);
+	m_address = address;
 	m_uvd = uvd;
-	m_curPosition = address.m_addr;
 	uv_assert_err_ret(prime());
 	return UV_ERR_OK;
 }
@@ -78,7 +77,7 @@ uv_err_t UVDInstructionIterator::prime()
 {
 	//FIXME: this should probably be removed
 	
-	uint32_t holdPosition = m_curPosition;
+	uint32_t holdPosition = m_address.m_addr;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	
 	printf_debug("Priming iterator\n");
@@ -97,43 +96,33 @@ uv_err_t UVDInstructionIterator::prime()
 		printf_error("Failed to prime iterator!\n");
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
-	m_curPosition = holdPosition;
+	m_address.m_addr = holdPosition;
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDInstructionIterator::deinit()
 {
-	m_addressSpace = NULL;
+	//m_addressSpace = NULL;
 	m_uvd = NULL;
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDInstructionIterator::makeEnd()
 {
-	//uv_assert_err_ret(makeNextEnd());
 	//Seems reasonable enough for now
 	//Change to invalidating m_data or something later if needed
-	m_curPosition = UINT_MAX;	
+	m_address.m_addr = UINT_MAX;	
 	return UV_ERR_OK;
 }
 
 bool UVDInstructionIterator::isEnd()
 {
-	return m_curPosition == UINT_MAX;
+	return m_address.m_addr == UINT_MAX;
 }
-
-/*
-uv_err_t UVDInstructionIterator::makeNextEnd()
-{
-	m_curPosition = 0;
-	m_isEnd = TRUE;
-	return UV_ERR_OK;
-}
-*/
 
 uv_addr_t UVDInstructionIterator::getPosition()
 {
-	return m_curPosition;
+	return m_address.m_addr;
 }
 
 uv_err_t UVDInstructionIterator::previous()
@@ -142,7 +131,15 @@ uv_err_t UVDInstructionIterator::previous()
 	This is a difficult problem if the instruction set is in any way variable length
 	For now, lets assume a function will occur every so often
 	Use that functions closest jump, call, etc points as an assembly reference
+	
+	Idea: find the first known location and forward disassemble until we hit our current address
+	Take the previous location as our previous
+	Known locations should include functions and vectors at a minimum
+		Store jump information?
 	*/
+
+	//UVDAddress 
+	//uv_assert_err_ret(m_uvd->m_analyzer->getPreviousKnownInstruction(m_address, &previousKnownAddress));
 
 	return UV_ERR_GENERAL;
 }
@@ -168,7 +165,7 @@ uv_err_t UVDInstructionIterator::next()
 	format = uvd->m_format;
 	uv_assert_ret(format);
 	
-	printf_debug("previous position we are advancing from (m_curPosition): 0x%.8X\n", m_curPosition);
+	printf_debug("previous position we are advancing from (m_curPosition): 0x%.8X\n", m_address.m_addr);
 	
 	//begin() has special processing that goes directly to nextInstruction()
 	//We must go past the current instruction and parse the next
@@ -177,9 +174,9 @@ uv_err_t UVDInstructionIterator::next()
 static int count = 0;
 ++count;
 */
-//printf("m_curPosition: 0x%08X, current size: 0x%08X\n", m_curPosition, m_currentSize);
+//printf("current address: 0x%08X, current size: 0x%08X\n", m_address.m_addr, m_currentSize);
 //fflush(stdout);
-	m_curPosition += m_currentSize;
+	m_address.m_addr += m_currentSize;
 //if( count == 5 )
 //UVD_BREAK();
 	rcTemp = nextValidExecutableAddressIncludingCurrent();
@@ -206,16 +203,9 @@ static int count = 0;
 
 uv_err_t UVDInstructionIterator::nextValidExecutableAddress()
 {
-	/*
-	//Should this actually be an error?
-	if( m_isEnd )
-	{
-		return UV_ERR_DONE;
-	}
-	*/
-
+	//XXX: should do an end check?
 	//This may put us into an invalid area, but we will find the next valid if availible
-	++m_curPosition;
+	++m_address.m_addr;
 	return UV_DEBUG(nextValidExecutableAddressIncludingCurrent());
 }
 
@@ -224,8 +214,8 @@ uv_err_t UVDInstructionIterator::nextValidExecutableAddressIncludingCurrent()
 	uv_err_t rcNextAddress = UV_ERR_GENERAL;
 	
 	//FIXME: look into considerations for an instruction split across areas, which probably doesn't make sense
-	uv_assert_ret(m_addressSpace);
-	rcNextAddress = m_addressSpace->nextValidExecutableAddress(m_curPosition, &m_curPosition);
+	uv_assert_ret(m_address.m_space);
+	rcNextAddress = m_address.m_space->nextValidExecutableAddress(m_address.m_addr, &m_address.m_addr);
 	uv_assert_err_ret(rcNextAddress);
 	if( rcNextAddress == UV_ERR_DONE )
 	{
@@ -249,7 +239,7 @@ uv_err_t UVDInstructionIterator::consumeCurrentExecutableAddress(uint8_t *out)
 		return UV_ERR_DONE;
 	}
 
-	uv_assert_err_ret(m_addressSpace->m_data->readData(m_curPosition, (char *)out));	
+	uv_assert_err_ret(m_address.m_space->m_data->readData(m_address.m_addr, (char *)out));	
 	++m_currentSize;
 	//We don't care if next address leads to end
 	//Current address was valid and it is up to next call to return done if required
@@ -278,7 +268,7 @@ UVDInstructionIterator UVDInstructionIterator::operator++()
 bool UVDInstructionIterator::operator==(const UVDInstructionIterator &other) const
 {	
 	//printf_debug("UVDInstructionIterator::operator==:\n");
-	return m_curPosition == other.m_curPosition;
+	return m_address.m_addr == other.m_address.m_addr;
 }
 
 bool UVDInstructionIterator::operator!=(const UVDInstructionIterator &other) const

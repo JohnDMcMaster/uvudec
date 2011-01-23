@@ -277,7 +277,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDInstructionIterator *uvdIter)
 	uv_assert_ret(uvd);
 	*/
 	
-	data = uvdIter->m_addressSpace->m_data;
+	data = uvdIter->m_address.m_space->m_data;
 	uv_assert_ret(data);
 
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -324,7 +324,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDInstructionIterator *uvdIter)
 			}
 			m_ui16 += read;	
 			
-			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_curPosition, m_ui16);
+			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_address.m_addr, m_ui16);
 
 			break;
 		default:

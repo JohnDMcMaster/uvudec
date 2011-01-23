@@ -90,13 +90,8 @@ UVDPrintIterator UVDPrintIterator::operator++()
 
 bool UVDPrintIterator::operator==(const UVDPrintIterator &other) const
 {
-	return /*m_isEnd == other.m_isEnd
-			&& */m_iter == other.m_iter 
+	return m_iter == other.m_iter 
 			&& m_positionIndex == other.m_positionIndex;
-			//Is this check necessary?  Think this was leftover from hackish ways of representing m_isEnd
-			//This check is needed for proper ending
-			//.end will not have a buffer, but post last address read will (or we are at .end anyway)
-			//&& m_indexBuffer.size() == other.m_indexBuffer.size();
 }
 
 bool UVDPrintIterator::operator!=(const UVDPrintIterator &other) const
@@ -392,7 +387,7 @@ uv_err_t UVDPrintIterator::parseCurrentLocation()
 {
 	//uv_err_t rcSuper = UV_ERR_GENERAL;
 	UVDBenchmark benchmark;
-	uv_addr_t startPosition = m_iter.m_curPosition;
+	uv_addr_t startPosition = m_iter.m_address.m_addr;
 	UVDConfig *config = m_iter.m_uvd->m_config;
 	
 	benchmark.start();
@@ -530,8 +525,6 @@ uv_err_t UVDPrintIterator::nextCalledSources(uint32_t startPosition)
 
 	memLoc = (*(calledAddresses.find(startPosition))).second;
 	
-	//uv_assert_err_ret(m_iter.m_uvd->analyzeNewFunction(memLoc, analyzedFunction));
-
 	//empty name indicates no data
 	if( !analyzedFunction.m_sName.empty() )
 	{
