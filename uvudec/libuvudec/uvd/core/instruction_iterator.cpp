@@ -136,6 +136,17 @@ uv_addr_t UVDInstructionIterator::getPosition()
 	return m_curPosition;
 }
 
+uv_err_t UVDInstructionIterator::previous()
+{
+	/*
+	This is a difficult problem if the instruction set is in any way variable length
+	For now, lets assume a function will occur every so often
+	Use that functions closest jump, call, etc points as an assembly reference
+	*/
+
+	return UV_ERR_GENERAL;
+}
+
 uv_err_t UVDInstructionIterator::next()
 {
 	/*

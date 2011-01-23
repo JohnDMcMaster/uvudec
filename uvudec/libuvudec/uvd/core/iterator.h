@@ -40,6 +40,7 @@ public:
 	//UVDIteratorCommon operator++();
 	//Advance to next output line
 	uv_err_t next();
+	uv_err_t previous();
 	//Reminder: this is called directly for analysis
 	uv_err_t parseCurrentInstruction();
 	//Being done is pretty type specific
