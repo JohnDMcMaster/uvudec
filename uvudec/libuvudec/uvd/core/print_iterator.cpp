@@ -4,22 +4,13 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include <algorithm>
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
-#include <sys/stat.h>
 #include <vector>
-#include "uvd/architecture/architecture.h"
 #include "uvd/assembly/address.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/core/analysis.h"
-#include "uvd/core/runtime.h"
 #include "uvd/core/uvd.h"
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
@@ -300,7 +291,7 @@ uv_err_t UVDPrintIterator::makeNextEnd()
 /*
 void UVDPrintIterator::debugPrint() const
 {
-	printf_debug("post next, offset: 0x%.8X, index: %d, buffer size: %d\n", m_nextPosition, m_positionIndex, m_indexBuffer.size()); 
+	printf_debug("post next, offset: 0x%.8X, index: %d, buffer size: %d\n", m_curPosition, m_positionIndex, m_indexBuffer.size()); 
 }
 */
 
@@ -322,9 +313,9 @@ uv_err_t UVDPrintIterator::previous()
 	
 	//Okay, now the f my life case
 	//Simple test for now...
-	if( m_nextPosition > 0 )
+	if( m_curPosition > 0 )
 	{
-		--m_nextPosition;
+		--m_curPosition;
 	
 		//Finally, adjust our iterator to the end of the list
 		uv_assert_ret(!m_indexBuffer.empty());
@@ -382,7 +373,7 @@ uv_err_t UVDPrintIterator::nextCore()
 {
 	//uv_err_t rcSuper = UV_ERR_GENERAL;
 	UVDBenchmark benchmark;
-	uv_addr_t startPosition = m_iter.m_nextPosition;
+	uv_addr_t startPosition = m_iter.m_curPosition;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	UVDConfig *config = m_iter.m_uvd->m_config;
 	
@@ -596,5 +587,4 @@ uv_err_t UVDPrintIterator::nextJumpedSources(uint32_t startPosition)
 
 	return UV_ERR_OK;
 }
-
 

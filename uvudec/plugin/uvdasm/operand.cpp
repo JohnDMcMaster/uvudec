@@ -312,7 +312,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDInstructionIterator *uvdIter)
 				//Premature termination
 				return UV_ERR_DONE;
 			}
-			//printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			//printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_curPosition, m_ui16);
 			m_ui16 = read << 8;
 			
 			rcNextAddress = uvdIter->consumeCurrentExecutableAddress(&read);
@@ -324,7 +324,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDInstructionIterator *uvdIter)
 			}
 			m_ui16 += read;	
 			
-			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_curPosition, m_ui16);
 
 			break;
 		default:

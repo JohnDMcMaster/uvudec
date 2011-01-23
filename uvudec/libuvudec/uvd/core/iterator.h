@@ -61,25 +61,6 @@ public:
 	bool operator==(const UVDInstructionIterator &other) const;
 	bool operator!=(const UVDInstructionIterator &other) const;
 
-#if 0
-/*
-The issue here was primarily tracking when an iterator was done as well as clean advancement
-While the UVDIterator for printing advances per line, this advances each instruction for analysis
-*/
-class UVDInstructionIterator : public UVDIteratorCommon
-{
-public:
-	UVDInstructionIterator();
-	~UVDInstructionIterator();
-	
-	static uv_err_t getEnd(UVD *uvd, UVDInstructionIterator &iter);
-
-	UVDInstructionIterator operator++();
-	bool operator==(const UVDInstructionIterator &other) const;
-	bool operator!=(const UVDInstructionIterator &other) const;
-};
-#endif	
-
 //protected:	
 	UVDInstructionIterator();
 protected:
@@ -91,11 +72,6 @@ protected:
 
 	//Can still grab buffered strings, but next address iteration will result in .end()
 	//uv_err_t makeNextEnd();
-
-	//Advance to next output group
-	//If instructionIn is NULL, it will be ignored
-	//Otherwise, the parsed instruction will be returned in place
-	uv_err_t nextCore();
 		
 	//Some sort of disassembly issue
 	uv_err_t addWarning(const std::string &lineRaw);	
@@ -122,7 +98,7 @@ public:
 	//FIXME FIXME FIXME
 	//FIXME: this is now being used as current position
 	//Also combine with m_addressSpace to form a UVDAddress m_address
-	uv_addr_t m_nextPosition;
+	uv_addr_t m_curPosition;
 	//How many bytes we consumed to create currently analyzed instruction
 	//Think this is actually more used to calculate instruction size than actual iteration
 	//Maybe we should move it to a next() helper object
