@@ -158,9 +158,9 @@ public:
 	
 	virtual uv_err_t analyzeControlFlow(UVDInstructionAnalysis *out);
 
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
+	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
 
-	static uv_err_t parseOperands(UVDIteratorCommon *uvdIter,
+	static uv_err_t parseOperands(UVDInstructionIterator *uvdIter,
 			std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
 
 	//Hmm is this UVDDisasm specifc?

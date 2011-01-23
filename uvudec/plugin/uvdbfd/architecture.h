@@ -26,7 +26,7 @@ public:
 	virtual uv_err_t getInstruction(UVDInstruction **out);
 	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names);
 
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon);
+	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
 
 	static uv_err_t canLoad(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user);
 	static uv_err_t tryLoad(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out, void *user);

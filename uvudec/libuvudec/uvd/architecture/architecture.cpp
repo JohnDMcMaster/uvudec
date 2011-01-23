@@ -43,7 +43,7 @@ uv_err_t UVDArchitecture::readByte(UVDAddress address, uint8_t *out)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDArchitecture::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
+uv_err_t UVDArchitecture::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
 {
 	//Reduce errors from stale data
 	if( !iterCommon.m_instruction )

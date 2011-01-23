@@ -73,17 +73,17 @@ uv_err_t UVDGBInstruction::analyzeControlFlow()
 uv_err_t UVDGBInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
 {
 	/*
-	printf_debug("m_nextPosition: 0x%.8X\n", iterCommon.m_nextPosition);
+	printf_debug("m_curPosition: 0x%.8X\n", iterCommon.m_curPosition);
 		
 	//Used to get delta for copying the data we just iterated over
-	startPosition = iterCommon.m_nextPosition;
+	startPosition = iterCommon.m_curPosition;
 
 	//We should be garaunteed a valid address at current position by definition
 	rcTemp = iterCommon.consumeCurrentExecutableAddress(&opcode);
 	uv_assert_err_ret(rcTemp);
 	uv_assert_ret(rcTemp != UV_ERR_DONE);
-	//uv_assert_err_ret(data->readData(iterCommon.m_nextPosition, (char *)&opcode));	
-	printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", iterCommon.m_nextPosition, iterCommon.m_currentSize, opcode);	
+	//uv_assert_err_ret(data->readData(iterCommon.m_curPosition, (char *)&opcode));	
+	printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", iterCommon.m_curPosition, iterCommon.m_currentSize, opcode);	
 	*/
 	
 	return UV_ERR_OK;

@@ -346,11 +346,11 @@ error:
 }
 
 //Given an identified instruction operand, parse the next operand out of the remaining binary (data)
-uv_err_t UVDDisasmInstruction::parseOperands(UVDIteratorCommon *uvdIter,
+uv_err_t UVDDisasmInstruction::parseOperands(UVDInstructionIterator *uvdIter,
 		std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands)
 {
 	UVDData *data = NULL;;
-	data = uvdIter->m_addressSpace->m_data;
+	data = uvdIter->m_address.m_space->m_data;
 	uv_assert_ret(data);
 	
 	//uv_assert(instruction);
@@ -696,7 +696,7 @@ uv_err_t UVDDisasmInstruction::analyzeJump(uint32_t startPos, const UVDVariableM
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCommon)
+uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
 {
 	/*
 	Gets the next logical print group
@@ -716,7 +716,7 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	UVDDisasmArchitecture *architecture = NULL;
 	printf_debug("\n");
 		
-	printf_debug("m_nextPosition: 0x%.8X\n", iterCommon.m_nextPosition);
+	//printf_debug("m_address.m_addr: 0x%.8X\n", iterCommon.m_address.m_addr);
 		
 	uvd = g_uvd;
 	m_uvd = uvd;
@@ -725,14 +725,14 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	
 	//We are starting a new instruction, reset
 	iterCommon.m_currentSize = 0;
-	uv_assert_err_ret(iterCommon.m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
+	uv_assert_err_ret(iterCommon.m_address.m_space->getMaxValidAddress(&absoluteMaxAddress));
 	
 	//Hmm seems we should never branch here
 	//Lets see if we can prove it or at least comment to as why
-	//printf("m_nextPosition 0x%04X <= absoluteMaxAddress 0x%04X\n", m_nextPosition, absoluteMaxAddress);
-	uv_assert_ret(iterCommon.m_nextPosition <= absoluteMaxAddress);
+	//printf("m_address.m_addr 0x%04X <= absoluteMaxAddress 0x%04X\n", m_address.m_addr, absoluteMaxAddress);
+	uv_assert_ret(iterCommon.m_address.m_addr <= absoluteMaxAddress);
 	/*
-	if( m_nextPosition > absoluteMaxAddress )
+	if( m_address.m_addr > absoluteMaxAddress )
 	{
 		*this = m_uvd->end();
 		return UV_ERR_DONE;
@@ -740,14 +740,14 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	*/
 	
 	//Used to get delta for copying the data we just iterated over
-	startPosition = iterCommon.m_nextPosition;
+	startPosition = iterCommon.m_address.m_addr;
 
 	//We should be garaunteed a valid address at current position by definition
 	rcTemp = iterCommon.consumeCurrentExecutableAddress(&opcode);
 	uv_assert_err_ret(rcTemp);
 	uv_assert_ret(rcTemp != UV_ERR_DONE);
-	//uv_assert_err_ret(data->readData(iterCommon.m_nextPosition, (char *)&opcode));	
-	printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", iterCommon.m_nextPosition, iterCommon.m_currentSize, opcode);
+	//uv_assert_err_ret(data->readData(iterCommon.m_address.m_addr, (char *)&opcode));	
+	printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", iterCommon.m_address.m_addr, iterCommon.m_currentSize, opcode);
 	
 	/*
 	//Go to next position
@@ -760,8 +760,8 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 		return UV_ERR_DONE;
 	}
 	*/
-	//printf_debug("post nextValidExecutableAddress: start: 0x%.4X, next time: 0x%.4X and is end: %d\n", startPosition, iterCommon.m_nextPosition, m_isEnd);
-	uv_assert_ret(iterCommon.m_nextPosition > startPosition/* || m_isEnd*/);
+	//printf_debug("post nextValidExecutableAddress: start: 0x%.4X, next time: 0x%.4X and is end: %d\n", startPosition, iterCommon.m_address.m_addr, m_isEnd);
+	uv_assert_ret(iterCommon.m_address.m_addr > startPosition/* || m_isEnd*/);
 	//If we get UV_ERR_DONE,
 	//Of course, if also we require operands, there will be issues
 	//But this doesn't mean we can't analyze the current byte
@@ -813,7 +813,7 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 		return UV_ERR_OK;
 	}
 	
-	printf_debug("nextPosition, initial: %d, final: %d\n", startPosition, iterCommon.m_nextPosition);
+	printf_debug("nextPosition, initial: %d, final: %d\n", startPosition, iterCommon.m_address.m_addr);
 
 	uv_assert_ret(iterCommon.m_currentSize);
 	m_inst_size = iterCommon.m_currentSize;
@@ -829,11 +829,11 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDIteratorCommon &iterCo
 	//This will always be valid since we are just storing a shadow copy of the instruction bytes
 	//We could alternativly create a UVDData object referring to the source binary file
 	//uv_assert_ret(m_data);
-	uv_assert_err_ret(iterCommon.m_addressSpace->m_data->readData(m_offset, m_inst, m_inst_size));
+	uv_assert_err_ret(iterCommon.m_address.m_space->m_data->readData(m_offset, m_inst, m_inst_size));
 
-	printf_debug("m_nextPosition about to rollback, initial: %d, final: %d\n", startPosition, iterCommon.m_nextPosition);
+	printf_debug("m_address.m_addr about to rollback, initial: %d, final: %d\n", startPosition, iterCommon.m_address.m_addr);
 	//This is suppose to be parse only, do not actually advance as we use to do
-	iterCommon.m_nextPosition = startPosition;
+	iterCommon.m_address.m_addr = startPosition;
 
 	return UV_ERR_OK;
 }	

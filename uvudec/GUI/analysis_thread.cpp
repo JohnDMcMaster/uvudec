@@ -217,7 +217,7 @@ uv_err_t UVDGUIAnalysisThread::disassembleRange(UVDIterator iterBegin, UVDIterat
 	//need to add some check for that
 	//maybe we should implement <
 	//emit setDisassemblyAreaActive(false);
-	//printf("iterBegin: 0x%08X, iterEnd: 0x%08X\n", iterBegin.m_nextPosition, iterEnd.m_nextPosition);
+	//printf("iterBegin: 0x%08X, iterEnd: 0x%08X\n", iterBegin.m_curPosition, iterEnd.m_curPosition);
 	while( iter != iterEnd )
 	{
 		char buff[256];

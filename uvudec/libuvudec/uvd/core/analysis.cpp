@@ -378,7 +378,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	uv_assert_err_ret(instructionBegin(iter));
 	uv_assert_err_ret(instructionEnd(iterEnd));
 	uv_assert_ret(m_config);
-	uv_assert_err_ret(iter.m_addressSpace->getNumberAnalyzedBytes(&numberAnalyzedBytes));
+	uv_assert_err_ret(iter.m_address.m_space->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
 	for( ;; )
 	{
@@ -454,7 +454,7 @@ uv_err_t UVD::analyzeControlFlowTrace()
 	while( !openSet.empty() )
 	{
 		uint32_t nextStartAddress = *openSet.begin();
-		UVDIterator iter;
+		UVDInstructionIterator iter;
 		int isVectorValid = 0;
 
 		openSet.erase(openSet.begin());
@@ -478,7 +478,7 @@ uv_err_t UVD::analyzeControlFlowTrace()
 		//uint32_t printPercentage = 1;
 		//uint32_t printNext = printPercentage;
 
-		iter = begin(nextStartAddress);
+		uv_assert_err_ret(instructionBeginByAddress(nextStartAddress, iter));
 		for( ;; )
 		{
 			UVDInstructionAnalysis instructionAnalysis;
@@ -502,7 +502,7 @@ uv_err_t UVD::analyzeControlFlowTrace()
 
 			//printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
 
-			if( iter == end() )
+			if( iter == instructionEnd() )
 			{
 				printf_debug("disassemble: end");
 				break;

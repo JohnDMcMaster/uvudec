@@ -4,10 +4,12 @@ Copyright 2008 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvd/assembly/cpu_vector.h"
 #include "uvd/assembly/function.h"
 #include "uvd/core/uvd.h"
 #include "uvd/core/analyzer.h"
 #include "uvd/core/event.h"
+#include "uvd/core/runtime.h"
 #include "uvd/event/engine.h"
 #include "uvd/string/engine.h"
 #include "uvd/util/benchmark.h"
@@ -569,6 +571,58 @@ uv_err_t UVDAnalyzer::identifyKnownFunctions()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDAnalyzer::getPreviousKnownInstructionAddress(const UVDAddress &address, UVDAddress *out)
+{
+	/*
+	Find the first function address or vector before given address
+	
+	This is very inefficient...
+	Need to fix the UVDAnalyzedMemorySpace legacy C stuff instead using templates
+	Then can use a std::set and have it sorted by address
+	*/
+	
+	UVDAnalyzedMemorySpace calledAddresses;
+	uv_addr_t bestAddress = 0;
+	bool anyFound = false;
+	
+	//Check vectors
+	for( std::vector<UVDCPUVector *>::iterator iter = m_uvd->m_runtime->m_architecture->m_vectors.begin();
+			iter != m_uvd->m_runtime->m_architecture->m_vectors.end(); ++iter )
+	{
+		UVDCPUVector *vector = *iter;
+		uv_addr_t currentAddress = vector->m_offset;
+		
+		if( currentAddress < address.m_addr && (!anyFound || currentAddress > bestAddress) )
+		{
+			anyFound = true;
+			bestAddress = currentAddress;
+		}
+	}
+	
+	//Check functions
+	uv_assert_err_ret(getCalledAddresses(calledAddresses));
+	//printf("n called addresses: %d, address: 0x%08X\n", calledAddresses.size(), address.m_addr);
+	for( UVDAnalyzedMemorySpace::iterator iter = calledAddresses.begin();
+			iter != calledAddresses.end(); ++iter )
+	{
+		uv_addr_t currentAddress = (*iter).first;
+		
+		if( currentAddress < address.m_addr && (!anyFound || currentAddress > bestAddress) )
+		{
+			anyFound = true;
+			bestAddress = currentAddress;
+		}
+	}
+	
+	if( anyFound )
+	{
+		return UV_ERR_OK;
+	}
+	else
+	{
+		return UV_ERR_NOTFOUND;
+	}
+}
 
 /*
 Saved in case they might be useful as ref or other

@@ -78,7 +78,7 @@ uv_err_t UVDDisasmOperandShared::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisasmOperandShared::parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out)
+uv_err_t UVDDisasmOperandShared::parseOperand(UVDInstructionIterator *uvdIter, UVDDisasmOperand **out)
 {
 	//TOOD: migrate code and replace with below
 	//Assume someone forgot to implement it
@@ -204,7 +204,7 @@ UVDDisasmConstantOperandShared::~UVDDisasmConstantOperandShared()
 {
 }
 
-uv_err_t UVDDisasmConstantOperandShared::parseOperand(UVDIteratorCommon *uvdIter, UVDDisasmOperand **out)
+uv_err_t UVDDisasmConstantOperandShared::parseOperand(UVDInstructionIterator *uvdIter, UVDDisasmOperand **out)
 {
 	//Like register, nothing to parse: this operand is implied
 	UVDDisasmConstantOperand *op = NULL;
@@ -260,7 +260,7 @@ UVDDisasmOperandShared *UVDDisasmOperand::getShared()
 	return (UVDDisasmOperandShared *)m_shared;
 }
 
-uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
+uv_err_t UVDDisasmOperand::parseOperand(UVDInstructionIterator *uvdIter)
 {
 	//UVDDisasmInstruction *inst = NULL;
 	UVDDisasmOperandShared *operandShared = (UVDDisasmOperandShared *)m_shared;
@@ -277,7 +277,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 	uv_assert_ret(uvd);
 	*/
 	
-	data = uvdIter->m_addressSpace->m_data;
+	data = uvdIter->m_address.m_space->m_data;
 	uv_assert_ret(data);
 
 	uv_err_t rc = UV_ERR_GENERAL;
@@ -312,7 +312,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 				//Premature termination
 				return UV_ERR_DONE;
 			}
-			//printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			//printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_curPosition, m_ui16);
 			m_ui16 = read << 8;
 			
 			rcNextAddress = uvdIter->consumeCurrentExecutableAddress(&read);
@@ -324,7 +324,7 @@ uv_err_t UVDDisasmOperand::parseOperand(UVDIteratorCommon *uvdIter)
 			}
 			m_ui16 += read;	
 			
-			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_nextPosition, m_ui16);
+			printf_debug("read operand imm16 @ 0x%.4X is 0x%.4X\n", uvdIter->m_address.m_addr, m_ui16);
 
 			break;
 		default:

@@ -57,7 +57,7 @@ Keep the void *data member
 */
 class UVD;
 class UVDInstruction;
-class UVDIteratorCommon;
+class UVDInstructionIterator;
 class UVDOperand
 {
 public:
@@ -67,7 +67,7 @@ public:
 	virtual uv_err_t deinit();
 
 	//Will return UV_ERR_DONE to indicate incomplete parsing of the operand due to out of data
-	virtual uv_err_t parseOperand(UVDIteratorCommon *uvdIter) = 0;
+	virtual uv_err_t parseOperand(UVDInstructionIterator *out) = 0;
 
 	//Append to given string
 	virtual uv_err_t printDisassemblyOperand(std::string &out) = 0;
@@ -146,7 +146,7 @@ public:
 	virtual uv_err_t init();
 	virtual uv_err_t deinit();
 
-	virtual uv_err_t parseCurrentInstruction(UVDIteratorCommon &iterCommon) = 0;
+	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &out) = 0;
 
 	virtual uv_err_t print_disasm(std::string &out) = 0;
 	//Give as many hints to our analyzer as possible based on what this instruction does

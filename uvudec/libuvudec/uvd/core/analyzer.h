@@ -191,6 +191,13 @@ public:
 
 	uv_err_t assignDefaultSymbolNames();
 	uv_err_t identifyKnownFunctions();
+	
+	/*
+	Returns UV_ERR_NOTFOUND if there are no known executable starting points before this
+	Hopefully this only happens if only data, nothing, etc precedes us
+	This can happen even if there is code for example if there are unknown virtual function entry points
+	*/
+	uv_err_t getPreviousKnownInstructionAddress(const UVDAddress &m_address, UVDAddress *out);
 
 public:
 	//Superblock for block representation of program
