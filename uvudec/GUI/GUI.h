@@ -14,6 +14,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string>
 
 class UVDEvent;
+class UVDGUIAssemblyData;
 class UVDMainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -69,6 +70,8 @@ public:
 	
 	//Need to add some sort of thread safe queue object
 	UVDGUIAnalysisThread *m_analysisThread;
+	
+	UVDGUIAssemblyData *m_assemblyData;
 		
 	//So we can pass options off to children later
 	int m_argc;

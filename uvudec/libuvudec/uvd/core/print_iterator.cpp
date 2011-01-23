@@ -99,6 +99,19 @@ bool UVDPrintIterator::operator!=(const UVDPrintIterator &other) const
 	return !operator==(other);
 }
 
+int UVDPrintIterator::compare(const UVDPrintIterator &other) const
+{
+	int delta = 0;
+	
+	delta = m_iter.compare(other.m_iter);
+	if( delta )
+	{
+		return delta;
+	}
+	
+	return m_positionIndex - other.m_positionIndex;
+}
+
 std::string UVDPrintIterator::operator*()
 {
 	std::string ret;

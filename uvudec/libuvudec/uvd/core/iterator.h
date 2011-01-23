@@ -8,6 +8,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_ITERATOR_H
 
 #include "uvd/util/types.h"
+#include "uvd/assembly/address.h"
+#include "uvd/assembly/instruction.h"
 
 /*
 TODO: redesign this so that disassembly iterator contains an instruction iterator
@@ -61,6 +63,7 @@ public:
 	UVDInstructionIterator operator++();
 	bool operator==(const UVDInstructionIterator &other) const;
 	bool operator!=(const UVDInstructionIterator &other) const;
+	int compare(const UVDInstructionIterator &other) const;
 
 //protected:	
 	UVDInstructionIterator();
@@ -116,6 +119,7 @@ public:
 	//Original reason for differentiation
 	bool operator==(const UVDPrintIterator &other) const;
 	bool operator!=(const UVDPrintIterator &other) const;
+	int compare(const UVDPrintIterator &other) const;
 	//Error checked version of operator *
 	uv_err_t getCurrent(std::string &out);
 	std::string operator*();

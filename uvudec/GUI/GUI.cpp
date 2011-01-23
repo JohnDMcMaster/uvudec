@@ -19,6 +19,8 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 */
 
 #include "GUI/analysis_action.h"
+#include "GUI/assembly_data.h"
+#include "GUI/string_data.h"
 #include "GUI/GUI.h"
 #include "GUI/lock.h"
 #include "GUI/main.h"
@@ -54,6 +56,7 @@ UVDMainWindow::UVDMainWindow(QMainWindow *parent)
 {
 	g_mainWindow = this;
 	m_project = NULL;
+	m_assemblyData = NULL;
 	m_argc = 0;
 	m_argv = NULL;
 
@@ -69,9 +72,6 @@ uv_err_t UVDMainWindow::init()
 {
 	//printf("mainwindow init, this: 0x%08X\n", this);
 
-	//m_mainWindow.hexdump->setDynamicData(new UVQtDynamicTextDataPluginImpl());
-	//m_mainWindow.disassembly->setDynamicData(new UVQtDynamicTextDataPluginImpl());
-
 	m_projectFileNameDialogFilter = tr("uvudec oject (*.upj);;All Files (*)");
 
 	//FIXME: this looks wrong, but its the best I could figure out from the error messages
@@ -80,6 +80,10 @@ uv_err_t UVDMainWindow::init()
 	//qRegisterMetaType("QTextCursor");
 	
 	uv_assert_err_ret(m_mainWindow.strings->setDynamicData(new UVDGUIStringData()));
+	//This is a core widget type now
+	//m_mainWindow.hexdump->setDynamicData(new UVQtDynamicTextDataPluginImpl());
+	m_assemblyData = new UVDGUIAssemblyData();
+	m_mainWindow.disassembly->setDynamicData(m_assemblyData);
 
 	m_analysisThread = new UVDGUIAnalysisThread();
 	m_analysisThread->m_mainWindow = this;
@@ -313,6 +317,8 @@ uv_err_t UVDMainWindow::initializeProject(const std::string fileName)
 			this, SLOT(updateBinaryView())));
 	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(stringsChanged()),
 			this, SLOT(updateStringsView())));
+	uv_assert_ret(QObject::connect(m_analysisThread, SIGNAL(binaryStateChanged()),
+			this, SLOT(updateAssemblyView())));
 
 	m_analysisThread->queueAnalysis(new UVDAnalysisActionBegin());
 
@@ -375,6 +381,9 @@ uv_err_t UVDMainWindow::updateBinaryView()
 
 uv_err_t UVDMainWindow::updateAssemblyView()
 {
+printf("\n\nUVDMainWindow::updateAssemblyView()\n");
+	uv_assert_err_ret(m_assemblyData->begin(0, 0, &m_mainWindow.disassembly->m_viewportShadow->m_start));
+	m_mainWindow.disassembly->refreshDynamicData();
 	return UV_ERR_OK;
 }
 

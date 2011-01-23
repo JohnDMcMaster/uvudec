@@ -317,6 +317,11 @@ bool UVDInstructionIterator::operator!=(const UVDInstructionIterator &other) con
 	return !operator==(other);
 }
 
+int UVDInstructionIterator::compare(const UVDInstructionIterator &other) const
+{
+	return m_address.m_addr - other.m_address.m_addr;
+}
+
 uv_err_t UVDInstructionIterator::getEnd(UVD *uvd, UVDInstructionIterator &iter)
 {
 	uv_assert_ret(uvd);

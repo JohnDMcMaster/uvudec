@@ -15,6 +15,7 @@ This functionality uses the UVD engine
 It is expected to be locked externally
 */
 
+class UVDStringEngine;
 class UVDGUIStringData : public UVQtDynamicTextData
 {
 public:

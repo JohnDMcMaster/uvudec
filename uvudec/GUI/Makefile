@@ -15,6 +15,8 @@ CC_SRCS =   \
 CXX_SRCS = 	\
 		$(GUI_DIR)/analysis_action.cpp \
 		$(GUI_DIR)/analysis_thread.cpp \
+		$(GUI_DIR)/assembly_data.cpp \
+		$(GUI_DIR)/assembly_data_iterator.cpp \
 		$(GUI_DIR)/format.cpp \
 		$(GUI_DIR)/GUI.cpp \
 		$(GUI_DIR)/lock.cpp \

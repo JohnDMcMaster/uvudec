@@ -5,7 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "GUI/GUI.h"
-#include "GUI/string_data.h"
+#include "GUI/assembly_data.h"
 #include "uvd/string/engine.h"
 #include "uvd/util/debug.h"
 
@@ -22,14 +22,17 @@ UVDGUIAssemblyData::iterator_impl::iterator_impl(UVDGUIAssemblyData *impl, unsig
 {
 	m_dataImpl = impl;
 	
-	if( m_dataImpl->getUVD() )
-	{
-		m_iter = m_dataImpl->getUVD()->begin(offset);
-	}
+	UV_DEBUG(changePositionToLine(offset, index));
 	if( index != 0 )
 	{
 		printf("bad begin with nonzero index\n");
 	}
+}
+
+UVDGUIAssemblyData::iterator_impl::iterator_impl(UVDGUIAssemblyData *impl, UVDPrintIterator iter)
+{
+	m_dataImpl = impl;
+	m_iter = iter;
 }
 
 UVDGUIAssemblyData::iterator_impl::~iterator_impl()
@@ -45,12 +48,12 @@ UVQtDynamicTextData::iterator_impl *UVDGUIAssemblyData::iterator_impl::copy()
 
 std::string UVDGUIAssemblyData::iterator_impl::toString()
 {
-	return UVDSprintf("m_iter.m_nextPosition=0x%08X", m_iter.m_nextPosition);
+	return UVDSprintf("m_iter.m_nextPosition=0x%08X", offset());
 }
 
 unsigned int UVDGUIAssemblyData::iterator_impl::offset()
 {
-	return m_iter.m_nextPosition;
+	return m_iter.m_iter.m_address.m_addr;
 }
 
 uv_err_t UVDGUIAssemblyData::iterator_impl::get(std::string &ret)
@@ -72,21 +75,16 @@ uv_err_t UVDGUIAssemblyData::iterator_impl::changePositionByLineDelta(int delta)
 {
 	if( delta > 0 )
 	{
-		m_offset += delta;
-		if( m_offset >= m_dataImpl->getStringEngine()->m_strings.size() )
+		for( int i = 0; i < delta && m_iter != m_dataImpl->getUVD()->end(); ++i )
 		{
-			m_offset = m_dataImpl->getStringEngine()->m_strings.size() - 1;
+			uv_assert_err_ret(m_iter.next());
 		}
 	}
 	else
 	{
-		if( (unsigned)-delta > m_offset )
+		for( int i = delta; delta > 0 && m_iter != m_dataImpl->getUVD()->begin(); --i )
 		{
-			m_offset = 0;
-		}
-		else
-		{
-			m_offset += delta;
+			uv_assert_err_ret(m_iter.previous());
 		}
 	}
 	return UV_ERR_OK;
@@ -94,10 +92,10 @@ uv_err_t UVDGUIAssemblyData::iterator_impl::changePositionByLineDelta(int delta)
 
 uv_err_t UVDGUIAssemblyData::iterator_impl::changePositionToLine(unsigned int offset, unsigned int index)
 {
-	//Index is ignored
-	//m_offset = scrollbarPositionToOffset(offset);
-	m_offset = offset;
-	m_index = index;
+	if( m_dataImpl->getUVD() )
+	{
+		m_iter = m_dataImpl->getUVD()->begin(offset);
+	}
 	return UV_ERR_OK;
 }
 
@@ -107,7 +105,7 @@ int UVDGUIAssemblyData::iterator_impl::compare(const UVQtDynamicTextData::iterat
 	const iterator_impl *other = static_cast<const iterator_impl *>(otherIn);
 	
 	//printf("compare %d to %d\n", m_offset, other->m_offset);
-	return m_offset - other->m_offset;
+	return m_iter.compare(other->m_iter);
 }
 
 /*

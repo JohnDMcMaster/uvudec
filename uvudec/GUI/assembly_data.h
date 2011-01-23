@@ -4,10 +4,11 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#ifndef UVDGUI_STRING_DATA_H
-#define UVDGUI_STRING_DATA_H
+#ifndef UVDGUI_ASSEMBLY_DATA_H
+#define UVDGUI_ASSEMBLY_DATA_H
 
 #include "uvqt/dynamic_text.h"
+#include "uvd/core/iterator.h"
 #include "uvd/data/data.h"
 
 /*
@@ -23,6 +24,7 @@ public:
 	public:
 		iterator_impl();
 		iterator_impl(UVDGUIAssemblyData *impl, unsigned int offset, unsigned int index = 0);
+		iterator_impl(UVDGUIAssemblyData *impl, UVDPrintIterator iter);
 		~iterator_impl();
 	
 		virtual UVQtDynamicTextData::iterator_impl *copy();
@@ -36,7 +38,7 @@ public:
 		virtual unsigned int offset();
 		
 	public:
-		UVDIterator m_iter;
+		UVDPrintIterator m_iter;
 		UVDGUIAssemblyData *m_dataImpl;
 	};
 	

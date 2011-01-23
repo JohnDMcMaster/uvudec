@@ -5,7 +5,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "GUI/GUI.h"
-#include "GUI/string_data.h"
+#include "GUI/assembly_data.h"
+#include "uvd/core/runtime.h"
 #include "uvd/string/engine.h"
 #include "uvd/util/debug.h"
 #include <math.h>
@@ -29,8 +30,19 @@ uv_err_t UVDGUIAssemblyData::begin(unsigned int offset, unsigned int index, UVQt
 
 uv_err_t UVDGUIAssemblyData::end(iterator *out)
 {
-	UVDGUIAssemblyData::iterator_impl *iter_impl = new UVDGUIAssemblyData::iterator_impl(this,
-			getNumberStrings());
+	UVDPrintIterator endIter;
+	UVDGUIAssemblyData::iterator_impl *iter_impl = NULL;
+	
+	if( getUVD() )
+	{
+		uv_assert_err_ret(getUVD()->end(endIter));
+		iter_impl = new UVDGUIAssemblyData::iterator_impl(this, endIter);
+	}
+	else
+	{
+		iter_impl = new UVDGUIAssemblyData::iterator_impl(this, 0, 0);
+	}
+	uv_assert_ret(iter_impl);
 	UVQtDynamicTextData::iterator iter = UVQtDynamicTextData::iterator(iter_impl);
 	*out = iter;
 	return UV_ERR_OK;
@@ -60,7 +72,7 @@ UVDAddressSpace *UVDGUIAssemblyData::getAddressSpace()
 	{
 		UVDAddressSpace *ret = NULL;
 		
-		uv_assert_err_ret(uvd->m_runtime->getPrimaryExecutableAddressSpace(&ret));
+		UV_DEBUG(uvd->m_runtime->getPrimaryExecutableAddressSpace(&ret));
 		if( ret )
 		{
 			return ret;
