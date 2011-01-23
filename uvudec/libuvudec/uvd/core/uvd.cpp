@@ -456,16 +456,17 @@ uv_err_t UVD::begin(UVDPrintIterator &iter)
 UVDPrintIterator UVD::begin(uv_addr_t offset)
 {
 	UVDPrintIterator iter;
-	UVDAddressSpace *addressSpace = NULL;
-	
-	UV_DEBUG(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
-	UV_DEBUG(iter.init(this, UVDAddress(offset, addressSpace), 0));
 
+	UV_DEBUG(begin(UVDAddress(offset, NULL), iter));
 	return iter;
 }
 
 uv_err_t UVD::begin(UVDAddress address, UVDPrintIterator &iter)
 {
+	if( address.m_space == NULL )
+	{
+		uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&address.m_space));
+	}
 	uv_assert_err_ret(iter.init(this, address, 0));
 
 	return UV_ERR_OK;
@@ -515,6 +516,10 @@ uv_err_t UVD::instructionBegin(UVDInstructionIterator &iter)
 
 uv_err_t UVD::instructionBeginByAddress(UVDAddress address, UVDInstructionIterator &iter)
 {
+	if( address.m_space == NULL )
+	{
+		uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&address.m_space));
+	}
 	return UV_DEBUG(iter.init(this, address));
 }
 

@@ -18,9 +18,10 @@ Unit test
 #include <cppunit/ui/text/TestRunner.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "testing/main.h"
+#include "testing/assembly.h"
 #include "testing/flirtutil.h"
 #include "testing/libuvudec.h"
+#include "testing/main.h"
 #include "testing/obj2pat.h"
 #include "testing/uvdobjgb.h"
 #include "testing/uvudec.h"
@@ -40,6 +41,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 
 static uv_err_t initArgs()
 {
+	g_fixtureNameMap["assembly"] = UVDAssemblyUnitTest::suite();
 	//g_fixtureNameMap["bin2obj" = UVDBin2objTestFixture::suite();
 	g_fixtureNameMap["flirtutil"] = UVDFlirtutilFixture::suite();
 	g_fixtureNameMap["libuvudec"] = UVDLibuvudecUnitTest::suite();

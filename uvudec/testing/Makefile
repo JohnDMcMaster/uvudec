@@ -9,6 +9,7 @@ EXE_NAME=$(TESTING_EXE)
 CC_SRCS =   \
 
 CXX_SRCS = 	\
+			$(TESTING_DIR)/assembly.cpp \
 			$(TESTING_DIR)/common_fixture.cpp \
 			$(TESTING_DIR)/flirt.cpp \
 			$(TESTING_DIR)/flirtutil.cpp \

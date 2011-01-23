@@ -136,12 +136,53 @@ uv_err_t UVDInstructionIterator::previous()
 	Take the previous location as our previous
 	Known locations should include functions and vectors at a minimum
 		Store jump information?
+	
+	Consider accelerating this for fixed length instruction sets like MIPS?
+		Is it worth it?
 	*/
 
-	//UVDAddress 
-	//uv_assert_err_ret(m_uvd->m_analyzer->getPreviousKnownInstruction(m_address, &previousKnownAddress));
+	UVDAddress previousKnownAddress;
+	UVDInstructionIterator forwardIterator;
+	uv_addr_t lastAddress = 0;
+	uv_err_t rcTemp = UV_ERR_GENERAL;
+	
+	//Return UV_ERR_DONE if there are none, but guess its an error if we get this
+	//Looping to end() seems like a bad idea
+	rcTemp = m_uvd->m_analyzer->getPreviousKnownInstructionAddress(m_address, &previousKnownAddress);
+	uv_assert_err_ret(rcTemp);
+	uv_assert_ret(previousKnownAddress.m_addr < m_address.m_addr);
 
-	return UV_ERR_GENERAL;
+	//Now form an iterator and forward assemble until we hit this
+	uv_assert_err_ret(m_uvd->instructionBeginByAddress(previousKnownAddress, forwardIterator));
+	
+	for( ;; )
+	{
+		//Advance
+		lastAddress = forwardIterator.m_address.m_addr;
+		uv_assert_err_ret(forwardIterator.next());
+
+		//If we past our address, means we have inconsistent disassembly
+		if( forwardIterator.m_address.m_addr > m_address.m_addr )
+		{
+			printf_error("instruction alignment inconsistent\n");
+			printf_error("start: 0x%%08X, died at: 0x%08X, iter's: 0x%08X\n",
+					forwardIterator.m_address.m_addr, m_address.m_addr);
+			return UV_DEBUG(UV_ERR_GENERAL);
+		}
+		//Done?
+		if( forwardIterator.m_address.m_addr == m_address.m_addr )
+		{
+			break;
+		}
+	}
+	
+	//The previous address should be what we need
+	m_address.m_addr = lastAddress;
+	//Parse current
+	uv_assert_err_ret(parseCurrentInstruction());
+
+	//yay we're done
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDInstructionIterator::next()
