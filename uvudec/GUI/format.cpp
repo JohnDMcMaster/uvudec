@@ -14,6 +14,7 @@ UVDGUIFormat::~UVDGUIFormat()
 {
 }
 
+/*
 uv_err_t UVDGUIFormat::formatAddress(uint32_t address, std::string &ret)
 {
 	std::string plainAddress;
@@ -36,4 +37,5 @@ uv_err_t UVDGUIFormat::addressToAnchorName(uv_addr_t address, std::string &ret)
 
 	return UV_ERR_OK;
 }
+*/
 

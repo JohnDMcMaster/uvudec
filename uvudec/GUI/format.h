@@ -15,8 +15,9 @@ public:
 	UVDGUIFormat();
 	~UVDGUIFormat();
 
-	virtual uv_err_t formatAddress(uint32_t address, std::string &ret);
-	uv_err_t addressToAnchorName(uv_addr_t address, std::string &ret);
+	//No longer using HTML
+	//virtual uv_err_t formatAddress(uint32_t address, std::string &ret);
+	//uv_err_t addressToAnchorName(uv_addr_t address, std::string &ret);
 };
 
 #endif
