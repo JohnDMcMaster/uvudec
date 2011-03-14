@@ -68,7 +68,9 @@ uv_err_t UVDGUIStringData::iterator_impl::get(std::string &ret)
 			uv_assert_err_ret(m_dataImpl->getMaxOffset(&m_offset));
 		}
 	}
-	return UV_DEBUG(m_dataImpl->getStringEngine()->m_strings[m_offset].readString(ret));
+	uv_assert_err_ret(m_dataImpl->getStringEngine()->m_strings[m_offset].readString(ret));
+	ret = UVDSprintf("%04X: %s", m_dataImpl->getStringEngine()->m_strings[m_offset].m_addressRange.m_min_addr, ret.c_str());
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDGUIStringData::iterator_impl::previous()
