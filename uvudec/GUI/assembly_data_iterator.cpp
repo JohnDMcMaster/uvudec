@@ -58,7 +58,9 @@ unsigned int UVDGUIAssemblyData::iterator_impl::offset()
 
 uv_err_t UVDGUIAssemblyData::iterator_impl::get(std::string &ret)
 {
-	return UV_DEBUG(m_iter.getCurrent(ret));
+	uv_assert_err_ret(m_iter.getCurrent(ret));
+	ret = UVDSprintf("%04X: %s", m_iter.m_iter.m_address.m_addr, ret.c_str());	
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDGUIAssemblyData::iterator_impl::previous()
