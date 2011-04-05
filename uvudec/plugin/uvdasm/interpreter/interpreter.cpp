@@ -42,7 +42,7 @@ uv_err_t UVDInterpreter::compile(const std::string &sExp, UVDInterpreterExpressi
 	//Default to only doing basic setup
 	//This is acceptable for expressions that can't be compiled
 
-	uv_assert_err_ret(result);
+	uv_assert_ret(result);
 	
 	//Reset to defaults
 	*result = UVDInterpreterExpression();

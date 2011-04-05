@@ -214,7 +214,7 @@ uv_err_t UVDElf::getSectionHeaderStringTableEntry(UVDElfStringTableSectionHeader
 	uv_assert_ret(section);
 	
 	//Assign it
-	uv_assert_err_ret(sectionOut);
+	uv_assert_ret(sectionOut);
 	*sectionOut = section;
 	
 	return UV_ERR_OK;

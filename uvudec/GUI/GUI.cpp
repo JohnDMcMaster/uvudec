@@ -464,10 +464,21 @@ uv_err_t UVDMainWindow::on_actionPrint_triggered()
 uv_err_t UVDMainWindow::on_symbolsList_itemClicked(QListWidgetItem *item)
 {
 	std::string text;
+	uint32_t address;
+	UVDBinarySymbol *symbol = NULL;
+	uv_err_t rc_tmp;
 	
 	text = item->text().toStdString();
 	
+	//Text holds symbol name
 	UVDPrintf("clicked on %s", text.c_str());
+	rc_tmp = m_project->m_uvd->m_analyzer->m_symbolManager.findSymbol(text.c_str(), &symbol);
+	printf("rc: %d\n", rc_tmp);
+	uv_assert_err_ret(rc_tmp);
+	uv_assert_err_ret(symbol->m_symbolAddress.getDynamicValue(&address));
+	printf("address: 0x%04X, pointer: %p\n",  address, symbol);
+	uv_assert_err_ret(m_mainWindow.disassembly->setPosition(address, 0));
+	
 	return UV_ERR_OK;
 }
 

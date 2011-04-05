@@ -378,7 +378,7 @@ error:
 
 uv_err_t UVDDisasmOperand::getVariable(std::string &name, UVDVarient &value)
 {
-	uv_assert_err_ret(getShared());
+	uv_assert_ret(getShared());
 
 	switch( getShared()->m_type )
 	{

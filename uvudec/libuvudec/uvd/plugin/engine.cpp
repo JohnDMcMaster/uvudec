@@ -36,7 +36,7 @@ uv_err_t UVDPluginEngine::init(UVDConfig *config)
 	{
 		const std::string &pluginDir = *iter;
 		
-		uv_assert_err_ret(loadByDir(pluginDir, config))
+		uv_assert_err_ret(loadByDir(pluginDir, config));
 	}
 	
 	/*

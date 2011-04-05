@@ -469,7 +469,7 @@ uv_err_t UVDPrintIterator::printReferenceList(UVDAnalyzedMemoryRange *memLoc, ui
 		UVDMemoryReference *value = (*iter).second;
 		uint32_t from = 0;
 		
-		uv_assert_err_ret(value);
+		uv_assert_ret(value);
 		from = value->m_from;
 		
 		std::string formattedAddress;

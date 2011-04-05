@@ -195,6 +195,7 @@ public:
 	uv_err_t refreshDynamicData();
 	uv_err_t refreshVerticalPageStep();
 	uv_err_t scrollUnits(int units);
+	uv_err_t setPosition(unsigned int pos, unsigned int index);
 
 protected:
 	uv_err_t initViewport();

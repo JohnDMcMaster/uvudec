@@ -217,6 +217,17 @@ uv_err_t UVQtScrollableDynamicText::scrollUnits(int units)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVQtScrollableDynamicText::setPosition(unsigned int pos, unsigned int index)
+{
+	UV_DEBUG(m_viewportShadow->changePositionToLine(pos, index));
+	//We need to update the slider to keep in sync
+	//This emits dx/dy events though
+	m_verticalScrollbarValueShadow = m_viewportShadow->m_start.offset();
+	verticalScrollBar()->setSliderPosition(m_viewportShadow->m_start.offset());
+	viewport()->update();
+	return UV_ERR_OK;
+}
+
 void UVQtScrollableDynamicText::keyPressEvent(QKeyEvent *event)
 {
 	printf("key event: 0x%08X\n", event->key());
