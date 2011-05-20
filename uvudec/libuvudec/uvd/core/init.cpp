@@ -133,7 +133,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 	//Iterate over all plugins until one accepts our input
 	uv_assert_ret(m_pluginEngine);
 	for( std::map<std::string, UVDPlugin *>::iterator iter = m_pluginEngine->m_loadedPlugins.begin();
-		iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
+			iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
 	{
 		UVDPlugin *plugin = (*iter).second;
 		uv_err_t rcTemp = UV_ERR_GENERAL;
@@ -200,7 +200,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 		}
 		else
 		{
-			printf_debug_level(UVD_DEBUG_PASSES, "loaded object from plugin %s\n", plugin->getName().c_str());
+			printf_debug_level(UVD_DEBUG_PASSES, "loaded object from plugin %s (%p)\n", plugin->getName().c_str(), object);
 			break;
 		}
 	}
@@ -242,10 +242,12 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 		rcTemp = plugin->canGetArchitecture(object, hints,  &loadPriority);
 		if( UV_FAILED(rcTemp) )
 		{
-			printf_plugin_debug("plugin %s failed to canLoad object\n", (*iter).first.c_str());
+			printf_plugin_debug("plugin %s failed to canLoad architecture\n", (*iter).first.c_str());
 			continue;
 		}
 
+		printf_plugin_debug("plugin %s returned from canLoad architecture with priority 0x%08X\n",
+				(*iter).first.c_str(), loadPriority);
 		if( loadPriority <= bestPriority )
 		{
 			if( loadPriority < bestPriority )

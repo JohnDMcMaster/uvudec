@@ -234,24 +234,30 @@ printf_args_debug("root type: %d\n", json_typeof(root));
 	Okay I tried to play nice, now its time to get work done and go back to this later
 	*/
 	std::string fileContent;
-	std::vector<std::string> configArgs;
 	std::vector<std::string> lines;
 
 	uv_assert_err_ret(readFile(filename, fileContent));
 	lines = split(fileContent, '\n', false);
-	for( std::vector<std::string>::iterator iter = lines.begin(); iter != lines.end(); ++iter )
+	for( std::vector<std::string>::size_type line_index = 0; line_index < lines.size(); ++line_index )
 	{
-		std::string line = *iter;
+		std::string line = lines[line_index];
+		UVDConfigFileArg *arg = NULL;
 		
 		if( line.empty() )
 		{
 			continue;
 		}
-		configArgs.push_back(std::string("--") + line);
+		
+		arg = new UVDConfigFileArg();
+		arg->m_fileName = "FIXME FILE NAME";
+		arg->m_fileLine = line_index + 1;
+		arg->m_token = std::string("--") + line;
+		
+		//Insert at beginning to make user supplied options override by being processed last
+		m_loader->m_config->m_argsEffective.m_args.insert(
+				m_loader->m_config->m_argsEffective.m_args.begin(),
+				arg);	
 	}
-
-	//Combine, skipping over program name
-	m_loader->m_config->m_argsEffective.insert(m_loader->m_config->m_argsEffective.begin() + 1, configArgs.begin(), configArgs.end());
 
 	return UV_ERR_OK;
 #endif

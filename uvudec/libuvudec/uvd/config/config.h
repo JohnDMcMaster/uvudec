@@ -188,9 +188,12 @@ public:
 	//used to print program name for usage
 	int m_argc;
 	char *const *m_argv;
+	//Just like above, except vectorized
 	std::vector<std::string> m_args;
+	
 	//After adding options from config files and such
-	std::vector<std::string> m_argsEffective;
+	//std::vector<std::string> m_argsEffective;
+	UVDRawArgs m_argsEffective;
 
 	//The binary we are analyzing, it from a file
 	//The primary source of this information should be uvd's UVDData and this is more for init purposes
@@ -215,6 +218,7 @@ public:
 	//Configuration option parsing
 	//Could bet set from command line, interactive shell, or a file
 	UVDArgConfigs m_configArgs;
+
 	
 	std::string m_sDebugFile;
 	//FILE *m_pDebugFile;
@@ -318,8 +322,11 @@ public:
 	UVDPluginConfig m_plugin;
 	UVDConfigFileLoader *m_configFileLoader;
 
+	//XXX: why isn't this a member of UVDArgConfig?
 	//<propertyForm, numeric flag>
 	std::map<std::string, uint32_t> m_propertyFlagMap;
+	
+	UVDArgEngine m_argEngine;
 	
 	//Used for selecting UVD to initialize
 	UVDArchitectureRegistry *m_architectureRegistry;

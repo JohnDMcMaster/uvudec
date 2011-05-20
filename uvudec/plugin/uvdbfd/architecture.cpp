@@ -61,12 +61,9 @@ uv_err_t UVDBFDArchitecture::canLoad(const UVDObject *object, const UVDRuntimeHi
 	uv_assert_ret(object);
 	uv_assert_ret(confidence);
 
-	if( typeid(object) == typeid(UVDBFDObject *) )
-	{
-		*confidence = UVD_MATCH_GOOD;
-	}
-	else
-	{
+	if( typeid(*object) == typeid(UVDBFDObject) ) {
+		*confidence = UVD_MATCH_GOOD + 1;
+	} else {
 		*confidence = UVD_MATCH_NONE;
 	}
 
@@ -78,8 +75,7 @@ uv_err_t UVDBFDArchitecture::tryLoad(UVDObject *object, const UVDRuntimeHints &h
 	UVDBFDArchitecture *ret = NULL;
 	uv_err_t rc = UV_ERR_GENERAL;
 	
-	if( typeid(object) != typeid(UVDBFDObject *) )
-	{
+	if( typeid(*object) != typeid(UVDBFDObject) ) {
 		return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 	}
 	

@@ -143,7 +143,8 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	{
 		m_args.clear();
 	}
-	m_argsEffective = m_args;
+	//m_argsEffective = m_args;
+	UVDCommandLineArg::fromStringVector( m_args, m_argsEffective );
 	//printf("parse main, effective args: %d\n", m_argsEffective.size());
 
 	//This must be setup very early so config files can be correctly loaded
@@ -158,13 +159,15 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	//printf("effective args: %d\n", m_argsEffective.size());
 	//for( unsigned int i = 0; i < m_argsEffective.size(); ++i ) printf("arg[%d] = %s\n", i, m_argsEffective[i].c_str());
 	//Early config parsing for debugging, especially during plugin loading/initialization
-	UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false, &m_configArgs);
+	UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false,
+			&m_configArgs);
 
 	//This must be done early since command line options depend upon which plugins are loaded
 	uv_assert_err_ret(m_plugin.m_pluginEngine.init(this));
 
 	//Parse the data
-	processRc = UVDArgConfig::process(m_configArgs, m_argsEffective, true, &m_plugin.m_earlyConfigArgs);
+	processRc = UVDArgConfig::process(m_configArgs, m_argsEffective, true,
+			&m_plugin.m_earlyConfigArgs);
 	if( processRc == UV_ERR_DONE )
 	{
 		return processRc;

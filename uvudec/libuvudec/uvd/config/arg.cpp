@@ -23,6 +23,7 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
+
 /*
 UVDArgConfigs
 */
@@ -133,21 +134,17 @@ uv_err_t UVDArgConfigs::printUsage(const std::string &indent)
 
 uv_err_t UVDArgRegistry::processMain(int argc, char *const *argv)
 {
-	return UV_DEBUG(processStringVector(charPtrArrayToVector(argv, argc)));
-}
-
-uv_err_t UVDArgRegistry::processMainWithRemove(int argc, char **argv)
-{
-	return UV_DEBUG(UV_ERR_GENERAL);
-}
-
-uv_err_t UVDArgRegistry::processStringVector(const std::vector<std::string> &argsIn)
-{
-	std::vector<std::string> args = argsIn;
+	//Strings by themeslves
+	std::vector<std::string> argsIn;
+	//Strings tagged as from the command line
+	UVDRawArgs args;
+	
+	argsIn = charPtrArrayToVector(argv, argc);
+	uv_assert_err_ret(UVDCommandLineArg::fromStringVector(argsIn, args));
 	
 	uv_assert_ret(m_argConfigsSet.size() == 1);
-	for( std::set<UVDArgConfigs *>::iterator iter = m_argConfigsSet.begin();
-			iter != m_argConfigsSet.end(); ++iter )
+	
+	for( std::set<UVDArgConfigs *>::iterator iter = m_argConfigsSet.begin(); iter != m_argConfigsSet.end(); ++iter )
 	{
 		UVDArgConfigs *argConfigs = *iter;
 		uv_err_t rc = UV_ERR_GENERAL;
@@ -166,15 +163,17 @@ uv_err_t UVDArgRegistry::processStringVector(const std::vector<std::string> &arg
 			return UV_DEBUG(rc);
 		}
 	}
-	uv_assert_ret(args.empty());
+	uv_assert_ret(args.m_args.empty());
 	
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
 
+/*
 uv_err_t UVDArgRegistry::processStringVectorWithRemove(std::vector<std::string> &args)
 {
 	return UV_DEBUG(UV_ERR_GENERAL);
 }
+*/
 
 /*
 UVDArgConfig
@@ -241,7 +240,7 @@ bool UVDArgConfig::operator==(const std::string &r) const
 }
 */
 
-uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std::string> &args,
+uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, UVDRawArgs &args,
 		bool printErrors, UVDArgConfigs *ignoredArgs)
 {
 	//Used if m_alwaysCall or m_combine is used
@@ -266,10 +265,11 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 	We could store args as property map, but we'd still have to iterate over to match each part
 	*/
 	//Iterate for each actual command line argument
-	//skip first arg which is prog name
-	for( std::vector<std::string>::size_type argsIndex = 1; argsIndex < args.size(); ++argsIndex )
+	//Note that args should NOT have prog name
+	for( std::vector<std::string>::size_type argsIndex = 0; argsIndex < args.m_args.size(); ++argsIndex )
 	{
-		std::string arg = args[argsIndex];
+		UVDRawArg *argObject = args.m_args[argsIndex];
+		std::string arg = argObject->m_token;
 		std::vector<UVDParsedArg> parsedArgs;
 
 		printf_args_debug("arg: %s\n", arg.c_str());
@@ -345,8 +345,9 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 					{
 						//we need to grab next then
 						++argsIndex;
-						uv_assert_ret(argsIndex < args.size());
-						argumentArguments.push_back(args[argsIndex]);
+						uv_assert_ret(argsIndex < args.m_args.size());
+						argObject = args.m_args[argsIndex];
+						argumentArguments.push_back(argObject->m_token);
 					}
 				}
 			}
@@ -359,6 +360,8 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, std::vector<std:
 					printf_args_debug("handler returned error processing argument: %s\n", parsedArg.m_raw.c_str());
 					return UV_DEBUG(UV_ERR_GENERAL);
 				}
+				//Mark it as parsed
+				g_config->m_argEngine.m_lastSource[matchedConfig->m_propertyForm] = argObject->getSource();
 				//Some option like help() has been called that means we should abort program
 				if( handlerRc == UV_ERR_DONE )
 				{
@@ -703,5 +706,33 @@ void UVDConfig::printHelp()
 {
 	printVersion();
 	printUsage();
+}
+
+/*
+UVDArgEngine
+*/
+
+UVDArgEngine::UVDArgEngine() {
+}
+
+UVDArgEngine::~UVDArgEngine() {
+}
+
+//Where did we last parse given property from?
+uv_err_t UVDArgEngine::getLastSource( const std::string &argProperty, unsigned int *source ) {
+	uv_assert_ret(source);
+	
+	if( m_lastSource.find(argProperty) != m_lastSource.end() ) {
+		*source = m_lastSource[argProperty];
+	} else {
+		//Consider checking to see if the property is registered at all
+		*source = UVD_ARG_FROM_DEFAULT; 
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArgEngine::setLastSource( const std::string &argProperty, unsigned int source ) {
+	m_lastSource[argProperty] = source;
+	return UV_ERR_OK;
 }
 

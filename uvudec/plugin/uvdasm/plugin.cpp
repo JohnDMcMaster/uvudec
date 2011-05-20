@@ -64,29 +64,9 @@ uv_err_t UVDAsmPlugin::getAuthor(std::string &out)
 
 uv_err_t UVDAsmPlugin::canGetArchitecture(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence)
 {
-	/*
-	If a file was specified, we should assume we are a good match for it
-	Alternativly, we'd have to rummage through our config files and see if any disassemble sanely
-	Likely this will require more specialized behavior, such as registering a handler for each architecture file we have
-	*/
-	std::string defaultArchitectureFile;
-	
-	uv_assert_ret(confidence);
-	//If explictly specified, seems like a reasonable choice
-	if( g_asmConfig->m_architectureFileName.empty() )
-	{
-		*confidence = UVD_MATCH_ACCEPTABLE;
-	}
-	//This is probably more of an archaec option from before I had config files
-	//Likely will be removed in the future
-	else if( UV_SUCCEEDED(g_asmConfig->getDefaultArchitectureFile(defaultArchitectureFile)) && !defaultArchitectureFile.empty() )
-	{
-		*confidence = UVD_MATCH_POOR;
-	}
-	else
-	{
-		*confidence = UVD_MATCH_NONE;
-	}
+	//Binary objects can always be loaded, but with low confidence
+	//Must be explicitly specified or a last ditch fallback	
+	*confidence = UVD_MATCH_POOR;
 	
 	return UV_ERR_OK;
 }

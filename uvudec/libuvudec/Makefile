@@ -29,6 +29,7 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/config/config_symbols.cpp \
 			$(UVD_DIR)/config/file.cpp \
 			$(UVD_DIR)/config/plugin.cpp \
+			$(UVD_DIR)/config/raw_arg.cpp \
 			$(UVD_DIR)/core/analysis.cpp \
 			$(UVD_DIR)/core/analyzer.cpp \
 			$(UVD_DIR)/core/event.cpp \

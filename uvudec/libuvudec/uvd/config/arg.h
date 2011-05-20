@@ -8,12 +8,23 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_ARG_H
 
 #include "uvd/util/types.h"
+#include "uvd/config/raw_arg.h"
 #include <set>
 #include <string>
 
 #define UVD_OPTION_FILE_STDIN		"-"
 #define UVD_OPTION_FILE_STDOUT		"/dev/stdout"
 #define UVD_OPTION_FILE_STDERR		"/dev/stderr"
+
+
+#define UVD_ARG_FORM_UNKNOWN			0
+#define UVD_ARG_FORM_LONG				1
+#define UVD_ARG_FORM_SHORT				2
+//--stuff.other
+#define UVD_ARG_FORM_PROPERTY			3
+//Not a -'d argument, just by self
+#define UVD_ARG_FORM_NAKED				4
+
 
 /*
 Function to parse an argument
@@ -28,6 +39,7 @@ typedef uv_err_t (*UVDArgConfigHandler)(const UVDArgConfig *UVDArgConfig, std::v
 //Map of property to arg config
 //Naked handler has empty property
 class UVDArgConfig;
+
 
 /*
 A group of UVDArgConfigs that represents a logical zone where an argument is valid
@@ -79,17 +91,19 @@ public:
 	
 	uv_err_t printUsage(const std::string &indent = "");
 	uv_err_t newArgConfgs(UVDArgConfigs **out = NULL);
+	//Used from test program
 	uv_err_t processMain(int argc, char *const *argv);
-	uv_err_t processMainWithRemove(int argc, char **argv);
-	uv_err_t processStringVector(const std::vector<std::string> &args);
+	//uv_err_t processMainWithRemove(int argc, char **argv);
+	//uv_err_t processStringVector(const std::vector<std::string> &args, bool skipFirst);
 	//Remove processed args
 	//Will not return error on unknown args, instead !args.empty()
-	uv_err_t processStringVectorWithRemove(std::vector<std::string> &args);
+	//uv_err_t processStringVectorWithRemove(std::vector<std::string> &args);
 	
 public:
 	//TODO: define ordering on this, probably by property
 	std::set<UVDArgConfigs *> m_argConfigsSet;
 };
+
 
 /*
 Argument parsing for startup
@@ -98,7 +112,7 @@ Should be parsable from a config file or from command line
 --key=val is preferred form
 --defauledKey will, for example, assume you left off the = for a default and not check the next val
 
-FIXME: we need to subclass this or something
+FIXME: need to subclass this or something
 I think we only deal with pointers to it anyway
 */
 class UVDArgConfig
@@ -123,6 +137,7 @@ public:
 			void *user);
 	~UVDArgConfig();
 
+	bool isUndecoratedHandler() const;
 	bool isNakedHandler() const;
 	//bool operator ==(const std::string &r) const;
 
@@ -135,8 +150,9 @@ public:
 	-d arg or -darg
 		if num args == 1
 	--arg=val or --arg val
+	XXX: this doesn't look like its actually eliminating args?
 	*/
-	static uv_err_t process(const UVDArgConfigs &argConfig, std::vector<std::string> &args,
+	static uv_err_t process(const UVDArgConfigs &argConfig, UVDRawArgs &args,
 			bool printErrors = true, UVDArgConfigs *ignoredArgs = NULL);
 public:
 	/*
@@ -173,6 +189,7 @@ public:
 		//Former is more control, but latter is what is usually needed and more convenient
 		bool m_combine;
 	};
+	//User defined argument to put into the handler
 	void *m_user;
 };
 
@@ -192,14 +209,6 @@ class UVDNakedArgConfig : public UVDArgConfig
 {
 public:
 };
-
-#define UVD_ARG_FORM_UNKNOWN			0
-#define UVD_ARG_FORM_LONG				1
-#define UVD_ARG_FORM_SHORT				2
-//--stuff.other
-#define UVD_ARG_FORM_PROPERTY			3
-//Not a -'d argument, just by self
-#define UVD_ARG_FORM_NAKED				4
 
 /*
 An argument we've parsed and are trying to decode
@@ -225,6 +234,22 @@ public:
 	bool m_embeddedValPresent;
 	//The val part of above
 	std::string m_embeddedVal;
+};
+
+class UVDArgEngine
+{
+public:
+	UVDArgEngine();
+	~UVDArgEngine();
+	
+	//Where did we last parse given property from?
+	uv_err_t getLastSource( const std::string &argProperty, unsigned int *source );
+	uv_err_t setLastSource( const std::string &argProperty, unsigned int source );
+
+public:
+	//Last source that the property was set from
+	//Last and not "the" because could be a list
+	std::map<std::string, uint32_t> m_lastSource;
 };
 
 //uv_err_t UVDInitArgConfig();

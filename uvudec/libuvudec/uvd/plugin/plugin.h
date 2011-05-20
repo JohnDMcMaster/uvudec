@@ -168,6 +168,13 @@ public:
 	More likely they will have to be different application instances
 	*/
 	UVD *m_uvd;
+	/*
+	Experimental idea
+	Increase priority of a load for an object/architecture if we specified options for it
+	Will be paired with a suprression option since could specify options in config file 
+	and currently not distinguishing where options come from
+	*/
+	unsigned int m_nArgumentsParsed;
 };
 
 #endif
