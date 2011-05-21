@@ -97,6 +97,8 @@ uv_err_t UVDRuntime::clearAddressSpaces()
 
 uv_err_t UVDRuntime::getPrimaryExecutableAddressSpace(UVDAddressSpace **out)
 {
+	printf("address spaces: %d\n", m_addressSpaces.m_addressSpaces.size());
+
 	uv_assert_ret(out);
 	for( std::vector<UVDAddressSpace *>::iterator iter = m_addressSpaces.m_addressSpaces.begin();
 			iter != m_addressSpaces.m_addressSpaces.end(); ++iter )
@@ -111,7 +113,7 @@ uv_err_t UVDRuntime::getPrimaryExecutableAddressSpace(UVDAddressSpace **out)
 			return UV_ERR_OK;
 		}
 	}
-
+	
 	//Nothing found
 	*out = NULL;
 	return UV_ERR_NOTFOUND;

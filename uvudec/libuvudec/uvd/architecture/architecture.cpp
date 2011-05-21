@@ -75,3 +75,10 @@ uv_err_t UVDArchitecture::fixupDefaults()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDArchitecture::getInstructionIterator( UVDInstructionIterator **out ) {
+	uv_assert_ret(out);
+	*out = new UVDInstructionIterator();
+	uv_assert_ret(*out);
+	return UV_ERR_OK;
+}
+

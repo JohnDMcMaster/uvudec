@@ -30,19 +30,19 @@ public:
 	uv_err_t init(UVD *uvd, UVDAddressSpace *addressSpace);
 	uv_err_t init(UVD *uvd, UVDAddress address);
 	uv_err_t deinit();
-	~UVDInstructionIterator();
+	virtual ~UVDInstructionIterator();
 	
 	//Make it as UVD::end() would return
 	//FIXME: this should be protected?
 	uv_err_t makeEnd();
 
-	uv_addr_t getPosition();
+	virtual uv_addr_t getPosition();
 
 	//Since the return type is not a pointer, needs to be defined in each subclass
 	//UVDIteratorCommon operator++();
 	//Advance to next output line
-	uv_err_t next();
-	uv_err_t previous();
+	virtual uv_err_t next();
+	virtual uv_err_t previous();
 	//Reminder: this is called directly for analysis
 	uv_err_t parseCurrentInstruction();
 	//Being done is pretty type specific
@@ -85,6 +85,8 @@ protected:
 	bool isEnd();
 
 public:
+	//TODO: should have a list of address spaces?
+
 	/*
 	Source of data to disassemble, there what and where
 	*/
@@ -101,6 +103,9 @@ public:
 
 	//Object we are iterating on
 	UVD *m_uvd;
+	
+	void *m_objectUser;
+	void *m_architectureUser;
 };
 
 /*
@@ -165,7 +170,7 @@ public:
 	uint32_t m_positionIndex;
 	//Lines to come from current index
 	std::vector<std::string> m_indexBuffer;
-	UVDInstructionIterator m_iter;
+	UVDInstructionIterator *m_iter;
 
 	//Printed startup information yet?
 	//FIXME: get rid of this and instead check for start address condition maybe?

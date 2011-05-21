@@ -7,6 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "bfd.h"
 #include "uvdbfd/object.h"
 #include <typeinfo>
+#include <string.h>
 
 uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user)
 {
@@ -129,9 +130,53 @@ error:
 	return UV_DEBUG(rc);
 }
 
+
+
+class UVDBFDSection : public UVDSection {
+public:
+	UVDBFDSection();
+	~UVDBFDSection();
+
+	virtual uv_err_t toAddressSpace(UVDAddressSpace **out);
+};
+
+UVDBFDSection::UVDBFDSection() {
+}
+
+UVDBFDSection::~UVDBFDSection() {
+}
+
+uv_err_t UVDBFDSection::toAddressSpace(UVDAddressSpace **out) {
+	printf("to address space\n");
+	return UV_DEBUG(UVDSection::toAddressSpace(out));
+}
+
+
 uv_err_t UVDBFDObject::rebuildSections()
 {
-	//FIXME: implement this
+	asection *bfdAsection = NULL;
+	
+	for( bfdAsection = m_bfd->sections; bfdAsection != NULL; bfdAsection = bfdAsection->next ) {
+		UVDSection *section = NULL;
+
+		section = new UVDBFDSection();
+		uv_assert_ret(section);
+		
+		//Can this be NULL?
+		uv_assert_ret(bfdAsection->name);
+		section->m_name = bfdAsection->name;
+		
+		section->m_R = UVD_TRI_TRUE;
+		section->m_W = UVD_TRI_FALSE;
+		if( !strcmp(".text", bfdAsection->name) ) {
+			section->m_X = UVD_TRI_TRUE;		
+		} else {
+			section->m_X = UVD_TRI_FALSE;		
+		}
+		
+		m_sections.push_back(section);
+	}
+
 	return UV_ERR_OK;
 }
 

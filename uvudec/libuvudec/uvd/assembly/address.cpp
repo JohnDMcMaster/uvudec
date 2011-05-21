@@ -128,7 +128,7 @@ bool UVDAddressRange::operator==(const UVDAddressRange *other) const
 
 unsigned int UVDAddressRange::size() const
 {
-	return m_max_addr - m_min_addr;
+	return m_max_addr - m_min_addr + 1;
 }
 
 uv_err_t UVDAddressRange::memoryToString(std::string &out, bool safe) const

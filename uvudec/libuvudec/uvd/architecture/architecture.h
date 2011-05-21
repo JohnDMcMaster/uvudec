@@ -28,8 +28,22 @@ public:
 	UVDArchitecture();
 	virtual ~UVDArchitecture();
 
-	virtual uv_err_t init();	
-	virtual uv_err_t deinit();	
+	virtual uv_err_t init();
+	virtual uv_err_t deinit();
+	
+	/*
+	If the architecture and the object file are ALWAYS coupled together
+	(eg: UVDBFDArchitecture only works on a UVDBFDObject), then override this
+	Otherwise, better to leave as default since default implementation is
+	for generic address lookup
+	
+	Main purpose was that if a library ONLY gave the following routines you could still use it:
+	-begin()
+	-next()
+	-end()
+	IE no random access
+	*/
+	virtual uv_err_t getInstructionIterator( UVDInstructionIterator **out );
 	
 	//Allocate an instruction object compatbile with this architecture
 	virtual uv_err_t getInstruction(UVDInstruction **out) = 0;

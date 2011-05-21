@@ -669,7 +669,7 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 
 	uv_assert_ret(m_config);
 	//FIXME: this should be delta, not single...w/e
-	uv_assert_err_ret(iterBegin.m_iter.m_address.m_space->getNumberAnalyzedBytes(&analyzedBytes));
+	uv_assert_err_ret(iterBegin.m_iter->m_address.m_space->getNumberAnalyzedBytes(&analyzedBytes));
 	uv_assert_ret(analyzedBytes != 0);
 	verbose_old = m_config->m_verbose;
 	m_config->m_verbose = m_config->m_verbose_printing;
@@ -687,7 +687,7 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 	while( iter != iterEnd )
 	{
 		std::string line;
-		uint32_t startPos = iter.m_iter.getPosition();
+		uint32_t startPos = iter.m_iter->getPosition();
 
 		++iterations;				
 		printf_debug("\n\n\n");
@@ -703,7 +703,7 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 		}
 
 		uv_assert_err_ret(iter.getCurrent(line));
-		printf_debug("Line (0x%.8X): %s\n", iter.m_iter.getPosition(), line.c_str());
+		printf_debug("Line (0x%.8X): %s\n", iter.m_iter->getPosition(), line.c_str());
 
 		//This didn't help for the bottleneck under investigation
 

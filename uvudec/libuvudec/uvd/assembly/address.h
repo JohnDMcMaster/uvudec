@@ -113,7 +113,7 @@ public:
 	std::string m_desc;
 	//EPROM, RAM, etc.  Defines prefixed with UV_DISASM_MEM_
 	//uint32_t m_type;
-	//Valid addresses
+	//Valid addresses (inclusive)
 	uv_addr_t m_min_addr;
 	uv_addr_t m_max_addr;
 	//Used for output
