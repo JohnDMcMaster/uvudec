@@ -503,6 +503,9 @@ uv_err_t UVD::instructionBegin(UVDInstructionIterator &iter)
 
 	return UV_ERR_OK;	
 	*/
+	uv_assert_ret(m_runtime);
+	uv_assert_ret(m_runtime->m_architecture);
+	uv_assert_ret(m_runtime->m_architecture->m_instructionIteratorFactory);
 	return UV_DEBUG(m_runtime->m_architecture->m_instructionIteratorFactory->instructionIteratorBegin(&iter));
 }
 

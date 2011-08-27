@@ -126,6 +126,8 @@ public:
 	*/
 	virtual uv_err_t fixupDefaults();
 
+	uv_err_t doInit();
+
 public:
 	UVD *m_uvd;
 	//Address spaces inherently defined by this architecture

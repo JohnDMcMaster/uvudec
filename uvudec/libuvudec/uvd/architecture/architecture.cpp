@@ -12,6 +12,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDArchitecture::UVDArchitecture()
 {
 	m_uvd = NULL;
+	m_instructionIteratorFactory = NULL;
+	m_printIteratorFactory = NULL;
 }
 
 UVDArchitecture::~UVDArchitecture()
@@ -21,9 +23,15 @@ UVDArchitecture::~UVDArchitecture()
 
 uv_err_t UVDArchitecture::init()
 {
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDArchitecture::doInit() {
 	uv_assert_err_ret(getInstructionIteratorFactory(&m_instructionIteratorFactory));
 	uv_assert_err_ret(getPrintIteratorFactory(&m_printIteratorFactory));
 
+	uv_assert_err_ret(init());
+	
 	return UV_ERR_OK;
 }
 

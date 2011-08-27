@@ -299,7 +299,7 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 		return UV_ERR_NOTFOUND;
 	}
 	
-	uv_assert_err_ret(architecture->init());
+	uv_assert_err_ret(architecture->doInit());
 	uv_assert_err_ret(architecture->fixupDefaults());
 
 	uv_assert_ret(out);
