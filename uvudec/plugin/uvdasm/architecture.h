@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVDASM_ARCHITECTURE_H
 
 #include "uvd/architecture/architecture.h"
+#include "uvd/core/std_iterator.h"
 #include "uvdasm/util.h"
 #include "uvdasm/opcode_table.h"
 #include "uvdasm/config_symbol.h"
@@ -32,6 +33,9 @@ public:
 	uv_err_t init_vectors(UVDConfigSection *section);
 	virtual uv_err_t deinit();	
 
+	//Uses standard iterator model
+	virtual uv_err_t parseCurrentInstruction(UVDASInstructionIterator &out);
+	//Think this was old architecture
 	virtual uv_err_t getInstruction(UVDInstruction **out);
 
 	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names);

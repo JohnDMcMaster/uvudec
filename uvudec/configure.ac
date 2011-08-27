@@ -10,7 +10,7 @@
 
 AC_PREREQ([2.65])
 # FIXME: copy this into Makefile.configure, split apart
-AC_INIT([uvudec], [0.3.1], [JohnDMcMaster@gmail.com])
+AC_INIT([uvudec], [0.4.0], [JohnDMcMaster@gmail.com])
 AC_CONFIG_SRCDIR([libuvudec/uvd/core/uvd.cpp])
 AC_CONFIG_HEADERS([libuvudec/uvd/config.h])
 

@@ -10,6 +10,7 @@ UVD_DIR=$(LIBUVUDEC_DIR)/uvd
 
 REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/architecture/architecture.cpp \
+			$(UVD_DIR)/architecture/factory.cpp \
 			$(UVD_DIR)/architecture/registry.cpp \
 			$(UVD_DIR)/assembly/address.cpp \
 			$(UVD_DIR)/assembly/function.cpp \
@@ -32,12 +33,15 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/config/raw_arg.cpp \
 			$(UVD_DIR)/core/analysis.cpp \
 			$(UVD_DIR)/core/analyzer.cpp \
+			$(UVD_DIR)/core/as_instruction_iterator.cpp \
 			$(UVD_DIR)/core/event.cpp \
 			$(UVD_DIR)/core/init.cpp \
 			$(UVD_DIR)/core/instruction_iterator.cpp \
 			$(UVD_DIR)/core/print_iterator.cpp \
 			$(UVD_DIR)/core/runtime.cpp \
 			$(UVD_DIR)/core/runtime_hints.cpp \
+			$(UVD_DIR)/core/std_instruction_iterator.cpp \
+			$(UVD_DIR)/core/std_print_iterator.cpp \
 			$(UVD_DIR)/core/uvd.cpp \
 			$(UVD_DIR)/data/data.cpp \
 			$(UVD_DIR)/data/chunk.cpp \

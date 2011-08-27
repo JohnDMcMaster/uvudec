@@ -53,13 +53,22 @@ std::string UVDGUIAssemblyData::iterator_impl::toString()
 
 unsigned int UVDGUIAssemblyData::iterator_impl::offset()
 {
-	return m_iter.m_iter->m_address.m_addr;
+	//return m_iter.m_iter->m_address.m_addr;
+	UVDAddress address;
+	
+	UV_DEBUG(m_iter.getAddress(&address));
+	return address.m_addr;
 }
 
 uv_err_t UVDGUIAssemblyData::iterator_impl::get(std::string &ret)
 {
-	uv_assert_err_ret(m_iter.getCurrent(ret));
-	ret = UVDSprintf("%04X: %s", m_iter.m_iter->m_address.m_addr, ret.c_str());	
+	std::string disassembled;
+	UVDAddress address;
+	
+	uv_assert_err_ret(m_iter.getCurrent(disassembled));
+	uv_assert_err_ret(m_iter.getAddress(&address));
+	
+	ret = UVDSprintf("%04X: %s", address.m_addr, disassembled.c_str());	
 	return UV_ERR_OK;
 }
 

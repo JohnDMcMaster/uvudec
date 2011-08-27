@@ -25,43 +25,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/util.h"
 
 /*
-UVDAbstractPrintIterator
-*/
-UVDAbstractPrintIterator::UVDAbstractPrintIterator() {
-}
-
-UVDAbstractPrintIterator::~UVDAbstractPrintIterator() {
-}
-
-uv_err_t UVDAbstractPrintIterator::init(UVD *uvd, UVDAddressSpace *addressSpace) {
-	UVDAddress address;
-	
-	address.m_space = addressSpace;
-	address.m_addr = 0;
-	uv_assert_err_ret(init(uvd, address, 0));
-	
-	return UV_ERR_OK;
-}
-
-std::string UVDAbstractPrintIterator::operator*()
-{
-	std::string ret;
-
-	UV_DEBUG(getCurrent(ret));
-
-	return ret;
-}
-
-uv_err_t UVDAbstractPrintIterator::previous()
-{
-	return UV_ERR_NOTIMPLEMENTED;
-}
-
-/*
 Make it print nicely for output
 Any non-printable characters should be converted to some "nicer" form
 */
-#if 0
 static std::string stringTableStringFormat(const std::string &s)
 {
 	std::string sRet;
@@ -85,9 +51,7 @@ static std::string stringTableStringFormat(const std::string &s)
 	}
 	return sRet;
 }
-#endif
 
-#if 0
 /*
 UVDStdPrintIterator
 */
@@ -102,24 +66,13 @@ UVDStdPrintIterator::~UVDStdPrintIterator()
 {
 }
 
-uv_err_t UVDStdPrintIterator::init(UVD *uvd, UVDAddressSpace *addressSpace)
-{
-	/*
-	Construct the address at the start of the address sapce
-	*/
-	UVDAddress address;
-	
-	uv_assert_ret(addressSpace);
-	address.m_space = addressSpace;
-	uv_assert_err_ret(addressSpace->getMinValidAddress(&address.m_addr));
-	
-	return UV_DEBUG(init(uvd, address, 0));
-}
-
 uv_err_t UVDStdPrintIterator::init(UVD *uvd, UVDAddress address, uint32_t index)
 {
-	uv_assert_err_ret(uvd->m_runtime->m_architecture->instructionIteratorBeginByAddress(&m_iter, address));
+	//uv_assert_err_ret(uvd->m_runtime->m_architecture->getInstructionIterator(&m_iter));
+	uv_assert_err_ret(uvd->instructionBeginByAddress(address, m_iter));
+
 	//uv_assert_ret(m_iter);
+	//uv_assert_err_ret(m_iter.init(uvd, address));
 	//Initially set to 0 to trigger next()
 	m_positionIndex = 0;
 	uv_assert_err_ret(parseCurrentLocation());
@@ -147,27 +100,18 @@ bool UVDStdPrintIterator::operator!=(const UVDStdPrintIterator &other) const
 }
 */
 
-int UVDStdPrintIterator::compare(const UVDAbstractPrintIterator &other) const
+int UVDStdPrintIterator::compare(const UVDAbstractPrintIterator &otherIn) const
 {
 	int delta = 0;
-	const UVDStdPrintIterator &otherThis = dynamic_cast<const UVDStdPrintIterator &>(other);
+	const UVDStdPrintIterator *other = dynamic_cast<const UVDStdPrintIterator *>(&otherIn);
 	
-	delta = m_iter.compare(otherThis.m_iter);
+	delta = m_iter.compare(other->m_iter);
 	if( delta )
 	{
 		return delta;
 	}
 	
-	return m_positionIndex - otherThis.m_positionIndex;
-}
-
-std::string UVDStdPrintIterator::operator*()
-{
-	std::string ret;
-
-	UV_DEBUG(getCurrent(ret));
-
-	return ret;
+	return m_positionIndex - other->m_positionIndex;
 }
 
 uv_err_t UVDStdPrintIterator::getCurrent(std::string &s)
@@ -256,9 +200,11 @@ uv_err_t UVDStdPrintIterator::initialProcess()
 	UVDConfig *config = NULL;
 	UVDAnalyzer *analyzer = NULL;
 		
-	uv_assert_ret(g_uvd);
+	//uv_assert_ret(g_uvd);
 	config = g_uvd->m_config;
 	uv_assert_ret(config);
+
+	uv_assert_ret(g_uvd);
 	analyzer = g_uvd->m_analyzer;
 	
 	if( config->m_print_header )
@@ -305,6 +251,7 @@ uv_err_t UVDStdPrintIterator::clearBuffers()
 	m_positionIndex = 0;
 	return UV_ERR_OK;
 }
+
 /*
 uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDStdPrintIterator &iter)
 {
@@ -318,18 +265,41 @@ uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDStdPrintIterator &iter)
 }
 */
 
+uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdPrintIterator **out) {
+	UVDStdPrintIterator *iter = NULL;
+	
+	iter = new UVDStdPrintIterator();
+	uv_assert_ret(iter);
+	
+	uv_assert_err_ret(UVDStdInstructionIterator::getEndFromExisting(uvd, addressSpace, dynamic_cast<UVDStdInstructionIterator *>(iter->m_iter.m_iter)));
+	//iter->makeEnd();
+	iter->m_positionIndex = 0;
+	iter->m_indexBuffer.clear();
+	
+	return UV_ERR_OK;	
+}
+
 uv_err_t UVDStdPrintIterator::makeEnd()
 {
+	/*
 	//Like almost at end
-	//uv_assert_err_ret(m_iter.makeEnd());
-	uv_assert_err_ret(g_uvd->instructionEnd(m_iter));
-	
+	uv_assert_err_ret(m_iter.makeEnd());
 	//But without the buffered data to flush
 	//XXX: I don't think this matters anymore, the positions are now synced
 	m_indexBuffer.clear();
 	m_positionIndex = 0;
 	//To try to fix some errors I'm having
 	//m_instruction = UVDInstruction();
+	*/
+	UVDStdInstructionIterator *iter = dynamic_cast<UVDStdInstructionIterator *>(m_iter.m_iter);
+	
+	uv_assert_ret(iter);
+	
+	//Make sure our iter is at the end
+	uv_assert_err_ret(UVDStdInstructionIterator::getEndFromExisting(iter->m_uvd, iter->m_iter.m_address.m_space, iter));
+	//And make sure local objects are also at end status
+	m_indexBuffer.clear();
+	m_positionIndex = UINT_MAX;
 	return UV_ERR_OK;
 }
 
@@ -452,11 +422,10 @@ uv_err_t UVDStdPrintIterator::parseCurrentLocation()
 {
 	//uv_err_t rcSuper = UV_ERR_GENERAL;
 	UVDBenchmark benchmark;
-	//uv_addr_t startPosition = m_iter.m_address.m_addr;
-	UVDAddress startAddress;
+	UVDAddress startPosition;
 	UVDConfig *config = g_uvd->m_config;
 	
-	uv_assert_err_ret(m_iter.getAddress(&startAddress));
+	uv_assert_err_ret(m_iter.getAddress(&startPosition));
 	
 	benchmark.start();
 	
@@ -468,22 +437,22 @@ uv_err_t UVDStdPrintIterator::parseCurrentLocation()
 
 	if( config->m_addressLabel )
 	{
-		uv_assert_err_ret(nextAddressLabel(startAddress.m_addr));
+		uv_assert_err_ret(nextAddressLabel(startPosition));
 	}
 
 	if( config->m_addressComment )
 	{
-		uv_assert_err_ret(nextAddressComment(startAddress.m_addr));
+		uv_assert_err_ret(nextAddressComment(startPosition));
 	}
 	
 	if( config->m_calledSources )
 	{
-		uv_assert_err_ret(nextCalledSources(startAddress.m_addr));
+		uv_assert_err_ret(nextCalledSources(startPosition));
 	}
 	
 	if( config->m_jumpedSources )
 	{
-		uv_assert_err_ret(nextJumpedSources(startAddress.m_addr));
+		uv_assert_err_ret(nextJumpedSources(startPosition));
 	}
 
 	//Best to have data follow analysis
@@ -491,7 +460,6 @@ uv_err_t UVDStdPrintIterator::parseCurrentLocation()
 	//Convert to necessary string values
 	UVDInstruction *instruction = NULL;
 	uv_assert_err_ret(m_iter.get(&instruction));
-	//Will be NULL if data
 	if( instruction )
 	{
 		uv_assert_ret(instruction->m_inst_size);
@@ -554,33 +522,34 @@ uv_err_t UVDStdPrintIterator::addComment(const std::string &lineRaw)
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDStdPrintIterator::nextAddressLabel(uint32_t startPosition)
+uv_err_t UVDStdPrintIterator::nextAddressLabel(UVDAddress startPosition)
 {
 	char buff[256];
 	
 	//This is like convention adapted by ds52
 	//Limit leading zeros by max address size?
 	//X00001234:
-	snprintf(buff, 256, "X%.8X:", startPosition);
+	snprintf(buff, 256, "X%.8X:", startPosition.m_addr);
 	
 	m_indexBuffer.insert(m_indexBuffer.end(), buff);
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDStdPrintIterator::nextAddressComment(uint32_t startPosition)
+uv_err_t UVDStdPrintIterator::nextAddressComment(UVDAddress startPosition)
 {
 	char buff[256];
 	
 	//0x00001234:
-	snprintf(buff, 256, "0x%.8X", startPosition);
+	snprintf(buff, 256, "0x%.8X", startPosition.m_addr);
 	uv_assert_err_ret(addComment(buff));
 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDStdPrintIterator::nextCalledSources(uint32_t startPosition)
+uv_err_t UVDStdPrintIterator::nextCalledSources(UVDAddress startPosition)
 {
+#if 0
 	char buff[256];
 	std::string sNameBlock;
 	UVDAnalyzedFunction analyzedFunction;
@@ -621,12 +590,13 @@ uv_err_t UVDStdPrintIterator::nextCalledSources(uint32_t startPosition)
 	{
 		uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_CALL_DEST));
 	}
-
+#endif
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDStdPrintIterator::nextJumpedSources(uint32_t startPosition)
+uv_err_t UVDStdPrintIterator::nextJumpedSources(UVDAddress startPosition)
 {
+#if 0
 	char buff[256];
 	std::string sNameBlock;
 	UVDAnalyzedMemoryRange *memLoc = NULL;
@@ -659,8 +629,12 @@ uv_err_t UVDStdPrintIterator::nextJumpedSources(uint32_t startPosition)
 	{
 		uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_JUMP_DEST));
 	}
+#endif
 
 	return UV_ERR_OK;
 }
-#endif
+
+uv_err_t UVDStdPrintIterator::getAddress(UVDAddress *out) {
+	return UV_DEBUG(m_iter.getAddress(out));
+}
 

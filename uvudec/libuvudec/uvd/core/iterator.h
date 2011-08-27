@@ -12,9 +12,13 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/instruction.h"
 
 /*
-TODO: redesign this so that disassembly iterator contains an instruction iterator
-It should make the code much cleaner
+Current high level iteration scheme seems more of a hack than anything else
+Proper way to iterate is probably to have a collection of address spaces to iterate over
+and get the address from each in turn
+Or should that be a fundamental constraint to instruction iterator and it has to be dealt with at a higher level?
+*/
 
+/*
 Used for keeping track of position when outputting files
 Position is suppose to be the offset in a file
 positionIndex is for when multiple details are on that line
@@ -22,163 +26,213 @@ Could keep internal or external cache of what is to come on that line
 and generate all indexes at once
 */
 class UVD;
-class UVDAddressSpace;
+
+/*
+Exposes functionality for analyzing instructions
+If you use the standard print iterator this will also be used to fetch instructions
+*/
+
+class UVDAbstractInstructionIterator
+{
+public:
+	//Including the UVD makes assumptions about how it works, they might want to ref arch instead for example
+	UVDAbstractInstructionIterator(/*UVD *uvd*/);	
+	virtual ~UVDAbstractInstructionIterator();
+	
+	//FIXME: this should return a UVDAddress
+	//virtual uv_addr_t getPosition() = 0;
+	virtual uv_err_t getPosition(UVDAddress *out) = 0;
+	virtual uv_err_t next() = 0;
+
+	//Default implemented using some tricks with next()
+	//If fixed length instructions, consider overriding
+	virtual uv_err_t previous();
+
+	//UVDInstructionIterator operator++();
+	//bool operator==(const UVDAbstractInstructionIterator &other) const;
+	//bool operator!=(const UVDAbstractInstructionIterator &other) const;
+	virtual int compare(const UVDAbstractInstructionIterator &other) const = 0;
+
+	virtual uv_err_t get(UVDInstruction **out) const = 0;
+
+	//TODO: figure out below, sounds like a hack
+	//Reminder: this is called directly for analysis
+	//uv_err_t parseCurrentInstruction();
+
+	//Want this for previous() algorithm
+	//Otherwise would have to do some UVD only stuff in UVDInstructionIterator
+	//virtual int copyFrom(const UVDAbstractInstructionIterator *other) = 0;
+	
+public:
+};
+
 class UVDInstructionIterator
 {
 public:
-	//uv_err_t init(UVD *disassembler, uint32_t position = g_addr_min, uint32_t index = 0);
-	uv_err_t init(UVD *uvd, UVDAddressSpace *addressSpace);
-	uv_err_t init(UVD *uvd, UVDAddress address);
-	uv_err_t deinit();
-	virtual ~UVDInstructionIterator();
+	inline UVDInstructionIterator() {
+		m_iter = NULL;
+	}
 	
-	//Make it as UVD::end() would return
-	//FIXME: this should be protected?
-	uv_err_t makeEnd();
-
-	virtual uv_addr_t getPosition();
-
-	//Since the return type is not a pointer, needs to be defined in each subclass
-	//UVDIteratorCommon operator++();
-	//Advance to next output line
-	virtual uv_err_t next();
-	virtual uv_err_t previous();
-	//Reminder: this is called directly for analysis
-	uv_err_t parseCurrentInstruction();
-	//Being done is pretty type specific
-
-	//For instruction parsing
-	//Will return UV_ERR_DONE on no more next data availible
-	//If we successfully advanced but next is invalid,
-	//makeNextEnd() will be called to prevent further advancement
-	uv_err_t nextValidExecutableAddress();
-	//Like above, but will not increment our current address first
-	uv_err_t nextValidExecutableAddressIncludingCurrent();
-	//Read current address and and advance
-	//Return UV_ERR_DONE if current address is invalid
-	uv_err_t consumeCurrentExecutableAddress(uint8_t *out);
+	inline UVDInstructionIterator(UVDAbstractInstructionIterator *iter) {
+		m_iter = iter;
+	}
 	
-	//Imported from old UVDIterator code
-	static uv_err_t getEnd(UVD *uvd, UVDInstructionIterator &iter);
-	UVDInstructionIterator operator++();
-	bool operator==(const UVDInstructionIterator &other) const;
-	bool operator!=(const UVDInstructionIterator &other) const;
-	int compare(const UVDInstructionIterator &other) const;
+	inline ~UVDInstructionIterator() {
+		delete m_iter;
+	}
+	
+	//FIXME: this should return a UVDAddress
+	//deprecated in favor of below
+	//virtual uv_addr_t getPosition() = 0;
+	inline uv_err_t getPosition(UVDAddress *out) {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->getPosition(out);
+	}
+	inline uv_err_t getAddress(UVDAddress *out) {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->getPosition(out);
+	}
+	
+	inline uv_err_t next() {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->next();
+	}
 
-//protected:	
-	UVDInstructionIterator();
-protected:
-	//UVDInstructionIterator(UVD *disassembler = NULL);
-	//UVDInstructionIterator(UVD *disassembler, uv_addr_t position, uint32_t index = 0);
+	//Default implemented using some tricks with next()
+	//If fixed length instructions, consider overriding
+	inline uv_err_t previous() {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->previous();
+	}
+	
+	inline bool operator==(const UVDInstructionIterator &other) const {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->compare(*other.m_iter) == 0;
+	}
+	
+	inline bool operator!=(const UVDInstructionIterator &other) const {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->compare(*other.m_iter) != 0;
+	}
+	
+	inline int compare(const UVDInstructionIterator &other) const {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->compare(*other.m_iter);
+	}
 
-	//sets up begin()
-	uv_err_t prime();
-
-	//Can still grab buffered strings, but next address iteration will result in .end()
-	//uv_err_t makeNextEnd();
-		
-	//Some sort of disassembly issue
-	uv_err_t addWarning(const std::string &lineRaw);	
-
-	//If we are out of bytes
-	//Outside of this class, use iter != uvd->end()
-	bool isEnd();
-
-public:
-	//TODO: should have a list of address spaces?
+	//WARNING: out will bet set to NULL if we are at data, not instruction
+	//this interface is still being refined
+	inline uv_err_t get(UVDInstruction **out) const {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->get(out);
+	}
 
 	/*
-	Source of data to disassemble, there what and where
+	//TODO: figure out below, sounds like a hack
+	//Reminder: this is called directly for analysis
+	inline uv_err_t parseCurrentInstruction() {
+		uv_assert_ret(m_iter != NULL);
+		return m_iter->parseCurrentInstruction();
+	}
 	*/
-	UVDAddress m_address;
-
-	//How many bytes we consumed to create currently analyzed instruction
-	//Think this is actually more used to calculate instruction size than actual iteration
-	//Maybe we should move it to a next() helper object
-	uint32_t m_currentSize;
-	//Last parsed instruction
-	//Valid until nextInstruction() is called again
-	//This may result in this being NULL if we aren't at a coding address
-	UVDInstruction *m_instruction;
-
-	//Object we are iterating on
-	UVD *m_uvd;
 	
-	void *m_objectUser;
-	void *m_architectureUser;
+public:
+	//The wrapped implementation
+	UVDAbstractInstructionIterator *m_iter;
 };
 
 /*
 Output printing iterator
 */
 class UVDAnalyzedMemoryRange;
-class UVDPrintIterator
-{
+class UVDAbstractPrintIterator {
 public:
-	UVDPrintIterator();
-	~UVDPrintIterator();
-	uv_err_t init(UVD *uvd, UVDAddressSpace *memorySpace);
-	uv_err_t init(UVD *uvd, UVDAddress address, uint32_t index);
+	UVDAbstractPrintIterator();
+	virtual ~UVDAbstractPrintIterator();
+	virtual uv_err_t init(UVD *uvd, UVDAddressSpace *memorySpace);
+	virtual uv_err_t init(UVD *uvd, UVDAddress address, uint32_t index) = 0;
 	
-	UVDPrintIterator operator++();
-	//Original reason for differentiation
-	bool operator==(const UVDPrintIterator &other) const;
-	bool operator!=(const UVDPrintIterator &other) const;
-	int compare(const UVDPrintIterator &other) const;
+	virtual int compare(const UVDAbstractPrintIterator &other) const = 0;
 	//Error checked version of operator *
-	uv_err_t getCurrent(std::string &out);
+	virtual uv_err_t getCurrent(std::string &out) = 0;
+	//Needed for printing address columns and such
+	virtual uv_err_t getAddress(UVDAddress *out) = 0;
 	std::string operator*();
 
-	uv_err_t next();
-	uv_err_t previous();
+	virtual uv_err_t next() = 0;
+	/*
+	This is implemented by default as not support
+	Warning: UVD GUI requires this to scroll back
+	try to wrap around the standard iterator if this is an issue,
+	it will try to figure out previous based on known positions
+	This is not expected to be a fast operator as its only currently used by the GUI
+	*/
+	virtual uv_err_t previous();
 
-	uv_err_t initialProcess();
-	//Subparts to organize better
-	uv_err_t initialProcessHeader();
-	uv_err_t initialProcessStringTable();
+	//static uv_err_t getEnd(UVD *uvd, UVDPrintIterator &iter);
+};
 
-	uv_err_t makeEnd();
-	//uv_err_t makeNextEnd();
-	static uv_err_t getEnd(UVD *uvd, UVDPrintIterator &iter);
+class UVDPrintIterator {
+public:
+	inline UVDPrintIterator(UVDAbstractPrintIterator *iter = NULL) {
+		m_iter = iter;
+	}
+	
+	inline ~UVDPrintIterator() {
+		delete m_iter;
+	}
+	
+	inline uv_err_t init(UVD *uvd, UVDAddressSpace *memorySpace) {
+		return m_iter->init(uvd, memorySpace);
+	}
+	
+	inline uv_err_t init(UVD *uvd, UVDAddress address, uint32_t index) {
+		return m_iter->init(uvd, address, index);
+	}
+	
+	inline UVDPrintIterator operator++() {
+		//FIXME: this isn't technically correct
+		m_iter->next();
+		return *this;
+	}
+	
+	inline bool operator==(const UVDPrintIterator &other) const {
+		return m_iter->compare(*other.m_iter) == 0;
+	}
+	
+	inline bool operator!=(const UVDPrintIterator &other) const {
+		return m_iter->compare(*other.m_iter) != 0;
+	}
+	
+	inline int compare(const UVDPrintIterator &other) const {
+		return m_iter->compare(*other.m_iter);
+	}
+	
+	inline uv_err_t getCurrent(std::string &out) {
+		return m_iter->getCurrent(out);
+	}
+	
+	inline uv_err_t getAddress(UVDAddress *out) {
+		return m_iter->getAddress(out);
+	}
+	
+	inline std::string operator*() {
+		return m_iter->operator*();
+	}
 
-	//Current iterator position/status
-	//void debugPrint() const;
-	//Print a (tabbed) list of memory locations for current address based on type given
-	uv_err_t printReferenceList(UVDAnalyzedMemoryRange *memLoc, uint32_t type);
+	inline uv_err_t next() {
+		return m_iter->next();
+	}
 
-	uv_err_t nextAddressLabel(uint32_t startPosition);
-	uv_err_t nextAddressComment(uint32_t startPosition);
-	uv_err_t nextCalledSources(uint32_t startPosition);
-	uv_err_t nextJumpedSources(uint32_t startPosition);
+	inline uv_err_t previous() {
+		return m_iter->previous();
+	}
 
-protected:
-	//sets up begin()
-	uv_err_t prime();
-	uv_err_t clearBuffers();
-	uv_err_t parseCurrentLocation();
-
-	//Some sort of disassembly issue
-	uv_err_t addWarning(const std::string &lineRaw);	
-	//Add a comment to the end of the print buffer
-	uv_err_t addComment(const std::string &lineRaw);
+	//Moved to UVDArchitecture virtual function
+	//static uv_err_t getEnd(UVD *uvd, UVDPrintIterator &iter);
 
 public:
-	//Next index to check on generated lines
-	//Public because seeing heavy use in instruction parsing
-	//and got too messy passing a seperate ref var
-	//Don't use it outside of that
-	uint32_t m_positionIndex;
-	//Lines to come from current index
-	std::vector<std::string> m_indexBuffer;
-	UVDInstructionIterator *m_iter;
-
-	//Printed startup information yet?
-	//FIXME: get rid of this and instead check for start address condition maybe?
-	//This yields lots of problems including more complicated code and annoying headers on small chunks we want to print
-	//int m_initialProcess;
-	//Otherwise there are weird corner cases not knowing if we are actually at the end
-	//or the highest address or looped back to start
-	//int m_isEnd;
+	UVDAbstractPrintIterator *m_iter;
 };
 
 #endif

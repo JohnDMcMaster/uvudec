@@ -78,7 +78,7 @@ uv_err_t UVDDisasmOperandShared::deinit()
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisasmOperandShared::parseOperand(UVDInstructionIterator *uvdIter, UVDDisasmOperand **out)
+uv_err_t UVDDisasmOperandShared::parseOperand(UVDASInstructionIterator *uvdIter, UVDDisasmOperand **out)
 {
 	//TOOD: migrate code and replace with below
 	//Assume someone forgot to implement it
@@ -204,7 +204,7 @@ UVDDisasmConstantOperandShared::~UVDDisasmConstantOperandShared()
 {
 }
 
-uv_err_t UVDDisasmConstantOperandShared::parseOperand(UVDInstructionIterator *uvdIter, UVDDisasmOperand **out)
+uv_err_t UVDDisasmConstantOperandShared::parseOperand(UVDASInstructionIterator *uvdIter, UVDDisasmOperand **out)
 {
 	//Like register, nothing to parse: this operand is implied
 	UVDDisasmConstantOperand *op = NULL;
@@ -260,7 +260,7 @@ UVDDisasmOperandShared *UVDDisasmOperand::getShared()
 	return (UVDDisasmOperandShared *)m_shared;
 }
 
-uv_err_t UVDDisasmOperand::parseOperand(UVDInstructionIterator *uvdIter)
+uv_err_t UVDDisasmOperand::parseOperand(UVDASInstructionIterator *uvdIter)
 {
 	//UVDDisasmInstruction *inst = NULL;
 	UVDDisasmOperandShared *operandShared = (UVDDisasmOperandShared *)m_shared;

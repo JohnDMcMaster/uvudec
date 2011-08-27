@@ -86,6 +86,16 @@ uv_err_t UVDDisasmArchitecture::deinit()
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDDisasmArchitecture::parseCurrentInstruction(UVDASInstructionIterator &iter) {
+	uv_err_t rc_tmp = UV_ERR_GENERAL;
+	UVDDisasmInstruction *instruction = NULL;
+	
+	instruction = new UVDDisasmInstruction();
+	uv_assert_ret(instruction);
+	rc_tmp = instruction->parseCurrentInstruction(iter);
+	return UV_DEBUG(rc_tmp);
+}
+
 uv_err_t UVDDisasmArchitecture::getInstruction(UVDInstruction **out)
 {
 	uv_assert_ret(out);

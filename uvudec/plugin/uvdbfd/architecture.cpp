@@ -44,14 +44,14 @@ uv_err_t UVDBFDArchitecture::getAddresssSpaceNames(std::vector<std::string> &nam
 
 uv_err_t UVDBFDArchitecture::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
 {
-	//Reduce errors from stale data
-	if( !iterCommon.m_instruction )
-	{
-		//iterCommon.m_instruction = new UVDDisasmInstruction();
-		uv_assert_err_ret(getInstruction(&iterCommon.m_instruction));
-		uv_assert_ret(iterCommon.m_instruction);
-	}
-	uv_assert_err_ret(iterCommon.m_instruction->parseCurrentInstruction(iterCommon));
+	UVDInstruction *instructionRaw = NULL;
+	UVDBFDInstruction *instruction = NULL;
+	
+	uv_assert_err_ret(iterCommon.get(&instructionRaw));
+	uv_assert_ret(instructionRaw);
+	instruction = dynamic_cast<UVDBFDInstruction *>(instructionRaw);
+	uv_assert_ret(instruction);
+	uv_assert_err_ret(instruction->parseCurrentInstruction(iterCommon));
 
 	return UV_ERR_OK;
 }

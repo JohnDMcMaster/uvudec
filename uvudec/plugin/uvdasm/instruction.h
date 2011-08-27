@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdasm/function.h"
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"
+#include "uvd/core/std_iterator.h"
 
 /*
 Formats according to option specifications
@@ -158,9 +159,9 @@ public:
 	
 	virtual uv_err_t analyzeControlFlow(UVDInstructionAnalysis *out);
 
-	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
+	virtual uv_err_t parseCurrentInstruction(UVDASInstructionIterator &iterCommon);
 
-	static uv_err_t parseOperands(UVDInstructionIterator *uvdIter,
+	static uv_err_t parseOperands(UVDASInstructionIterator *uvdIter,
 			std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands);
 
 	//Hmm is this UVDDisasm specifc?

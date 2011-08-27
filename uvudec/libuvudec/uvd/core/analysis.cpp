@@ -359,9 +359,9 @@ uv_err_t UVD::analyzeControlFlowLinear()
 {
 	UVDInstructionIterator iter;
 	UVDInstructionIterator iterEnd;
-	uint32_t printPercentage = 1;
-	uint32_t printNext = printPercentage;
-	uv_addr_t numberAnalyzedBytes = 0;
+	//uint32_t printPercentage = 1;
+	//uint32_t printNext = printPercentage;
+	//uv_addr_t numberAnalyzedBytes = 0;
 	uv_addr_t startPosition = 0;
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis linear\n");
@@ -378,13 +378,18 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	uv_assert_err_ret(instructionBegin(iter));
 	uv_assert_err_ret(instructionEnd(iterEnd));
 	uv_assert_ret(m_config);
-	uv_assert_err_ret(iter.m_address.m_space->getNumberAnalyzedBytes(&numberAnalyzedBytes));
+	//FIXME: iterator rework
+	//uv_assert_err_ret(iter.m_address.m_space->getNumberAnalyzedBytes(&numberAnalyzedBytes));
 
 	for( ;; )
 	{
-		uint32_t startPos = iter.getPosition();
-		UVDInstruction *instruction = iter.m_instruction;
+		UVDAddress startPos;
+		uv_assert_err_ret(iter.getAddress(&startPos));
+		UVDInstruction *instruction = NULL;
 		
+		uv_assert_err_ret(iter.get(&instruction));
+		
+		/*
 		if( numberAnalyzedBytes )
 		{
 			uint32_t curPercent = 100 * startPos / numberAnalyzedBytes;
@@ -394,6 +399,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 				printNext += printPercentage;
 			}
 		}
+		*/
 
 		//printf("\n\nAnalysis at: 0x%.8X\n", startPos);		
 		uv_assert_err_ret(instruction->analyzeControlFlow());
@@ -507,7 +513,7 @@ uv_err_t UVD::analyzeControlFlowTrace()
 				printf_debug("disassemble: end");
 				break;
 			}
-			instruction = iter.m_instruction;
+			uv_assert_err_ret(iter.get(&instruction));
 			//endPos = iter.getPosition();
 			
 			//action = instruction.m_shared->m_action;

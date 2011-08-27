@@ -346,7 +346,7 @@ error:
 }
 
 //Given an identified instruction operand, parse the next operand out of the remaining binary (data)
-uv_err_t UVDDisasmInstruction::parseOperands(UVDInstructionIterator *uvdIter,
+uv_err_t UVDDisasmInstruction::parseOperands(UVDASInstructionIterator *uvdIter,
 		std::vector<UVDDisasmOperandShared *> ops_shared, std::vector<UVDOperand *> &operands)
 {
 	UVDData *data = NULL;;
@@ -696,7 +696,7 @@ uv_err_t UVDDisasmInstruction::analyzeJump(uint32_t startPos, const UVDVariableM
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
+uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDASInstructionIterator &iterCommon)
 {
 	/*
 	Gets the next logical print group
