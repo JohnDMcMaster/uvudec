@@ -90,6 +90,8 @@ uv_err_t UVDDisasmArchitecture::parseCurrentInstruction(UVDASInstructionIterator
 	uv_err_t rc_tmp = UV_ERR_GENERAL;
 	UVDDisasmInstruction *instruction = NULL;
 	
+	//printf("UVDDisasmArchitecture::parseCurrentInstruction()\n");
+	
 	instruction = new UVDDisasmInstruction();
 	uv_assert_ret(instruction);
 	rc_tmp = instruction->parseCurrentInstruction(iter);

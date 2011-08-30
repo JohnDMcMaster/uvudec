@@ -664,3 +664,17 @@ uv_err_t UVDStdPrintIterator::nextJumpedSources(uint32_t startPosition)
 }
 #endif
 
+uv_err_t UVDPrintIterator::check() {
+	uv_assert_ret(m_iter);
+	return UV_DEBUG(m_iter->check());
+}
+
+uv_err_t UVDAbstractPrintIterator::check() {
+	return UV_ERR_OK;
+}
+
+UVDPrintIterator::~UVDPrintIterator() {
+	//printf("UVDPrintIterator: deleting 0x%08X\n", (int)m_iter);
+	delete m_iter;
+}
+

@@ -30,14 +30,13 @@ uv_err_t UVDInstructionIteratorFactory::instructionIteratorBegin( UVDInstruction
 uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorBegin( UVDAbstractInstructionIterator **out ) {
 	//Find first address space
 	UVDAddress address;
-	UVDArchitecture *architecture = NULL;
+	UVDRuntime *runtime = NULL;
 	
 	//Find the lowest address and address space
-	architecture = g_uvd->m_runtime->m_architecture;
-	uv_assert_ret(!architecture->m_addressSpaces.m_addressSpaces.empty());
-	address.m_space = architecture->m_addressSpaces.m_addressSpaces[0];
+	runtime = g_uvd->m_runtime;
+		
+	uv_assert_err_ret(g_uvd->m_runtime->getPrimaryExecutableAddressSpace(&address.m_space));
 	uv_assert_err_ret(address.m_space->getMinValidAddress(&address.m_addr));
-
 	uv_assert_err_ret(abstractInstructionIteratorBeginByAddress(out, address));
 	
 	return UV_ERR_OK;
@@ -57,6 +56,7 @@ uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorBeginByAddres
 	iter = new UVDStdInstructionIterator();
 	uv_assert_ret(iter);
 	uv_assert_err_ret(iter->init(g_uvd, address));
+	uv_assert_err_ret(iter->check());
 	uv_assert_ret(out);
 	*out = iter;
  	
@@ -73,10 +73,13 @@ uv_err_t UVDInstructionIteratorFactory::instructionIteratorEnd( UVDInstructionIt
 
 uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorEnd(UVDAbstractInstructionIterator **out) {
 	UVDStdInstructionIterator *iter = NULL;
+	UVDAddressSpace *addressSpace = NULL;
+	
+	uv_assert_err_ret(g_uvd->m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
 	
 	iter = new UVDStdInstructionIterator();
 	uv_assert_ret(iter);
-	uv_assert_err_ret(UVDStdInstructionIterator::getEnd(g_uvd, NULL, &iter));
+	uv_assert_err_ret(UVDStdInstructionIterator::getEnd(g_uvd, addressSpace, &iter));
 	uv_assert_ret(out);
 	*out = iter;
  	
@@ -121,16 +124,25 @@ uv_err_t UVDPrintIteratorFactory::printIteratorBegin( UVDPrintIterator *out ) {
 }
 
 uv_err_t UVDPrintIteratorFactory::abstractPrintIteratorBegin( UVDAbstractPrintIterator **out ) {
+	/*
+	UVDStdPrintIterator *iter = NULL;
+	
+	iter = new UVDStdPrintIterator();
+	uv_assert_ret(iter);
+	uv_assert_err_ret(iter->init(g_uvd, address, 0));
+	uv_assert_err_ret(iter->check());
+	uv_assert_ret(out);
+	*out = iter;
+	*/
+	
 	//Find first address space
 	UVDAddress address;
-	UVDArchitecture *architecture = NULL;
-	
+	UVDRuntime *runtime = NULL;
+		
 	//Find the lowest address and address space
-	architecture = g_uvd->m_runtime->m_architecture;
-	uv_assert_ret(!architecture->m_addressSpaces.m_addressSpaces.empty());
-	address.m_space = architecture->m_addressSpaces.m_addressSpaces[0];
+	runtime = g_uvd->m_runtime;
+	uv_assert_err_ret(runtime->getPrimaryExecutableAddressSpace(&address.m_space));
 	uv_assert_err_ret(address.m_space->getMinValidAddress(&address.m_addr));
-
 	uv_assert_err_ret(abstractPrintIteratorBeginByAddress(out, address));
 	
 	return UV_ERR_OK;
@@ -150,6 +162,7 @@ uv_err_t UVDPrintIteratorFactory::abstractPrintIteratorBeginByAddress( UVDAbstra
 	iter = new UVDStdPrintIterator();
 	uv_assert_ret(iter);
 	uv_assert_err_ret(iter->init(g_uvd, address, 0));
+	uv_assert_err_ret(iter->check());
 	uv_assert_ret(out);
 	*out = iter;
  	
@@ -166,10 +179,13 @@ uv_err_t UVDPrintIteratorFactory::printIteratorEnd( UVDPrintIterator *out ) {
 
 uv_err_t UVDPrintIteratorFactory::abstractPrintIteratorEnd(UVDAbstractPrintIterator **out) {
 	UVDStdPrintIterator *iter = NULL;
+	UVDAddressSpace *addressSpace = NULL;
 	
-	iter = new UVDStdPrintIterator();
+	uv_assert_err_ret(g_uvd->m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
+	uv_assert_err_ret(UVDStdPrintIterator::getEnd(g_uvd, addressSpace, &iter));
 	uv_assert_ret(iter);
-	uv_assert_err_ret(UVDStdPrintIterator::getEnd(g_uvd, NULL, &iter));
+	//Should be at the end of a particular address space, not some special state
+	uv_assert_ret(iter->m_iter.m_iter);
 	uv_assert_ret(out);
 	*out = iter;
  	

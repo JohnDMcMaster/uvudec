@@ -725,6 +725,7 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDASInstructionIterator 
 	
 	//We are starting a new instruction, reset
 	iterCommon.m_currentSize = 0;
+	iterCommon.m_instruction = this;
 	uv_assert_err_ret(iterCommon.m_address.m_space->getMaxValidAddress(&absoluteMaxAddress));
 	
 	//Hmm seems we should never branch here
@@ -747,7 +748,7 @@ uv_err_t UVDDisasmInstruction::parseCurrentInstruction(UVDASInstructionIterator 
 	uv_assert_err_ret(rcTemp);
 	uv_assert_ret(rcTemp != UV_ERR_DONE);
 	//uv_assert_err_ret(data->readData(iterCommon.m_address.m_addr, (char *)&opcode));	
-	printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", iterCommon.m_address.m_addr, iterCommon.m_currentSize, opcode);
+	//printf_debug("Just read (now pos 0x%.8X, size: 0x%02X) 0x%.2X\n", iterCommon.m_address.m_addr, iterCommon.m_currentSize, opcode);
 	
 	/*
 	//Go to next position

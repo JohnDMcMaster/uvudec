@@ -59,7 +59,8 @@ UVDStdPrintIterator
 UVDStdPrintIterator::UVDStdPrintIterator()
 {
 	m_positionIndex = 0;
-	m_iter = NULL;
+	//eh this doesn't make sense...suprised this compiled before I added operator
+	//m_iter = NULL;
 }
 
 UVDStdPrintIterator::~UVDStdPrintIterator()
@@ -70,6 +71,7 @@ uv_err_t UVDStdPrintIterator::init(UVD *uvd, UVDAddress address, uint32_t index)
 {
 	//uv_assert_err_ret(uvd->m_runtime->m_architecture->getInstructionIterator(&m_iter));
 	uv_assert_err_ret(uvd->instructionBeginByAddress(address, m_iter));
+	uv_assert_err_ret(m_iter.check());
 
 	//uv_assert_ret(m_iter);
 	//uv_assert_err_ret(m_iter.init(uvd, address));
@@ -77,6 +79,12 @@ uv_err_t UVDStdPrintIterator::init(UVD *uvd, UVDAddress address, uint32_t index)
 	m_positionIndex = 0;
 	uv_assert_err_ret(parseCurrentLocation());
 	m_positionIndex = index;
+	
+	//End is expressed in terms of sub spaces so this should always remain true
+	//uv_assert_ret( m_positionIndex >= m_indexBuffer.size() );
+
+	uv_assert_err_ret(check());
+
 	return UV_ERR_OK;
 }
 
@@ -105,28 +113,50 @@ int UVDStdPrintIterator::compare(const UVDAbstractPrintIterator &otherIn) const
 	int delta = 0;
 	const UVDStdPrintIterator *other = dynamic_cast<const UVDStdPrintIterator *>(&otherIn);
 	
+	uv_assert_ret(other);
+	uv_assert_ret(m_iter.m_iter);
+	uv_assert_ret(other->m_iter.m_iter);
 	delta = m_iter.compare(other->m_iter);
+	//printf("print compare: delta=%d, this pos: %d, other pos: %d\n", delta, m_positionIndex, other->m_positionIndex);
 	if( delta )
 	{
 		return delta;
 	}
 	
+	//At end (of any address space) we should have no instruction and both should have no buffered print
+	//consequently the position index should also be 0
 	return m_positionIndex - other->m_positionIndex;
 }
 
+uv_err_t UVDStdPrintIterator::copy(UVDAbstractPrintIterator **out) const {
+	UVDStdPrintIterator *ret = NULL;
+	
+	uv_assert_ret(m_iter.m_iter);
+	
+	ret = new UVDStdPrintIterator();
+	uv_assert_ret(ret);
+	//nothing special needed yet
+	*ret = *this;
+	uv_assert_ret(ret->m_iter.m_iter);
+	uv_assert_ret(out);
+	*out = ret;
+
+	return UV_ERR_OK;
+}
+	
 uv_err_t UVDStdPrintIterator::getCurrent(std::string &s)
 {
 	//New object not yet initialized?
-	printf_debug("Index buffer size: %d\n", m_indexBuffer.size());
+	//printf("getCurrent: position index: %d, index buffer size: %d\n", m_positionIndex, m_indexBuffer.size());
 	//uv_assert_ret(!m_isEnd);
 
-	printf_debug("position index: %d\n", m_positionIndex);
 	if( m_positionIndex >= m_indexBuffer.size() )
 	{
 		printf_error("Index out of bounds, m_positionIndex %d >= m_indexBuffer.size() %d\n", m_positionIndex, m_indexBuffer.size());
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	s = m_indexBuffer[m_positionIndex];
+	//printf("got: <%s>\n", s.c_str());
 	return UV_ERR_OK;
 }
 
@@ -267,18 +297,26 @@ uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDStdPrintIterator &iter)
 
 uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdPrintIterator **out) {
 	UVDStdPrintIterator *iter = NULL;
+	UVDStdInstructionIterator *instIter = NULL;
+	
 	
 	iter = new UVDStdPrintIterator();
 	uv_assert_ret(iter);
 	
-	uv_assert_err_ret(UVDStdInstructionIterator::getEndFromExisting(uvd, addressSpace, dynamic_cast<UVDStdInstructionIterator *>(iter->m_iter.m_iter)));
-	//iter->makeEnd();
+	uv_assert_err_ret(UVDStdInstructionIterator::getEnd(uvd, addressSpace, &instIter));
+	uv_assert_ret(instIter);
+	iter->m_iter.m_iter = instIter;
+	
 	iter->m_positionIndex = 0;
 	iter->m_indexBuffer.clear();
+	
+	uv_assert_ret(out);
+	*out = iter;
 	
 	return UV_ERR_OK;	
 }
 
+#if 0
 uv_err_t UVDStdPrintIterator::makeEnd()
 {
 	/*
@@ -302,7 +340,7 @@ uv_err_t UVDStdPrintIterator::makeEnd()
 	m_positionIndex = UINT_MAX;
 	return UV_ERR_OK;
 }
-
+#endif
 /*
 uv_err_t UVDStdPrintIterator::makeNextEnd()
 {
@@ -385,8 +423,6 @@ uv_err_t UVDStdPrintIterator::prime()
 
 uv_err_t UVDStdPrintIterator::next()
 {
-	uv_err_t rcTemp = UV_ERR_GENERAL;
-
 	//Shouldn't this be after the initial process check?
 	++m_positionIndex;
 
@@ -403,13 +439,7 @@ uv_err_t UVDStdPrintIterator::next()
 	
 	//Advance to next instruction location
 	//printf("advancing instruction\n");
-	rcTemp = m_iter.next();
-	uv_assert_err_ret(rcTemp);
-	if( rcTemp == UV_ERR_DONE )
-	{
-		uv_assert_err_ret(makeEnd());
-		return UV_ERR_OK;
-	}
+	uv_assert_err_ret(m_iter.next());
 
 	//Do the actual parsing
 	uv_assert_err_ret(parseCurrentLocation());
@@ -460,12 +490,13 @@ uv_err_t UVDStdPrintIterator::parseCurrentLocation()
 	//Convert to necessary string values
 	UVDInstruction *instruction = NULL;
 	uv_assert_err_ret(m_iter.get(&instruction));
+	//printf("instruction: %d\n", instruction != NULL);
 	if( instruction )
 	{
 		uv_assert_ret(instruction->m_inst_size);
 		uv_assert_err_ret(g_uvd->stringListAppend(instruction, m_indexBuffer));
 	}
-	printf_debug("Generated string list, size: %d\n", m_indexBuffer.size());
+	//printf("Generated string list, size: %d\n", m_indexBuffer.size());
 
 	benchmark.stop();
 	//printf_debug_level(UVD_DEBUG_SUMMARY, "other than nextInstruction() time: %s\n", benchmark.toString().c_str());
@@ -636,5 +667,18 @@ uv_err_t UVDStdPrintIterator::nextJumpedSources(UVDAddress startPosition)
 
 uv_err_t UVDStdPrintIterator::getAddress(UVDAddress *out) {
 	return UV_DEBUG(m_iter.getAddress(out));
+}
+
+uv_err_t UVDStdPrintIterator::check() {
+	UVDInstruction *instruction = NULL;
+	
+	uv_assert_ret(m_iter.m_iter);
+	uv_assert_err_ret(m_iter.get(&instruction));
+	//If there is an instruction we should have something to print
+	//otherwise we may be at end or similar
+	if( instruction ) {
+		uv_assert_ret(m_positionIndex < m_indexBuffer.size());
+	}
+	return UV_DEBUG(m_iter.check());
 }
 

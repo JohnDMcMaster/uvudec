@@ -32,6 +32,8 @@ public:
 	bool operator>(const UVDAddress *other) const;
 	bool operator==(const UVDAddress *other) const;
 
+	uv_err_t check();
+
 public:
 	//Address space
 	UVDAddressSpace *m_space;

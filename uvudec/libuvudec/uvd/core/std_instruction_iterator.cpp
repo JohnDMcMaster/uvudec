@@ -84,15 +84,17 @@ uv_err_t UVDStdInstructionIterator::deinit()
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDStdInstructionIterator::makeEnd()
 {
-	m_addressSpacesIndex = UINT_MAX;
+	uv_assert_err_ret(m_iter.makeEnd());
 	return UV_ERR_OK;
 }
+*/
 
 bool UVDStdInstructionIterator::isEnd()
 {
-	return m_addressSpacesIndex == UINT_MAX;
+	return ((m_addressSpacesIndex + 1) == m_addressSpaces.size()) && m_iter.isEnd();
 }
 
 /*
@@ -215,12 +217,9 @@ uv_err_t UVDStdInstructionIterator::next()
 			}
 			return UV_ERR_OK;
 		}
-		//If we were already at end then we need to try the next address space
 		++m_addressSpacesIndex;
-		if (m_addressSpacesIndex >= m_addressSpaces.size()) {
-			uv_assert_err_ret(makeEnd());
-			return UV_ERR_DONE;
-		}
+		//Make sure they aren't trying to advance past end
+		uv_assert_ret(m_addressSpacesIndex < m_addressSpaces.size());
 		
 		//Not end, reset to the beginning of that address space
 		uv_assert_err_ret(beginningOfCurrentAddressSpace());
@@ -306,43 +305,77 @@ bool UVDStdInstructionIterator::operator!=(const UVDStdInstructionIterator &othe
 
 int UVDStdInstructionIterator::compare(const UVDAbstractInstructionIterator &otherIn) const
 {
-	int temp = 0;
+	//int temp = 0;
 	const UVDStdInstructionIterator *other = dynamic_cast<const UVDStdInstructionIterator *>(&otherIn);
 
-	temp = m_addressSpacesIndex - other->m_addressSpacesIndex;
+	uv_assert_ret(other);
+	//AS iterator will compare address spaces
+	/*
+	uv_assert_ret(m_addressSpacesIndex < m_addressSpaces.size());
+	uv_assert_ret(other->m_addressSpacesIndex < other->m_addressSpaces.size());
+	temp = m_addressSpaces[m_addressSpacesIndex] - other->m_addressSpaces[other->m_addressSpacesIndex];
+	printf("this index: %d, other: %d, AS diff: %d\n", m_addressSpacesIndex, other->m_addressSpacesIndex, temp);
 	if (temp) {
 		return temp;
 	}
+	*/
 	return m_iter.compare(other->m_iter);
+}
+
+uv_err_t UVDStdInstructionIterator::copy(UVDAbstractInstructionIterator **out) const {
+	UVDStdInstructionIterator *ret = NULL;
+	
+	ret = new UVDStdInstructionIterator();
+	uv_assert_ret(ret);
+	//nothing special needed yet
+	*ret = *this;
+	uv_assert_ret(out);
+	*out = ret;
+
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDStdInstructionIterator::getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdInstructionIterator **out) {
 	UVDStdInstructionIterator *iter = NULL;
 	
+	uv_assert_ret(addressSpace);
+	
 	uv_assert_ret(uvd);
 	iter = new UVDStdInstructionIterator();
 	uv_assert_ret(iter);
-	uv_assert_err_ret(getEndFromExisting(uvd, addressSpace, iter));
+	iter->m_addressSpaces.push_back(addressSpace);
+	iter->m_addressSpacesIndex = 0;
+	iter->m_uvd = uvd;
+	
+	uv_assert_err_ret(UVDASInstructionIterator::getEnd(uvd, addressSpace, iter->m_iter));
 	uv_assert_ret(out);
 	*out = iter;
 	
 	return UV_ERR_OK;
 }
 
+/*
 uv_err_t UVDStdInstructionIterator::getEndFromExisting(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdInstructionIterator *iter)
 {
 	uv_assert_ret(iter);
 	iter->m_uvd = uvd;
 	
-	if( addressSpace == NULL ) {
-		//Very end
-		uv_assert_err_ret(iter->makeEnd());
-	} else {
-		//Just the end of a single area
-		iter->m_addressSpaces.push_back(addressSpace);
-		iter->m_addressSpacesIndex = 0;
-		uv_assert_err_ret(UVDASInstructionIterator::getEnd(uvd, iter->m_iter));
-	}
+	uv_assert_ret(addressSpace);
+	
+	//regardless we must specify the end of a particular address space
+	iter->m_addressSpaces.push_back(addressSpace);
+	
+	//End of a particular address space
+	iter->m_addressSpacesIndex = 0;
+	uv_assert_err_ret(UVDASInstructionIterator::getEnd(uvd, iter->m_iter));
 	return UV_ERR_OK;
+}
+*/
+
+uv_err_t UVDStdInstructionIterator::check() {
+	uv_assert_ret(!m_addressSpaces.empty());
+	uv_assert_ret(m_addressSpacesIndex < m_addressSpaces.size());
+	uv_assert_ret(m_uvd);
+	return UV_DEBUG(m_iter.check());
 }
 

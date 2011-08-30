@@ -22,6 +22,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/instruction.h"
 #include "uvd/compiler/assembly.h"
 #include "uvd/core/analysis.h"
+#include "uvd/core/std_iterator.h"
 #include "uvd/core/runtime.h"
 #include "uvd/data/data.h"
 #include "uvd/language/format.h"
@@ -445,11 +446,11 @@ UVDPrintIterator UVD::begin()
 
 uv_err_t UVD::begin(UVDPrintIterator &iter)
 {
-	UVDAddressSpace *addressSpace = NULL;
-	
-	uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
-	uv_assert_err_ret(iter.init(this, addressSpace));
-	
+	uv_assert_ret(m_runtime);
+	uv_assert_ret(m_runtime->m_architecture);
+	uv_assert_ret(m_runtime->m_architecture->m_printIteratorFactory);
+	uv_assert_err_ret(m_runtime->m_architecture->m_printIteratorFactory->printIteratorBegin(&iter));
+	uv_assert_err_ret(iter.check());
 	return UV_ERR_OK;
 }
 
@@ -467,9 +468,7 @@ uv_err_t UVD::begin(UVDAddress address, UVDPrintIterator &iter)
 	{
 		uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&address.m_space));
 	}
-	uv_assert_err_ret(iter.init(this, address, 0));
-
-	return UV_ERR_OK;
+	return UV_DEBUG(m_runtime->m_architecture->m_printIteratorFactory->printIteratorBeginByAddress(&iter, address));
 }
 
 UVDPrintIterator UVD::end()
@@ -531,7 +530,7 @@ UVDInstructionIterator UVD::instructionEnd()
 
 uv_err_t UVD::instructionEnd(UVDInstructionIterator &iter)
 {
-	return UV_DEBUG(instructionEnd(iter));
+	return UV_DEBUG(m_runtime->m_architecture->m_instructionIteratorFactory->instructionIteratorEnd(&iter));
 }
 
 //FIXME: doesn't split
@@ -590,7 +589,9 @@ uv_err_t UVD::decompile(std::string &output)
 	setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY);
 	//And print
 	uv_assert_err_ret(begin(iterBegin));
+	uv_assert_err_ret(iterBegin.check());
 	uv_assert_err_ret(end(iterEnd));
+	uv_assert_err_ret(iterEnd.check());
 	uv_assert_err_ret(printRangeCore(iterBegin, iterEnd, UVDPrintToStringStringCallback, &output));
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
@@ -614,7 +615,9 @@ uv_err_t UVD::decompileByCallback(uvd_string_callback_t callback, void *user)
 	setDestinationLanguage(UVD_LANGUAGE_ASSEMBLY);
 	//And print
 	uv_assert_err_ret(begin(iterBegin));
+	uv_assert_err_ret(iterBegin.check());
 	uv_assert_err_ret(end(iterEnd));
+	uv_assert_err_ret(iterEnd.check());
 	uv_assert_err_ret(printRangeCore(iterBegin, iterEnd, callback, user));
 
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: done\n");
@@ -659,6 +662,9 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 	//uint32_t analyzedBytes = 0;
 	int verbose_old = 0;
 
+	uv_assert_err_ret(iterBegin.check());
+	uv_assert_err_ret(iterEnd.check());
+
 	uv_assert_ret(m_config);
 	//FIXME: this should be delta, not single...w/e
 	//uv_assert_err_ret(iterBegin.m_iter->m_address.m_space->getNumberAnalyzedBytes(&analyzedBytes));
@@ -669,7 +675,24 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 	printf_debug_level(UVD_DEBUG_PASSES, "decompile: printing...\n");
 	UVDBenchmark decompilePrintBenchmark;
 	decompilePrintBenchmark.start();
-	iter = iterBegin;
+	uv_assert_err_ret(iter = iterBegin);
+	uv_assert_err_ret(iter.check());
+
+	uv_assert_ret(iter.m_iter);
+	uv_assert_ret(iterEnd.m_iter);
+	{
+		UVDStdPrintIterator *pIter = NULL;
+		
+		pIter = (UVDStdPrintIterator *)iterBegin.m_iter;
+		uv_assert_ret(pIter->m_iter.m_iter);
+
+		iter = (UVDStdPrintIterator *)iter.m_iter;
+		uv_assert_ret(pIter->m_iter.m_iter);
+
+		pIter = (UVDStdPrintIterator *)iterEnd.m_iter;
+		uv_assert_ret(pIter->m_iter.m_iter);
+	}
+
 
 	//Due to the huge number of concatenations
 	int iterations = 0;
@@ -680,6 +703,11 @@ uv_err_t UVD::printRangeCore(UVDPrintIterator iterBegin, UVDPrintIterator iterEn
 	{
 		std::string line;
 		//uint32_t startPos = iter.m_iter->getPosition();
+		
+		uv_assert_err_ret(iter.check());
+		uv_assert_err_ret(iterEnd.check());
+	
+		//printf("Main print loop\n");
 
 		++iterations;				
 		printf_debug("\n\n\n");

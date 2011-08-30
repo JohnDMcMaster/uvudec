@@ -129,6 +129,7 @@ uv_err_t UVD::initObject(UVDData *data, const UVDRuntimeHints &hints, UVDObject 
 	std::vector<UVDPlugin *> best;
 	uvd_priority_t bestPriority = UVD_MATCH_NONE;
 	
+	printf_debug_level(UVD_DEBUG_PASSES, "UVD::initObject()...\n");
 	UVD_POKE(data);
 	//Iterate over all plugins until one accepts our input
 	uv_assert_ret(m_pluginEngine);
@@ -231,6 +232,7 @@ uv_err_t UVD::initArchitecture(UVDObject *object, const UVDRuntimeHints &hints, 
 	std::vector<UVDPlugin *> best;
 	uvd_priority_t bestPriority = UVD_MATCH_NONE;
 	
+	printf_debug_level(UVD_DEBUG_PASSES, "UVD::initArchitecture()...\n");
 	for( std::map<std::string, UVDPlugin *>::iterator iter = m_pluginEngine->m_loadedPlugins.begin();
 		iter != m_pluginEngine->m_loadedPlugins.end(); ++iter )
 	{
@@ -339,6 +341,7 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	}
 	uv_assert_err(initEarly());
 
+	printf_debug_level(UVD_DEBUG_PASSES, "UVD::init(): initializing runtime...\n");
 	//We might want to make this more dynamic just in case
 	m_runtime = new UVDRuntime();
 	uv_assert(m_runtime);
@@ -379,6 +382,9 @@ uv_err_t UVD::init(UVDObject *object, UVDArchitecture *architecture)
 	
 	engineInitBenchmark.stop();
 	printf_debug_level(UVD_DEBUG_PASSES, "engine init time: %s\n", engineInitBenchmark.toString().c_str());
+
+	//printf("Address spaces: %d\n", m_runtime->m_addressSpaces.m_addressSpaces.size());
+	
 
 	return UV_ERR_OK;
 	

@@ -387,6 +387,14 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		uv_assert_err_ret(iter.getAddress(&startPos));
 		UVDInstruction *instruction = NULL;
 		
+		//printf("analysis: ITERATING\n");
+		
+		if( iter == iterEnd )
+		{
+			printf_debug("disassemble: end");
+			break;
+		}
+
 		uv_assert_err_ret(iter.get(&instruction));
 		
 		/*
@@ -401,16 +409,13 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		}
 		*/
 
-		//printf("\n\nAnalysis at: 0x%.8X\n", startPos);		
-		uv_assert_err_ret(instruction->analyzeControlFlow());
+		if( instruction ) {
+			//printf("\n\nAnalysis at: 0x%.8X\n", startPos);		
+			uv_assert_err_ret(instruction->analyzeControlFlow());
+		}
 
 		//If we aren't at end, there should be more data
 		uv_assert_err_ret(iter.next());
-		if( iter == iterEnd )
-		{
-			printf_debug("disassemble: end");
-			break;
-		}
 	}
 
 	return UV_ERR_OK;

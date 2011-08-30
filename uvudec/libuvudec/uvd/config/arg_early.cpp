@@ -79,6 +79,10 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		uv_assert_ret(!argumentArguments.empty());
 		config->m_sDebugFile = firstArg;
 	}
+	else if( argConfig->m_propertyForm == UVD_PROP_DEBUG_CURSE )
+	{
+		config->m_curse = firstArgBool;
+	}
 	//Plugins
 	else if( argConfig->m_propertyForm == UVD_PROP_PLUGIN_FILE )
 	{
@@ -125,6 +129,7 @@ uv_err_t UVDPluginConfig::earlyArgParse(UVDConfig *config)
 	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_SUPPRESS_ERRORS, 0, "suppress-errors", "suprress printing of warnings and nonfatal errors", 1, argParser, true, "", true));
 	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_LEVEL, 0, "verbose", "debug verbosity level", 1, argParser, true, "", true));
 	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_FILE, 0, "debug-file", "debug output (default: stdout)", 1, argParser, true, "", true));
+	uv_assert_err_ret(config->registerArgument(UVD_PROP_DEBUG_CURSE, 0, "curse", "curse error messages", 1, argParser, true, "", true));
 
 	//So we can ignore arg meant for later
 	uv_assert_err_ret(config->registerDefaultArgument(argParser, "", 0, true, true, true));

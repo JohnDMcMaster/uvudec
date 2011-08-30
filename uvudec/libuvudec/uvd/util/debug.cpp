@@ -247,15 +247,28 @@ void UVDPrintfError(const char *format, ...)
 
 }
 
+#define CURSE_RED		"\x1b[0;31m"
+#define CURSE_END		"\x1b[0;39m"
+
 void UVDPrintfErrorV(const char *format, va_list ap)
 {
-	if( g_config && g_config->m_suppressErrors )
-	{
-		return;
+	std::string curseStartStr;
+	std::string curseEndStr;
+
+	if( g_config ) {
+		if( g_config->m_suppressErrors )
+		{
+			return;
+		}
+		if( g_config->m_curse && isatty(fileno(stdout)) )
+		{
+			curseStartStr = CURSE_RED;
+			curseEndStr = CURSE_END;
+		}
 	}
 	
 	fflush(stdout);
-	fprintf(stdout, "%s", "ERROR: ");
+	fprintf(stdout, "%sERROR%s: ", curseStartStr.c_str(), curseEndStr.c_str() );
 	vfprintf(stdout, format, ap);
 	fflush(stdout);
 }

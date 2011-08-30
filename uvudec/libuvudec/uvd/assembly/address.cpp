@@ -56,6 +56,22 @@ bool UVDAddress::operator==(const UVDAddress *other) const
 	return compare(other) == 0;
 }
 
+uv_err_t UVDAddress::check()
+{
+	uv_addr_t min = 0;
+	uv_addr_t max = 0;
+	
+	uv_assert_ret(m_space);
+	
+	uv_assert_err_ret(m_space->getMinValidAddress(&min));
+	uv_assert_ret(min <= m_addr);
+	
+	uv_assert_err_ret(m_space->getMaxValidAddress(&max));
+	uv_assert_ret(max >= m_addr);
+
+	return UV_ERR_OK;
+}
+
 /*
 UVDAddressRange
 */

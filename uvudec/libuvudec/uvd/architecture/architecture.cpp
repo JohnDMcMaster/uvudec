@@ -11,6 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 UVDArchitecture::UVDArchitecture()
 {
+	//printf("made arch\n");
 	m_uvd = NULL;
 	m_instructionIteratorFactory = NULL;
 	m_printIteratorFactory = NULL;
@@ -78,6 +79,11 @@ uv_err_t UVDArchitecture::fixupDefaults()
 
 		m_vectors.push_back(vector);
 	}
+	
+	
+	//printf("architecture init finishing\n");
+	//printf("Address spaces: %d\n", m_addressSpaces.m_addressSpaces.size());
+	//exit(1);
 	
 	return UV_ERR_OK;
 }
@@ -148,7 +154,9 @@ uv_err_t UVDArchitecture::printIteratorEndByAddressSpace( UVDPrintIterator *out,
 */
 
 uv_err_t UVDArchitecture::parseCurrentInstruction(UVDASInstructionIterator &iter) {
+	//printf("not supported parse\n");
 	//Implement if you want to use std iterator
 	return UV_ERR_NOTSUPPORTED;
 }
+
 

@@ -35,6 +35,11 @@ public:
 	//Will return UV_ERR_NOTFOUND and set *out to NULL if none exist
 	virtual uv_err_t getPrimaryExecutableAddressSpace(UVDAddressSpace **out);
 
+	//used by iterators to form begin() and end() over all address spaces
+	uv_err_t instructionIteratorSpaces( std::vector<UVDAddressSpace *> &out );
+	uv_err_t firstInstructionIteratorSpace( UVDAddressSpace **out );
+	uv_err_t lastInstructionIteratorSpace( UVDAddressSpace **out );
+
 public:
 	//Source of data to disassemble
 	//We do not own this

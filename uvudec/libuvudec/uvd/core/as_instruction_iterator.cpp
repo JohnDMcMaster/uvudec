@@ -83,13 +83,14 @@ uv_err_t UVDASInstructionIterator::prime()
 	uint32_t holdPosition = m_address.m_addr;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
 	
-	printf_debug("Priming iterator\n");
+	//printf("Priming AS iterator\n");
 	rcTemp = nextValidExecutableAddressIncludingCurrent();
 	uv_assert_err_ret(rcTemp);
 	//Eh this should be rare
 	//We don't prime
 	if( rcTemp == UV_ERR_DONE )
 	{
+		//printf("AS: start at end\n");
 		uv_assert_err_ret(makeEnd());
 	}
 	//This will cause last instruction (which doesn't exist) to be negated
@@ -100,6 +101,12 @@ uv_err_t UVDASInstructionIterator::prime()
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 	m_address.m_addr = holdPosition;
+	
+	uv_assert_err_ret(parseCurrentInstruction());
+	
+	//FIXME: for debugging
+	uv_assert_ret(m_instruction);
+	
 	return UV_ERR_OK;
 }
 
@@ -114,7 +121,7 @@ uv_err_t UVDASInstructionIterator::makeEnd()
 {
 	//Seems reasonable enough for now
 	//Change to invalidating m_data or something later if needed
-	m_address.m_addr = UINT_MAX;	
+	m_address.m_addr = UINT_MAX;
 	return UV_ERR_OK;
 }
 
@@ -306,6 +313,10 @@ uv_err_t UVDASInstructionIterator::parseCurrentInstruction()
 	//See if arch supports parsing
 	uv_err_t rc = UV_ERR_GENERAL;
 	
+	//printf("UVDASInstructionIterator::parseCurrentInstruction()\n");
+	uv_assert_ret(m_uvd);
+	uv_assert_ret(m_uvd->m_runtime);
+	uv_assert_ret(m_uvd->m_runtime->m_architecture);
 	rc = m_uvd->m_runtime->m_architecture->parseCurrentInstruction(*this);
 	uv_assert_err_ret(rc);
 	return rc;
@@ -360,6 +371,13 @@ int UVDASInstructionIterator::compare(const UVDASInstructionIterator &otherIn) c
 	// iter = begin(); if iter != someAddressSpace.end(): do something
 	//that is, we want iters to be comparable no matter where they started from
 	//Although there is an order its arbitrary, maybe should sort by something other than a pointer? 
+	/*
+	if( m_address.m_addr < 10 ) {
+		printf("this (AS: 0x%08X, addr: 0x%04X), other (AS: 0x%08X, addr: 0x%04X)\n", 
+				(int)m_address.m_space, (int)m_address.m_addr,
+				(int)otherIn.m_address.m_space, (int)otherIn.m_address.m_addr );
+	}
+	*/
 	rcTemp = ((int)m_address.m_space) - ((int)otherIn.m_address.m_space);
 	if( rcTemp ) {
 		return rcTemp;
@@ -367,11 +385,32 @@ int UVDASInstructionIterator::compare(const UVDASInstructionIterator &otherIn) c
 	return m_address.m_addr - otherIn.m_address.m_addr;
 }
 
-uv_err_t UVDASInstructionIterator::getEnd(UVD *uvd, UVDASInstructionIterator &iter)
+uv_err_t UVDASInstructionIterator::getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDASInstructionIterator &iter)
 {
 	uv_assert_ret(uvd);
 	iter.m_uvd = uvd;
 	uv_assert_err_ret(iter.makeEnd());
+	iter.m_address.m_space = addressSpace;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDASInstructionIterator::check() {
+	uv_assert_ret(m_address.m_space);
+	//TODO: add a min/max address check?
+	if( m_address.m_addr != UINT_MAX ) {
+		uv_assert_err_ret(m_address.check());
+	}
+
+	//This may result in this being NULL if we aren't at a coding address
+	//UVDInstruction *m_instruction;
+	//uint32_t m_currentSize;
+	
+	uv_assert_ret(m_uvd);
+	/*	
+	void *m_objectUser;
+	void *m_architectureUser;
+	*/
+
 	return UV_ERR_OK;
 }
 

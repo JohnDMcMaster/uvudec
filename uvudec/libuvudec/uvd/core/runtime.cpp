@@ -26,6 +26,7 @@ uv_err_t UVDRuntime::init(UVDObject *object, UVDArchitecture *architecture)
 	m_object = object;
 
 	uv_assert_err_ret(rebuildAddressSpaces());
+	printf_debug_level(UVD_DEBUG_PASSES, "UVDRuntime::init(): %d address spaces\n", m_addressSpaces.m_addressSpaces.size());
 
 	return UV_ERR_OK;
 }
@@ -58,6 +59,7 @@ uv_err_t UVDRuntime::rebuildAddressSpaces()
 				iter != m_architecture->m_addressSpaces.m_addressSpaces.end(); ++iter )
 		{
 			//TODO: we will eventually need to take these into account
+			//for now I'm using binary object that doesn't define any
 		}
 	}
 	
@@ -117,5 +119,46 @@ uv_err_t UVDRuntime::getPrimaryExecutableAddressSpace(UVDAddressSpace **out)
 	//Nothing found
 	*out = NULL;
 	return UV_ERR_NOTFOUND;
+}
+
+//should eventually replace above
+uv_err_t UVDRuntime::instructionIteratorSpaces( std::vector<UVDAddressSpace *> &out ) {
+	out.clear();
+	
+	//Find the lowest address and address space
+	uv_assert_ret(!m_addressSpaces.m_addressSpaces.empty());
+	for( unsigned int i = 0; i < m_addressSpaces.m_addressSpaces.size(); ++i ) {
+		UVDAddressSpace *addressSpace = NULL;
+	
+		addressSpace = m_addressSpaces.m_addressSpaces[i];
+		//FIXME: see if we can come up with a better way to deal with this
+		//if( address.m_space->m_X != UVD_TRI_TRUE ) {
+		if( addressSpace->m_X == UVD_TRI_FALSE ) {
+			printf_warn("Rejecting address space: not executable\n" );
+			continue;
+		}
+		out.push_back(addressSpace);
+	}
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRuntime::firstInstructionIteratorSpace( UVDAddressSpace **out ) {
+	std::vector<UVDAddressSpace *> vec;
+	
+	uv_assert_err_ret(instructionIteratorSpaces(vec));
+	uv_assert_ret(!vec.empty());
+	uv_assert_ret(out);
+	*out = vec[vec.size() - 1];
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDRuntime::lastInstructionIteratorSpace( UVDAddressSpace **out ) {
+	std::vector<UVDAddressSpace *> vec;
+	
+	uv_assert_err_ret(instructionIteratorSpaces(vec));
+	uv_assert_ret(!vec.empty());
+	uv_assert_ret(out);
+	*out = vec[0];
+	return UV_ERR_OK;
 }
 

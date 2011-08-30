@@ -85,6 +85,8 @@ UVDConfig::UVDConfig()
 	m_writeElfFile = true;
 	m_functionIndexFilename = "index.func";
 	
+	m_curse = UVD_PROP_DEBUG_CURSE_DEFAULT;
+	
 	m_configFileLoader = NULL;
 	
 	m_architectureRegistry = NULL;

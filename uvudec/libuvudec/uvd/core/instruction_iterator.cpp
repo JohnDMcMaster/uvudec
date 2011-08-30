@@ -25,6 +25,21 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/types.h"
 #include "uvd/util/util.h"
 
+uv_err_t UVDInstructionIterator::operator=(const UVDInstructionIterator &other) {
+	uv_assert_ret(other.m_iter);
+	delete m_iter;
+	m_iter = NULL;
+	uv_assert_err_ret(other.m_iter->copy(&m_iter));
+	uv_assert_ret(m_iter);
+	//return *this;
+	return UV_ERR_OK;
+}
+
+int UVDInstructionIterator::compare(const UVDInstructionIterator &other) const {
+	uv_assert_ret(m_iter != NULL);
+	return m_iter->compare(*other.m_iter);
+}
+
 /*
 UVDAbstractInstructionIterator
 */
@@ -146,4 +161,13 @@ bool UVDStdInstructionIterator::operator!=(const UVDStdInstructionIterator &othe
 	return !operator==(other);
 }
 */
+
+uv_err_t UVDInstructionIterator::check() {
+	uv_assert_ret(m_iter);
+	return UV_DEBUG(m_iter->check());
+}
+
+uv_err_t UVDAbstractInstructionIterator::check() {
+	return UV_ERR_OK;
+}
 

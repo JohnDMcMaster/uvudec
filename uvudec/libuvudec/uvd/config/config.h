@@ -310,6 +310,8 @@ public:
 	//Idea was to make IDA .pat style file for storing function analysis
 	std::string m_functionIndexFilename;
 
+	//Color error messages and such?
+	bool m_curse;
 
 	//Automatic symbol naming
 	UVDConfigSymbols m_symbols;

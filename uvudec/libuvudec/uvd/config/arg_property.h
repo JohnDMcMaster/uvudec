@@ -23,6 +23,8 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_DEBUG_ANALYSIS					"debug.analysis"
 #define UVD_PROP_DEBUG_PRINTING					"debug.printing"
 #define UVD_PROP_DEBUG_FILE						"debug.file"
+#define UVD_PROP_DEBUG_CURSE					"debug.curse"
+#define UVD_PROP_DEBUG_CURSE_DEFAULT			false
 //Config
 #define UVD_PROP_CONFIG_LANGUAGE				"config.language"
 #define UVD_PROP_CONFIG_LANGUAGE_INTERFACE		"config.language_interface"
@@ -54,5 +56,6 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_PLUGIN_NAME					"plugin.name"
 #define UVD_PROP_PLUGIN_APPEND_PATH				"plugin.path.append"
 #define UVD_PROP_PLUGIN_PREPEND_PATH			"plugin.path.prepend"
+
 
 #endif

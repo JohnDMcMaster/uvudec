@@ -80,7 +80,7 @@ public:
 	uv_err_t consumeCurrentExecutableAddress(uint8_t *out);
 	
 	//Imported from old UVDIterator code
-	static uv_err_t getEnd(UVD *uvd, UVDASInstructionIterator &iter);
+	static uv_err_t getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDASInstructionIterator &iter);
 	UVDASInstructionIterator operator++();
 	bool operator==(const UVDASInstructionIterator &other) const;
 	bool operator!=(const UVDASInstructionIterator &other) const;
@@ -89,6 +89,8 @@ public:
 	//If we are out of bytes
 	//Outside of this class, use iter != uvd->end()
 	bool isEnd();
+	
+	uv_err_t check();
 
 protected:
 	//sets up begin()
@@ -140,12 +142,14 @@ public:
 	//uv_err_t parseCurrentInstruction();
 	//Being done is pretty type specific
 
+	virtual uv_err_t copy(UVDAbstractInstructionIterator **out) const;
+
 	//Imported from old UVDIterator code
 	//if addres space is given will return an iterator at the end of that addres space
 	//NOTE: in order for this scheme to work we'll need to return elements at end() with no instruction as metadata
 	//If address space is NULL will get the end of all address spaces
 	static uv_err_t getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdInstructionIterator **out);
-	static uv_err_t getEndFromExisting(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdInstructionIterator *iter);
+	//static uv_err_t getEndFromExisting(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdInstructionIterator *iter);
 	//Should not be used directly, don't support this
 	//UVDInstructionIterator operator++();
 	virtual int compare(const UVDAbstractInstructionIterator &other) const;
@@ -154,9 +158,11 @@ public:
 	virtual uv_err_t get(UVDInstruction **out) const;
 	uv_err_t beginningOfCurrentAddressSpace();
 		
+	virtual uv_err_t check();
+	
 protected:
 	uv_err_t setAddress(UVDAddress address);
-	uv_err_t makeEnd();
+	//uv_err_t makeEnd();
 	bool isEnd();
 
 public:
@@ -180,6 +186,7 @@ public:
 	//UVDPrintIterator operator++();
 	//Original reason for differentiation
 	virtual int compare(const UVDAbstractPrintIterator &other) const;
+	virtual uv_err_t copy(UVDAbstractPrintIterator **out) const;
 	//Error checked version of operator *
 	uv_err_t getCurrent(std::string &out);
 	virtual uv_err_t getAddress(UVDAddress *out);
@@ -193,7 +200,7 @@ public:
 	uv_err_t initialProcessHeader();
 	uv_err_t initialProcessStringTable();
 
-	uv_err_t makeEnd();
+	//uv_err_t makeEnd();
 	//uv_err_t makeNextEnd();
 
 	//Current iterator position/status
@@ -207,6 +214,8 @@ public:
 	uv_err_t nextJumpedSources(UVDAddress startPosition);
 
 	static uv_err_t getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdPrintIterator **out);
+	
+	virtual uv_err_t check();
 
 protected:
 	//sets up begin()
