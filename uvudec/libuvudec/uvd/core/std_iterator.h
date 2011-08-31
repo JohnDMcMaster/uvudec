@@ -210,6 +210,7 @@ public:
 
 	uv_err_t nextAddressLabel(UVDAddress startPosition);
 	uv_err_t nextAddressComment(UVDAddress startPosition);
+	uv_err_t nextVectorComment(UVDAddress startPosition);
 	uv_err_t nextCalledSources(UVDAddress startPosition);
 	uv_err_t nextJumpedSources(UVDAddress startPosition);
 

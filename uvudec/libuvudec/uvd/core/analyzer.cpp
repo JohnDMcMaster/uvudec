@@ -616,6 +616,8 @@ uv_err_t UVDAnalyzer::getPreviousKnownInstructionAddress(const UVDAddress &addre
 	
 	if( anyFound )
 	{
+		out->m_addr = bestAddress;
+		out->m_space = address.m_space;
 		return UV_ERR_OK;
 	}
 	else

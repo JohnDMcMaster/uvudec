@@ -23,6 +23,8 @@ FIXME: naked arg stuff added a number of quick hacks and we should rewrite using
 
 static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string> argumentArguments, void *user);
 
+//#undef printf_args_debug
+//#define printf_args_debug printf
 
 /*
 UVDArgConfigs
@@ -149,11 +151,14 @@ uv_err_t UVDArgRegistry::processMain(int argc, char *const *argv)
 		UVDArgConfigs *argConfigs = *iter;
 		uv_err_t rc = UV_ERR_GENERAL;
 
+		uv_assert_ret(argConfigs);
+
 		//FIXME: this will only work for one arg set b/c of urecognized args
 		//We need to parse args and dispatch to inivdidual parsers to preserve order
 		rc = UVDArgConfig::process(*argConfigs, args,
 				true, NULL);
 		uv_assert_err_ret(rc);
+		printf_args_debug("UVDArgConfig::process() rc: %d\n", rc);
 		if( rc == UV_ERR_DONE )
 		{
 			return UV_ERR_DONE;
@@ -285,6 +290,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, UVDRawArgs &args
 			
 			//Extract the argument info for who should handle it
 			matchRc = UVDMatchArgConfig(argConfigs, parsedArg, &matchedConfig);
+			printf_args_debug("matchRc: %d\n", matchRc);
 			//Make sure to return UV_ERR_NOTFOUND if generated
 			if( UV_FAILED(matchRc) )
 			{
@@ -355,16 +361,28 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, UVDRawArgs &args
 			if( !ignoreEarlyArg )
 			{
 				uv_err_t handlerRc = matchedConfig->m_handler(matchedConfig, argumentArguments, matchedConfig->m_user);
+				printf_args_debug("handler RC: %d\n", handlerRc);
 				if( UV_FAILED(handlerRc) )
 				{
 					printf_args_debug("handler returned error processing argument: %s\n", parsedArg.m_raw.c_str());
 					return UV_DEBUG(UV_ERR_GENERAL);
 				}
+				
 				//Mark it as parsed
-				g_config->m_argEngine.m_lastSource[matchedConfig->m_propertyForm] = argObject->getSource();
-				//Some option like help() has been called that means we should abort program
+				//NOTE: unit test and other stand alone apps don't use g_config
+				if( g_config ) {
+					/*
+					if( g_config->m_argEngine.m_lastSource.find(matchedConfig->m_propertyForm) == g_config->m_argEngine.m_lastSource.end() ) {
+						printf_err("Couldn't match up: %s\n", matchedConfig->m_propertyForm.c_str());
+					}
+					uv_assert_ret(g_config->m_argEngine.m_lastSource.find(matchedConfig->m_propertyForm) != g_config->m_argEngine.m_lastSource.end());
+					*/
+					g_config->m_argEngine.m_lastSource[matchedConfig->m_propertyForm] = argObject->getSource();
+					//Some option like help() has been called that means we should abort program
+				}
 				if( handlerRc == UV_ERR_DONE )
 				{
+					printf_args_debug("ret happy done\n");
 					return UV_ERR_DONE;
 				}
 			}
@@ -394,6 +412,7 @@ uv_err_t UVDArgConfig::process(const UVDArgConfigs &argConfigs, UVDRawArgs &args
 		}
 	}
 	
+	printf_args_debug("end return ok\n");
 	return UV_ERR_OK;
 }
 
@@ -596,7 +615,7 @@ uv_err_t UVDConfig::printLoadedPlugins()
 	
 		uv_assert_ret(plugin);
 		uv_assert_err_ret(plugin->getName(name));
-		printf("\t%s\n", name.c_str());
+		printf_args_debug("\t%s\n", name.c_str());
 	}
 	*/
 

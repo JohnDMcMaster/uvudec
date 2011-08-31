@@ -81,6 +81,8 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	uint32_t firstArgNum = 0;
 	bool firstArgBool = true;
 	
+	printf("main arg parser\n");
+	
 	uv_assert_ret(argConfig);
 
 	if( !argumentArguments.empty() )
@@ -108,11 +110,13 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	}
 	else if( argConfig->m_propertyForm == UVD_PROP_TESTING_FIXTURE )
 	{
+		printf("Fixture\n");
 		uv_assert_ret(argumentArguments.size() == 1);
 		if( g_fixtureNameMap.find(firstArg) == g_fixtureNameMap.end() )
 		{
+			printf("bad fixture\n");
 			printf_error("unrecognized fixture: %s\n", firstArg.c_str());
-			printfHelp();
+			//printfHelp();
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		g_tests.push_back(g_fixtureNameMap[firstArg]);
@@ -123,6 +127,7 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 		return UV_DEBUG(UV_ERR_GENERAL);
 	}
 
+	printf("returning OK\n");
 	return UV_ERR_OK;
 }
 
@@ -152,7 +157,7 @@ int main(int argc, char **argv)
 	rcTemp = g_argRegistry.processMain(parsed_argc, argv);
 	if( UV_FAILED(rcTemp) )
 	{
-		printf_error("faled to parse args\n");
+		printf_error("faled to parse args (rc = %d)\n", rcTemp);
 		printfHelp();
 		goto error;
 	}

@@ -159,4 +159,20 @@ uv_err_t UVDArchitecture::parseCurrentInstruction(UVDASInstructionIterator &iter
 	return UV_ERR_NOTSUPPORTED;
 }
 
+uv_err_t UVDArchitecture::getVector(const UVDAddress *address, UVDCPUVector **out) {
+	uv_assert_ret(address);
+	
+	for( unsigned int i = 0; i < m_vectors.size(); ++i ) {
+		UVDCPUVector *cur = m_vectors[i];
+		
+		uv_assert_ret(cur);
+		
+		if( cur->m_offset == address->m_addr ) {
+			uv_assert_ret(out);
+			*out = cur;
+			return UV_ERR_OK;
+		}
+	}
+	return UV_ERR_NOTFOUND;
+}
 

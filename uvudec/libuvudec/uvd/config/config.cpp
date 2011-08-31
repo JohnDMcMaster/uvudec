@@ -60,6 +60,7 @@ UVDConfig::UVDConfig()
 	m_calledCount = 0;
 	m_addressComment = false;
 	m_addressLabel = false;
+	m_vectorComment = UVD_PROP_OUTPUT_VECTOR_COMMENT_DEFAULT;
 
 	m_ignoreErrors = UVD_PROP_DEBUG_IGNORE_ERRORS_DEFAULT;
 	m_suppressErrors = UVD_PROP_DEBUG_SUPPRESS_ERRORS_DEFAULT;
@@ -161,8 +162,8 @@ uv_err_t UVDConfig::parseMain(int argc, char *const *argv, char *const *envp)
 	//printf("effective args: %d\n", m_argsEffective.size());
 	//for( unsigned int i = 0; i < m_argsEffective.size(); ++i ) printf("arg[%d] = %s\n", i, m_argsEffective[i].c_str());
 	//Early config parsing for debugging, especially during plugin loading/initialization
-	UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false,
-			&m_configArgs);
+	uv_assert_err_ret(UVDArgConfig::process(m_plugin.m_earlyConfigArgs, m_argsEffective, false,
+			&m_configArgs));
 
 	//This must be done early since command line options depend upon which plugins are loaded
 	uv_assert_err_ret(m_plugin.m_pluginEngine.init(this));

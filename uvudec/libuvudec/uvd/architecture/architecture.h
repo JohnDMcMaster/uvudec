@@ -127,6 +127,10 @@ public:
 	virtual uv_err_t fixupDefaults();
 
 	uv_err_t doInit();
+	
+	//vector is still owned by this architecture object
+	//return UV_ERR_NOTFOUND if doesn't exist and out will be set to NULL
+	uv_err_t getVector(const UVDAddress *address, UVDCPUVector **out);
 
 public:
 	UVD *m_uvd;

@@ -241,6 +241,7 @@ public:
 	int m_addressComment;
 	//g_addr_label
 	int m_addressLabel;
+	bool m_vectorComment;
 
 	//Only halt on fatal errors?
 	int m_ignoreErrors;

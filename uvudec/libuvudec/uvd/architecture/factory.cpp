@@ -55,6 +55,7 @@ uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorBeginByAddres
 	
 	iter = new UVDStdInstructionIterator();
 	uv_assert_ret(iter);
+	uv_assert_ret(address.m_space);
 	uv_assert_err_ret(iter->init(g_uvd, address));
 	uv_assert_err_ret(iter->check());
 	uv_assert_ret(out);

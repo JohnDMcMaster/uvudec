@@ -9,6 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <string.h>
 #include <vector>
 #include "uvd/assembly/address.h"
+#include "uvd/assembly/cpu_vector.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/core/analysis.h"
 #include "uvd/core/runtime.h"
@@ -475,6 +476,11 @@ uv_err_t UVDStdPrintIterator::parseCurrentLocation()
 		uv_assert_err_ret(nextAddressComment(startPosition));
 	}
 	
+	if( config->m_vectorComment )
+	{
+		uv_assert_err_ret(nextVectorComment(startPosition));
+	}
+	
 	if( config->m_calledSources )
 	{
 		uv_assert_err_ret(nextCalledSources(startPosition));
@@ -578,9 +584,25 @@ uv_err_t UVDStdPrintIterator::nextAddressComment(UVDAddress startPosition)
 	return UV_ERR_OK;
 }
 
+uv_err_t UVDStdPrintIterator::nextVectorComment(UVDAddress startPosition) 
+{
+	uv_err_t rcTemp = UV_ERR_GENERAL;
+	UVDCPUVector *vector = NULL;
+	
+	rcTemp = g_uvd->m_runtime->m_architecture->getVector(&startPosition, &vector);
+	if( rcTemp == UV_ERR_NOTFOUND ) {
+		return UV_ERR_OK;
+	}
+	uv_assert_err_ret(rcTemp);
+	uv_assert_ret(vector);
+	//.start
+	uv_assert_err_ret(addComment(UVDSprintf("Vector \"%s\"", vector->m_name.c_str())));
+
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDStdPrintIterator::nextCalledSources(UVDAddress startPosition)
 {
-#if 0
 	char buff[256];
 	std::string sNameBlock;
 	UVDAnalyzedFunction analyzedFunction;
@@ -589,12 +611,12 @@ uv_err_t UVDStdPrintIterator::nextCalledSources(UVDAddress startPosition)
 	UVDConfig *config = g_uvd->m_config;
 
 	uv_assert_err_ret(g_uvd->m_analyzer->getCalledAddresses(calledAddresses));
-	if( calledAddresses.find(startPosition) == calledAddresses.end() )
+	if( calledAddresses.find(startPosition.m_addr) == calledAddresses.end() )
 	{
 		return UV_ERR_OK;
 	}
 
-	memLoc = (*(calledAddresses.find(startPosition))).second;
+	memLoc = (*(calledAddresses.find(startPosition.m_addr))).second;
 	
 	//empty name indicates no data
 	if( !analyzedFunction.m_sName.empty() )
@@ -605,7 +627,7 @@ uv_err_t UVDStdPrintIterator::nextCalledSources(UVDAddress startPosition)
 	m_indexBuffer.insert(m_indexBuffer.end(), "\n");
 	m_indexBuffer.insert(m_indexBuffer.end(), "\n");
 	std::string formattedAddress;
-	uv_assert_err_ret(g_uvd->m_format->formatAddress(startPosition, formattedAddress));
+	uv_assert_err_ret(g_uvd->m_format->formatAddress(startPosition.m_addr, formattedAddress));
 	snprintf(buff, 256, "# FUNCTION START %s@ %s", sNameBlock.c_str(), formattedAddress.c_str());
 	m_indexBuffer.insert(m_indexBuffer.end(), buff);
 
@@ -621,13 +643,11 @@ uv_err_t UVDStdPrintIterator::nextCalledSources(UVDAddress startPosition)
 	{
 		uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_CALL_DEST));
 	}
-#endif
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDStdPrintIterator::nextJumpedSources(UVDAddress startPosition)
 {
-#if 0
 	char buff[256];
 	std::string sNameBlock;
 	UVDAnalyzedMemoryRange *memLoc = NULL;
@@ -636,15 +656,15 @@ uv_err_t UVDStdPrintIterator::nextJumpedSources(UVDAddress startPosition)
 
 	uv_assert_err_ret(g_uvd->m_analyzer->getJumpedAddresses(jumpedAddresses));
 	//Can be an entry and continue point
-	if( jumpedAddresses.find(startPosition) == jumpedAddresses.end() )
+	if( jumpedAddresses.find(startPosition.m_addr) == jumpedAddresses.end() )
 	{
 		return UV_ERR_OK;
 	}
 
-	memLoc = (*(jumpedAddresses.find(startPosition))).second;
+	memLoc = (*(jumpedAddresses.find(startPosition.m_addr))).second;
 			
 	std::string formattedAddress;
-	uv_assert_err_ret(g_uvd->m_format->formatAddress(startPosition, formattedAddress));
+	uv_assert_err_ret(g_uvd->m_format->formatAddress(startPosition.m_addr, formattedAddress));
 	snprintf(buff, 256, "# Jump destination %s@ %s", sNameBlock.c_str(), formattedAddress.c_str());
 	m_indexBuffer.push_back(buff);
 
@@ -660,7 +680,6 @@ uv_err_t UVDStdPrintIterator::nextJumpedSources(UVDAddress startPosition)
 	{
 		uv_assert_err_ret(printReferenceList(memLoc, UVD_MEMORY_REFERENCE_JUMP_DEST));
 	}
-#endif
 
 	return UV_ERR_OK;
 }

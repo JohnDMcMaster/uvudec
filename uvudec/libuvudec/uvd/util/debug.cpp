@@ -20,7 +20,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #endif
 
 static const char *g_last_func = NULL;
-uint32_t g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
+
+//#define UVD_DEBUG_TYPE_DEFAULT			UVD_DEBUG_TYPE_ALL
+#define UVD_DEBUG_TYPE_DEFAULT			UVD_DEBUG_TYPE_NONE
+uint32_t g_debugTypeFlags = UVD_DEBUG_TYPE_DEFAULT;
 
 static void uvd_signal_handler(int sig)
 {
@@ -157,7 +160,7 @@ uv_err_t UVDDebugInit()
 	//we don't know actual file because we haven't parsed args yet
 	uv_assert_err_ret(uv_log_init("/dev/stdout"));
 
-	g_debugTypeFlags = UVD_DEBUG_TYPE_NONE;
+	g_debugTypeFlags = UVD_DEBUG_TYPE_DEFAULT;
 	signal(SIGSEGV, uvd_signal_handler);
 	signal(SIGFPE, uvd_signal_handler);
 	return UV_ERR_OK;

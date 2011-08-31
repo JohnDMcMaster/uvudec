@@ -58,6 +58,7 @@ uv_err_t UVDStdInstructionIterator::init(UVD *uvd, UVDAddress address)
 	
 	m_addressSpacesIndex = 0;
 	m_iter = UVDASInstructionIterator();
+	uv_assert_ret(address.m_space);
 	uv_assert_err_ret(m_iter.init(g_uvd, address));
 	
 	return UV_ERR_OK;
@@ -135,12 +136,12 @@ uv_err_t UVDStdInstructionIterator::previous()
 
 	UVDAddress previousKnownAddress;
 	UVDInstructionIterator forwardIterator;
-	UVDAddress lastAddress;
 	UVDAddress thisAddress;
 	uv_err_t rcTemp = UV_ERR_GENERAL;
+	UVDAddress lastAddress;
 	
 	//uv_assert_err_ret(getAddress(&lastAddress));
-	lastAddress = m_iter.m_address;
+	thisAddress = m_iter.m_address;
 	
 	//Return UV_ERR_DONE if there are none, but guess its an error if we get this
 	//Looping to end() seems like a bad idea
@@ -165,8 +166,8 @@ uv_err_t UVDStdInstructionIterator::previous()
 		if( curAddress.m_addr > thisAddress.m_addr )
 		{
 			printf_error("instruction alignment inconsistent\n");
-			printf_error("start: 0x%%08X, died at: 0x%08X, iter's: 0x%08X\n",
-					curAddress.m_addr, thisAddress.m_addr);
+			printf_error("start: 0x%08X, died at: 0x%08X, iter's: 0x%08X\n",
+					lastAddress.m_addr, curAddress.m_addr, thisAddress.m_addr);
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
 		//Done?

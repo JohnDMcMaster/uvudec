@@ -517,6 +517,7 @@ uv_err_t UVD::instructionBeginByAddress(UVDAddress address, UVDInstructionIterat
 	}
 	return UV_DEBUG(iter.init(this, address));
 	*/
+	uv_assert_ret(address.m_space);
 	return UV_DEBUG(m_runtime->m_architecture->m_instructionIteratorFactory->instructionIteratorBeginByAddress(&iter, address));
 }
 

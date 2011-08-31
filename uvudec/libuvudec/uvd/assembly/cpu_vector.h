@@ -26,6 +26,7 @@ public:
 	//Human readable description
 	std::string m_description;
 	//Address to vector to
+	//FIXME: change this to UVDAddress
 	uv_addr_t m_offset;
 	//TODO: add something about conditions for vectoring?
 };
