@@ -377,6 +377,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	}
 	uv_assert_err_ret(instructionBegin(iter));
 	uv_assert_err_ret(instructionEnd(iterEnd));
+	uv_assert_err_ret(iterEnd.check());
 	uv_assert_ret(m_config);
 	//FIXME: iterator rework
 	//uv_assert_err_ret(iter.m_address.m_space->getNumberAnalyzedBytes(&numberAnalyzedBytes));
@@ -387,7 +388,8 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		uv_assert_err_ret(iter.getAddress(&startPos));
 		UVDInstruction *instruction = NULL;
 		
-		//printf("analysis: ITERATING\n");
+		printf("analysis: ITERATING\n");
+		uv_assert_err_ret(iter.check());
 		
 		if( iter == iterEnd )
 		{
@@ -462,6 +464,9 @@ uv_err_t UVD::analyzeControlFlowTrace()
 		openSet.insert(vector->m_offset);
 	}
 	
+	UVDInstructionIterator end;
+	uv_assert_err_ret(instructionEnd(end));
+	
 	while( !openSet.empty() )
 	{
 		uint32_t nextStartAddress = *openSet.begin();
@@ -513,7 +518,9 @@ uv_err_t UVD::analyzeControlFlowTrace()
 
 			//printf_debug("\n\nAnalysis at: 0x%.8X\n", startPos);
 
-			if( iter == instructionEnd() )
+			//XXX is this really correct?  what if we jumped towards the end
+			//should be more of a continue
+			if( iter == end )
 			{
 				printf_debug("disassemble: end");
 				break;

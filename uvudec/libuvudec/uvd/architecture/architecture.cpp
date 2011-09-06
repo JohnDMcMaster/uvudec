@@ -5,6 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvd/architecture/architecture.h"
+#include "uvd/architecture/std_iter_factory.h"
 #include "uvd/assembly/cpu_vector.h"
 #include "uvd/core/uvd.h"
 #include "uvd/core/std_iterator.h"
@@ -48,12 +49,15 @@ uv_err_t UVDArchitecture::deinit()
 }
 
 uv_err_t UVDArchitecture::getInstructionIteratorFactory(UVDInstructionIteratorFactory **out) {
-	*out = new UVDInstructionIteratorFactory();
+	*out = new UVDStdInstructionIteratorFactory();
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDArchitecture::getPrintIteratorFactory(UVDPrintIteratorFactory **out) {
-	*out = new UVDPrintIteratorFactory();
+	UVDStdPrintIteratorFactory *ret = NULL;
+	
+	ret =  new UVDStdPrintIteratorFactory();
+	*out = ret;
 	return UV_ERR_OK;
 }
 

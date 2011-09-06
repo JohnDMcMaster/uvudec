@@ -99,7 +99,7 @@ uv_err_t UVDRuntime::clearAddressSpaces()
 
 uv_err_t UVDRuntime::getPrimaryExecutableAddressSpace(UVDAddressSpace **out)
 {
-	//printf("address spaces: %d\n", m_addressSpaces.m_addressSpaces.size());
+	printf("get pri X: address spaces: %d\n", m_addressSpaces.m_addressSpaces.size());
 
 	uv_assert_ret(out);
 	for( std::vector<UVDAddressSpace *>::iterator iter = m_addressSpaces.m_addressSpaces.begin();
@@ -111,6 +111,7 @@ uv_err_t UVDRuntime::getPrimaryExecutableAddressSpace(UVDAddressSpace **out)
 		//Make sure, we'd probably get too many false positives on unknown spaces
 		if( addressSpace->m_X == UVD_TRI_TRUE )
 		{
+			printf("Address space %s is executable\n", addressSpace->m_name.c_str());
 			*out = addressSpace;
 			return UV_ERR_OK;
 		}

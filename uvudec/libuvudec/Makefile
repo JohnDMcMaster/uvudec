@@ -12,6 +12,7 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/architecture/architecture.cpp \
 			$(UVD_DIR)/architecture/factory.cpp \
 			$(UVD_DIR)/architecture/registry.cpp \
+			$(UVD_DIR)/architecture/std_iter_factory.cpp \
 			$(UVD_DIR)/assembly/address.cpp \
 			$(UVD_DIR)/assembly/function.cpp \
 			$(UVD_DIR)/assembly/symbol.cpp \

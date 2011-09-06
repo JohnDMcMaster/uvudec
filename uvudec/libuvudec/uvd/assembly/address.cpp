@@ -238,6 +238,16 @@ uv_err_t UVDAddressSpace::getMinValidAddress(uv_addr_t *out)
 	return UV_DEBUG(g_uvd->m_config->getAddressMin(out));
 }
 
+uv_err_t UVDAddressSpace::getMinAddress(uv_addr_t *out) {
+	*out = m_min_addr;
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDAddressSpace::getMaxAddress(uv_addr_t *out) {
+	*out = m_max_addr;
+	return UV_ERR_OK;
+}
+
 uv_err_t UVDAddressSpace::getMaxValidAddress(uv_addr_t *out)
 {
 	uv_addr_t maxConfigAddress = 0;
@@ -246,10 +256,13 @@ uv_err_t UVDAddressSpace::getMaxValidAddress(uv_addr_t *out)
 	uv_assert_ret(g_uvd);
 	uv_assert_ret(g_uvd->m_config);
 	uv_assert_err_ret(g_uvd->m_config->getAddressMax(&maxConfigAddress));
+	/*
 	uv_assert_ret(m_data);
 	uv_assert_err_ret(m_data->size(&maxPhysicalAddress));
 	//We got size, not end
 	--maxPhysicalAddress;
+	*/
+	uv_assert_err_ret(getMaxAddress(&maxPhysicalAddress));
 	
 	//Return the lower of the two
 	uv_assert_ret(out);

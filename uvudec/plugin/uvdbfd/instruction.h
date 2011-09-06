@@ -11,6 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"
 
+/*
 class UVDBFDInstructionShared : public UVDInstructionShared
 {
 public:
@@ -19,6 +20,7 @@ public:
 
 public:
 };
+*/
 
 class UVDBFDArchitecture;
 class UVDBFDInstruction : public UVDInstruction
@@ -27,12 +29,12 @@ public:
 	UVDBFDInstruction();
 	~UVDBFDInstruction();
 	
-	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
 	virtual uv_err_t print_disasm(std::string &out);
 	virtual uv_err_t analyzeControlFlow(UVDInstructionAnalysis *out);
 
 public:	
 	UVDBFDArchitecture *m_architecture;
+	std::string m_disassembly;
 };
 
 #endif

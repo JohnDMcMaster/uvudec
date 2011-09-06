@@ -9,6 +9,15 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <typeinfo>
 #include <string.h>
 
+
+UVDBFDSection::UVDBFDSection() {
+	m_section = NULL;
+	m_addressSpace = NULL;
+}
+
+UVDBFDSection::~UVDBFDSection() {
+}
+
 uv_err_t UVDBFDObject::canLoad(const UVDData *data, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user)
 {
 	bfd *abfd = NULL;
@@ -131,23 +140,8 @@ error:
 }
 
 
-
-class UVDBFDSection : public UVDSection {
-public:
-	UVDBFDSection();
-	~UVDBFDSection();
-
-	virtual uv_err_t toAddressSpace(UVDAddressSpace **out);
-};
-
-UVDBFDSection::UVDBFDSection() {
-}
-
-UVDBFDSection::~UVDBFDSection() {
-}
-
 uv_err_t UVDBFDSection::toAddressSpace(UVDAddressSpace **out) {
-	printf("to address space\n");
+	//printf("to address space\n");
 	return UV_DEBUG(UVDSection::toAddressSpace(out));
 }
 
@@ -156,11 +150,25 @@ uv_err_t UVDBFDObject::rebuildSections()
 {
 	asection *bfdAsection = NULL;
 	
+	printf("rebuilding sections\n");
+	
+	//XXX: is this the right place to do this?
+	//also this is a memory leak...
+	//for now expect that this is only called once
+	m_sectionsToAddressSpaces.clear();
+	m_addressSpacesToSections.clear();
+	//m_addressSpaces.m_addressSpaces.clear();
+	m_sectionsToSections.clear();
+	
 	for( bfdAsection = m_bfd->sections; bfdAsection != NULL; bfdAsection = bfdAsection->next ) {
-		UVDSection *section = NULL;
+		UVDBFDSection *section = NULL;
 
+		printf("Processing section %s\n", bfdAsection->name );
+		
 		section = new UVDBFDSection();
 		uv_assert_ret(section);
+		section->m_section = bfdAsection;
+		m_sectionsToSections[bfdAsection] = section;
 		
 		//Can this be NULL?
 		uv_assert_ret(bfdAsection->name);
@@ -169,7 +177,15 @@ uv_err_t UVDBFDObject::rebuildSections()
 		section->m_R = UVD_TRI_TRUE;
 		section->m_W = UVD_TRI_FALSE;
 		if( !strcmp(".text", bfdAsection->name) ) {
-			section->m_X = UVD_TRI_TRUE;		
+			section->m_X = UVD_TRI_TRUE;
+	
+			//This is the only section we really care about for now
+			UVDAddressSpace *addressSpace = NULL;
+			
+			uv_assert_err_ret(section->toAddressSpace(&addressSpace));
+			m_sectionsToAddressSpaces[section] = addressSpace;
+			m_addressSpacesToSections[addressSpace] = section;
+			//m_addressSpaces.m_addressSpaces.push_back(addressSpace);
 		} else {
 			section->m_X = UVD_TRI_FALSE;		
 		}
@@ -177,6 +193,90 @@ uv_err_t UVDBFDObject::rebuildSections()
 		m_sections.push_back(section);
 	}
 
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBFDObject::sectionToSection( asection *section, UVDBFDSection **out ) {
+	std::map<asection *, UVDBFDSection *>::iterator iter;
+	
+	uv_assert_ret(section);
+	uv_assert_ret(out);
+	
+	iter = m_sectionsToSections.find(section);
+	if( iter == m_sectionsToSections.end() ) {
+		return UV_ERR_NOTFOUND;
+	}
+	*out = (*iter).second;
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBFDObject::bfdSectionToAddressSpace( asection *bfdSection, UVDAddressSpace **out ) {
+	uv_err_t rcTemp = UV_ERR_GENERAL;
+	UVDBFDSection *section = NULL;
+	
+	rcTemp = sectionToSection( bfdSection, &section );
+	uv_assert_err_ret(rcTemp);
+	if (rcTemp == UV_ERR_NOTFOUND) {
+		return rcTemp;
+	}
+	uv_assert_err_ret(rcTemp);
+	
+	printf("matched to section %s / %s\n", section->m_section->name, section->m_name.c_str() );
+	
+	rcTemp = sectionToAddressSpace( section, out );
+	uv_assert_err_ret(rcTemp);
+	if (rcTemp == UV_ERR_NOTFOUND) {
+		return rcTemp;
+	}
+	uv_assert_err_ret(rcTemp);
+	
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBFDObject::sectionToAddressSpace( UVDBFDSection *section, UVDAddressSpace **out ) {
+	std::map<UVDBFDSection *, UVDAddressSpace *>::iterator iter;
+	
+	uv_assert_ret(section);
+	uv_assert_ret(out);
+
+	iter = m_sectionsToAddressSpaces.find(section);
+	if( iter == m_sectionsToAddressSpaces.end() ) {
+		return UV_ERR_NOTFOUND;
+	}
+	*out = (*iter).second;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBFDObject::addressSpaceToSection( UVDAddressSpace *addressSpace, UVDBFDSection **out ) {
+	std::map<UVDAddressSpace *, UVDBFDSection *>::iterator iter;
+	
+	uv_assert_ret(addressSpace);
+	uv_assert_ret(out);
+
+	iter = m_addressSpacesToSections.find( addressSpace );
+	if( iter == m_addressSpacesToSections.end() ) {
+		return UV_ERR_NOTFOUND;
+	}
+	*out = (*iter).second;
+
+	return UV_ERR_OK;
+}
+
+uv_err_t UVDBFDObject::addressSpaceToBfdSection( UVDAddressSpace *addressSpace, asection **out ) {
+	uv_err_t rcTemp = UV_ERR_GENERAL;
+	UVDBFDSection *section = NULL;
+	
+	rcTemp = UVDBFDObject::addressSpaceToSection( addressSpace, &section );
+	if (rcTemp == UV_ERR_NOTFOUND) {
+		return rcTemp;
+	}
+	uv_assert_err_ret(rcTemp);
+	
+	uv_assert_ret( out );
+	*out = section->m_section;
+	
 	return UV_ERR_OK;
 }
 

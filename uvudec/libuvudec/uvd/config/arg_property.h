@@ -47,7 +47,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVD_PROP_OUTPUT_ADDRESS_COMMENT			"output.address_comment"
 #define UVD_PROP_OUTPUT_ADDRESS_LABEL			"output.address_label"
 #define UVD_PROP_OUTPUT_VECTOR_COMMENT			"output.vector_comment"
-#define UVD_PROP_OUTPUT_VECTOR_COMMENT_DEFAULT	true
+#define UVD_PROP_OUTPUT_VECTOR_COMMENT_DEFAULT	false
 #define UVD_PROP_OUTPUT_FILE					"output.file"
 #define UVD_PROP_OUTPUT_STRING_TABLE			"output.string_table"
 #define UVD_PROP_OUTPUT_STRING_TABLE_DEFAULT	false

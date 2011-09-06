@@ -406,7 +406,7 @@ uv_err_t UVD::getUVDFromData(UVD **uvdOut, UVDData *data)
 	
 	if( g_uvd )
 	{
-		uvd = g_uvd;	
+		uvd = g_uvd;
 	}
 	else
 	{
@@ -418,14 +418,13 @@ uv_err_t UVD::getUVDFromData(UVD **uvdOut, UVDData *data)
 		
 		uv_assert_ret(g_config);
 		uvd->m_config = g_config;
+		g_uvd = uvd;
 		
 		if( UV_FAILED(uvd->initFromData(data)) )
 		{
 			delete uvd;
 			return UV_DEBUG(UV_ERR_GENERAL);
 		}
-		
-		g_uvd = uvd;
 	}
 
 	uv_assert_ret(uvdOut);

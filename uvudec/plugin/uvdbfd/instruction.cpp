@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 UVDBFDInstructionShared
 */
 
+/*
 UVDBFDInstructionShared::UVDBFDInstructionShared()
 {
 }
@@ -17,6 +18,7 @@ UVDBFDInstructionShared::UVDBFDInstructionShared()
 UVDBFDInstructionShared::~UVDBFDInstructionShared()
 {
 }
+*/
 
 /*
 UVDBFDInstruction
@@ -30,18 +32,16 @@ UVDBFDInstruction::~UVDBFDInstruction()
 {
 }
 
-uv_err_t UVDBFDInstruction::parseCurrentInstruction(UVDInstructionIterator &iterCommon)
-{
-	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
-}
-
 uv_err_t UVDBFDInstruction::print_disasm(std::string &out)
 {
-	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
+	out = m_disassembly;
+	return UV_ERR_OK;
 }
 
 uv_err_t UVDBFDInstruction::analyzeControlFlow(UVDInstructionAnalysis *out)
 {
+	//This will stay the this way in the near future
+	//get assembly printed, then work on doing actual analysis
 	return UV_DEBUG(UV_ERR_NOTSUPPORTED);
 }
 

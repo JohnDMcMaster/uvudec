@@ -31,7 +31,7 @@ public:
 	virtual uv_err_t abstractInstructionIteratorBegin( UVDAbstractInstructionIterator **out );
 	//Begin at a specific address
 	uv_err_t instructionIteratorBeginByAddress( UVDInstructionIterator *out, UVDAddress address );
-	virtual uv_err_t abstractInstructionIteratorBeginByAddress( UVDAbstractInstructionIterator **out, UVDAddress address );
+	virtual uv_err_t abstractInstructionIteratorBeginByAddress( UVDAbstractInstructionIterator **out, UVDAddress address ) = 0;
 	//Architecture specific end
 	//Iterating past this should provide no more results
 	uv_err_t instructionIteratorEnd( UVDInstructionIterator *out );
@@ -39,7 +39,7 @@ public:
 	virtual uv_err_t abstractInstructionIteratorEnd(UVDAbstractInstructionIterator **out);
 	//End of an architecture specific address space
 	uv_err_t instructionIteratorEndByAddressSpace( UVDInstructionIterator *out, UVDAddressSpace *addressSpace );	
-	virtual uv_err_t abstractInstructionIteratorEndByAddressSpace(UVDAbstractInstructionIterator **out, UVDAddressSpace *addressSpace);
+	virtual uv_err_t abstractInstructionIteratorEndByAddressSpace(UVDAbstractInstructionIterator **out, UVDAddressSpace *addressSpace) = 0;
 };
 
 class UVDPrintIteratorFactory {
@@ -54,14 +54,14 @@ public:
 	virtual uv_err_t abstractPrintIteratorBegin( UVDAbstractPrintIterator **out );
 	//Begin at a specific address
 	uv_err_t printIteratorBeginByAddress( UVDPrintIterator *out, UVDAddress address );
-	virtual uv_err_t abstractPrintIteratorBeginByAddress( UVDAbstractPrintIterator **out, UVDAddress address );
+	virtual uv_err_t abstractPrintIteratorBeginByAddress( UVDAbstractPrintIterator **out, UVDAddress address ) = 0;
 	//Architecture specific end
 	//Iterating past this should provide no more results
 	uv_err_t printIteratorEnd( UVDPrintIterator *out );
 	virtual uv_err_t abstractPrintIteratorEnd(UVDAbstractPrintIterator **out);
 	//End of an architecture specific address space
 	uv_err_t printIteratorEndByAddressSpace( UVDPrintIterator *out, UVDAddressSpace *addressSpace );	
-	virtual uv_err_t abstractPrintIteratorEndByAddressSpace(UVDAbstractPrintIterator **out, UVDAddressSpace *addressSpace);
+	virtual uv_err_t abstractPrintIteratorEndByAddressSpace(UVDAbstractPrintIterator **out, UVDAddressSpace *addressSpace) = 0;
 };
 
 

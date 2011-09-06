@@ -18,6 +18,7 @@ CXX_SRCS = 	\
 			architecture.cpp \
 			config.cpp \
 			instruction.cpp \
+			instruction_iterator.cpp \
 			main.cpp \
 			object.cpp \
 			plugin.cpp \

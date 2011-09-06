@@ -18,6 +18,8 @@ UVDSection::UVDSection()
 	m_R = UVD_TRI_UNKNOWN;
 	m_W = UVD_TRI_UNKNOWN;
 	m_X = UVD_TRI_UNKNOWN;
+	
+	m_addressSpace = NULL;
 }
 
 UVDSection::~UVDSection()
@@ -46,6 +48,12 @@ uv_err_t UVDSection::toAddressSpace(UVDAddressSpace **out)
 {
 	UVDAddressSpace *space = NULL;
 	UVDDataChunk *data = NULL;
+	
+	uv_assert_ret(out);
+	if( m_addressSpace ) {
+		*out = m_addressSpace;
+		return UV_ERR_OK;
+	}
 	
 	space = new UVDAddressSpace();
 	uv_assert_ret(space);
@@ -89,7 +97,7 @@ uv_err_t UVDSection::toAddressSpace(UVDAddressSpace **out)
 	space->m_word_size = 8;
 	space->m_word_alignment = m_alignment;
 		
-	uv_assert_ret(out);
+	m_addressSpace = space;
 	*out = space;
 	
 	return UV_ERR_OK;

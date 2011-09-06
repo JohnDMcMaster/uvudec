@@ -101,6 +101,10 @@ public:
 	uv_err_t getMinValidAddress(uv_addr_t *out);
 	uv_err_t getMaxValidAddress(uv_addr_t *out);
 
+	//Ignores config values
+	uv_err_t getMinAddress(uv_addr_t *out);
+	uv_err_t getMaxAddress(uv_addr_t *out);
+	
 	/*
 	Returns an address spaced with data mapped onto this one
 	Callee owns the returned object

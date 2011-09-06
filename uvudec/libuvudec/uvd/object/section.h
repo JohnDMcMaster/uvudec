@@ -210,6 +210,8 @@ public:
 	However, currently we only care about where relocations occur for FLIRT, so fix later if we care
 	*/
 	std::vector<UVDRelocationFixup> m_relocations;
+	
+	UVDAddressSpace *m_addressSpace;
 };
 
 #endif

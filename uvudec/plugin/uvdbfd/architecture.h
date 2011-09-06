@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/architecture/architecture.h"
 #include "uvdasm/util.h"
 #include "uvdasm/opcode_table.h"
+#include "bfd.h"
 
 /*
 Configuration file based architecture
@@ -26,11 +27,19 @@ public:
 	virtual uv_err_t getInstruction(UVDInstruction **out);
 	virtual uv_err_t getAddresssSpaceNames(std::vector<std::string> &names);
 
-	virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
+	//virtual uv_err_t parseCurrentInstruction(UVDInstructionIterator &iterCommon);
 
 	static uv_err_t canLoad(const UVDObject *object, const UVDRuntimeHints &hints, uvd_priority_t *confidence, void *user);
 	static uv_err_t tryLoad(UVDObject *object, const UVDRuntimeHints &hints, UVDArchitecture **out, void *user);
 
+	virtual uv_err_t getInstructionIteratorFactory(UVDInstructionIteratorFactory **out);
+
+	/*
+	Should be in object, not architecture
+	uv_err_t sectionToAddressSpace( const asection *section, UVDAddressSpace **out );
+	uv_err_t addressSpaceToSection( const UVDAddressSpace *addressSpace, asection **out );
+	*/
+	
 public:	
 };
 

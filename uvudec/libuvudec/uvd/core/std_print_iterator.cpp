@@ -298,6 +298,21 @@ uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDStdPrintIterator &iter)
 
 uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UVDStdPrintIterator **out) {
 	UVDStdPrintIterator *iter = NULL;
+	UVDInstructionIteratorFactory *instFactory = NULL;
+		
+	iter = new UVDStdPrintIterator();
+	uv_assert_ret(iter);
+	
+	instFactory = g_uvd->m_runtime->m_architecture->m_instructionIteratorFactory;
+	uv_assert_err_ret(instFactory->instructionIteratorEndByAddressSpace(&iter->m_iter, addressSpace));
+	
+	uv_assert_ret(out);
+	*out = iter;
+	
+	return UV_ERR_OK;
+	
+	/*
+	UVDStdPrintIterator *iter = NULL;
 	UVDStdInstructionIterator *instIter = NULL;
 	
 	
@@ -314,7 +329,8 @@ uv_err_t UVDStdPrintIterator::getEnd(UVD *uvd, UVDAddressSpace *addressSpace, UV
 	uv_assert_ret(out);
 	*out = iter;
 	
-	return UV_ERR_OK;	
+	return UV_ERR_OK;
+	*/
 }
 
 #if 0
@@ -690,6 +706,8 @@ uv_err_t UVDStdPrintIterator::getAddress(UVDAddress *out) {
 
 uv_err_t UVDStdPrintIterator::check() {
 	UVDInstruction *instruction = NULL;
+	
+	printf("Print check\n");
 	
 	uv_assert_ret(m_iter.m_iter);
 	uv_assert_err_ret(m_iter.get(&instruction));

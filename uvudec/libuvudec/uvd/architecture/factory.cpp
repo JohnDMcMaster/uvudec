@@ -23,6 +23,7 @@ uv_err_t UVDInstructionIteratorFactory::instructionIteratorBegin( UVDInstruction
 	uv_assert_ret(out);
 	uv_assert_err_ret(abstractInstructionIteratorBegin(&out->m_iter));
 	uv_assert_ret(out->m_iter);
+	uv_assert_err_ret(out->check());
 	
 	return UV_ERR_OK;
 }
@@ -46,65 +47,37 @@ uv_err_t UVDInstructionIteratorFactory::instructionIteratorBeginByAddress( UVDIn
 	uv_assert_ret(out);
 	uv_assert_err_ret(abstractInstructionIteratorBeginByAddress(&out->m_iter, address));
 	uv_assert_ret(out->m_iter);
+	uv_assert_err_ret(out->check());
 	
 	return UV_ERR_OK;
-}
-
-uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorBeginByAddress( UVDAbstractInstructionIterator **out, UVDAddress address ) {
-	UVDStdInstructionIterator *iter = NULL;
-	
-	iter = new UVDStdInstructionIterator();
-	uv_assert_ret(iter);
-	uv_assert_ret(address.m_space);
-	uv_assert_err_ret(iter->init(g_uvd, address));
-	uv_assert_err_ret(iter->check());
-	uv_assert_ret(out);
-	*out = iter;
- 	
- 	return UV_ERR_OK;
 }
 
 uv_err_t UVDInstructionIteratorFactory::instructionIteratorEnd( UVDInstructionIterator *out ) {
 	uv_assert_ret(out);
 	uv_assert_err_ret(abstractInstructionIteratorEnd(&out->m_iter));
 	uv_assert_ret(out->m_iter);
+	printf("start check\n");
+	uv_assert_err_ret(out->check());
 	
 	return UV_ERR_OK;
 }
 
 uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorEnd(UVDAbstractInstructionIterator **out) {
-	UVDStdInstructionIterator *iter = NULL;
 	UVDAddressSpace *addressSpace = NULL;
 	
 	uv_assert_err_ret(g_uvd->m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
-	
-	iter = new UVDStdInstructionIterator();
-	uv_assert_ret(iter);
-	uv_assert_err_ret(UVDStdInstructionIterator::getEnd(g_uvd, addressSpace, &iter));
-	uv_assert_ret(out);
-	*out = iter;
- 	
- 	return UV_ERR_OK;
+		
+	return UV_DEBUG(abstractInstructionIteratorEndByAddressSpace(out, addressSpace));
 }
 
 uv_err_t UVDInstructionIteratorFactory::instructionIteratorEndByAddressSpace( UVDInstructionIterator *out, UVDAddressSpace *addressSpace ) {
 	uv_assert_ret(out);
 	uv_assert_err_ret(abstractInstructionIteratorEndByAddressSpace(&out->m_iter, addressSpace));
 	uv_assert_ret(&out->m_iter);
+	uv_assert_err_ret(out->check());
 	
 	return UV_ERR_OK;
 }
-
-uv_err_t UVDInstructionIteratorFactory::abstractInstructionIteratorEndByAddressSpace(UVDAbstractInstructionIterator **out, UVDAddressSpace *addressSpace) {
-	return UV_DEBUG(UVDStdInstructionIterator::getEnd(g_uvd, addressSpace, (UVDStdInstructionIterator **)out));
-}
-
-
-
-
-
-
-
 
 /*
 UVDPrintIteratorFactory
@@ -157,19 +130,6 @@ uv_err_t UVDPrintIteratorFactory::printIteratorBeginByAddress( UVDPrintIterator 
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPrintIteratorFactory::abstractPrintIteratorBeginByAddress( UVDAbstractPrintIterator **out, UVDAddress address ) {
-	UVDStdPrintIterator *iter = NULL;
-	
-	iter = new UVDStdPrintIterator();
-	uv_assert_ret(iter);
-	uv_assert_err_ret(iter->init(g_uvd, address, 0));
-	uv_assert_err_ret(iter->check());
-	uv_assert_ret(out);
-	*out = iter;
- 	
- 	return UV_ERR_OK;
-}
-
 uv_err_t UVDPrintIteratorFactory::printIteratorEnd( UVDPrintIterator *out ) {
 	uv_assert_ret(out);
 	uv_assert_err_ret(abstractPrintIteratorEnd(&out->m_iter));
@@ -201,7 +161,4 @@ uv_err_t UVDPrintIteratorFactory::printIteratorEndByAddressSpace( UVDPrintIterat
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDPrintIteratorFactory::abstractPrintIteratorEndByAddressSpace(UVDAbstractPrintIterator **out, UVDAddressSpace *addressSpace) {
-	return UV_DEBUG(UVDStdPrintIterator::getEnd(g_uvd, addressSpace, (UVDStdPrintIterator **)out));
-}
 
