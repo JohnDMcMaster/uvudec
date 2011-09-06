@@ -95,37 +95,6 @@ public:
 	UVDDataChunk *m_dataChunk;
 };
 
-/*
-A block of code
-	May contain nested blocks and/or actual code
-Highest level block should be the entire program
-	Next level is functions
-	The lowest level blocks should be non-branching segments
-*/
-class UVDAnalyzedBlock
-{
-public:
-	UVDAnalyzedBlock();
-	~UVDAnalyzedBlock();
-	uv_err_t deinit();
-	
-	//Get the actual code representation of this block
-	uv_err_t getDataChunk(UVDDataChunk **dataChunk);
-	
-	uv_err_t getMinAddress(uint32_t &address);
-	uv_err_t getMaxAddress(uint32_t &address);
-	uv_err_t getSize(uint32_t &address);
-	
-public:
-	//Both of following can be set
-	//m_code should always indicate the range and subblocks, if present, also indicated
-	//If it contains code
-	//We own this
-	UVDAnalyzedCode *m_code;
-	//If it contains blocks, usually should be more than one
-	std::vector<UVDAnalyzedBlock *> m_blocks;
-	UVDAddressSpace *m_addressSpace;
-};
 
 //No inherent reason why same function can't be at multiple locations, 
 //other reasons why this may happen
@@ -157,6 +126,7 @@ class UVDStringEngine;
 class UVDBinaryFunctionInstance;
 class UVD;
 class UVDInstruction;
+class UVDAnalyzedBlock;
 //Holds data that resulted from binary analysis or advanced hints from user
 class UVDAnalyzer
 {

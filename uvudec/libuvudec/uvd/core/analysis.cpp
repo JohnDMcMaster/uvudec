@@ -11,6 +11,7 @@ Things such as interpreting results and converting to generic structures
 
 #include "uvd/core/uvd.h"
 #include "uvd/core/analysis.h"
+#include "uvd/core/block.h"
 #include "uvd/architecture/architecture.h"
 #include "uvd/assembly/cpu_vector.h"
 #include "uvd/util/benchmark.h"
@@ -25,13 +26,13 @@ static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedM
 
 static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &space, UVDAnalyzedMemoryRanges::iterator &iter, uint32_t types, bool curAddressLegal)
 {
-	uint32_t superblockMaxAddress = 0;
+	uv_addr_t superblockMaxAddress = 0;
 	uv_addr_t absoluteMaxAddress = 0;
 	
 	uv_assert_err_ret(superblock->m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
 
 	uv_assert_ret(superblock);
-	uv_assert_err_ret(superblock->getMaxAddress(superblockMaxAddress));
+	uv_assert_err_ret(superblock->getMaxAddress(&superblockMaxAddress));
 	
 	if( iter != space.end() && !curAddressLegal )
 	{
@@ -120,8 +121,8 @@ uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
 	uv_assert_ret(m_analyzer);
 
 	uv_assert_ret(superblock);
-	uv_assert_err_ret(superblock->getMinAddress(superblockMinAddress));
-	uv_assert_err_ret(superblock->getMaxAddress(superblockMaxAddress));
+	uv_assert_err_ret(superblock->getMinAddress(&superblockMinAddress));
+	uv_assert_err_ret(superblock->getMaxAddress(&superblockMaxAddress));
 	printf_debug("Superblock: 0x%.8X : 0x%.8X\n", superblockMinAddress, superblockMaxAddress);
 	
 	printf_debug("Getting addresses\n");

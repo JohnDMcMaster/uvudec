@@ -13,6 +13,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#include "uvd/core/block.h"
 #include "uvd/core/uvd.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/error.h"
@@ -103,8 +104,8 @@ uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction
 	uv_assert_err_ret(UVDBinaryFunction::getUVDBinaryFunctionInstance(&function));
 	uv_assert_ret(function);
 
-	uint32_t minAddress = 0;
-	uv_assert_err_ret(functionBlock->getMinAddress(minAddress));
+	uv_addr_t minAddress = 0;
+	uv_assert_err_ret(functionBlock->getMinAddress(&minAddress));
 	uv_assert_err_ret(function->setSymbolAddress(minAddress));
 	
 	//The true name of the function is unknown

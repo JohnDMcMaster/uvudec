@@ -35,6 +35,7 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/core/analysis.cpp \
 			$(UVD_DIR)/core/analyzer.cpp \
 			$(UVD_DIR)/core/as_instruction_iterator.cpp \
+			$(UVD_DIR)/core/block.cpp \
 			$(UVD_DIR)/core/event.cpp \
 			$(UVD_DIR)/core/init.cpp \
 			$(UVD_DIR)/core/instruction_iterator.cpp \
