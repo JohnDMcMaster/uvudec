@@ -61,7 +61,12 @@ typedef struct {
 	uint32_t status;
 	uint32_t length;
 	uint32_t data_length;
-} usb_urb_t;
+} __attribute__((packed)) usb_urb_t;
+
+//TODO; figure out what this actually is
+typedef struct {
+	uint8_t raw[24];
+} __attribute__((packed)) control_rx_t;
 
 std::string transfer_type_str( unsigned int tt ) {
 	switch (tt) {
@@ -225,10 +230,10 @@ std::map<uint64_t, PendingRX> g_pending;
 
 void loop_cb(u_char *args, const struct pcap_pkthdr *header,
     const u_char *packet) {
+    uint8_t *dat_cur = 0;
     unsigned int len = 0;
 	usb_urb_t *urb = NULL;
-	//Skip over the header data
-	struct usb_ctrlrequest *ctrl = NULL;
+	size_t remaining_bytes = 0;
     	
 	++g_cur_packet;
 	if (g_cur_packet < g_min_packet || g_cur_packet > g_max_packet) {
@@ -243,11 +248,16 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 		return;
 	}
 	len = header->len;
+	remaining_bytes = len;
+	dat_cur = (uint8_t *)packet;
+	dbg("PACKET %u: length %u\n", g_cur_packet, len);
 	//caplen is actual length, len is reported
 	
-	urb = (usb_urb_t *)packet;
+	urb = (usb_urb_t *)dat_cur;
+	remaining_bytes -= sizeof(*urb);
+	dat_cur += sizeof(*urb);
 	if (g_verbose) {
-		printf("Packet %d\n", g_cur_packet);
+		printf("Packet %d (header size: %u)\n", g_cur_packet, sizeof(*urb));
 		printf("\tid: 0x%016llX\n", urb->id);
 		printf("\ttype: %s (%c / 0x%02X)\n", urb_type_str(urb->type).c_str(), urb->type, urb->type);
 		printf("\ttransfer_type: %s (0x%02X)\n",
@@ -264,29 +274,7 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 		printf("\tdata_length: 0x%08X\n", urb->data_length);
 	}
 	
-	if (len < sizeof(*ctrl)) {
-		printf("packet %d: got %d instead of min header length %d\n",
-				g_cur_packet, len, sizeof(*ctrl));
-		g_error = true;
-		return;
-	}
 	if (urb->transfer_type & URB_CONTROL) {
-		ctrl = (struct usb_ctrlrequest *)&urb[1];
-		if (g_verbose) {
-			printf("Packet %d (control info)\n", g_cur_packet);
-			printf("\tbRequestType: %s (0x%02X)\n", get_request_type_str(ctrl->bRequestType).c_str(), ctrl->bRequestType);
-			printf("\tbRequest: %s (0x%02X)\n", get_request_str( ctrl->bRequestType, ctrl->bRequest ).c_str(), ctrl->bRequest);
-			printf("\twValue: 0x%04X\n", ctrl->wValue);
-			printf("\twIndex: 0x%04X\n", ctrl->wIndex);
-			printf("\twLength: 0x%04X\n", ctrl->wLength);
-		}
-	
-		if ((ctrl->bRequestType & USB_DIR_IN) == USB_DIR_IN) {
-			dbg("%d: IN\n", g_cur_packet);
-		} else {
-			dbg("%d: OUT\n", g_cur_packet);
-		}
-		
 		if (urb->type == URB_ERROR) {
 			printf("oh noes!\n");
 			if (g_halt_error) {
@@ -294,12 +282,39 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 			}
 		} else if (urb->type == URB_SUBMIT) {
 			PendingRX pending;
-	
+			struct usb_ctrlrequest *ctrl = NULL;
+
+			if (len < sizeof(*ctrl)) {
+				printf("packet %d: got %d instead of min header length %d\n",
+						g_cur_packet, len, sizeof(*ctrl));
+				g_error = true;
+				return;
+			}
+		
+			ctrl = (struct usb_ctrlrequest *)&urb[1];
+			remaining_bytes -=  sizeof(*ctrl);
+			dat_cur += sizeof(*ctrl);
+		
+			if ((ctrl->bRequestType & USB_DIR_IN) == USB_DIR_IN) {
+				dbg("%d: IN\n", g_cur_packet);
+			} else {
+				dbg("%d: OUT\n", g_cur_packet);
+			}
+				
 			pending.m_urb = *urb;
 			pending.m_ctrl = *ctrl;
 			pending.packet_number = g_cur_packet;
 			g_pending[urb->id] = pending;
 			
+			if (g_verbose) {
+				printf("Packet %d control submit (control info size %u)\n", g_cur_packet, sizeof(*ctrl));
+				printf("\tbRequestType: %s (0x%02X)\n", get_request_type_str(ctrl->bRequestType).c_str(), ctrl->bRequestType);
+				printf("\tbRequest: %s (0x%02X)\n", get_request_str( ctrl->bRequestType, ctrl->bRequest ).c_str(), ctrl->bRequest);
+				printf("\twValue: 0x%04X\n", ctrl->wValue);
+				printf("\twIndex: 0x%04X\n", ctrl->wIndex);
+				printf("\twLength: 0x%04X\n", ctrl->wLength);
+			}
+	
 			//Wait for the return
 			return;
 		} else if(urb->type != URB_COMPLETE) {
@@ -326,43 +341,81 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 		
 		std::string device_str = "dev->udev";
 		std::string pipe_str;
-		unsigned int timeout = 500;
-		if (ctrl->bRequestType & USB_DIR_IN) {
+		std::string timeout = "500";
+		if (submit.m_ctrl.bRequestType & USB_DIR_IN) {
 			pipe_str = UVDSprintf( "usb_rcvctrlpipe(%s, 0)", device_str.c_str() );
 		} else {
 			pipe_str = UVDSprintf( "usb_sndctrlpipe(%s, 0)", device_str.c_str() );
 		}
 	
-		oprintf("//Generated from packet %d / %d\n", submit.packet_number, g_cur_packet);
+		oprintf("//Generated from packet %u/%u\n", submit.packet_number, g_cur_packet);
 		
 		unsigned int data_size = 0;
 		std::string data_str = "NULL";
-		if (ctrl->bRequestType & USB_DIR_OUT) {
+		if (submit.m_ctrl.bRequestType & USB_DIR_OUT) {
 			//Verify data
-			if (ctrl->wLength) {
+			if (submit.m_ctrl.wLength) {
 				printf("FIXME: add out data support\n");
 				if (g_halt_error) {
 					exit(1);
 				}
 			}		
+		} else {
+			if (submit.m_ctrl.wLength) {
+				data_str = "buff";
+				data_size = submit.m_ctrl.wLength;
+			}
 		}
-		oprintf("usb_control_msg(%s, %s, %s, %s, 0x%04X, 0x%04X, %s, %u, %u);\n",
+		oprintf("n_rw = usb_control_msg(%s, %s, %s, %s, 0x%04X, 0x%04X, %s, %u, %s);\n",
 				device_str.c_str(), pipe_str.c_str(),
-				//get_request_str(ctrl->bRequest).c_str(),
-				get_request_str( ctrl->bRequestType, ctrl->bRequest ).c_str(),
-				get_request_type_str(ctrl->bRequestType).c_str(),
-				ctrl->wValue, ctrl->wIndex,
+				//get_request_str(submit.m_ctrl.bRequest).c_str(),
+				get_request_str( submit.m_ctrl.bRequestType, submit.m_ctrl.bRequest ).c_str(),
+				get_request_type_str(submit.m_ctrl.bRequestType).c_str(),
+				submit.m_ctrl.wValue, submit.m_ctrl.wIndex,
 				data_str.c_str(), data_size,
-				timeout );
-				
-		if (ctrl->bRequestType & USB_DIR_IN) {
-			//Verify data
-			if (ctrl->wLength) {
-				printf("FIXME: add in data support\n");
+				timeout.c_str() );
+		if (submit.m_ctrl.bRequestType & USB_DIR_IN) {
+			unsigned int dat_len = submit.m_ctrl.wLength;
+			
+			//Take off the unknown struct
+			if (remaining_bytes < sizeof(control_rx_t)) {
+				printf("not enough data\n");
 				if (g_halt_error) {
 					exit(1);
 				}
-			}		
+				return;
+			}
+			dat_cur += sizeof(control_rx_t);
+			remaining_bytes -= sizeof(control_rx_t);
+			
+			//Verify we actually have enough
+			if (remaining_bytes != dat_len) {
+				printf("expected remaining bytes %u to be the requested length %u\n",
+						remaining_bytes, dat_len );
+				if (g_halt_error) {
+					exit(1);
+				}
+				return;
+			}
+			std::string byte_str;
+			uint8_t *dat = NULL;
+			dat = dat_cur;
+			std::string pad = "";
+			for (unsigned int i = 0; i < dat_len; ++i) {
+				byte_str += pad;
+				byte_str += UVDSprintf("0x%02X", dat[i]);
+				pad = ", ";
+			}
+			
+			oprintf("if (validate_read((char[]){%s}, %u, buff, n_rw, \"packet %u/%u\") < 0)\n",
+					byte_str.c_str(), dat_len, 
+					submit.packet_number, g_cur_packet );
+			oprintf("\treturn 1;\n");
+			remaining_bytes -= submit.m_ctrl.wLength;
+		} else {
+			oprintf("if (validate_write(n_rw, \"packet %u/%u\") < 0)\n",
+					submit.packet_number, g_cur_packet );
+			oprintf("\treturn 1;\n");
 		}
 	}
 }
