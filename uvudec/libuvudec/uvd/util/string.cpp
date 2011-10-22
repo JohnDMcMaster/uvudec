@@ -56,7 +56,12 @@ uv_err_t parseNumericRangeString(const std::string &s, uint32_t *first, uint32_t
 	parts = split(s, delim, true);
 	uv_assert_ret(parts.size() == 2);
 	*first = strtol(parts[0].c_str(), NULL, 0);
-	*second = strtol(parts[1].c_str(), NULL, 0);
+	std::string second_str = parts[1];
+	if (second_str == "") {
+		*second = UINT_MAX;
+	} else {
+		*second = strtol(second_str.c_str(), NULL, 0);
+	}
 	
 	return UV_ERR_OK;
 }
