@@ -217,5 +217,7 @@ uv_err_t UVDPrintToFileStringCallback(const std::string &s, void *user);
 //user should be std::string *
 uv_err_t UVDPrintToStringStringCallback(const std::string &cur, void *user);
 
+std::string UVDCurDateTime();
+
 #endif /* ifndef UV_UTIL_H */
 

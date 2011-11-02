@@ -537,3 +537,16 @@ std::string UVDToLower(const std::string &in)
 	return ret;
 }
 
+std::string UVDCurDateTime() {
+	time_t rawtime;
+	struct tm *timeinfo;
+	char buff[64];
+
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+
+	strftime(buff, sizeof(buff), "%x %X.",timeinfo);
+	
+	return buff;
+}	  
+

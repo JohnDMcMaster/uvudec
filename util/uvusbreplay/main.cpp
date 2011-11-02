@@ -30,6 +30,10 @@ bool g_error = false;
 bool g_halt_error = true;
 bool g_verbose = false;
 
+#define URB_IS_IN( _urb) (((_urb)->endpoint & USB_DIR_IN) == USB_DIR_IN)
+
+#define VERSION_STR		"0.1"
+
 #define dbg(...) do { \
 	if (g_verbose) { printf(__VA_ARGS__); } \
 } while(0)
@@ -45,6 +49,7 @@ typedef uint8_t urb_type_t;
 #define URB_INTERRUPT     0x1
 #define URB_CONTROL       0x2
 #define URB_BULK          0x3
+//#define URB_TYPE_MASK     0x3
 typedef uint8_t urb_transfer_t;
 
 typedef struct {
@@ -79,7 +84,7 @@ std::string transfer_type_str( unsigned int tt ) {
 	case URB_BULK:
 		return "URB_BULK";
 	default:
-		printf("WTF?\n");
+		printf("WTF? %d\n", __LINE__);
 		if (g_halt_error) {
 			exit(1);
 		}
@@ -117,7 +122,7 @@ std::string get_request_str(unsigned int bRequestType, unsigned int bRequest) {
 		case USB_REQ_SYNCH_FRAME:
 			return "USB_REQ_SYNCH_FRAME";	
 		default:
-			printf("WTF?\n");
+			printf("WTF? %d\n", __LINE__);
 			if (g_halt_error) {
 				exit(1);
 			}
@@ -132,7 +137,7 @@ std::string get_request_str(unsigned int bRequestType, unsigned int bRequest) {
 		return UVDSprintf("0x%02X", bRequest);
 	
 	default:
-		printf("WTF?\n");
+		printf("WTF? %d\n", __LINE__);
 		if (g_halt_error) {
 			exit(1);
 		}
@@ -163,7 +168,7 @@ std::string get_request_type_str(unsigned int bRequestType) {
 		ret += " | USB_TYPE_RESERVED"; 
 		break;
 	default:
-		printf("WTF?\n");
+		printf("WTF? %d\n", __LINE__);
 		if (g_halt_error) {
 			exit(1);
 		}
@@ -190,7 +195,7 @@ std::string get_request_type_str(unsigned int bRequestType) {
 		ret += " | USB_RECIP_RPIPE";
 		break;
 	default:
-		printf("WTF?\n");
+		printf("WTF? %d\n", __LINE__);
 		if (g_halt_error) {
 			exit(1);
 		}
@@ -209,7 +214,7 @@ std::string urb_type_str(unsigned int t) {
 	case URB_ERROR:
 		return "URB_ERROR";
 	default:
-		printf("WTF?\n");
+		printf("WTF? %d\n", __LINE__);
 		if (g_halt_error) {
 			exit(1);
 		}
@@ -228,6 +233,37 @@ public:
 //Pending control requests
 std::map<uint64_t, PendingRX> g_pending;
 
+bool keep_packet( const PendingRX &in ) {
+	//grr forgot I had this on
+	//return (in.m_urb.transfer_type & URB_CONTROL) && (in.m_ctrl.bRequestType & USB_DIR_IN);
+	return true;
+}
+
+typedef struct {
+	unsigned req_in;
+	unsigned req_in_last;
+	unsigned in;
+	unsigned in_last;
+	
+	unsigned req_out;
+	unsigned req_out_last;
+	unsigned out;
+	unsigned out_last;
+} payload_bytes_type_t;
+typedef struct {
+	payload_bytes_type_t ctrl;
+	payload_bytes_type_t bulk;
+} payload_bytes_t;
+payload_bytes_t g_payload_bytes;
+
+void update_delta( payload_bytes_type_t *in ) {
+	in->req_in_last = in->req_in;
+	in->in_last = in->in;
+
+	in->req_out_last = in->req_out;
+	in->out_last = in->out;
+}
+
 void loop_cb(u_char *args, const struct pcap_pkthdr *header,
     const u_char *packet) {
     uint8_t *dat_cur = 0;
@@ -237,7 +273,7 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
     	
 	++g_cur_packet;
 	if (g_cur_packet < g_min_packet || g_cur_packet > g_max_packet) {
-		//printf("Skipping packet %d\n", g_cur_packet);
+		printf("//Skipping packet %d\n", g_cur_packet);
 		return;
 	}
 	
@@ -274,13 +310,35 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 		printf("\tdata_length: 0x%08X\n", urb->data_length);
 	}
 	
-	if (urb->transfer_type & URB_CONTROL) {
-		if (urb->type == URB_ERROR) {
-			printf("oh noes!\n");
+	
+	if (urb->type == URB_ERROR) {
+		printf("oh noes!\n");
+		if (g_halt_error) {
+			exit(1);
+		}
+	}
+	PendingRX pending;
+	pending.m_urb = *urb;
+
+	//Find the matching submit request
+	PendingRX submit;
+	if( urb->type == URB_COMPLETE) {
+		if (g_pending.find(urb->id) == g_pending.end()) {
+			printf("WTF? %d\n", __LINE__);
 			if (g_halt_error) {
 				exit(1);
 			}
-		} else if (urb->type == URB_SUBMIT) {
+		}
+		submit = g_pending[urb->id];
+		//Done with it, get rid of it
+		g_pending.erase(g_pending.find(urb->id));
+		if (!g_pending.empty()) {
+			//printf("WARNING: out of order traffic packet around %u, not too much thought put into that\n", g_cur_packet);
+		}
+	}
+	
+	if (urb->transfer_type == URB_CONTROL) {
+		if (urb->type == URB_SUBMIT) {
 			PendingRX pending;
 			struct usb_ctrlrequest *ctrl = NULL;
 
@@ -301,7 +359,6 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 				dbg("%d: OUT\n", g_cur_packet);
 			}
 				
-			pending.m_urb = *urb;
 			pending.m_ctrl = *ctrl;
 			pending.packet_number = g_cur_packet;
 			g_pending[urb->id] = pending;
@@ -318,28 +375,30 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 			//Wait for the return
 			return;
 		} else if(urb->type != URB_COMPLETE) {
-			printf("WTF?\n");
+			printf("WTF? %d\n", __LINE__);
 			if (g_halt_error) {
 				exit(1);
 			}
 		}
 		
-		//Find the matching submit request
-		PendingRX submit;
-		if (g_pending.find(urb->id) == g_pending.end()) {
-			printf("WTF?\n");
-			if (g_halt_error) {
-				exit(1);
-			}
+		if (false && keep_packet(submit)) {
+			payload_bytes_type_t *bulk = &g_payload_bytes.bulk;
+			//payload_bytes_type_t *ctrl = &g_payload_bytes.ctrl;
+			
+			printf("Transer statistics\n");
+			printf("\tBulk\n");
+			printf("\t\tIn: %u (delta %u), req: %u (delta %u)\n",
+					bulk->in, bulk->in - bulk->in_last,
+					bulk->req_in, bulk->req_in - bulk->req_in_last
+					);
+			update_delta( bulk );
+			printf("\t\tOut: %u, req: %u\n", g_payload_bytes.bulk.out, g_payload_bytes.bulk.req_out);
+			printf("\tControl\n");
+			printf("\t\tIn: %u, req: %u\n", g_payload_bytes.ctrl.in, g_payload_bytes.ctrl.req_in);
+			printf("\t\tOut: %u, req: %u\n", g_payload_bytes.ctrl.out, g_payload_bytes.ctrl.req_out);
 		}
-		submit = g_pending[urb->id];
-		//Done with it, get rid of it
-		g_pending.erase(g_pending.find(urb->id));
-		if (!g_pending.empty()) {
-			printf("WARNING: out of order traffic, not too much thought put into that\n");
-		}
-		
-		std::string device_str = "dev->udev";
+		//std::string device_str = "dev->udev";
+		std::string device_str = "udev";
 		std::string pipe_str;
 		std::string timeout = "500";
 		if (submit.m_ctrl.bRequestType & USB_DIR_IN) {
@@ -348,7 +407,9 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 			pipe_str = UVDSprintf( "usb_sndctrlpipe(%s, 0)", device_str.c_str() );
 		}
 	
-		oprintf("//Generated from packet %u/%u\n", submit.packet_number, g_cur_packet);
+		if (keep_packet(submit)) {
+			oprintf("//Generated from packet %u/%u\n", submit.packet_number, g_cur_packet);
+		}
 		
 		unsigned int data_size = 0;
 		std::string data_str = "NULL";
@@ -366,16 +427,18 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 				data_size = submit.m_ctrl.wLength;
 			}
 		}
-		oprintf("n_rw = usb_control_msg(%s, %s, %s, %s, 0x%04X, 0x%04X, %s, %u, %s);\n",
-				device_str.c_str(), pipe_str.c_str(),
-				//get_request_str(submit.m_ctrl.bRequest).c_str(),
-				get_request_str( submit.m_ctrl.bRequestType, submit.m_ctrl.bRequest ).c_str(),
-				get_request_type_str(submit.m_ctrl.bRequestType).c_str(),
-				submit.m_ctrl.wValue, submit.m_ctrl.wIndex,
-				data_str.c_str(), data_size,
-				timeout.c_str() );
+		if (keep_packet(submit)) {
+			oprintf("n_rw = usb_control_msg(%s, %s, %s, %s, 0x%04X, 0x%04X, %s, %u, %s);\n",
+					device_str.c_str(), pipe_str.c_str(),
+					//get_request_str(submit.m_ctrl.bRequest).c_str(),
+					get_request_str( submit.m_ctrl.bRequestType, submit.m_ctrl.bRequest ).c_str(),
+					get_request_type_str(submit.m_ctrl.bRequestType).c_str(),
+					submit.m_ctrl.wValue, submit.m_ctrl.wIndex,
+					data_str.c_str(), data_size,
+					timeout.c_str() );
+		}
 		if (submit.m_ctrl.bRequestType & USB_DIR_IN) {
-			unsigned int dat_len = submit.m_ctrl.wLength;
+			unsigned int payload_sz = submit.m_ctrl.wLength;
 			
 			//Take off the unknown struct
 			if (remaining_bytes < sizeof(control_rx_t)) {
@@ -389,33 +452,59 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 			remaining_bytes -= sizeof(control_rx_t);
 			
 			//Verify we actually have enough
-			if (remaining_bytes != dat_len) {
+			if (remaining_bytes != payload_sz) {
 				printf("expected remaining bytes %u to be the requested length %u\n",
-						remaining_bytes, dat_len );
+						remaining_bytes, payload_sz );
 				if (g_halt_error) {
 					exit(1);
 				}
 				return;
 			}
 			std::string byte_str;
-			uint8_t *dat = NULL;
-			dat = dat_cur;
+			uint8_t *payload = NULL;
+			payload = dat_cur;
 			std::string pad = "";
-			for (unsigned int i = 0; i < dat_len; ++i) {
+			for (unsigned int i = 0; i < payload_sz; ++i) {
 				byte_str += pad;
-				byte_str += UVDSprintf("0x%02X", dat[i]);
+				byte_str += UVDSprintf("0x%02X", payload[i]);
 				pad = ", ";
 			}
-			
-			oprintf("if (validate_read((char[]){%s}, %u, buff, n_rw, \"packet %u/%u\") < 0)\n",
-					byte_str.c_str(), dat_len, 
-					submit.packet_number, g_cur_packet );
-			oprintf("\treturn 1;\n");
+			if (keep_packet(submit)) {
+				oprintf("if (validate_read((char[]){%s}, %u, buff, n_rw, \"packet %u/%u\") < 0)\n",
+						byte_str.c_str(), payload_sz, 
+						submit.packet_number, g_cur_packet );
+				oprintf("\treturn 1;\n");
+			}
 			remaining_bytes -= submit.m_ctrl.wLength;
 		} else {
-			oprintf("if (validate_write(n_rw, \"packet %u/%u\") < 0)\n",
-					submit.packet_number, g_cur_packet );
-			oprintf("\treturn 1;\n");
+			if (keep_packet(submit)) {
+				oprintf("if (validate_write(%u, n_rw, \"packet %u/%u\") < 0)\n",
+						data_size, submit.packet_number, g_cur_packet );
+				oprintf("\treturn 1;\n");
+			}
+		}
+	} else if (urb->transfer_type == URB_BULK) {
+		//Don't care about this but populate for now
+		g_pending[urb->id] = pending;
+	
+		if (URB_IS_IN(urb)) {
+			switch (urb->type) {
+			case URB_SUBMIT:
+				g_payload_bytes.bulk.req_in += urb->length;
+				break;
+			case URB_COMPLETE:
+				g_payload_bytes.bulk.in += urb->data_length;
+				break;
+			}		
+		} else {	
+			switch (urb->type) {
+			case URB_SUBMIT:
+				g_payload_bytes.bulk.req_out += urb->length;
+				break;
+			case URB_COMPLETE:
+				g_payload_bytes.bulk.out += urb->data_length;
+				break;
+			}
 		}
 	}
 }
@@ -481,7 +570,7 @@ int main(int argc, char *argv[])
 	
 	std::string fileName = "in.cap";
     //"/home/mcmaster/document/external/uvscopetek/captures/twain_image/wireshark/1/640x320_wireshark.cap"
-     
+ 
 	unsigned int raws = 0;
 	for (int index = optind; index < argc; index++) {
 		if (raws == 0) {
@@ -494,13 +583,30 @@ int main(int argc, char *argv[])
 		++raws;
 	}
 	
+
+	oprintf("/*\n");
+	oprintf("Generated by uvusbreplay %s\n", VERSION_STR);
+	oprintf("uvusbreplay copyright 2011 John McMaster <JohnDMcMaster@gmail.com>\n");
+	oprintf("Date: %s\n", UVDCurDateTime().c_str());
+	oprintf("Source data: %s\n", fileName.c_str());
+	oprintf("Source range: %u - %u\n", g_min_packet, g_max_packet);
+	oprintf("*/\n");
+	oprintf("int n_rw = 0;\n");
+	oprintf("char buff[64];\n");
+	
 	dbg("parsing from range %u to %u\n", g_min_packet, g_max_packet);
 	p = pcap_open_offline(fileName.c_str(), errbuf);
+	if (p == NULL) {
+		printf("failed to open %s\n", fileName.c_str());
+		exit(1);
+	}
 	pcap_loop(p, -1, loop_cb, NULL);
 	
 	if (!g_pending.empty()) {
 		printf("WARNING: %d pending requests\n", g_pending.size());
 	}
+	//Makes copy/pasting easier in some editors...
+	oprintf("\n");
 	
 	return 0;
 }

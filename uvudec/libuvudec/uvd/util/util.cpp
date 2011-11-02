@@ -543,8 +543,7 @@ void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix)
 			{
 				printf("%c", '.');
 				fflush(stdout);
-			}uv_err_t UVDPrintStringCallback(const std::string &s, void *user);
-
+			}
 		} 
 		for( ; i < row_start + g_bytesPerRow; ++i )
 		{
