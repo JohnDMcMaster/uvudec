@@ -163,13 +163,13 @@ bool UVDStdInstructionIterator::operator!=(const UVDStdInstructionIterator &othe
 */
 
 uv_err_t UVDInstructionIterator::check() {
-	printf("inst iter check\n");
+	//printf("inst iter check\n");
 	uv_assert_ret(m_iter);
 	return UV_DEBUG(m_iter->check());
 }
 
 uv_err_t UVDAbstractInstructionIterator::check() {
-	printf("abstract check\n");
+	//printf("abstract check\n");
 	return UV_ERR_OK;
 }
 

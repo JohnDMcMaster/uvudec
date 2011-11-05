@@ -56,7 +56,7 @@ uv_err_t UVDInstructionIteratorFactory::instructionIteratorEnd( UVDInstructionIt
 	uv_assert_ret(out);
 	uv_assert_err_ret(abstractInstructionIteratorEnd(&out->m_iter));
 	uv_assert_ret(out->m_iter);
-	printf("start check\n");
+	//printf("start check\n");
 	uv_assert_err_ret(out->check());
 	
 	return UV_ERR_OK;

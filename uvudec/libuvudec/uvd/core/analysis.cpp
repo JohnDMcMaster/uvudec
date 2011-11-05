@@ -389,7 +389,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 		uv_assert_err_ret(iter.getAddress(&startPos));
 		UVDInstruction *instruction = NULL;
 		
-		printf("analysis: ITERATING\n");
+		//printf("analysis: ITERATING\n");
 		uv_assert_err_ret(iter.check());
 		
 		if( iter == iterEnd )

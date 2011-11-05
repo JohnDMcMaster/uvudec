@@ -707,7 +707,7 @@ uv_err_t UVDStdPrintIterator::getAddress(UVDAddress *out) {
 uv_err_t UVDStdPrintIterator::check() {
 	UVDInstruction *instruction = NULL;
 	
-	printf("Print check\n");
+	//printf("Print check\n");
 	
 	uv_assert_ret(m_iter.m_iter);
 	uv_assert_err_ret(m_iter.get(&instruction));
