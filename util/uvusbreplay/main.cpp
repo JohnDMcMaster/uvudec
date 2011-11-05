@@ -273,7 +273,7 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
     	
 	++g_cur_packet;
 	if (g_cur_packet < g_min_packet || g_cur_packet > g_max_packet) {
-		printf("//Skipping packet %d\n", g_cur_packet);
+		//printf("//Skipping packet %d\n", g_cur_packet);
 		return;
 	}
 	
