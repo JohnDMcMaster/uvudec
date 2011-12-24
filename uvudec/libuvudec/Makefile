@@ -73,6 +73,7 @@ REAL_CXX_SRCS = 	\
 			$(UVD_DIR)/util/io.cpp \
 			$(UVD_DIR)/util/benchmark.cpp \
 			$(UVD_DIR)/util/config_section.cpp \
+			$(UVD_DIR)/util/curses.cpp \
 			$(UVD_DIR)/util/debug.cpp \
 			$(UVD_DIR)/util/error.cpp \
 			$(UVD_DIR)/util/log.cpp \

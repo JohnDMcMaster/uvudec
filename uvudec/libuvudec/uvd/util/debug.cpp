@@ -6,6 +6,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/config/arg_util.h"
 #include "uvd/config/config.h"
+#include "uvd/util/curses.h"
 #include "uvd/util/debug.h"
 #include "uvd/util/log.h"
 #include "uvd/util/util.h"
@@ -250,28 +251,10 @@ void UVDPrintfError(const char *format, ...)
 
 }
 
-#define CURSE_RED		"\x1b[0;31m"
-#define CURSE_END		"\x1b[0;39m"
-
 void UVDPrintfErrorV(const char *format, va_list ap)
 {
-	std::string curseStartStr;
-	std::string curseEndStr;
-
-	if( g_config ) {
-		if( g_config->m_suppressErrors )
-		{
-			return;
-		}
-		if( g_config->m_curse && isatty(fileno(stdout)) )
-		{
-			curseStartStr = CURSE_RED;
-			curseEndStr = CURSE_END;
-		}
-	}
-	
-	fflush(stdout);
-	fprintf(stdout, "%sERROR%s: ", curseStartStr.c_str(), curseEndStr.c_str() );
+	//fflush(stdout);
+	fprintf(stdout, "%s: ", UVDCurse("ERROR", UVD_CURSE_RED).c_str() );
 	vfprintf(stdout, format, ap);
 	fflush(stdout);
 }
