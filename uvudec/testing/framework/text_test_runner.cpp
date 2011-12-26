@@ -9,6 +9,7 @@
 #include <cppunit/portability/Stream.h>
 #include <stdexcept>
 #include "testing/framework/text_test_runner.h"
+#include "testing/framework/text_outputter.h"
 
 
 
@@ -16,12 +17,14 @@
  * \param outputter used to print text result. Owned by the runner.
  */
 UVTextTestRunner::UVTextTestRunner( CPPUNIT_NS::Outputter *outputter ) 
-    : m_result( new CppUnit::TestResultCollector() )
+    : m_result( new UVTestResultCollector() )
     , m_eventManager( new CppUnit::TestResult() )
     , m_outputter( outputter )
 {
-  if ( !m_outputter )
-    m_outputter = new CppUnit::TextOutputter( m_result, CPPUNIT_NS::stdCOut() );
+  if ( !m_outputter ) {
+    m_outputter = new UVTextOutputter( m_result, CPPUNIT_NS::stdCOut() );
+    //throw std::string("FIXME");
+  }
   m_eventManager->addListener( m_result );
 }
 
@@ -97,7 +100,7 @@ UVTextTestRunner::printResult( bool doPrintResult )
 /*! Returns the result of the test run.
  * Use this after calling run() to access the result of the test run.
  */
-CPPUNIT_NS::TestResultCollector &
+UVTestResultCollector &
 UVTextTestRunner::result() const
 {
   return *m_result;

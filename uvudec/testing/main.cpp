@@ -10,6 +10,7 @@ Unit test
 //http://www.evocomp.de/tutorials/tutorium_cppunit/howto_tutorial_cppunit_en.html
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
+#include <cppunit/TextOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/TestResult.h>
 #include <cppunit/TestResultCollector.h>
@@ -19,16 +20,20 @@ Unit test
 #include <stdint.h>
 #include <stdio.h>
 #include "testing/assembly.h"
+#include "testing/block.h"
 #include "testing/flirtutil.h"
 #include "testing/libuvudec.h"
 #include "testing/main.h"
 #include "testing/obj2pat.h"
+#include "testing/progress_listener.h"
 #include "testing/uvdobjgb.h"
 #include "testing/uvudec.h"
 #include "uvd/config/arg.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
 #include "uvd/util/benchmark.h"
+#include "testing/framework/text_test_runner.h"
+#include "testing/framework/text_outputter.h"
 
 std::vector<std::string> g_extraArgs;
 UVDArgRegistry g_argRegistry;
@@ -43,6 +48,7 @@ static uv_err_t initArgs()
 {
 	g_fixtureNameMap["assembly"] = UVDAssemblyUnitTest::suite();
 	//g_fixtureNameMap["bin2obj" = UVDBin2objTestFixture::suite();
+	g_fixtureNameMap["block"] = BlockFixture::suite();
 	g_fixtureNameMap["flirtutil"] = UVDFlirtutilFixture::suite();
 	g_fixtureNameMap["libuvudec"] = UVDLibuvudecUnitTest::suite();
 	g_fixtureNameMap["obj2pat"] = UVDObj2patUnitTest::suite();
@@ -131,6 +137,13 @@ static uv_err_t argParser(const UVDArgConfig *argConfig, std::vector<std::string
 	return UV_ERR_OK;
 }
 
+
+
+
+
+
+
+
 int main(int argc, char **argv)
 {
 	int parsed_argc = 0;
@@ -172,8 +185,10 @@ int main(int argc, char **argv)
 
 	if( true )
 	{
-		CPPUNIT_NS::TextUi::TestRunner textUiTestRunner;
-		CPPUNIT_NS::BriefTestProgressListener progress;
+		//CPPUNIT_NS::TextUi::TestRunner textUiTestRunner;
+		UVTextTestRunner textUiTestRunner;
+		//CPPUNIT_NS::BriefTestProgressListener progress;
+		UVTestProgressListener progress;
 
 		//Run all if none specified
 		if( g_tests.empty() )
@@ -222,8 +237,10 @@ int main(int argc, char **argv)
 
 		// Change the default outputter to a compiler error format outputter 
 		// uncomment the following line if you need a compiler outputter.
-		textUiTestRunner.setOutputter(new CPPUNIT_NS::CompilerOutputter(&textUiTestRunner.result(),
-				std::cout));
+		//textUiTestRunner.setOutputter(new CPPUNIT_NS::CompilerOutputter(&textUiTestRunner.result(), std::cout));
+		textUiTestRunner.setOutputter(new UVTextOutputter( &textUiTestRunner.result(), std::cout ));
+		
+		
 		textUiTestRunner.eventManager().addListener(&progress);
 
 		// Change the default outputter to a xml error format outputter 
@@ -232,8 +249,9 @@ int main(int argc, char **argv)
 		//                                                    std::cerr ) );
 
 		/// Run the tests.
-		wasSuccessful = textUiTestRunner.run();
+		wasSuccessful = textUiTestRunner.run("", false, true, false);
 	}
+#if 0
 	else
 	{
 		//insert test-suite at test-runner by registry
@@ -258,6 +276,7 @@ int main(int argc, char **argv)
 
 		wasSuccessful = collectedresults.wasSuccessful();
 	}
+#endif
 
 	benchmark.stop();
 	printf("main: done after %s, wasSuccessful: %d\n", benchmark.toString().c_str(), wasSuccessful);	

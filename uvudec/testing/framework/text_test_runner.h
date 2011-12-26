@@ -1,11 +1,12 @@
-#ifndef CPPUNIT_UI_TEXT_TEXTTESTRUNNER_H
-#define CPPUNIT_UI_TEXT_TEXTTESTRUNNER_H
+#ifndef UVCPPUNIT_UI_TEXT_TEXTTESTRUNNER_H
+#define UVCPPUNIT_UI_TEXT_TEXTTESTRUNNER_H
 
 
 #include <cppunit/Portability.h>
 #include <string>
 #include <cppunit/TestRunner.h>
 #include <cppunit/Outputter.h>
+#include "testing/framework/test_result_collector.h"
 
 
 /*!
@@ -64,7 +65,7 @@ public:
 
   void setOutputter( CPPUNIT_NS::Outputter *outputter );
 
-  CPPUNIT_NS::TestResultCollector &result() const;
+  UVTestResultCollector &result() const;
 
   CPPUNIT_NS::TestResult &eventManager() const;
 
@@ -76,7 +77,7 @@ protected:
   virtual void wait( bool doWait );
   virtual void printResult( bool doPrintResult );
 
-  CppUnit::TestResultCollector *m_result;
+  UVTestResultCollector *m_result;
   CppUnit::TestResult *m_eventManager;
   CppUnit::Outputter *m_outputter;
 };
