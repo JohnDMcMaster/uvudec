@@ -48,6 +48,11 @@ static void uvd_signal_handler(int sig)
 	//Yes, the stack is still intact
 	UVD_PRINT_STACK();
 	//exit() is not a "safe" function.  See man signal
+	
+	uvd_signal_handler_exit();
+}
+
+void uvd_signal_handler_exit() {
 	_exit(1);
 }
 

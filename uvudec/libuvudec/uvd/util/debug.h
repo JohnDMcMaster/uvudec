@@ -181,5 +181,14 @@ void uvd_print_trace(const char *file, int line, const char *function);
 #define UVD_POKE_THIS() UVDPoke((uint8_t *)this, sizeof(void *));
 void UVDPoke(uint8_t *in, size_t size);
 
+/*
+Exposed for internal unit test use
+Reccomended not to use this
+
+Allows overriding the exit function so we can still dump stack info but not actually exit at the end
+Instead we defer so that we can pass up the signal information
+*/
+void UVDSignalHandlerExit();
+
 #endif /* ifndef UV_DEBUG_H */
 

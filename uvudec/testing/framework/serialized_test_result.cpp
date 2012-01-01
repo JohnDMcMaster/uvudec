@@ -16,7 +16,12 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "testing/framework/serialized_test_result.h"
 
+static std::string SafeStr(const char *in, size_t inSize);
 
+std::string SafeStr(const char *in, size_t inSize) {
+	//Calling the copyish constructor chops off everything after the null
+	return std::string(std::string(in, inSize).c_str());
+}
 
 #if 0
 typedef struct {
@@ -80,8 +85,14 @@ void SerializedTestListener::startTest( Test * test ) {
 }
 
 void SerializedTestListener::addFailure( const TestFailure & failure ) {
+	Exception *e = NULL;
+	
 	++m_result.testsFailed;
 	m_result.isError = failure.isError();
+	e = failure.thrownException();
+	if (e) {
+		serializeException(*e);
+	}
 }
 
 //Returns the actual number of bytes written upon success
@@ -98,6 +109,16 @@ size_t SerializedTestListener::serialize(void *buff, size_t bufferSize) {
 	
 	memcpy(buff, &m_result, s);
 	return s;
+}
+
+Message SerializedTestListener::message() const {
+	//return Message();
+	return deserializeMessage(&m_result.exception.message);
+}
+
+SourceLine SerializedTestListener::sourceLine() const {
+	//return SourceLine();
+	return deserializeSourceLine(&m_result.exception.sourceLine);
 }
 
 //Take the results in this object (failures etc) and make corresponding calls to given object
@@ -129,17 +150,71 @@ void SerializedTestListener::augmentResult(TestResult *result, Test *test) {
 			/*
 			NOTE:
 			TestFailure::~TestFailure()
-			{ 
 			  delete m_thrownException; 
+			{ 
 			}
 			*/
-			Exception *e = new Exception();
+			Exception *e = new Exception(message(), sourceLine());
 			//TestFailure failure(test, &e, r->isError);
 			//result->addFailure( failure );
 			result->addFailure( test, e );
 		}
   		result->endTest( test );
 	}
+}
+
+void SerializedTestListener::serializeMessage(const Message &message, SerializedMessage_t *out) {
+	//Be extra careful passing data
+	memset(out, 0, sizeof(*out));
+	
+	strncpy(out->shortMessage, message.shortDescription().c_str(), sizeof(out->shortMessage));
+	out->details = message.detailCount();
+	if (message.detailCount() > MAX_DETAILS) {
+		throw std::exception();
+	}
+	for (int i = 0; i < message.detailCount(); ++i) {
+		strncpy(out->detail[i], message.detailAt(i).c_str(), sizeof(out->detail[i]));
+	}
+}
+
+Message SerializedTestListener::deserializeMessage(const SerializedMessage_t *message) {
+	Message ret;
+	
+	std::string shortMessage;
+	shortMessage = SafeStr(message->shortMessage, sizeof(message->shortMessage));
+	//printf("shortMessage: \"%s\", %d details\n", shortMessage.c_str(), message->details);
+	ret.setShortDescription(shortMessage);
+	if (message->details > MAX_DETAILS) {
+		throw std::exception();
+	}
+	for (unsigned int i = 0; i < message->details; ++i) {
+		std::string detail = SafeStr(message->detail[i], sizeof(message->detail[i]));
+		//printf("detail[%d] = %s\n", i, detail.c_str());
+		ret.addDetail(detail);
+	}
+	return ret;
+}
+
+void SerializedTestListener::serializeSourceLine(const SourceLine &line, SerializedSourceLine_t *out) {
+	//printf("Serializing source line %s:%d\n", line.fileName().c_str(), line.lineNumber());
+	//Be extra careful passing data
+	memset(out, 0, sizeof(*out));
+	
+	//Note that isValid() is determined by file name being empty
+	//We could pass it around for extra safety
+	strncpy(out->fileName, line.fileName().c_str(), sizeof(out->fileName));
+	out->lineNumber = line.lineNumber();
+}
+
+SourceLine SerializedTestListener::deserializeSourceLine(const SerializedSourceLine_t *sourceLine) {
+	std::string fileName = SafeStr(sourceLine->fileName, sizeof(sourceLine->fileName));
+	//printf("Deserialized to \"%s\":%d\n", fileName.c_str(), sourceLine->lineNumber);
+	return SourceLine(fileName, sourceLine->lineNumber);	
+}
+
+void SerializedTestListener::serializeException(const Exception &exception) {
+	serializeMessage(exception.message(), &m_result.exception.message);
+	serializeSourceLine(exception.sourceLine(), &m_result.exception.sourceLine);
 }
 
 SerializedTestListener *SerializedTestListener::deserialize(const void *buff, size_t bufferSize) {

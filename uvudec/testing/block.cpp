@@ -104,6 +104,8 @@ void BlockFixture::addRemoveTest(void) {
 }
 
 void BlockFixture::findTest(void) {
+	*(int *)(NULL) = 343;
+
 	DO();
 	
 	UVDBlockGroup bg;
