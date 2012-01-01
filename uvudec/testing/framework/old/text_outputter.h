@@ -13,7 +13,7 @@ class UVTestResultCollector;
 class UVTextOutputter : public CppUnit::Outputter
 {
 public:
-  UVTextOutputter( UVTestResultCollector *result,
+  UVTextOutputter( TestResultCollector *result,
                  CppUnit::OStream &stream );
 
   /// Destructor.
@@ -34,7 +34,7 @@ public:
   virtual void printStatistics();
 
 protected:
-  UVTestResultCollector *m_result;
+  TestResultCollector *m_result;
   CppUnit::OStream &m_stream;
 
 private:

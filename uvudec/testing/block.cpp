@@ -14,11 +14,14 @@ I march for Macragge, and I know no fear!
 */
 
 #include "block.h"
+#include "uvd/util/debug.h"
 
+CPPUNIT_TEST_SUITE_REGISTRATION(BlockFixture);
 
 static bool g_bool = true;
-#define DO() CPPUNIT_ASSERT(g_bool); g_bool = false; return
+//#define DO() CPPUNIT_ASSERT(g_bool); g_bool = false; return
 //#define DO() CPPUNIT_ASSERT(g_bool); return
+#define DO() (void)g_bool;
 
 /*
 If we register a notifier it should tell us after something is added or removed
@@ -45,6 +48,30 @@ void clearNotifications(void) {
 
 
 void BlockFixture::setUp(void) {
+	/*
+	(gdb) info stack
+	#0  BlockFixture::setUp (this=0x808a740) at ../testing/block.cpp:48
+	#1  0x0806790a in CppUnit::TestCaller<BlockFixture>::setUp (this=0x808a7e8) at /usr/include/cppunit/TestCaller.h:177
+	#2  0x01122fd9 in CppUnit::TestCaseMethodFunctor::operator() (this=0xbfffe32c) at TestCase.cpp:32
+	#3  0x01115b79 in CppUnit::DefaultProtector::protect (this=0x808cb28, functor=..., context=...) at DefaultProtector.cpp:15
+	#4  0x0111f3e4 in CppUnit::ProtectorChain::ProtectFunctor::operator() (this=0x808dc18) at ProtectorChain.cpp:20
+	#5  0x0111eeaa in CppUnit::ProtectorChain::protect (this=0x808acd0, functor=..., context=...) at ProtectorChain.cpp:77
+	#6  0x0112a6b8 in CppUnit::TestResult::protect (this=0x808d0b8, functor=..., test=0x808a7e8, shortDescription="setUp() failed") at TestResult.cpp:178
+	#7  0x01122ce6 in CppUnit::TestCase::run (this=0x808a7e8, result=0x808d0b8) at TestCase.cpp:87
+	#8  0x01123586 in CppUnit::TestComposite::doRunChildTests (this=0x808a5a8, controller=0x808d0b8) at TestComposite.cpp:64
+	#9  0x0112349b in CppUnit::TestComposite::run (this=0x808a5a8, result=0x808d0b8) at TestComposite.cpp:23
+	#10 0x0112cb3c in CppUnit::TestRunner::WrappingSuite::run (this=0x808d0a0, result=0x808d0b8) at TestRunner.cpp:47
+	#11 0x08054c14 in UVTestResult::runTest (this=0x808d0b8, test=0x808d0a0) at ../testing/framework/test_result.cpp:257
+	#12 0x0112c952 in CppUnit::TestRunner::run (this=0xbfffe508, controller=..., testPath="") at TestRunner.cpp:96
+	#13 0x08052198 in UVTextTestRunner::run (this=0xbfffe508, controller=..., testPath="") at ../testing/framework/text_test_runner.cpp:147
+	#14 0x08051fdb in UVTextTestRunner::run (this=0xbfffe508, testName="", doWait=false, doPrintResult=true, doPrintProgress=false)
+		at ../testing/framework/text_test_runner.cpp:68
+	#15 0x08060e28 in main (argc=3, argv=0xbfffe644) at ../testing/main.cpp:252
+	*/
+	printf("\nBlockFixture::setUp()\n");
+	//UVD_PRINT_STACK();
+	printf("\n");
+
 	CPPUNIT_ASSERT(configInit() == UV_ERR_OK);
 	
 	m_block = UVDBasicBlock(UVDAddressRange(0, 16, &m_space));
@@ -52,6 +79,9 @@ void BlockFixture::setUp(void) {
 }
 
 void BlockFixture::tearDown(void) {
+	printf("\nBlockFixture::tearDown()\n");
+	//UVD_PRINT_STACK();
+	printf("\n");
 }
 
 void BlockFixture::addRemoveTest(void) {
@@ -160,7 +190,10 @@ void BlockFixture::findTest(void) {
 }
 
 void BlockFixture::notifyTest(void) {
+	printf("before assertion\n");
+	CPPUNIT_ASSERT(false);
 	DO();
+	printf("past assertion\n");
 	
 	
 	UVDBlockGroup bg;

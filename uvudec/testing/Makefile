@@ -8,12 +8,18 @@ EXE_NAME=$(TESTING_EXE)
 
 CC_SRCS =   \
 
-CXX_SRCS = 	\
-			$(TESTING_DIR)/framework/progress_listener.cpp \
+XXX = \
 			$(TESTING_DIR)/framework/text_outputter.cpp \
 			$(TESTING_DIR)/framework/text_test_runner.cpp \
+			$(TESTING_DIR)/framework/test.cpp \
 			$(TESTING_DIR)/framework/test_result_collector.cpp \
 			$(TESTING_DIR)/framework/test_result.cpp \
+
+
+CXX_SRCS = 	\
+			$(TESTING_DIR)/framework/progress_listener.cpp \
+			$(TESTING_DIR)/serialized_test_result.cpp \
+			$(TESTING_DIR)/test_caller.cpp \
 			$(TESTING_DIR)/assembly.cpp \
 			$(TESTING_DIR)/block.cpp \
 			$(TESTING_DIR)/common_fixture.cpp \

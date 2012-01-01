@@ -1,6 +1,6 @@
 #include <cppunit/TestFailure.h>
 #include "testing/framework/test_result_collector.h"
-
+#include <stdio.h>
 
 
 UVTestResultCollector::UVTestResultCollector( SynchronizationObject *syncObject )
@@ -41,6 +41,7 @@ UVTestResultCollector::reset()
 void 
 UVTestResultCollector::startTest( CppUnit::Test *test )
 {
+printf("Starting test %p\n", test);
   ExclusiveZone zone (m_syncObject); 
   m_tests.push_back( test );
 }
@@ -49,6 +50,7 @@ UVTestResultCollector::startTest( CppUnit::Test *test )
 void 
 UVTestResultCollector::addFailure( const CppUnit::TestFailure &failure )
 {
+printf("test result collector: add failure\n");
   CppUnit::TestSuccessListener::addFailure( failure );
 
   ExclusiveZone zone( m_syncObject ); 
@@ -62,6 +64,7 @@ UVTestResultCollector::addFailure( const CppUnit::TestFailure &failure )
 int 
 UVTestResultCollector::runTests() const
 { 
+printf("test result collector: run tests: %d\n", m_tests.size());
   ExclusiveZone zone( m_syncObject ); 
   return m_tests.size(); 
 }
@@ -71,6 +74,7 @@ UVTestResultCollector::runTests() const
 int 
 UVTestResultCollector::testErrors() const
 { 
+printf("test result collector: test errors\n");
   ExclusiveZone zone( m_syncObject );
   return m_testErrors;
 }
@@ -80,6 +84,7 @@ UVTestResultCollector::testErrors() const
 int 
 UVTestResultCollector::testFailures() const
 { 
+printf("test result collector: test failures\n");
   ExclusiveZone zone( m_syncObject ); 
   return m_failures.size() - m_testErrors;
 }
@@ -89,6 +94,7 @@ UVTestResultCollector::testFailures() const
 int 
 UVTestResultCollector::testFailuresTotal() const
 {
+printf("test result collector: test failures total\n");
   ExclusiveZone zone( m_syncObject ); 
   return m_failures.size();
 }
@@ -98,6 +104,7 @@ UVTestResultCollector::testFailuresTotal() const
 const UVTestResultCollector::TestFailures & 
 UVTestResultCollector::failures() const
 { 
+printf("test result collector: failures()\n");
   ExclusiveZone zone( m_syncObject );
   return m_failures; 
 }
@@ -106,6 +113,7 @@ UVTestResultCollector::failures() const
 const UVTestResultCollector::Tests &
 UVTestResultCollector::tests() const
 {
+printf("test result collector: tests()\n");
   ExclusiveZone zone( m_syncObject );
   return m_tests;
 }

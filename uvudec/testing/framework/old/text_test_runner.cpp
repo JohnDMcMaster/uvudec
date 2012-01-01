@@ -10,7 +10,8 @@
 #include <stdexcept>
 #include "testing/framework/text_test_runner.h"
 #include "testing/framework/text_outputter.h"
-
+#include "testing/framework/test_result.h"
+#include <stdio.h>
 
 
 /*! Constructs a new text runner.
@@ -18,12 +19,11 @@
  */
 UVTextTestRunner::UVTextTestRunner( CPPUNIT_NS::Outputter *outputter ) 
     : m_result( new UVTestResultCollector() )
-    , m_eventManager( new CppUnit::TestResult() )
+    , m_eventManager( new UVTestResult() )
     , m_outputter( outputter )
 {
   if ( !m_outputter ) {
     m_outputter = new UVTextOutputter( m_result, CPPUNIT_NS::stdCOut() );
-    //throw std::string("FIXME");
   }
   m_eventManager->addListener( m_result );
 }
@@ -57,16 +57,21 @@ UVTextTestRunner::run( std::string testName,
                        bool doPrintResult,
                        bool doPrintProgress )
 {
+printf("high level run\n");
   CppUnit::TextTestProgressListener progress;
+printf("check print progress add\n");
   if ( doPrintProgress )
     m_eventManager->addListener( &progress );
 
   CppUnit::TestRunner *pThis = this;
+printf("passing to lower level run\n");
   pThis->run( *m_eventManager, testName );
 
+printf("check print progress remove\n");
   if ( doPrintProgress )
     m_eventManager->removeListener( &progress );
 
+printf("printing result\n");
   printResult( doPrintResult );
   wait( doWait );
 
@@ -138,7 +143,9 @@ void
 UVTextTestRunner::run( CPPUNIT_NS::TestResult &controller,
                      const std::string &testPath )
 {
+printf("UVTextTestRunner::run(0x%p)\n", &controller);
   CppUnit::TestRunner::run( controller, testPath );
+printf("UVTextTestRunner::run() done\n");
 }
 
 

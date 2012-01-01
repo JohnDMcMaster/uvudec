@@ -4,7 +4,7 @@ Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "testing/progress_listener.h"
+#include "testing/framework/progress_listener.h"
 #include "uvd/util/curses.h"
 #include "uvd/util/util.h"
 #include <stdio.h>

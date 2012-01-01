@@ -25,7 +25,7 @@ Unit test
 #include "testing/libuvudec.h"
 #include "testing/main.h"
 #include "testing/obj2pat.h"
-#include "testing/progress_listener.h"
+#include "testing/framework/progress_listener.h"
 #include "testing/uvdobjgb.h"
 #include "testing/uvudec.h"
 #include "uvd/config/arg.h"
@@ -185,8 +185,8 @@ int main(int argc, char **argv)
 
 	if( true )
 	{
-		//CPPUNIT_NS::TextUi::TestRunner textUiTestRunner;
-		UVTextTestRunner textUiTestRunner;
+		CPPUNIT_NS::TextUi::TestRunner textUiTestRunner;
+		//UVTextTestRunner textUiTestRunner;
 		//CPPUNIT_NS::BriefTestProgressListener progress;
 		UVTestProgressListener progress;
 
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
 		// Change the default outputter to a compiler error format outputter 
 		// uncomment the following line if you need a compiler outputter.
 		//textUiTestRunner.setOutputter(new CPPUNIT_NS::CompilerOutputter(&textUiTestRunner.result(), std::cout));
-		textUiTestRunner.setOutputter(new UVTextOutputter( &textUiTestRunner.result(), std::cout ));
+		textUiTestRunner.setOutputter(new TextOutputter( &textUiTestRunner.result(), std::cout ));
 		
 		
 		textUiTestRunner.eventManager().addListener(&progress);

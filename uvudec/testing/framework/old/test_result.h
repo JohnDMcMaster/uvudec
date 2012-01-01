@@ -100,9 +100,10 @@ protected:
   virtual void endTestRun( CppUnit::Test *test );
   
 protected:
-  typedef CppUnitDeque<CppUnit::TestListener *> TestListeners;
-  TestListeners m_listeners;
   bool m_stop;
+  
+  int m_parentPid;
+  int m_ourPid;
 
 private: 
   UVTestResult( const UVTestResult &other );

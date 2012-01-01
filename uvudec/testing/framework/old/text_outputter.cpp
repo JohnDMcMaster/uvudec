@@ -4,9 +4,9 @@
 #include <cppunit/TestResultCollector.h>
 #include "testing/framework/text_outputter.h"
 #include "testing/framework/test_result_collector.h"
+#include <stdio.h>
 
-
-UVTextOutputter::UVTextOutputter( UVTestResultCollector *result,
+UVTextOutputter::UVTextOutputter( TestResultCollector *result,
                               CppUnit::OStream &stream )
     : m_result( result )
     , m_stream( stream )
@@ -32,7 +32,7 @@ UVTextOutputter::write()
 void 
 UVTextOutputter::printFailures()
 {
-  UVTestResultCollector::TestFailures::const_iterator itFailure = m_result->failures().begin();
+  TestResultCollector::TestFailures::const_iterator itFailure = m_result->failures().begin();
   int failureNumber = 1;
   while ( itFailure != m_result->failures().end() ) 
   {
@@ -125,6 +125,7 @@ UVTextOutputter::printFailureWarning()
 void 
 UVTextOutputter::printStatistics()
 {
+printf("print stat\n");
   m_stream  << "Test Results:\n";
 
   m_stream  <<  "Run:  "  <<  m_result->runTests()

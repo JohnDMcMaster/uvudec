@@ -97,6 +97,10 @@ Utility functions
 
 void UVDTestingCommonFixture::libraryInit()
 {
+	g_config = NULL;
+	
+	
+	
 	CPPUNIT_ASSERT(g_config == NULL);
 	CPPUNIT_ASSERT(g_uvd == NULL);
 	CPPUNIT_ASSERT(m_config == NULL);
