@@ -126,7 +126,7 @@ class UVDStringEngine;
 class UVDBinaryFunctionInstance;
 class UVD;
 class UVDInstruction;
-class UVDAnalyzedBlock;
+//class UVDAnalyzedBlock;
 //Holds data that resulted from binary analysis or advanced hints from user
 class UVDAnalyzer
 {
@@ -171,7 +171,7 @@ public:
 
 public:
 	//Superblock for block representation of program
-	UVDAnalyzedBlock *m_block;
+	//UVDAnalyzedBlock *m_block;
 
 	//Keeps track of jumped to and called addresses
 	UVDAnalyzedMemorySpace m_referencedAddresses;

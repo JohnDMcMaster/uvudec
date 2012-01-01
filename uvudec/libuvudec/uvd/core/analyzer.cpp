@@ -169,7 +169,7 @@ uv_err_t UVDAnalyzedFunction::deinit()
 
 UVDAnalyzer::UVDAnalyzer()
 {
-	m_block = NULL;
+	//m_block = NULL;
 	m_uvd = NULL;
 	//m_symbolManager = NULL;
 	m_symbolManager.m_analyzer = this;
@@ -193,8 +193,8 @@ uv_err_t UVDAnalyzer::init(UVD *uvd)
 
 uv_err_t UVDAnalyzer::deinit()
 {
-	delete m_block;
-	m_block = NULL;
+	//delete m_block;
+	//m_block = NULL;
 
 	for( std::set<UVDBinaryFunction *>::iterator iter = m_functions.begin(); iter != m_functions.end(); ++iter )
 	{

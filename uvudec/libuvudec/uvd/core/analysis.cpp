@@ -22,202 +22,6 @@ int g_filterPostRet;
 
 int g_analyzeOtherFunctionJump;
 
-static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &space, UVDAnalyzedMemoryRanges::iterator &iter, uint32_t types, bool curAddressLegal = false);
-
-static uv_err_t nextReferencedAddress(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &space, UVDAnalyzedMemoryRanges::iterator &iter, uint32_t types, bool curAddressLegal)
-{
-	uv_addr_t superblockMaxAddress = 0;
-	uv_addr_t absoluteMaxAddress = 0;
-	
-	uv_assert_err_ret(superblock->m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
-
-	uv_assert_ret(superblock);
-	uv_assert_err_ret(superblock->getMaxAddress(&superblockMaxAddress));
-	
-	if( iter != space.end() && !curAddressLegal )
-	{
-		++iter;
-	}
-
-	for( ; iter != space.end(); ++iter )
-	{
-		UVDAnalyzedMemoryRange *referencedMemory = *iter;
-
-		uv_assert_ret(referencedMemory);
-
-		printf_debug("nextReferencedAddress() item @ 0x%.8X\n", referencedMemory->m_min_addr);
-
-		//Nothing precedes program start, skip block (although this would be odd for all architectures I know of)
-		if( referencedMemory->m_min_addr == 0 )
-		{
-			//Assume unknown location for now
-			printf_debug("Min address zero (unknown memory location?)\n");
-			continue;
-		}
-
-		//Stop once locations are too high
-		if( referencedMemory->m_min_addr > superblockMaxAddress )
-		{
-			printf_debug("Limit reached: referencedMemory->m_min_addr (0x%.8X) > superblockMaxAddress (0x%.8X)\n", referencedMemory->m_min_addr, superblockMaxAddress);
-			iter = space.end();
-			break;
-		}
-		if( referencedMemory->m_min_addr > absoluteMaxAddress )
-		{
-			printf_debug("Limit reached: referencedMemory->m_min_addr (0x%.8X) > absoluteMaxAddress (0x%.8X)\n", referencedMemory->m_min_addr, absoluteMaxAddress);
-			iter = space.end();
-			break;
-		}
-		/*
-		//Should only happen if we enacted partial anlysis
-		//This is still valid
-		if( referencedMemory->m_max_addr > superblockMaxAddress )
-		{
-			printf_debug("Limit reached: referencedMemory->m_max_addr (0x%.8X) > superblockMaxAddress (0x%.8X)\n", referencedMemory->m_max_addr, superblockMaxAddress);
-			iter = space.end();
-			break;
-		}
-		*/
-		
-		uint32_t memTypes = referencedMemory->getReferenceTypes();
-		printf_debug("item type: 0x%.8X, wanted; 0x%.8X\n", memTypes, types);
-		//Have we hit our type yet?
-		if( (memTypes & types) == types )
-		{
-			break;
-		}
-	}
-	return UV_ERR_OK;
-}
-
-uv_err_t UVD::constructFunctionBlocks(UVDAnalyzedBlock *superblock)
-{
-	uv_err_t rc = UV_ERR_GENERAL;
-	//Need sorted list, convert from map stuff
-	//UVDAnalyzedMemoryRanges calledLocations;
-	uint32_t superblockMinAddress = 0;
-	uint32_t superblockMaxAddress = 0;
-	UVDAnalyzedMemoryRanges jumpedLocations;
-	UVDAnalyzedBlock *functionBlock = NULL;
-	
-	//Addresses that are (directly?) referened in some way
-	UVDAnalyzedMemoryRanges referencedAddresses;
-	UVDAnalyzedMemoryRanges::iterator iterAddresses;
-	UVDAnalyzedMemoryRanges::iterator iterJumped;
-	//UVDAnalyzedMemorySpace jumpedAddresses;
-	//UVDAnalyzedMemorySpace calledAddresses;
-
-	uv_addr_t absoluteMaxAddress = 0;
-	UVDAddressSpace *space = superblock->m_addressSpace;
-	
-	uv_assert_ret(m_config);
-	uv_assert_ret(space);
-
-	uv_assert_err_ret(superblock->m_addressSpace->getMaxValidAddress(&absoluteMaxAddress));
-
-	printf_debug("\n");
-	printf_debug("\n");
-	
-	uv_assert_ret(m_analyzer);
-
-	uv_assert_ret(superblock);
-	uv_assert_err_ret(superblock->getMinAddress(&superblockMinAddress));
-	uv_assert_err_ret(superblock->getMaxAddress(&superblockMaxAddress));
-	printf_debug("Superblock: 0x%.8X : 0x%.8X\n", superblockMinAddress, superblockMaxAddress);
-	
-	printf_debug("Getting addresses\n");
-	uv_assert_err_ret(m_analyzer->getAddresses(referencedAddresses));
-	
-	//uv_assert_err_ret(m_analyzer->getJumpedAddresses(jumpedAddresses));
-	//printf_debug("Jumped addresses: %d\n", jreferencedAddressesumpedAddresses.size());
-	//uv_assert_err(memorySpaceToMemoryLocations(jumpedAddresses, jumpedLocations));
-	iterJumped = referencedAddresses.begin();
-
-	//uv_assert_err_ret(m_analyzer->getCalledAddresses(calledAddresses));
-	//printf_debug("Called addresses: %d\n", calledAddresses.size());
-	//uv_assert_err(memorySpaceToMemoryLocations(calledAddresses, calledLocations));
-
-	/*
-	Seek to find first call entry point
-	Consider all space after each until next (or end of program?) to be part of function
-	Later will need to analyze branching and rets to better understand how functions exist
-	*/
-	
-	iterAddresses = referencedAddresses.begin();
-	printf_debug("Starting func parse, ref address: %d\n", referencedAddresses.size());
-	//Seek for first func start
-	uv_assert_err(nextReferencedAddress(superblock, referencedAddresses, iterAddresses, UVD_MEMORY_REFERENCE_CALL_DEST, true));
-
-	//printf_debug("Starting at end? %d\n", iterAddresses == referencedAddresses.end());
-
-	while( iterAddresses != referencedAddresses.end() )
-	{
-		UVDAnalyzedMemoryRanges::iterator iterNextAddress = iterAddresses;
-		UVDAnalyzedMemoryRange *referencedMemory = *iterAddresses;
-		uint32_t functionBlockStart = 0;
-		uint32_t functionBlockEnd = 0;
-
-		uv_assert_err(nextReferencedAddress(superblock, referencedAddresses, iterNextAddress, UVD_MEMORY_REFERENCE_CALL_DEST));
-
-		uv_assert_ret(referencedMemory);
-		printf_debug("Function address: 0x%.8X:0x%.8X\n", referencedMemory->m_min_addr, referencedMemory->m_max_addr);
-		functionBlockStart = referencedMemory->m_min_addr;
-		//Note: this code sets this so probably isn't reliable yet here
-		functionBlockEnd = referencedMemory->m_max_addr;
-
-		if( iterNextAddress != referencedAddresses.end() )
-		{
-			UVDAnalyzedMemoryRange *nextReferencedMemory = *iterNextAddress;
-			
-			uv_assert_ret(nextReferencedMemory);
-			//Even if overlapping function, min address should always advance
-			uv_assert_ret(nextReferencedMemory->m_min_addr > referencedMemory->m_min_addr);
-			
-			//One before next block
-			functionBlockEnd = nextReferencedMemory->m_min_addr - 1;
-		}
-		else
-		{
-			//Assume rest of file
-			functionBlockEnd = superblockMaxAddress;
-		}
-		
-		//Truncate to end of analyzed region if necessary
-		if( functionBlockEnd > absoluteMaxAddress )
-		{
-			functionBlockEnd = absoluteMaxAddress;
-		}
-		
-		/*
-		Here we are making a very aggressive guess as to what the function consists of
-		We take the maximum possible code
-		It will be trimmed down later if we find we have taken too much
-		Bad data could be a jumped location after our func, ROM data, ISR, function pointer target, w/e
-		*/
-		uv_assert_err_ret(constructBlock(UVDAddressRange(functionBlockStart, functionBlockEnd, space), &functionBlock));
-		uv_assert_ret(functionBlock);
-		superblock->m_blocks.push_back(functionBlock);
-		
-		//Inner/block analysis
-		//uv_assert_err(constructJumpBlocks(functionBlock, referencedAddresses, iterJumped));
-		//Analyze control structures: if, else, (return trimming?), etc
-		uv_assert_err(analyzeBlock(functionBlock));
-	
-		UVDBinaryFunction *function = NULL;
-		uv_assert_err_ret(blockToFunction(functionBlock, &function));
-		//uv_assert_err_ret(analyzeFunction(functionShared));
-		uv_assert_err_ret(m_analyzer->loadFunction(function));
-	
-		iterAddresses = iterNextAddress;
-	}
-	printf_debug_level(UVD_DEBUG_SUMMARY, "found functions: %d\n", m_analyzer->m_functions.size());
-
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
-}
-
 /*
 uv_err_t UVD::analyzeBinaryFunctionCodeShared(UVDBinaryFunctionInstance *binaryFunctionCodeShared)
 {
@@ -267,50 +71,6 @@ uv_err_t UVD::analyzeFunctionRelocatables(UVDBinaryFunctionInstance *binaryFunct
 }
 */
 
-uv_err_t UVD::constructBlocks()
-{
-	uv_err_t rc = UV_ERR_GENERAL;
-	UVDAnalyzedBlock *superblock = NULL;
-	uv_addr_t absoluteMaxAddress = 0;
-	uv_addr_t absoluteMinAddress = 0;
-	UVDAddressSpace *addressSpace = NULL;
-	
-	printf_debug("\n");
-	printf_debug_level(UVD_DEBUG_PASSES, "uvd: block analysis...\n");
-	UVDBenchmark blockAnalysisBenchmark;
-	blockAnalysisBenchmark.start();
-
-	uv_assert_err_ret(m_runtime->getPrimaryExecutableAddressSpace(&addressSpace));
-
-	uv_assert_ret(m_config);
-	uv_assert_err_ret(addressSpace->getMinValidAddress(&absoluteMinAddress));
-	uv_assert_err_ret(addressSpace->getMaxValidAddress(&absoluteMaxAddress));
-	
-	//Highest level block: entire program
-	uv_assert_err(constructBlock(UVDAddressRange(absoluteMinAddress, absoluteMaxAddress, addressSpace), &superblock));
-	m_analyzer->m_block = superblock;
-
-	//Find functions, add them as sub blocks
-	//Since functions were already pre-processed, we can use that map and don't actually need to iterate
-	//This saves a lot of time since scripting is very slow right now
-	
-	//Functions
-	uv_assert_err(constructFunctionBlocks(superblock));
-	
-	//Map the symbols into blocks/functions
-	uv_assert_err(mapSymbols());	
-
-	printf_debug("\n");
-
-	blockAnalysisBenchmark.stop();
-	printf_debug_level(UVD_DEBUG_PASSES, "block analysis time: %s\n", blockAnalysisBenchmark.toString().c_str());
-
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
-}
-
 uv_err_t UVD::mapSymbols()
 {
 	/*
@@ -321,14 +81,6 @@ uv_err_t UVD::mapSymbols()
 	uv_assert_err_ret(m_analyzer->mapSymbols());
 	
 	return UV_ERR_OK;
-}
-
-uv_err_t UVD::analyzeBlock(UVDAnalyzedBlock *block)
-{
-	uv_err_t rc = UV_ERR_OK;
-	
-//error:
-	return UV_DEBUG(rc);
 }
 
 uv_err_t UVD::analyzeControlFlow()
@@ -358,6 +110,12 @@ uv_err_t UVD::analyzeControlFlow()
 
 uv_err_t UVD::analyzeControlFlowLinear()
 {
+	/*
+	Linear flow anlaysis constructs functions in a greedy manner:
+	A function is defined as all of the code between one function entry and the next function entry
+	Each time a function is found we will add it and it will take up the remaining data, spliting as necessary
+	*/
+	
 	UVDInstructionIterator iter;
 	UVDInstructionIterator iterEnd;
 	//uint32_t printPercentage = 1;
@@ -366,7 +124,7 @@ uv_err_t UVD::analyzeControlFlowLinear()
 	uv_addr_t startPosition = 0;
 	
 	printf_debug_level(UVD_DEBUG_PASSES, "control flow analysis linear\n");
-
+	
 	//Need at least one start location
 	uv_assert_ret(!m_runtime->m_architecture->m_vectors.empty());
 	//FIXME: take the lowest vector
@@ -400,18 +158,6 @@ uv_err_t UVD::analyzeControlFlowLinear()
 
 		uv_assert_err_ret(iter.get(&instruction));
 		
-		/*
-		if( numberAnalyzedBytes )
-		{
-			uint32_t curPercent = 100 * startPos / numberAnalyzedBytes;
-			if( curPercent >= printNext )
-			{
-				printf_debug_level(UVD_DEBUG_SUMMARY, "uvd: raw control structure analysis: %d %%\n", curPercent);
-				printNext += printPercentage;
-			}
-		}
-		*/
-
 		if( instruction ) {
 			//printf("\n\nAnalysis at: 0x%.8X\n", startPos);		
 			uv_assert_err_ret(instruction->analyzeControlFlow());
@@ -578,9 +324,10 @@ uv_err_t UVD::analyze()
 	uv_assert_err(analyzeConstData());
 	//Then find constrol flow
 	uv_assert_err(analyzeControlFlow());
+	
 	//Now that instructions have undergone basic processing,
 	//turn code into blocks using the control flow
-	uv_assert_err(constructBlocks());
+	//uv_assert_err(constructBlocks());
 	
 	rc = UV_ERR_OK;
 	

@@ -69,6 +69,8 @@ Error codes
 #define UV_ERR_COMPATIBILITY			UV_ERR_DECL_ERR(10)
 //Just not there yet 
 #define UV_ERR_NOTIMPLEMENTED			UV_ERR_DECL_ERR(11)
+//Item already exists and must be unique
+#define UV_ERR_DUPLICATE				UV_ERR_DECL_ERR(12)
 
 /*
 Disassembly codes

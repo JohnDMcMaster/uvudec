@@ -222,19 +222,23 @@ public:
 	//Structure should be pre-set with data before entry
 	uv_err_t analyzeConstData();
 	uv_err_t analyzeStrings();
+	
+	uv_err_t mapSymbols();
+#if 0
 	uv_err_t constructBlock(UVDAddressRange addressRange, UVDAnalyzedBlock **blockOut);
 	uv_err_t constructBlocks();
-	uv_err_t mapSymbols();
 	uv_err_t constructFunctionBlocks(UVDAnalyzedBlock *superblock);
 	uv_err_t constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &superblockLocations, UVDAnalyzedMemoryRanges::iterator &iterSuperblock);
-	uv_err_t analyzeControlFlow();
 	//Analyze control structures: if, else, etc
 	uv_err_t analyzeBlock(UVDAnalyzedBlock *block);
+#endif
+	uv_err_t analyzeControlFlow();
+		
 	//Create output suitible for building analysis database
 	uv_err_t analyze();
 	
 	//Convert a block (should be UVDDataChunk?) suspected to be a function to a skeleton analyzed function structure
-	uv_err_t blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **out);
+	//uv_err_t blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **out);
 	
 	//uv_err_t changeConfig(UVDConfig *config);
 	

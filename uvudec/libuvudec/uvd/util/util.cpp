@@ -501,11 +501,6 @@ static unsigned int hexdumpHalfRow(const uint8_t *data, size_t size, uint32_t st
 	return start + g_bytesPerHalfRow;
 }
 
-void UVDHexdump(const uint8_t *data, size_t size)
-{
-	UVDHexdumpCore(data, size, "");
-}
-
 void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix)
 {
 	/*
@@ -555,6 +550,11 @@ void UVDHexdumpCore(const uint8_t *data, size_t size, const std::string &prefix)
 		fflush(stdout);
 	}
 	fflush(stdout);
+}
+
+void UVDHexdump(const uint8_t *data, size_t size)
+{
+	UVDHexdumpCore(data, size, "");
 }
 
 uv_err_t UVDPrintToStdoutStringCallback(const std::string &s, void *user)

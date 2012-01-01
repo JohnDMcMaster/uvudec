@@ -85,47 +85,6 @@ error:
 }
 #endif
 
-//Second pass used to create for DB storage
-//Block contains analyzed code
-uv_err_t UVD::blockToFunction(UVDAnalyzedBlock *functionBlock, UVDBinaryFunction **functionOut)
-{
-	UVDBinaryFunction *function = NULL;
-	//Since ownership will be xferred to object, we need to map it twice
-	UVDDataChunk *functionBlockDataChunk = NULL;
-
-	uv_assert_ret(functionBlock);
-	uv_assert_ret(functionOut);
-
-	
-	uv_assert_err_ret(functionBlock->getDataChunk(&functionBlockDataChunk));
-	uv_assert_ret(functionBlockDataChunk)
-
-	//Create the single known instance of this function
-	uv_assert_err_ret(UVDBinaryFunction::getUVDBinaryFunctionInstance(&function));
-	uv_assert_ret(function);
-
-	uv_addr_t minAddress = 0;
-	uv_assert_err_ret(functionBlock->getMinAddress(&minAddress));
-	uv_assert_err_ret(function->setSymbolAddress(minAddress));
-	
-	//The true name of the function is unknown
-	//This name is stored as a way to figure out the real name vs the current symbol name 
-	//functionShared->m_name = "";
-	//functionShared->m_description = "Automatically generated";	
-
-	function->m_symbolAddress = UVDRelocatableElement(minAddress);
-	//Only specific instances get symbol designations
-	std::string symbolName;
-	uv_assert_err_ret(m_analyzer->m_symbolManager.analyzedSymbolName(minAddress, UVD__SYMBOL_TYPE__FUNCTION, symbolName));
-	function->setSymbolName(symbolName);
-	
-	//This will perform copy
-	uv_assert_err_ret(function->setData(functionBlockDataChunk));
-
-	*functionOut = function;
-
-	return UV_ERR_OK;
-}
 
 #if 0
 uv_err_t UVD::analyzeCode(UVDAnalyzedCode &analyzedCode)
@@ -138,53 +97,6 @@ uv_err_t UVD::analyzeStrings()
 {
 	uv_assert_ret(m_analyzer->m_stringEngine);
 	return UV_DEBUG(m_analyzer->m_stringEngine->analyze());
-}
-
-uv_err_t UVD::constructBlock(UVDAddressRange addressRange, UVDAnalyzedBlock **blockOut)
-{
-	/*
-	TODO: move this to UVDAnalyzedBlock->init()
-	*/
-	
-	UVDAnalyzedBlock *block = NULL;
-	UVDAnalyzedCode *analyzedCode = NULL;
-	UVDDataChunk *dataChunk = NULL;
-	UVDData *data = NULL;
-	//uint32_t dataSize = 0;
-	
-	uv_assert_ret(addressRange.m_space);
-	data = addressRange.m_space->m_data;
-	uv_addr_t minAddr = addressRange.m_min_addr;
-	uv_addr_t maxAddr = addressRange.m_max_addr;
-	
-	uv_assert_ret(m_config);
-	uv_assert_ret(blockOut);
-	
-	printf_debug("Constructing block 0x%.8X:0x%.8X\n", minAddr, maxAddr);
-	uv_assert_ret(data);
-
-	uv_assert_ret(minAddr <= maxAddr);
-	//uv_assert_ret(maxAddr <= m_config->m_addr_max);
-	//dataSize = maxAddr - minAddr;
-
-	block = new UVDAnalyzedBlock();
-	uv_assert_ret(block);
-	block->m_addressSpace = addressRange.m_space;
-	
-	analyzedCode = new UVDAnalyzedCode();
-	uv_assert_ret(analyzedCode);
-	block->m_code = analyzedCode;
-
-	dataChunk = new UVDDataChunk();
-	uv_assert_ret(dataChunk);
-	uv_assert_ret(data);
-	uv_assert_err_ret(dataChunk->init(data, minAddr, maxAddr));
-	uv_assert_ret(dataChunk->m_data);
-	analyzedCode->m_dataChunk = dataChunk;
-
-	*blockOut = block;
-
-	return UV_ERR_OK;
 }
 
 /*
@@ -235,79 +147,6 @@ error:
 	return UV_DEBUG(rc);
 }
 
-uv_err_t UVD::constructJumpBlocks(UVDAnalyzedBlock *superblock, UVDAnalyzedMemoryRanges &superblockLocations, UVDAnalyzedMemoryRanges::iterator &iterSuperblock)
-{
-	//Commented out because its not being used?  What about labeling?
-	return UV_ERR_OK;
-/*
-	uv_err_t rc = UV_ERR_GENERAL;
-	uint32_t lastSuperblockLocation = 0;
-	uint32_t superblockMinAddress = 0;
-	uint32_t superblockMaxAddress = 0;
-	UVDAnalyzedBlock *jumpedBlock = NULL;
-
-	printf_debug("\n");
-	UV_ENTER();
-
-	uv_assert(superblock);
-
-	uv_assert_err(superblock->getMinAddress(superblockMinAddress));
-	uv_assert_err(superblock->getMaxAddress(superblockMaxAddress));
-	
-	//Skip ahead to where the superblock is
-	while( iterSuperblock != superblockLocations.end() )
-	{
-		UVDAnalyzedMemoryRange *memoryCalled = *iterSuperblock;
-		uv_assert(memoryCalled);
-
-		//Do we have at least func start address?
-		if( memoryCalled->m_min_addr >= superblockMinAddress )
-		{
-			//If so, we are done seeking
-			break;
-		}
-		++iterSuperblock;
-	}
-	//Loop for all called locations in this block
-	for( ; iterSuperblock != superblockLocations.end(); ++iterSuperblock )
-	{
-		UVDAnalyzedMemoryRange *memoryJumped = *iterSuperblock;		
-		uint32_t jumpedBlockEnd = 0;
-		
-		uv_assert(memoryJumped);
-		
-		//Are we past superblock?
-		if( memoryJumped->m_min_addr > superblockMaxAddress )
-		{
-			break;
-		}
-		
-		//Nothing precedes superblock start, skip block
-		if( memoryJumped->m_min_addr == superblockMinAddress )
-		{
-			continue;
-		}
-
-		//Add the block
-		jumpedBlockEnd = memoryJumped->m_min_addr - 1;
-		uv_assert_err(constructBlock(lastSuperblockLocation, jumpedBlockEnd, &jumpedBlock));
-		uv_assert(jumpedBlock);
-		superblock->m_blocks.push_back(jumpedBlock);
-		lastSuperblockLocation = memoryJumped->m_min_addr;
-	}
-	
-	//Finally, end of function block
-	//We want location after last block
-	uv_assert_err(constructBlock(lastSuperblockLocation, superblockMaxAddress, &jumpedBlock));
-	uv_assert(jumpedBlock);
-	superblock->m_blocks.push_back(jumpedBlock);
-	
-	rc = UV_ERR_OK;
-	
-error:
-	return UV_DEBUG(rc);
-*/
-}
 
 
 UVD::UVD()

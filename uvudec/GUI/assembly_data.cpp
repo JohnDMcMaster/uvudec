@@ -58,7 +58,7 @@ UVD *UVDGUIAssemblyData::getUVD()
 	}
 	else
 	{
-		printf("uvd engine inaccessible\n");
+		//printf("uvd engine inaccessible\n");
 		return NULL;
 	}
 }
@@ -78,7 +78,7 @@ UVDAddressSpace *UVDGUIAssemblyData::getAddressSpace()
 			return ret;
 		}
 	}
-	printf("address space inaccessible\n");
+	//printf("address space inaccessible\n");
 	return NULL;
 }
 
