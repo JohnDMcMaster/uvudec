@@ -4,7 +4,7 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
-#include "testing/plugin.h"
+#include "testing/framework/plugin.h"
 #include "uvd/core/uvd.h"
 
 void UVDTestingPluginFixture::setUp(void)

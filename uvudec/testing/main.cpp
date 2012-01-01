@@ -25,15 +25,15 @@ Unit test
 #include "testing/libuvudec.h"
 #include "testing/main.h"
 #include "testing/obj2pat.h"
-#include "testing/framework/progress_listener.h"
 #include "testing/uvdobjgb.h"
 #include "testing/uvudec.h"
 #include "uvd/config/arg.h"
 #include "uvd/config/arg_property.h"
 #include "uvd/config/arg_util.h"
 #include "uvd/util/benchmark.h"
-#include "testing/framework/text_test_runner.h"
-#include "testing/framework/text_outputter.h"
+#include "testing/framework/progress_listener.h"
+//#include "testing/framework/text_test_runner.h"
+//#include "testing/framework/text_outputter.h"
 
 std::vector<std::string> g_extraArgs;
 UVDArgRegistry g_argRegistry;

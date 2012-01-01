@@ -17,12 +17,12 @@ XXX = \
 
 
 CXX_SRCS = 	\
+			$(TESTING_DIR)/framework/common_fixture.cpp \
+			$(TESTING_DIR)/framework/plugin.cpp \
 			$(TESTING_DIR)/framework/progress_listener.cpp \
-			$(TESTING_DIR)/serialized_test_result.cpp \
-			$(TESTING_DIR)/test_caller.cpp \
+			$(TESTING_DIR)/framework/serialized_test_result.cpp \
 			$(TESTING_DIR)/assembly.cpp \
 			$(TESTING_DIR)/block.cpp \
-			$(TESTING_DIR)/common_fixture.cpp \
 			$(TESTING_DIR)/flirt.cpp \
 			$(TESTING_DIR)/flirtutil.cpp \
 			$(TESTING_DIR)/flirtutil_main_hook.cpp \
@@ -33,7 +33,6 @@ CXX_SRCS = 	\
 			$(TESTING_DIR)/obj2pat_main_hook.cpp \
 			$(TESTING_DIR)/pat2sig.cpp \
 			$(TESTING_DIR)/pat2sig_main_hook.cpp \
-			$(TESTING_DIR)/plugin.cpp \
 			$(TESTING_DIR)/uvdobjgb.cpp \
 			$(TESTING_DIR)/uvudec.cpp \
 			$(TESTING_DIR)/uvudec_main_hook.cpp \

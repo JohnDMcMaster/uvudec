@@ -1,3 +1,9 @@
+/*
+UVNet Universal Decompiler (uvudec)
+Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
+*/
+
 #ifndef SERIALIZED_TEST_RESULT_H
 #define SERIALIZED_TEST_RESULT_H
 

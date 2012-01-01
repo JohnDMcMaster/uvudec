@@ -11,6 +11,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <cppunit/extensions/HelperMacros.h>
 #include "uvd/config/config.h"
 #include "uvd/util/types.h"
+#include "testing/framework/helper_macros.h"
 
 #define UVCPPUNIT_ASSERT(x)			CPPUNIT_ASSERT(UV_SUCCEEDED(UV_DEBUG(x)))
 

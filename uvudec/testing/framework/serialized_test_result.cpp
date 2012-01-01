@@ -1,3 +1,9 @@
+/*
+UVNet Universal Decompiler (uvudec)
+Copyright 2011 John McMaster <JohnDMcMaster@gmail.com>
+Licensed under the terms of the LGPL V3 or later, see COPYING for details
+*/
+
 #include <cppunit/Exception.h>
 #include <cppunit/Test.h>
 #include <cppunit/TestFailure.h>
@@ -8,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "testing/serialized_test_result.h"
+#include "testing/framework/serialized_test_result.h"
 
 
 

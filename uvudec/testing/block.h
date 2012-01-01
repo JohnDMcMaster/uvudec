@@ -10,10 +10,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define BTEST UVCPPUNIT_TEST
 //#define BTEST CPPUNIT_TEST
 
-#include "common_fixture.h"
+#include "testing/framework/common_fixture.h"
 #include "uvd/assembly/address.h"
 #include "uvd/core/block.h"
-#include "testing/helper_macros.h"
 
 //class BlockFixture : public CPPUNIT_NS::TestFixture {
 class BlockFixture : public UVDTestingCommonFixture {

@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include "testing/common_fixture.h"
+#include "testing/framework/common_fixture.h"
 
 class UVDBin2objTestFixture : public UVDTestingCommonFixture
 {

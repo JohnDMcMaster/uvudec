@@ -12,7 +12,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h> 
-#include "testing/serialized_test_result.h"
+#include "testing/framework/serialized_test_result.h"
 
 using namespace CppUnit;
 
