@@ -49,10 +49,6 @@ static void uvd_signal_handler(int sig)
 	UVD_PRINT_STACK();
 	//exit() is not a "safe" function.  See man signal
 	
-	uvd_signal_handler_exit();
-}
-
-void uvd_signal_handler_exit() {
 	_exit(1);
 }
 
