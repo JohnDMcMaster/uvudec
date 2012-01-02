@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/core/init.h"
 #include "testing/uvudec.h"
 #include "uvd/util/util.h"
+#include "unit_config.h"
 #include <vector>
 #include <string>
 #include <string.h>
