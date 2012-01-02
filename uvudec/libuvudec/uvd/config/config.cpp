@@ -12,6 +12,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/language/language.h"
 #include "uvd/util/util.h"
 #include "uvd/core/analysis.h"
+#include "uvd/config.h"
 #include <string>
 #include <vector>
 #include <string.h>

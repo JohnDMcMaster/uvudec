@@ -12,7 +12,6 @@ configure_file (
   "${PROJECT_BINARY_DIR}/unit_config.h"
   )
 
-
 include_directories ("${PROJECT_SOURCE_DIR}/../libuvudec")
 include_directories ("${PROJECT_SOURCE_DIR}/../plugin")
 include_directories ("${PROJECT_SOURCE_DIR}/..")
@@ -51,5 +50,5 @@ add_executable(uvtest
 
 include_directories("${PROJECT_BINARY_DIR}")
 #nbadirective( asfddsf )
-target_link_libraries (uvtest  uvudec uvdflirt uvdgb uvdobjbin cppunit)
+target_link_libraries (uvtest uvudec uvdflirt uvdgb uvdobjbin cppunit)
 
