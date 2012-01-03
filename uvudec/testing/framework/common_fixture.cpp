@@ -6,10 +6,10 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "main.h"
 #include "testing/framework/common_fixture.h"
+#include "uvd/config.h"
 #include "uvd/core/init.h"
 #include "uvd/core/uvd.h"
 #include "uvd/util/util.h"
-#include "unit_config.h"
 #include <vector>
 #include <string>
 #include <string.h>

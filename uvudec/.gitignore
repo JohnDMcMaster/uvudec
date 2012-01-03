@@ -2,3 +2,8 @@ bin
 lib
 reconf.sh
 Makefile.version
+CMakeFiles
+Makefile
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake

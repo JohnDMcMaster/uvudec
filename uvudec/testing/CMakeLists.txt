@@ -1,17 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (uvtest)
 
-set (uvudec_VERSION_MAJOR 0)
-set (uvudec_VERSION_MINOR 4)
-set (uvudec_VERSION_PATCH 0)
-
-set (uvudec_DEFAULT_DECOMPILE_FILE "//home/mcmaster/document/build/uvudec/candela_pltl1_rev_3.bin")
-
-configure_file (
-  "${PROJECT_SOURCE_DIR}/unit_config.h.in"
-  "${PROJECT_BINARY_DIR}/unit_config.h"
-  )
-
 include_directories ("${PROJECT_SOURCE_DIR}/../libuvudec")
 include_directories ("${PROJECT_SOURCE_DIR}/../plugin")
 include_directories ("${PROJECT_SOURCE_DIR}/..")
