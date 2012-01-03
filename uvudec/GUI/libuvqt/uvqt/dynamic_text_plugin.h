@@ -8,6 +8,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #define UVQT_DYNAMIC_TEXT_PLUGIN_H
 
 #include <QtDesigner/QtDesigner>
+//#include <QDesignerCustomWidgetInterface>
 #include <QtCore/qplugin.h>
 
 class UVQtScrollableDynamicTextPlugin : public QObject, public QDesignerCustomWidgetInterface

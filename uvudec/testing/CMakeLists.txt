@@ -50,5 +50,5 @@ add_executable(uvtest
 
 include_directories("${PROJECT_BINARY_DIR}")
 #nbadirective( asfddsf )
-target_link_libraries (uvtest uvudec uvdflirt uvdgb uvdobjbin cppunit)
+target_link_libraries (uvtest uvudec uvdflirt uvdgb uvdobjbin cppunit boost_filesystem)
 

@@ -4,12 +4,12 @@ Copyright 2010 John McMaster <JohnDMcMaster@gmail.com>
 Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
+#include "uvdbfd/flirt/flirt.h"
 #include "uvd/core/uvd.h"
 #include "uvdflirt/flirt.h"
 #include "uvdbfd/architecture.h"
 #include "uvdbfd/object.h"
 #include "uvdbfd/plugin.h"
-#include "uvdbfd/flirt/flirt.h"
 #include "uvdflirt/plugin.h"
 
 UVDBFDPlugin *g_bfdPlugin = NULL;

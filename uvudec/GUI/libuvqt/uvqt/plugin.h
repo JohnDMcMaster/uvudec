@@ -7,7 +7,9 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #ifndef CUSTOMWIDGETPLUGIN_H
 #define CUSTOMWIDGETPLUGIN_H
 
+#include <QDesignerCustomWidgetCollectionInterface>
 #include <QDesignerCustomWidgetInterface>
+#include <QObject>
 
 class UVQtPlugin: public QObject, public QDesignerCustomWidgetCollectionInterface
 {

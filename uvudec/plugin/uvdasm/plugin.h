@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 
 #include "uvd/plugin/plugin.h"
 #include "uvd/util/types.h"
-#include "uvdasm/config.h"
+#include "uvdasm/plugin_config.h"
 
 class UVDAsmPlugin : public UVDPlugin
 {

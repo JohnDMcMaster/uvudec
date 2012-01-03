@@ -19,6 +19,7 @@ bin2obj entry point
 #include "uvd/data/data.h"
 #include "uvdelf/object.h"
 #include "uvd/assembly/function.h"
+#include "uvd/config.h"
 
 #define UVDBIN2OBJ_PROP_OUTPUT_DIR					"bin2obj.output.dir"
 #define UVDBIN2OBJ_PROP_TARGET_FUNCTION_ADDRESS		"bin2obj.function.address"

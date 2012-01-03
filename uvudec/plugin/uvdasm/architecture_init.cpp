@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/util.h"
 #include "uvd/core/uvd.h"
 #include "uvdasm/architecture.h"
-#include "uvdasm/config.h"
+#include "uvdasm/plugin_config.h"
 
 #if 0
 /* Internal RAM */

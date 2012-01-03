@@ -3,13 +3,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
 
 cmake_minimum_required (VERSION 2.6)
-project (uvtest)
+project (libuvudec)
 
 set (uvudec_VERSION_MAJOR 0)
 set (uvudec_VERSION_MINOR 4)
 set (uvudec_VERSION_PATCH 0)
 
-set (uvudec_DEFAULT_DECOMPILE_FILE "//home/mcmaster/document/build/uvudec/candela_pltl1_rev_3.bin")
+set (uvudec_DEFAULT_DECOMPILE_FILE "/home/mcmaster/document/build/uvudec/candela_pltl1_rev_3.bin")
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/uvd/config.h.in"
@@ -28,7 +28,7 @@ link_directories( ../lib/plugin )
 # See the RUNTIME_OUTPUT_DIRECTORY target property to change this location
 # See documentation of the OUTPUT_NAME target property to change the <name> part of the final file name. 
 
-add_library(uvudec SHARED
+add_library(libuvudec SHARED
 	uvd/architecture/architecture.cpp
 	uvd/architecture/factory.cpp
 	uvd/architecture/registry.cpp

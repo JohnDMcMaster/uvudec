@@ -7,7 +7,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/config/config.h"
 #include "uvd/language/language.h"
 #include "uvd/util/util.h"
-#include "uvdasm/config.h"
+#include "uvdasm/plugin_config.h"
 #include "uvdasm/interpreter.h"
 
 UVDConfigExpression::UVDConfigExpression()

@@ -5,7 +5,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 */
 
 #include "uvdasm/architecture.h"
-#include "uvdasm/config.h"
+#include "uvdasm/plugin_config.h"
 #include "uvd/assembly/instruction.h"
 #include "uvd/core/iterator.h"
 

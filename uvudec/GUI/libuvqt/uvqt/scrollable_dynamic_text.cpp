@@ -36,6 +36,9 @@ UVQtScrollableDynamicText::UVQtScrollableDynamicText(UVQtDynamicTextData *data, 
 	setDynamicData(data);
 }
 
+UVQtScrollableDynamicText::~UVQtScrollableDynamicText() {
+}
+	
 uv_err_t UVQtScrollableDynamicText::initViewport()
 {
 	m_viewportShadow = new UVQtDynamicText(this);

@@ -9,7 +9,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/language/format.h"
 #include "uvd/core/runtime.h"
 #include "uvdasm/architecture.h"
-#include "uvdasm/config.h"
+#include "uvdasm/plugin_config.h"
 #include "uvdasm/instruction.h"
 #include "uvdasm/operand.h"
 #include "uvdasm/util.h"

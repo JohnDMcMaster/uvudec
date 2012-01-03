@@ -1,0 +1,15 @@
+cmake_minimum_required (VERSION 2.6)
+project (uvudec)
+
+add_subdirectory (uvdasciiart)
+add_subdirectory (uvdasm)
+add_subdirectory (uvdbfd)
+#add_subdirectory (uvdblkanl)
+add_subdirectory (uvdelf)
+add_subdirectory (uvdflirt)
+add_subdirectory (uvdgb)
+add_subdirectory (uvdobjbin)
+#add_subdirectory (uvdreml)
+#add_subdirectory (uvdstrings)
+#add_subdirectory (uvdsync)
+

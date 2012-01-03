@@ -26,6 +26,7 @@ On the other hand, you can safely emit signals from your QThread::run() implemen
 #include "GUI/main.h"
 #include "GUI/project.h"
 #include "GUI/string_data.h"
+#include "uvd/config.h"
 #include "uvd/core/runtime.h"
 #include "uvd/assembly/function.h"
 #include "uvd/project/file_extensions.h"
