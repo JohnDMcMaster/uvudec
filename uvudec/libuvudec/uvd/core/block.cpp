@@ -16,6 +16,14 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/util/benchmark.h"
 #include <algorithm>
 #include <stdio.h>
+#include "uvd/util/tl/set.h"
+
+using namespace UVDN;
+
+//System this is running on max address
+//Needed for getting a pair higher than given (upper_bound()) where first was primary key and second was address
+#define UVD_VIRT_ADDR_MAX			((void *)0xFFFFFFFF)
+
 
 #if 0
 
@@ -281,6 +289,13 @@ UVDBasicBlock::UVDBasicBlock(UVDAddressRange addressRange) {
 UVDBasicBlock::~UVDBasicBlock() {
 }
 
+uv_addr_t UVDBasicBlock::min() {
+	return m_addressRange.min();
+}
+
+uv_addr_t UVDBasicBlock::max() {
+	return m_addressRange.max();
+}
 
 
 
@@ -301,33 +316,9 @@ uv_err_t UVDBlockGroup::init(UVDAddressSpace *addressSpace) {
 }
 
 uv_err_t UVDBlockGroup::add(UVDBasicBlock *block) {
-	/*
-	uv_addr_t minAddr = 0;
-	BBMS::iterator iter;
-	UVDBasicBlockSet *bbs = NULL;
-	
+	//printf("1\n");
 	uv_assert_ret(block);
-	minAddr = block->m_addressRange.m_min_addr;
-	iter = m_byAddress.find(minAddr);
-	if (iter == minAddr.end()) {
-		bbs = new UVDBasicBlockSet();
-		uv_assert_ret(bbs);
-		bbs->push_back(block);
-		m_byAddress[minAddr] = bbs;
-	} else {
-		bbs = *iter;
-		bbs->push_back(block);
-	}
-	*/
-	/*
-	BBSMK k = BBSMK(block->m_addressrange.m_min_addr, block);
-	BBSM::iterator iter = m_forward.find(k);
-	if (
-	*/
-	
-	printf("1\n");
-	uv_assert_ret(block);
-	printf("2\n");
+	//printf("2\n");
 	//Don't require it to have a space but if it does it must match
 	if (block->m_addressRange.m_space) {
 		uv_assert_ret(block->m_addressRange.m_space == m_addressSpace);
@@ -336,69 +327,43 @@ uv_err_t UVDBlockGroup::add(UVDBasicBlock *block) {
 		return UV_ERR_DUPLICATE;
 	}
 	m_unique.insert(block);
-	
-	//If it already exists we just override
-	m_forward.insert(K(block->m_addressRange.m_min_addr, block));
-	m_reverse.insert(K(block->m_addressRange.m_max_addr, block));
+	{
+		interval_t inter = interval(block);
+		BBS s = singleton_set(block);
+		std::pair<interval_t, BBS> p = std::make_pair(inter, s);
+		
+		//m_map += std::make_pair(inter, s);
+		m_map += p;
+		//m_map.add(p);
+	}
 	
 	return UV_ERR_OK;
 }
 
-uv_err_t UVDBlockGroup::removeCore(UVDBasicBlock *block, bool del) {
 #if 0
-	uv_addr_t minAddr = 0;
-	BBMS::iterator iter;
-	UVDBasicBlockSet *bbs = NULL;
-	
-	uv_assert_ret(block);
-	
-	minAddr = block->m_addressRange.m_min_addr;
-	iter = m_byAddress.find(minAddr);
-	if (iter == minAddr.end()) {
-		return UV_ERR_NOTFOUND;
-	}
-	bbs = *iter;
-	uv_assert_ret(bbs);
-	
-	/*	
-	for (UVDBasicBlockSet::iterator iter2 = bbs->begin(); iter2 != bbs->end(); ++iter2) {
-		//Found it?
-		if (*iter2 == block) {
-			bbs->remove(iter2);
-			if (del) {
-				delete block;
-			}
-			return UV_ERR_OK;
-		}
-	}
-	
-	return UV_ERR_NOTFOUND;
-	*/
-	UVDBasicBlockSet::iterator iter2 = bbs->find(block);
-	if (iter2 == bbs->end()) {
-		return UV_ERR_NOTFOUND;
-	}
-	if (del) {
-		delete block;
-	}
-	bbs->remove(iter2);
-	return UV_ERR_NOTFOUND;
-#endif
+UVDBlockGroup::interval_t UVDBlockGroup::interval(uv_addr_t startend) {
+	return interval(startend, startend);
+}
 
+UVDBlockGroup::interval_t UVDBlockGroup::interval(UVDBasicBlock *block) {
+	return interval(block->min(), block->max()), singleton_set(block));
+}
+
+UVDBlockGroup::interval_t UVDBlockGroup::interval(uv_addr_t start, uv_addr_t end) {
+	return interval_t::closed(start, end);
+}
+
+uv_err_t UVDBlockGroup::removeCore(UVDBasicBlock *block, bool del) {
 	BBS::iterator iterUnique = m_unique.find(block);
+	
 	if (iterUnique == m_unique.end()) {
 		return UV_ERR_NOTFOUND;
 	}
 	m_unique.erase(iterUnique);
-	
-	//If it already exists we just override
-	BBPS::iterator iter = findForward(block);
-	uv_assert_ret(iter != m_forward.end());
-	
-	m_forward.erase(iter);
-	iter = findReverse(block);
-	uv_assert_ret(iter != m_reverse.end());
-	m_reverse.erase(iter);
+	//Not that it should matter, but it should be safe if already erased
+	//The biggest danger for corruption is if its range had changed meaning we didn't
+	//erase it and could return a bad pointer
+	m_map.erase(interval(block));
 	
 	if (del) {
 		delete block;
@@ -407,23 +372,9 @@ uv_err_t UVDBlockGroup::removeCore(UVDBasicBlock *block, bool del) {
 }
 
 uv_err_t UVDBlockGroup::notify(UVDBasicBlock *block, uvd_block_event_t event) {
+	//TODO: implement this so that we can respond to blocks being moved around
+	//We need to register with the address space
 	return UV_ERR_OK;
-}
-
-UVDBlockGroup::BBPS::iterator UVDBlockGroup::findForward(UVDBasicBlock *block) {
-	return m_forward.find(forwardK(block));
-}
-
-UVDBlockGroup::BBPS::iterator UVDBlockGroup::findReverse(UVDBasicBlock *block) {
-	return m_reverse.find(reverseK(block));
-}
-
-UVDBlockGroup::K UVDBlockGroup::forwardK(UVDBasicBlock *block) {
-	return K(block->m_addressRange.m_min_addr, block);
-}
-
-UVDBlockGroup::K UVDBlockGroup::reverseK(UVDBasicBlock *block) {
-	return K(block->m_addressRange.m_max_addr, block);
 }
 
 uv_err_t UVDBlockGroup::remove(UVDBasicBlock *block) {
@@ -435,125 +386,21 @@ uv_err_t UVDBlockGroup::del(UVDBasicBlock *block) {
 }
 
 uv_err_t UVDBlockGroup::getAtAddress( uv_addr_t address, UVDBasicBlockSet *out ) {
-	/*
-	uv_assert_ret(out);
-	
-	BBMS::iterator iter = m_byAddress.find(address);
-	if (iter == m_byAddress.end()) {
-		return UV_ERR_OK;
-	}
-	UVDBasicBlockSet *s = NULL;
-	s = *iter;
-	
-	for (UVDBasicBlockSet::iterator::iter = s->begin(); s != s->end(); ++iter) {
-		out->append(*iter);
-	}
-	
-	return UV_ERR_OK;
-	*/
 	return UV_DEBUG(getAtAddresses(UVDAddressRange(address, address), out));
 }
 
-  /*
-  _II: input iterator
-  _O: output set object (or anything that supports insert(pair
-  */
-  template<typename _II, typename _O>
-    inline void
-    set_insert_first(_II __first, _II __last, _O &__result)
-    {
-    	while (__first != __last) {
-    		__result.insert((*__first).first);
-    		++__first;
-    	}
-    }
-
-
-  template<typename _II, typename _O>
-    inline void
-    set_insert_second(_II __first, _II __last, _O &__result)
-    {
-    	while (__first != __last) {
-    		__result.insert((*__first).second);
-    		++__first;
-    	}
-    }
-
-  /*
-  Given iterators over two sorted input iterators
-  insert the intersection into a container support insert(K)
-  */
-  template<typename _II1, typename _II2, typename _O>
-    inline void
-    insert_set_intersection(_II1 __first1, _II1 __last1,
-		     _II2 __first2, _II2 __last2,
-		     _O &__result)
-	{
-    	while (__first1 != __last1 && __first2 != __last2) {
-    		if ((*__first1) < (*__first2)) {
-    			++__first1;
-    		} else if ((*__first2) < (*__first1)) {
-    			++__first2;
-    		} else {
-				__result.insert(*__first1);
-				++__first1;
-				++__first2;
-			}
-    	}
-    }
-
-//System this is running on max address
-//Needed for getting a pair higher than given (upper_bound()) where first was primary key and second was address
-#define UVD_VIRT_ADDR_MAX			((void *)0xFFFFFFFF)
-
 uv_err_t UVDBlockGroup::getAtAddresses( UVDAddressRange addressRange, UVDBasicBlockSet *out ) {
-	UVDBasicBlockSet forward;
-	UVDBasicBlockSet reverse;
+    for (Map::iterator iter = m_map.lower_bound(interval(addressRange.min()));
+    		iter != m_map.upper_bound(interval(addressRange.max())); 
+    		++iter) {
+		//This doesn't care about the who, only the what
+        BBS what = iter->second;
+        for (BBS::iterator what_iter = what.begin(); what_iter != what.end(); ++what_iter) {
+        	//Note that its safe to add duplicates
+        	out->insert(*what_iter);
+        }
+    }
 	
-	uv_assert_ret(out);
-	
-	/*
-	UVDBasicBlockSet::iterator mini = m_forward.lower_bound(addressRange.m_min_addr;
-	UVDBasicBlockSet::iterator maxi = m_forward.lower_bound(addressRange.m_max_addr;
-	
-	while (mini != maxi) {
-		out->insert(mini);
-		++mini;
-	}
-	*/
-	
-	/*
-	{
-		BBPS::iterator __first = m_forward.begin();
-		BBPS::iterator __last = m_forward.end();
-		UVDBasicBlockSet &__result = forward;
-		
-		while (__first != __last) {
-			__result.insert((*__first).second);
-			++__first;
-		}
-	}
-	*/
-	
-	set_insert_second(m_forward.lower_bound(K(addressRange.m_min_addr, NULL)), 
-			m_forward.upper_bound(K(addressRange.m_max_addr, (UVDBasicBlock*)UVD_VIRT_ADDR_MAX)),
-			forward);
-	set_insert_second(m_reverse.lower_bound(K(addressRange.m_min_addr, NULL)), 
-			m_reverse.upper_bound(K(addressRange.m_max_addr, (UVDBasicBlock*)UVD_VIRT_ADDR_MAX)),
-			reverse);
-	insert_set_intersection(forward.begin(), forward.end(),
-			reverse.begin(), reverse.end(),
-			*out);
-	
-	/*
-	this doesn't work
-	in particular its going to try to 
-	std::set_intersection(m_forward.lower_bound(K(addressRange.m_min_addr, NULL)),
-			m_forward.lower_bound(K(addressRange.m_max_addr, NULL)),
-			m_reverse.lower_bound(K(addressRange.m_min_addr, NULL)),
-			m_reverse.lower_bound(K(addressRange.m_max_addr, NULL)),
-			out->begin());
-	*/
 	return UV_ERR_OK;
 }
 
@@ -566,16 +413,6 @@ uv_err_t UVDBlockGroup::addNotifier(Notifier notifier, void *user) {
 
 uv_err_t UVDBlockGroup::removeNotifier(Notifier notifier, void *user) {
 	uv_assert_ret(notifier);
-	/*
-	for (std::vector<Notification>::iterator iter = m_notifications.begin();
-			iter != m_notifications.end(); ++iter) {
-		Notification n = *iter;
-		if (n.first == notifier && n.second == user) {
-			m_notifications.erase(iter);
-			break;
-		}
-	}
-	*/
 	std::vector<Notification>::iterator iter = std::find(m_notifications.begin(), m_notifications.end(), Notification(notifier, user));
 	if (iter == m_notifications.end()) {
 		return UV_ERR_NOTFOUND;
@@ -584,4 +421,5 @@ uv_err_t UVDBlockGroup::removeNotifier(Notifier notifier, void *user) {
 		return UV_ERR_OK;
 	}
 }
+#endif
 

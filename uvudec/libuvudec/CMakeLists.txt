@@ -1,28 +1,15 @@
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
-
 cmake_minimum_required (VERSION 2.6)
 project (libuvudec)
 
-set (uvudec_VERSION_MAJOR 0)
-set (uvudec_VERSION_MINOR 4)
-set (uvudec_VERSION_PATCH 0)
-
-set (uvudec_DEFAULT_DECOMPILE_FILE "/home/mcmaster/document/build/uvudec/candela_pltl1_rev_3.bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib)
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/uvd/config.h.in"
   "${PROJECT_BINARY_DIR}/uvd/config.h"
 )
 
-include_directories ("${PROJECT_SOURCE_DIR}/../libuvudec")
-include_directories ("${PROJECT_SOURCE_DIR}/../plugin")
-include_directories ("${PROJECT_SOURCE_DIR}/..")
-#add_subdirectory (MathFunctions) 
 
-link_directories( ../lib )
-link_directories( ../lib/plugin )
 # By default the executable file will be created in the build tree directory
 # corresponding to the source tree directory in which the command was invoked.
 # See the RUNTIME_OUTPUT_DIRECTORY target property to change this location

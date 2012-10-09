@@ -12,6 +12,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 //uv_addr_t is somewhat arbitrarily defined in here
 #include "uvd/util/types.h"
 
+
 /*
 An address resolved to an address space
 Fully specifies the address within the architecture
@@ -63,6 +64,9 @@ public:
 	//Return string representation of the referenced memory area
 	//See string utils to explanation of safe
 	uv_err_t memoryToString(std::string &out, bool safe = true) const;
+
+	inline uv_addr_t min() const { return m_min_addr; }
+	inline uv_addr_t max() const { return m_max_addr; }
 
 public:
 	//Address space

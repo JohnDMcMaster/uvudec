@@ -1,19 +1,10 @@
 cmake_minimum_required (VERSION 2.6)
 project (uvtest)
 
-include_directories ("${PROJECT_SOURCE_DIR}/../libuvudec")
-include_directories ("${PROJECT_SOURCE_DIR}/../plugin")
-include_directories ("${PROJECT_SOURCE_DIR}/..")
-#add_subdirectory (MathFunctions) 
-
-link_directories( ../lib )
-link_directories( ../lib/plugin )
 # By default the executable file will be created in the build tree directory
 # corresponding to the source tree directory in which the command was invoked.
 # See the RUNTIME_OUTPUT_DIRECTORY target property to change this location
 # See documentation of the OUTPUT_NAME target property to change the <name> part of the final file name. 
-
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)
 
 add_executable(uvtest
 	framework/common_fixture.cpp

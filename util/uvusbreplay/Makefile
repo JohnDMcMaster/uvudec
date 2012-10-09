@@ -17,6 +17,7 @@ LFLAGS += -ldl
 
 all:
 	g++ $(CFLAGS) $(LFLAGS) main.cpp -o uvusbreplay
+	g++ $(CFLAGS) $(LFLAGS) bulk.cpp -o uvusbbulk
 
 clean:
 	rm -f uvusbreplay *~

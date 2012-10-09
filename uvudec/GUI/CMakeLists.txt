@@ -1,12 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 project (uvudec)
 
-include_directories ("${PROJECT_SOURCE_DIR}/../libuvudec")
-include_directories ("${PROJECT_SOURCE_DIR}/../plugin")
-include_directories ("${PROJECT_SOURCE_DIR}/..")
-
-link_directories( ../lib )
-link_directories( ../lib/plugin )
 link_directories( libuvqt )
 
 find_package(Qt4 COMPONENTS QtCore QtGui QtXml REQUIRED )

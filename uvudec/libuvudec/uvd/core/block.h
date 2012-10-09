@@ -10,6 +10,7 @@ Licensed under the terms of the LGPL V3 or later, see COPYING for details
 #include "uvd/assembly/address.h"
 #include <vector>
 #include <set>
+#include <boost/icl/interval_map.hpp>
 
 
 /*
@@ -108,11 +109,17 @@ Deleting a block at the address space level must be able to remove all reference
 Plan on making these pointers since we'll eventually want to start attaching more analysis info
 Block address can become primary key if nothing else
 */
+
+//namespace UVD {
+
 class UVDBasicBlock {
 public:
 	UVDBasicBlock();
 	UVDBasicBlock(UVDAddressRange addressRange);
 	~UVDBasicBlock();
+	
+	uv_addr_t min();
+	uv_addr_t max();
 	
 public:
 	UVDAddressRange m_addressRange;
@@ -184,18 +191,27 @@ public:
 	/*
 	We don't just form a set because we want multiple items at each address
 	*/
-	typedef std::pair<uv_addr_t, UVDBasicBlock *> K;
+	//typedef std::pair<uv_addr_t, UVDBasicBlock *> K;
 	//static int BBSMC(BBSMK l, BBSMK r);
-	typedef std::set<K> BBPS;
+	//typedef std::set<K> BBPS;
 	typedef std::set<UVDBasicBlock *> BBS;
 	//Internal use for constructing keys
 	//const UVDBasicBlock * BlockMax = (const UVDBasicBlock *)UINT_MAX;
+    /*
+    Core data structure type
+    Address ranges form segments with all of the members on each segment
+    This data structure allows duplication and splitting segments
+    so it requires an external structure to ensure uniqueness 
+    */
+    typedef boost::icl::interval_map<uv_addr_t, BBS> Map;
 	
 	//typedef uv_err_t (*Notifier)(UVDBasicBlock *block, const UVDBlockEvent *event, void *user);
 	typedef uv_err_t (*Notifier)(UVDBasicBlock *block, uvd_block_event_t event, void *user);
 	//Stores the user defined parameter with the notifier
 	typedef std::pair<Notifier, void *> Notification;
 	
+	typedef boost::icl::interval<uv_addr_t> interval_t;
+
 public:
 	UVDBlockGroup();
 	~UVDBlockGroup();
@@ -221,12 +237,17 @@ public:
 	//if a notification was added twice the first instance will be removed
 	uv_err_t removeNotifier(Notifier notifier, void *user);
 
+	interval_t interval(uv_addr_t startend);
+	interval_t interval(uv_addr_t start, uv_addr_t end);
+	interval_t interval(UVDBasicBlock *block);
+
 protected:
 	uv_err_t removeCore(UVDBasicBlock *block, bool del);
-	BBPS::iterator findForward(UVDBasicBlock *block);
-	BBPS::iterator findReverse(UVDBasicBlock *block);
-	K forwardK(UVDBasicBlock *block);
-	K reverseK(UVDBasicBlock *block);
+	//BBPS::iterator findForward(UVDBasicBlock *block);
+	//BBPS::iterator findReverse(UVDBasicBlock *block);
+	//K forwardK(UVDBasicBlock *block);
+	//K reverseK(UVDBasicBlock *block);
+	//TODO: replace this with event object, will run into way too many issues with this as is
 	uv_err_t notify(UVDBasicBlock *block, uvd_block_event_t event);
 
 public:
@@ -237,14 +258,19 @@ public:
 	//std::set<UVDBasicBlock *> m_blocks;
 	//Prepare vector over set for deterministic behavior
 	std::vector<Notification> m_notifications;
-	BBPS m_forward;
-	BBPS m_reverse;
-	
+
+protected:
 	//This is not strictly necessary and is really more for debugging
 	//With this architecture it is difficult to
 	//determine if we added something twice by accident
 	BBS m_unique;
+	
+	//BBPS m_forward;
+	//BBPS m_reverse;
+	Map m_map;
 };
+
+//}
 
 #endif
 
