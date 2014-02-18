@@ -6,14 +6,18 @@ Expect the Lua bindings are out of date and I don't feel like messing with them
 Python is good for dev, but SIGSEGV in Python is ugly...
 */
 
+
+
+
 #include <stdio.h>
 #include <pcap.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string>
-#include "uvd/util/error.h"
-#include "uvd/util/util.h"
+//#include "uvd/util/error.h"
+//#include "uvd/util/util.h"
 #include <limits.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "util.cpp" 
@@ -23,6 +27,8 @@ typedef enum {
 	OUTPUT_LINUX,
 	//libusb
 	OUTPUT_LIBUSB,
+	//libusb (python)
+	OUTPUT_LIBUSBPY,
 } output_target_t;
 output_target_t g_output_target = OUTPUT_LINUX;
 
@@ -100,6 +106,34 @@ typedef struct {
 } payload_bytes_t;
 payload_bytes_t g_payload_bytes;
 
+std::string UVDSprintf(const char *format, ...)
+{
+	//TODO: should we try buffering the memory to increase performance?
+	//Think during UVDInit we should reserve a modest buffer for the common case
+	char *buff = NULL;
+	size_t needed = 0;
+	std::string ret;
+	va_list ap;
+	
+	va_start(ap, format);
+	needed = vsnprintf(NULL, 0, format, ap) + 1;
+	va_end(ap);
+ 	
+	buff = (char *)malloc(sizeof(buff[0]) * needed);
+	if( !buff )
+	{
+		return "";
+	}
+
+	va_start(ap, format);
+	vsnprintf(buff, needed, format, ap);
+	va_end(ap);
+
+	ret = buff;
+	free(buff);
+	return ret;
+}
+
 void update_delta( payload_bytes_type_t *in ) {
 	in->req_in_last = in->req_in;
 	in->in_last = in->in;
@@ -108,13 +142,14 @@ void update_delta( payload_bytes_type_t *in ) {
 	in->out_last = in->out;
 }
 
+
 void processControlSubmit(usb_urb_t *urb, uint8_t *dat_cur, unsigned int remaining_bytes) {
 	struct usb_ctrlrequest *ctrl = NULL;
 	PendingRX pending;
 	
 	pending.m_urb = *urb;
 	if (remaining_bytes < sizeof(*ctrl)) {
-		printf("packet %d: got %d instead of min header length %d\n",
+		printf("packet %d: got %d instead of min header length %lu\n",
 				g_cur_packet, remaining_bytes, sizeof(*ctrl));
 		g_error = true;
 		return;
@@ -136,7 +171,7 @@ void processControlSubmit(usb_urb_t *urb, uint8_t *dat_cur, unsigned int remaini
 	
 	
 	if (g_verbose) {
-		printf("Packet %d control submit (control info size %u)\n", g_cur_packet, sizeof(*ctrl));
+		printf("Packet %d control submit (control info size %lu)\n", g_cur_packet, sizeof(*ctrl));
 		printf("\tbRequestType: %s (0x%02X)\n", get_request_type_str(ctrl->bRequestType).c_str(), ctrl->bRequestType);
 		printf("\tbRequest: %s (0x%02X)\n", get_request_str( ctrl->bRequestType, ctrl->bRequest ).c_str(), ctrl->bRequest);
 		printf("\twValue: 0x%04X\n", ctrl->wValue);
@@ -172,9 +207,7 @@ void processControlSubmit(usb_urb_t *urb, uint8_t *dat_cur, unsigned int remaini
 void printControlRequest(PendingRX *submit,
         const std::string &data_str, unsigned int data_size,
         const std::string &pipe_str) {
-	std::string timeout;
 
-    oprintf("n_rw = ");
     /*
     unsigned int dev_control_message(int requesttype, int request,
             int value, int index, char *bytes, int size) {
@@ -195,62 +228,93 @@ void printControlRequest(PendingRX *submit,
     
     Example output:
     n_rw = dev_ctrl_msg(0x0B, USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE, 0xAD16, 0xAD15, buff, 1, 500);
+    
+    def controlWrite(self, request_type, request, value, index, data, timeout=0):
+    def controlRead(self, request_type, request, value, index, length, timeout=0):
+    self.dev.controlWrite(0x40, 0x00, 0x0001, 0x0001, '')
     */
-    if (g_custom_call) {
-        oprintf("dev_ctrl_msg(");
+    if (g_output_target == OUTPUT_LIBUSBPY) {
+        //std::string bRequestStr = get_request_str( submit->m_ctrl.bRequestType, submit->m_ctrl.bRequest );
+        //std::string bRequestTypeStr = get_request_type_str(submit->m_ctrl.bRequestType);
+	    if (submit->m_ctrl.bRequestType & USB_DIR_IN) {
+	        oprintf("buff = self.dev.controlRead(0x%02X, 0x%02X, 0x%04X, 0x%04X, %u)\n",
+			        submit->m_ctrl.bRequestType, submit->m_ctrl.bRequest,
+			        submit->m_ctrl.wValue, submit->m_ctrl.wIndex, data_size);
+        } else {
+	        oprintf("self.dev.controlWrite(0x%02X, 0x%02X, 0x%04X, 0x%04X, %s)\n",
+			        submit->m_ctrl.bRequestType, submit->m_ctrl.bRequest,
+			        submit->m_ctrl.wValue, submit->m_ctrl.wIndex,
+			        data_str.c_str());
+        }
     } else {
-        std::string device_str = "g_dev";
-        oprintf("usb_control_msg(%s, ", device_str.c_str());
-    }
-    
-	if (g_output_target == OUTPUT_LINUX) {
-        oprintf("%s", pipe_str.c_str());
-    }
-    
-    std::string bRequestStr = get_request_str( submit->m_ctrl.bRequestType, submit->m_ctrl.bRequest );
-    std::string bRequestTypeStr = "";
-    
-    if (g_output_target == OUTPUT_LIBUSB && !g_use_defines) {
-        bRequestTypeStr = UVDSprintf("0x%02X", submit->m_ctrl.bRequestType);
-    } else {
-        bRequestTypeStr = get_request_type_str(submit->m_ctrl.bRequestType);
-    }
+    	std::string timeout;
+        oprintf("n_rw = ");
+        if (g_custom_call) {
+            oprintf("dev_ctrl_msg(");
+        } else {
+            std::string device_str = "g_dev";
+            oprintf("usb_control_msg(%s, ", device_str.c_str());
+        }
+        
+	    if (g_output_target == OUTPUT_LINUX) {
+            oprintf("%s", pipe_str.c_str());
+        }
+        
+        std::string bRequestStr = get_request_str( submit->m_ctrl.bRequestType, submit->m_ctrl.bRequest );
+        std::string bRequestTypeStr = "";
+        
+        if (g_output_target == OUTPUT_LIBUSB && !g_use_defines) {
+            bRequestTypeStr = UVDSprintf("0x%02X", submit->m_ctrl.bRequestType);
+        } else {
+            bRequestTypeStr = get_request_type_str(submit->m_ctrl.bRequestType);
+        }
 	
-	if (g_output_target == OUTPUT_LIBUSB) {
-	    oprintf("%s, %s, ", bRequestTypeStr.c_str(), bRequestStr.c_str());
-	} else {
-	    oprintf("%s, %s, ", bRequestStr.c_str(), bRequestTypeStr.c_str());
-	}
+	    if (g_output_target == OUTPUT_LIBUSB) {
+	        oprintf("%s, %s, ", bRequestTypeStr.c_str(), bRequestStr.c_str());
+	    } else {
+	        oprintf("%s, %s, ", bRequestStr.c_str(), bRequestTypeStr.c_str());
+	    }
 	
-	if (g_custom_call) {
-	    timeout = "";
-	} else {
-	    timeout = ", 500";
-	}
+	    if (g_custom_call) {
+	        timeout = "";
+	    } else {
+	        timeout = ", 500";
+	    }
 	
-	oprintf("0x%04X, 0x%04X, %s, %u%s);\n",
-			submit->m_ctrl.wValue, submit->m_ctrl.wIndex,
-			data_str.c_str(), data_size,
-			timeout.c_str() );
+	    oprintf("0x%04X, 0x%04X, %s, %u%s);\n",
+			    submit->m_ctrl.wValue, submit->m_ctrl.wIndex,
+			    data_str.c_str(), data_size,
+			    timeout.c_str() );
+    }
 }
 
 std::string bytes2AnonArray(const void *in, size_t in_size, const char *byte_type = "uint8_t") {
-    std::string byte_str = UVDSprintf("(%s[]){", byte_type);
-	std::string pad = "";
-	const uint8_t *payload = (const uint8_t*)in;
+    if (g_output_target == OUTPUT_LIBUSBPY) {
+        std::string byte_str = "\"";
+	    const uint8_t *payload = (const uint8_t*)in;
 	
-	for (unsigned int i = 0; i < in_size; ++i) {
-		if (i % 16 == 0) {
-		    pad = "";
-		    if (i != 0) {
-		        byte_str += ",\n        ";
+	    for (unsigned int i = 0; i < in_size; ++i) {
+		    byte_str += UVDSprintf("\\x%02X", payload[i]);
+	    }
+	    return byte_str + "\"";
+    } else {
+        std::string byte_str = UVDSprintf("(%s[]){", byte_type);
+	    std::string pad = "";
+	    const uint8_t *payload = (const uint8_t*)in;
+	
+	    for (unsigned int i = 0; i < in_size; ++i) {
+		    if (i % 16 == 0) {
+		        pad = "";
+		        if (i != 0) {
+		            byte_str += ",\n        ";
+		        }
 		    }
-		}
-		byte_str += pad;
-		byte_str += UVDSprintf("0x%02X", payload[i]);
-		pad = ", ";
-	}
-	return byte_str + "}";
+		    byte_str += pad;
+		    byte_str += UVDSprintf("0x%02X", payload[i]);
+		    pad = ", ";
+	    }
+	    return byte_str + "}";
+    }
 }
 
 std::string deviceStr() {
@@ -268,7 +332,10 @@ void processControlCompleteIn(PendingRX *submit, uint8_t *dat_cur, unsigned int 
 	if (submit->m_ctrl.wLength) {
 		data_str = "buff";
 		data_size = submit->m_ctrl.wLength;
+	} else if (g_output_target == OUTPUT_LIBUSBPY) {
+	    data_str = "\"\"";
 	}
+	
 	if (keep_packet(submit)) {
 	    printControlRequest(submit, data_str, data_size,
 	            UVDSprintf( "usb_rcvctrlpipe(%s, 0), ", deviceStr().c_str() ) );
@@ -310,9 +377,15 @@ void processControlCompleteIn(PendingRX *submit, uint8_t *dat_cur, unsigned int 
             packet_numbering = "packet";
         }
 
-		oprintf("validate_read(%s, %u, buff, n_rw, \"%s\");\n",
-			bytes2AnonArray(dat_cur, remaining_bytes, "char").c_str(), remaining_bytes, 
-			packet_numbering.c_str() );
+	    if (g_output_target == OUTPUT_LIBUSBPY) {
+		    oprintf("validate_read(%s, buff, \"%s\")\n",
+			    bytes2AnonArray(dat_cur, remaining_bytes, "char").c_str(), 
+			    packet_numbering.c_str() );
+	    } else {
+		    oprintf("validate_read(%s, %u, buff, n_rw, \"%s\");\n",
+			    bytes2AnonArray(dat_cur, remaining_bytes, "char").c_str(), remaining_bytes, 
+			    packet_numbering.c_str() );
+	    }
 	}
 }
 
@@ -325,7 +398,10 @@ void processControlCompleteOut(PendingRX *submit, uint8_t *dat_cur, unsigned int
 	    //Note that its the submit from earlier, not the ack that we care about
         data_str = bytes2AnonArray(submit->m_data_out, submit->m_data_out_size);
         data_size = submit->m_data_out_size;
+	} else if (g_output_target == OUTPUT_LIBUSBPY) {
+	    data_str = "\"\"";
 	}
+	
 	if (keep_packet(submit)) {
 	    printControlRequest(submit, data_str, data_size,
 	            UVDSprintf( "usb_sndctrlpipe(%s, 0), ", deviceStr().c_str()) );
@@ -354,7 +430,11 @@ void processControlComplete(PendingRX *submit, uint8_t *dat_cur, unsigned int re
 	    return;
 	}
 	if (g_packet_numbers) {
-		oprintf("//Generated from packet %u/%u\n", submit->packet_number, g_cur_packet);
+        if (g_output_target == OUTPUT_LIBUSBPY) {
+		    oprintf("# Generated from packet %u/%u\n", submit->packet_number, g_cur_packet);
+	    } else {
+		    oprintf("//Generated from packet %u/%u\n", submit->packet_number, g_cur_packet);
+	    }
 	}
 	if (submit->m_ctrl.bRequestType & USB_DIR_IN) {
 	    processControlCompleteIn(submit, dat_cur, remaining_bytes);
@@ -424,7 +504,7 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 	remaining_bytes -= sizeof(*urb);
 	dat_cur += sizeof(*urb);
 	if (g_verbose) {
-		printf("Packet %d (header size: %u)\n", g_cur_packet, sizeof(*urb));
+		printf("Packet %d (header size: %lu)\n", g_cur_packet, sizeof(*urb));
 		print_urb(urb);
 	}
 	if (0) {
@@ -443,7 +523,7 @@ void loop_cb(u_char *args, const struct pcap_pkthdr *header,
 	PendingRX submit;
 	if( urb->type == URB_COMPLETE) {
 		if (g_pending_control.find(urb->id) == g_pending_control.end()) {
-			printf("WTF? %d\n", __LINE__);
+			printf("WTF?  packet %d missing control URB end.  URB ID: 0x%016lX\n", g_cur_packet, urb->id);
 			if (g_halt_error) {
 				exit(1);
 			}
@@ -494,7 +574,7 @@ int main(int argc, char *argv[])
 	opterr = 0;
 
 	while (true) {
-		int c = getopt(argc, argv, "r:klh?vsfn");
+		int c = getopt(argc, argv, "r:klh?vsfnp");
 		
 		if (c == -1) {
 			break;
@@ -518,6 +598,10 @@ int main(int argc, char *argv[])
 			
 			case 'l':
 				g_output_target = OUTPUT_LIBUSB;
+				break;
+			
+			case 'p':
+				g_output_target = OUTPUT_LIBUSBPY;
 				break;
 			
 			case 's':
@@ -567,7 +651,7 @@ int main(int argc, char *argv[])
 	oprintf("/*\n");
 	oprintf("Generated by uvusbreplay %s\n", VERSION_STR);
 	oprintf("uvusbreplay copyright 2011 John McMaster <JohnDMcMaster@gmail.com>\n");
-	oprintf("Date: %s\n", UVDCurDateTime().c_str());
+	//oprintf("Date: %s\n", UVDCurDateTime().c_str());
 	oprintf("Source data: %s\n", fileName.c_str());
 	oprintf("Source range: %u - %u\n", g_min_packet, g_max_packet);
 	oprintf("*/\n");
@@ -598,7 +682,7 @@ int main(int argc, char *argv[])
 	pcap_loop(p, -1, loop_cb, NULL);
 	
 	if (!g_pending_control.empty()) {
-		printf("WARNING: %d pending requests\n", g_pending_control.size());
+		printf("WARNING: %lu pending requests\n", g_pending_control.size());
 	}
 	//Makes copy/pasting easier in some editors...
 	oprintf("\n");
